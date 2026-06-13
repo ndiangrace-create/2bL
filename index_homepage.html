@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>兔彼樂共創村 · To love To beloved</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #2d1b4e;
+    font-family: 'Arial', sans-serif;
+  }
+
+  #scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  #village-img {
+    position: absolute;
+    height: 100%;
+    width: auto;
+    max-width: none;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  /* 電腦版：圖片以高度為準，置中 */
+  @media (min-aspect-ratio: 9/16) {
+    #village-img {
+      height: 100%;
+      width: auto;
+    }
+  }
+
+  /* 手機版：圖片以寬度為準 */
+  @media (max-aspect-ratio: 9/16) {
+    #village-img {
+      width: 100%;
+      height: auto;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+    }
+  }
+
+  /* 熱區容器 */
+  #hotspots {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    /* 寬度由 JS 動態設定 */
+  }
+
+  /* 每個熱區 */
+  .hotspot {
+    position: absolute;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hotspot:hover,
+  .hotspot:active {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.5), 0 0 20px rgba(255,220,100,0.4);
+    transform: scale(1.04);
+  }
+
+  /* 點擊波紋效果 */
+  .hotspot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: rgba(255,255,255,0);
+    transition: background 0.15s;
+  }
+  .hotspot:active::after {
+    background: rgba(255,255,255,0.25);
+  }
+
+  /* 載入動畫 */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: #2d1b4e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: opacity 0.5s;
+  }
+  #loading.fade {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #loading-emoji { font-size: 60px; animation: bounce 1s infinite; }
+  #loading-text { color: #f8d7e8; font-size: 18px; margin-top: 16px; letter-spacing: 2px; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  /* 提示泡泡 */
+  #tooltip {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(45, 27, 78, 0.85);
+    color: #f8d7e8;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 15px;
+    letter-spacing: 1px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+    z-index: 100;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  #tooltip.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div id="loading-emoji">🐰</div>
+  <div id="loading-text">歡迎來到兔彼樂共創村…</div>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="scene">
+  <img id="village-img" src="village.jpg" alt="兔彼樂共創村" draggable="false">
+  <div id="hotspots"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// 圖片原始尺寸
+const IMG_W = 2052;
+const IMG_H = 4325;
+
+// ══════════════════════════════════════════
+// 12個入口定義
+// 座標是基於原始圖片尺寸的百分比（%）
+// x, y = 左上角；w, h = 寬高
+// ══════════════════════════════════════════
+const hotspots = [
+  {
+    id: 'market',
+    label: '市集報名',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#market',
+    // 左下區域的餐車攤位
+    x: 4, y: 58, w: 32, h: 12
+  },
+  {
+    id: 'activity',
+    label: '報名活動・手作體驗',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#activity',
+    // 右中區域的熊熊畫架
+    x: 52, y: 62, w: 38, h: 12
+  },
+  {
+    id: 'consign',
+    label: '通路寄賣',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#consign',
+    // 右下販賣機旁
+    x: 55, y: 76, w: 40, h: 8
+  },
+  {
+    id: 'collab',
+    label: '合作洽詢',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#collab',
+    // 左上的小木屋
+    x: 3, y: 27, w: 38, h: 13
+  },
+  {
+    id: 'member',
+    label: '會員中心',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#member',
+    // 左下角告示牌
+    x: 0, y: 91, w: 38, h: 9
+  },
+  {
+    id: 'line',
+    label: '官方LINE',
+    url: 'https://lin.ee/Xpiib15',
+    // 右下角告示牌
+    x: 55, y: 91, w: 45, h: 9
+  },
+  {
+    id: 'mapinfo',
+    label: '全台市集資訊',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#mapinfo',
+    // 左中的公佈欄小屋
+    x: 2, y: 43, w: 32, h: 10
+  },
+  {
+    id: 'plan244',
+    label: '244計劃',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#plan244',
+    // 中間月亮裝置
+    x: 28, y: 43, w: 40, h: 14
+  },
+  {
+    id: 'giftshop',
+    label: '禮物店',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#giftshop',
+    // 右中的禮物盒小屋
+    x: 58, y: 38, w: 40, h: 13
+  },
+  {
+    id: 'event',
+    label: '辦活動找我們',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#event',
+    // 中上的舞台
+    x: 38, y: 18, w: 45, h: 14
+  },
+  {
+    id: 'vending',
+    label: '進駐販賣機',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#vending',
+    // 右下的販賣機
+    x: 55, y: 82, w: 44, h: 12
+  },
+  {
+    id: 'design',
+    label: '設計找我們',
+    url: 'https://ndiangrace-create.github.io/tuibile/index.html#design',
+    // 左側設計找我們招牌
+    x: 0, y: 35, w: 22, h: 6
+  },
+];
+
+// ══════════════════════════════════════════
+// 動態計算熱區位置
+// ══════════════════════════════════════════
+const img = document.getElementById('village-img');
+const hotspotsDiv = document.getElementById('hotspots');
+const tooltip = document.getElementById('tooltip');
+let tooltipTimer = null;
+
+function updateHotspots() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const imgAspect = IMG_W / IMG_H;
+  const screenAspect = vw / vh;
+
+  let renderedW, renderedH, offsetX, offsetY;
+
+  if (screenAspect > imgAspect) {
+    // 螢幕比圖片寬：以高度為準
+    renderedH = vh;
+    renderedW = vh * imgAspect;
+    offsetX = (vw - renderedW) / 2;
+    offsetY = 0;
+  } else {
+    // 螢幕比圖片窄：以寬度為準
+    renderedW = vw;
+    renderedH = vw / imgAspect;
+    offsetX = 0;
+    offsetY = (vh - renderedH) / 2;
+  }
+
+  hotspotsDiv.style.width = renderedW + 'px';
+  hotspotsDiv.style.height = renderedH + 'px';
+  hotspotsDiv.style.left = offsetX + 'px';
+  hotspotsDiv.style.transform = 'none';
+
+  // 清除舊熱區
+  hotspotsDiv.innerHTML = '';
+
+  hotspots.forEach(hs => {
+    const el = document.createElement('div');
+    el.className = 'hotspot';
+    el.dataset.label = hs.label;
+    el.style.left   = (hs.x / 100 * renderedW) + 'px';
+    el.style.top    = (hs.y / 100 * renderedH) + 'px';
+    el.style.width  = (hs.w / 100 * renderedW) + 'px';
+    el.style.height = (hs.h / 100 * renderedH) + 'px';
+
+    // 滑鼠提示
+    el.addEventListener('mouseenter', () => {
+      tooltip.textContent = hs.label;
+      tooltip.classList.add('show');
+    });
+    el.addEventListener('mouseleave', () => {
+      tooltip.classList.remove('show');
+    });
+
+    // 點擊
+    el.addEventListener('click', () => {
+      tooltip.textContent = hs.label;
+      tooltip.classList.add('show');
+      clearTimeout(tooltipTimer);
+      tooltipTimer = setTimeout(() => tooltip.classList.remove('show'), 1500);
+      setTimeout(() => { window.location.href = hs.url; }, 120);
+    });
+
+    hotspotsDiv.appendChild(el);
+  });
+}
+
+// 圖片載入完成後初始化
+img.addEventListener('load', () => {
+  updateHotspots();
+  setTimeout(() => {
+    document.getElementById('loading').classList.add('fade');
+    setTimeout(() => document.getElementById('loading').remove(), 500);
+  }, 600);
+});
+
+// 如果圖片已快取
+if (img.complete) {
+  updateHotspots();
+  document.getElementById('loading').classList.add('fade');
+  setTimeout(() => document.getElementById('loading').remove(), 500);
+}
+
+window.addEventListener('resize', updateHotspots);
+window.addEventListener('orientationchange', () => setTimeout(updateHotspots, 300));
+</script>
+</body>
+</html>
