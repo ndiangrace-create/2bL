@@ -622,7 +622,7 @@ textarea{min-height:68px;resize:vertical}
       <div style="color:#aaa;text-align:center;padding:40px 0">載入中…</div>
     </div>
     <div style="padding:14px 20px;border-top:1px solid #eee;flex-shrink:0;background:#fff">
-      <button onclick="closeAgreementModal()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">
+      <button onclick="onAgreementRead()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">
         我已閱讀，關閉
       </button>
     </div>
@@ -2511,6 +2511,16 @@ function closeAgreementModal() {
   const modal = $('agreementModal');
   if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
+}
+
+function onAgreementRead() {
+  // 關閉合約 Modal 並啟用勾選框
+  closeAgreementModal();
+  ST._agreementViewed = true;
+  const cb = $('agreementCheckbox');
+  const lbl = $('agreementCheckLabel');
+  if (cb) { cb.disabled = false; }
+  if (lbl) { lbl.style.opacity = '1'; lbl.style.cursor = 'pointer'; }
 }
 
 function onAgreementCheck(checked) {
