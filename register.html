@@ -695,7 +695,7 @@ textarea{min-height:68px;resize:vertical}
       <div id="memberEditHint" style="display:none;font-size:15px;color:#c0392b;background:#fdecea;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-weight:800;line-height:1.6"></div>
 
       <!-- 卡片一：基本聯絡資訊 -->
-      <div style="background:#fff;border:1px solid #e8f0eb;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="background:#e8f4fd;border:1px solid #b8d9f0;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">👤 基本聯絡資訊</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
           <div><label style="font-size:14px;color:var(--md)">姓名</label><input type="text" id="editName"></div>
@@ -706,7 +706,7 @@ textarea{min-height:68px;resize:vertical}
       </div>
 
       <!-- 卡片二：品牌資訊 -->
-      <div style="background:#fff;border:1px solid #e8f0eb;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="background:#fde8f0;border:1px solid #f0b8d0;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🏷️ 品牌資訊</div>
         <label style="font-size:14px;color:var(--md)">品牌名稱</label>
         <input type="text" id="editBrand" style="margin-bottom:8px">
@@ -717,7 +717,7 @@ textarea{min-height:68px;resize:vertical}
       </div>
 
       <!-- 卡片三：社群連結（審核必要）-->
-      <div style="background:#fff;border:1px solid #e8f0eb;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="background:#e8fdf0;border:1px solid #b8f0d0;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:4px">🔗 社群連結</div>
         <div style="font-size:12px;color:#c0392b;margin-bottom:10px">審核必要，至少填一項</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -729,7 +729,7 @@ textarea{min-height:68px;resize:vertical}
       </div>
 
       <!-- 卡片四：常用發票資訊 -->
-      <div style="background:#fff;border:1px solid #e8f0eb;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="background:#fdfbe8;border:1px solid #f0e8b8;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🧾 常用發票資訊</div>
         <label style="font-size:14px;color:var(--md)">手機載具</label>
         <input type="text" id="editInvoiceCarrier" placeholder="/ABC-1234" style="margin-bottom:8px">
@@ -885,8 +885,8 @@ function startMemberGoogleLogin() {
 // OAuth callback 後，URL 帶 member_token 回來
 async function handleMemberOAuthCallback() {
   // member_token 已由 IIFE 存入 sessionStorage（因為 IIFE 會先清除網址）
-  const memberToken = sessionStorage.getItem('2bl_member_token_pending');
-  const displayName = sessionStorage.getItem('2bl_display_name_pending') || '';
+  const memberToken = localStorage.getItem('2bl_member_token_pending') || localStorage.getItem('2bl_member_token');
+  const displayName = localStorage.getItem('2bl_display_name_pending') || '';
   const loginError = new URLSearchParams(window.location.search).get('login_error');
 
   if (loginError) {
@@ -897,8 +897,8 @@ async function handleMemberOAuthCallback() {
   if (!memberToken) return;
 
   // 清除暫存的 pending token
-  sessionStorage.removeItem('2bl_member_token_pending');
-  sessionStorage.removeItem('2bl_display_name_pending');
+  localStorage.removeItem('2bl_member_token_pending');
+  localStorage.removeItem('2bl_display_name_pending');
 
   // 解析 JWT payload 取 email
   try {
@@ -911,7 +911,7 @@ async function handleMemberOAuthCallback() {
     ST.memberEmail = email;
     ST.memberToken = memberToken;
     memberSaveEmail(email);  // 存入 localStorage 供後續使用
-    sessionStorage.setItem('2bl_member_token', memberToken);
+    localStorage.setItem('2bl_member_token', memberToken);
     // 載入會員資料
     await safeLoadMemberPage(email);
   } catch(e) {
@@ -927,8 +927,8 @@ const _urlParams = new URLSearchParams(window.location.search);
   // 先把所有需要的參數存起來，再清除網址
   if (urlTenant) sessionStorage.setItem('2bl_tenant', urlTenant);
   if (urlMemberToken) {
-    sessionStorage.setItem('2bl_member_token_pending', urlMemberToken);
-    sessionStorage.setItem('2bl_display_name_pending', urlDisplayName);
+    localStorage.setItem('2bl_member_token_pending', urlMemberToken);
+    localStorage.setItem('2bl_display_name_pending', urlDisplayName);
   }
   if (urlTenant || urlMemberToken) {
     window.history.replaceState({}, '', window.location.pathname);
@@ -3162,8 +3162,13 @@ if(document.readyState==='loading'){
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
   await handleMemberOAuthCallback();
-  const email=readEmail();
-  if(email){ST.memberEmail=email;}
+  // 從 localStorage 恢復登入狀態（換頁、重新整理都不掉）
+  const savedToken = localStorage.getItem('2bl_member_token');
+  const savedEmail = readEmail();
+  if (savedToken && savedEmail) {
+    ST.memberEmail = savedEmail;
+    ST.memberToken = savedToken;
+  }
   loadHome();
 }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootDbFront,{once:true}); else setTimeout(bootDbFront,0);
