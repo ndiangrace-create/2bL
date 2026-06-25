@@ -882,12 +882,15 @@ async function handleMemberOAuthCallback() {
 
   // 解析 JWT payload 取 email
   try {
-    const payload = JSON.parse(atob(memberToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-    const email = payload.email || '';
+    let _b64 = memberToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    let _raw = atob(_b64);
+    let _str; try { _str = decodeURIComponent(escape(_raw)); } catch(e) { _str = _raw; }
+    const payload = JSON.parse(_str);
+    const email = (payload.email || '').toLowerCase().trim();
     if (!email) return;
     ST.memberEmail = email;
     ST.memberToken = memberToken;
-    memberSaveEmail(email);
+    memberSaveEmail(email);  // 存入 localStorage 供後續使用
     sessionStorage.setItem('2bl_member_token', memberToken);
     // 載入會員資料
     await safeLoadMemberPage(email);
