@@ -841,7 +841,7 @@ async function applySiteConfig(){
 }
 
 // V5 SaaS: tenant 從 URL ?tenant= 讀取，API 端點固定
-const API_BASE = 'https://REPLACE_WITH_2BL_V7_WORKER_URL.workers.dev';
+const API_BASE = 'https://2bl-v7.ndiangrace.workers.dev';
 const _urlParams = new URLSearchParams(window.location.search);
 const TENANT_ID = _urlParams.get('tenant') || _urlParams.get('tenantId') || '';
 if (!TENANT_ID) {
