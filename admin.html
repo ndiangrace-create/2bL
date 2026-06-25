@@ -3836,7 +3836,7 @@ async function loadSiteConfig(){
 // 載入預設合約範本
 async function loadAgreementTemplate() {
   try {
-    const res = await adminApi({action:'getAgreementTemplate', email:ST.email, token:ST.token, tenant:TENANT_ID});
+    const res = await api({action:'getAgreementTemplate', email:ST.email, token:ST.token, tenant:TENANT_ID});
     if (res && !res.error) {
       const t = document.getElementById('tmpl_agreement_title');
       const v = document.getElementById('tmpl_agreement_version');
@@ -3853,7 +3853,7 @@ async function saveAgreementTemplate() {
   const btn = document.querySelector('[onclick="saveAgreementTemplate()"]');
   if (btn) { btn.disabled = true; btn.textContent = '儲存中…'; }
   try {
-    const res = await adminApi({
+    const res = await api({
       action: 'saveAgreementTemplate',
       email: ST.email, token: ST.token, tenant: TENANT_ID,
       title: (document.getElementById('tmpl_agreement_title')||{}).value || '',
