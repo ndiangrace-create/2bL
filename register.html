@@ -877,8 +877,8 @@ async function handleMemberOAuthCallback() {
   }
   if (!memberToken) return;
 
-  // 清除網址列
-  window.history.replaceState({}, '', window.location.pathname + (TENANT_ID ? '?tenant=' + TENANT_ID : ''));
+  // 清除網址列（不加 tenant，由 sessionStorage 維持）
+  window.history.replaceState({}, '', window.location.pathname);
 
   // 解析 JWT payload 取 email
   try {
@@ -3131,7 +3131,12 @@ if(document.readyState==='loading'){
   window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
   const _oldCheckMemberStep=window.checkMemberStep; window.checkMemberStep=async function(){ const email=(($('step1Email')&&$('step1Email').value)||'').trim(); if(email) saveEmail(email); return _oldCheckMemberStep?_oldCheckMemberStep():undefined; };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
-  function bootDbFront(){ handleMemberOAuthCallback(); const email=readEmail(); if(email){ST.memberEmail=email;} loadHome(); }
+  async function bootDbFront(){
+  await handleMemberOAuthCallback();
+  const email=readEmail();
+  if(email){ST.memberEmail=email;}
+  loadHome();
+}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootDbFront,{once:true}); else setTimeout(bootDbFront,0);
 })();
 
