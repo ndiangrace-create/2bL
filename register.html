@@ -1182,6 +1182,8 @@ function navTo(tab, opts={}){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   window.scrollTo(0,0);
+  // 記住當前頁面，刷新後還原
+  try{ localStorage.setItem('2bl_current_tab', tab); }catch(e){}
   // 返回首頁時清除 portal 和 body 背景
   if(tab==='home'){const pp=$('pagePortal');if(pp)pp.style.background='';document.body.style.background='var(--wh)';}  
   if(!opts.noPush){
@@ -3162,14 +3164,26 @@ if(document.readyState==='loading'){
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
   await handleMemberOAuthCallback();
-  // 從 localStorage 恢復登入狀態（換頁、重新整理都不掉）
+  // 從 localStorage 恢復登入狀態
   const savedToken = localStorage.getItem('2bl_member_token');
   const savedEmail = readEmail();
   if (savedToken && savedEmail) {
     ST.memberEmail = savedEmail;
     ST.memberToken = savedToken;
   }
-  loadHome();
+  // 還原上次所在頁面
+  const lastTab = localStorage.getItem('2bl_current_tab') || 'home';
+  if (lastTab === 'member' && savedEmail) {
+    await safeLoadMemberPage(savedEmail);
+  } else if (lastTab === 'explore') {
+    loadHome();
+    setTimeout(()=>{ navToTab('explore'); }, 100);
+  } else if (lastTab === 'myregs' && savedEmail) {
+    loadHome();
+    setTimeout(()=>{ goMemberPage(); }, 100);
+  } else {
+    loadHome();
+  }
 }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootDbFront,{once:true}); else setTimeout(bootDbFront,0);
 })();
