@@ -913,7 +913,7 @@ const _urlParams = new URLSearchParams(window.location.search);
     window.history.replaceState({}, '', window.location.pathname);
   }
 })();
-const TENANT_ID = sessionStorage.getItem('2bl_tenant') || _urlParams.get('tenant') || _urlParams.get('tenantId') || '';
+const TENANT_ID = sessionStorage.getItem('2bl_tenant') || _urlParams.get('tenant') || _urlParams.get('tenantId') || 'tuibile';
 if (!TENANT_ID) {
   document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#b45309;font-size:16px;text-align:center;padding:24px">⚠️ 連結有誤，請透過活動頁面進入報名。<br><small style="color:#888;font-size:13px;margin-top:8px;display:block">（缺少 tenant 參數）</small></div>';
   throw new Error('缺少 tenant 參數，終止載入');
