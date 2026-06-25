@@ -2390,22 +2390,115 @@ function renderPaymentsSummary(){
   const sessions=(ST.sdData||[]).filter(s=>!isArchivedSession(s));
   const regs=ST.allRegs||[];
   if(!sessions.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa">無場次資料</div>';return;}
+
+  // 計算每場次資料
   const rows=sessions.map(s=>{
     const sr=regs.filter(r=>String(r.sessionId||r.sesId||'')===String(s.id));
     const pending=sr.filter(r=>isPayPendingActiveReg&&isPayPendingActiveReg(r)).length;
-    const unpaid=sr.filter(r=>!isCancelledPaymentReg(r)&&(r.payStatus||'')==='' || (r.payStatus||'')==='未繳費').length;
+    const unpaid=sr.filter(r=>!isCancelledPaymentReg(r)&&((r.payStatus||'')==='未繳費'||(r.payStatus||'')===''));
+    const unpaidCnt=unpaid.length;
     const paid=sr.filter(r=>!isCancelledPaymentReg(r)&&isPaidText&&isPaidText(r.payStatus)).length;
     const refundReq=sr.filter(r=>isRefundRequestReg&&isRefundRequestReg(r)).length;
     const refunded=sr.filter(r=>isRefundedReg&&isRefundedReg(r)).length;
     const cancelled=sr.filter(r=>isCancelledPaymentReg&&isCancelledPaymentReg(r)).length;
     const paidAmt=sr.filter(r=>isPaidText&&isPaidText(r.payStatus)).reduce((sum,r)=>sum+(Number(r.amount)||0),0);
     const dateStr=s.date||s.eventDate||'';
-    return {s,pending,unpaid,paid,refundReq,refunded,cancelled,paidAmt,dateStr};
+    return {s,pending,unpaid:unpaidCnt,paid,refundReq,refunded,cancelled,paidAmt,dateStr};
   });
-  const desktopHtml=`<div class="summary-desktop"><table class="summary-table py-theme" style="min-width:900px"><thead><tr><th style="text-align:left">場次名稱</th><th>日期</th><th>待確認</th><th>未繳費</th><th>已繳費</th><th>申請退費</th><th>已退費</th><th>已取消</th><th>已收費用</th><th>操作</th></tr></thead><tbody>${rows.map(r=>`<tr><td><span class="summary-card-title" style="font-size:14px">${r.s.title||r.s.name||'未命名'}</span></td><td><span class="summary-stat-lbl">${r.dateStr||'-'}</span></td><td style="font-weight:800;color:var(--s-warn)">${r.pending}</td><td>${r.unpaid}</td><td style="font-weight:800;color:var(--s-ok)">${r.paid}</td><td style="font-weight:800;color:var(--s-err)">${r.refundReq}</td><td style="color:var(--s-ok)">${r.refunded}</td><td style="color:var(--s-grey)">${r.cancelled}</td><td style="text-align:right;font-weight:700">NT$${r.paidAmt.toLocaleString()}</td><td><button class="enter-btn py-enter" onclick="showPaymentsDetailLayer('${r.s.id}','${(r.s.title||r.s.name||'').replace(/'/g,"\\'")}')">進入 →</button></td></tr>`).join('')}</tbody></table></div>`;
-  const mobileHtml=`<div class="overview-mobile-list">${rows.map(r=>`<div class="summary-card py-theme"><div class="summary-card-title">${r.s.title||r.s.name||'未命名'}</div><div class="summary-card-date">${r.dateStr||'日期未設定'}</div><div class="summary-stat-grid"><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-warn)">${r.pending}</div><div class="summary-stat-lbl">待確認</div></div><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-ok)">${r.paid}</div><div class="summary-stat-lbl">已繳費</div></div><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-err)">${r.refundReq}</div><div class="summary-stat-lbl">申請退費</div></div></div><div style="font-size:12px;color:var(--md);margin-bottom:8px;font-weight:700">已收 NT$${r.paidAmt.toLocaleString()} ｜已退費 ${r.refunded}</div><button class="enter-btn py-enter" style="width:100%;padding:10px" onclick="showPaymentsDetailLayer('${r.s.id}','${(r.s.title||r.s.name||'').replace(/'/g,"\\'")}')">進入此場金流 →</button></div>`).join('')}</div>`;
-  el.innerHTML=desktopHtml+mobileHtml;
+
+  // 全場次加總
+  const total={
+    pending: rows.reduce((s,r)=>s+r.pending,0),
+    unpaid:  rows.reduce((s,r)=>s+r.unpaid,0),
+    paid:    rows.reduce((s,r)=>s+r.paid,0),
+    refundReq: rows.reduce((s,r)=>s+r.refundReq,0),
+    refunded:  rows.reduce((s,r)=>s+r.refunded,0),
+    cancelled: rows.reduce((s,r)=>s+r.cancelled,0),
+    paidAmt:   rows.reduce((s,r)=>s+r.paidAmt,0),
+  };
+
+  // 數字可點的 helper（點了直接進清單+篩選）
+  function clickNum(sesId, sesName, filter, cnt) {
+    if (!cnt) return `<span style="color:#ccc">0</span>`;
+    return `<span style="cursor:pointer;font-weight:800;text-decoration:underline;color:var(--g)" onclick="goPaymentsList('${sesId}','${sesName}','${filter}')">${cnt}</span>`;
+  }
+
+  // 全場次加總卡片
+  const totalCard = `
+    <div style="background:linear-gradient(135deg,#f0fdf4,#e8f7ee);border:2px solid var(--g);border-radius:14px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:900;color:var(--g);margin-bottom:10px">📊 全場次加總</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:13px">
+        <div><div style="font-size:11px;color:#888;margin-bottom:2px">待確認</div>${clickNum('all','全場次','待確認',total.pending)}</div>
+        <div><div style="font-size:11px;color:#888;margin-bottom:2px">未繳費</div>${clickNum('all','全場次','未繳費',total.unpaid)}</div>
+        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已繳費</div>${clickNum('all','全場次','已繳費',total.paid)}</div>
+        <div><div style="font-size:11px;color:#888;margin-bottom:2px">申請退費</div>${clickNum('all','全場次','申請退費',total.refundReq)}</div>
+        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已退費</div>${clickNum('all','全場次','已退費',total.refunded)}</div>
+        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已取消</div>${clickNum('all','全場次','已取消',total.cancelled)}</div>
+        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已收費用</div><span style="font-weight:800;color:var(--g)">$${total.paidAmt.toLocaleString()}</span></div>
+      </div>
+      <button class="enter-btn py-enter" onclick="goPaymentsList('all','全場次','')" style="width:100%;margin-top:10px;padding:8px">進入全場次清單 →</button>
+    </div>`;
+
+  // 每場次一列（桌面版）
+  const desktopHtml=`<div class="summary-desktop"><table class="summary-table py-theme" style="min-width:900px">
+    <thead><tr>
+      <th style="text-align:left">場次名稱</th><th>日期</th>
+      <th>待確認</th><th>未繳費</th><th>已繳費</th>
+      <th>申請退費</th><th>已退費</th><th>已取消</th>
+      <th>已收費用</th><th>操作</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>{
+      const id=r.s.id, nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");
+      return `<tr>
+        <td><span class="summary-card-title" style="font-size:14px">${r.s.title||r.s.name||'未命名'}</span></td>
+        <td><span class="summary-stat-lbl">${r.dateStr||'-'}</span></td>
+        <td>${clickNum(id,nm,'待確認',r.pending)}</td>
+        <td>${clickNum(id,nm,'未繳費',r.unpaid)}</td>
+        <td>${clickNum(id,nm,'已繳費',r.paid)}</td>
+        <td>${clickNum(id,nm,'申請退費',r.refundReq)}</td>
+        <td>${clickNum(id,nm,'已退費',r.refunded)}</td>
+        <td>${clickNum(id,nm,'已取消',r.cancelled)}</td>
+        <td style="text-align:right;font-weight:700">$${r.paidAmt.toLocaleString()}</td>
+        <td><button class="enter-btn py-enter" onclick="goPaymentsList('${id}','${nm}','')">進入 →</button></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+
+  // 手機版
+  const mobileHtml=`<div class="overview-mobile-list">${rows.map(r=>{
+    const id=r.s.id, nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");
+    return `<div class="summary-card py-theme">
+      <div class="summary-card-title">${r.s.title||r.s.name||'未命名'}</div>
+      <div class="summary-card-date">${r.dateStr||'日期未設定'}</div>
+      <div class="summary-stat-grid">
+        <div class="summary-stat"><div class="summary-stat-num" onclick="goPaymentsList('${id}','${nm}','待確認')" style="cursor:pointer;color:var(--s-warn)">${r.pending||0}</div><div class="summary-stat-lbl">待確認</div></div>
+        <div class="summary-stat"><div class="summary-stat-num" onclick="goPaymentsList('${id}','${nm}','未繳費')" style="cursor:pointer">${r.unpaid||0}</div><div class="summary-stat-lbl">未繳費</div></div>
+        <div class="summary-stat"><div class="summary-stat-num" onclick="goPaymentsList('${id}','${nm}','已繳費')" style="cursor:pointer;color:var(--s-ok)">${r.paid||0}</div><div class="summary-stat-lbl">已繳費</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--md);margin-bottom:8px;font-weight:700">已收 $${r.paidAmt.toLocaleString()}</div>
+      <button class="enter-btn py-enter" style="width:100%;padding:10px" onclick="goPaymentsList('${id}','${nm}','')">進入此場金流 →</button>
+    </div>`;
+  }).join('')}</div>`;
+
+  el.innerHTML = totalCard + desktopHtml + mobileHtml;
 }
+
+// 新：直接跳到清單+篩選（取代 showPaymentsDetailLayer）
+function goPaymentsList(sesId, sesName, filter) {
+  const s=$('paymentsSummaryLayer'), d=$('paymentsDetailLayer'), b=$('paymentsBackBtn'), t=$('paymentsTitle');
+  if(s) s.style.display='none';
+  if(d) d.style.display='block';
+  if(b) b.style.display='inline-flex';
+  if(t) t.textContent = sesId==='all' ? '金流 › 全場次' : ('金流 › '+sesName);
+  ST._payFilterSesId = sesId==='all' ? '' : sesId;
+  // 設定篩選狀態
+  if(filter) {
+    const sel=$('paymentStatusFilter');
+    if(sel) sel.value=filter;
+  }
+  renderPaymentManagement();
+}
+
+
 function setPaymentsQuick(status){
   const sel=$('paymentStatusFilter');
   if(sel) sel.value=status;
