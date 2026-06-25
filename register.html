@@ -110,12 +110,17 @@ button,a,[onclick]{touch-action:manipulation}
   padding:4px 16px 16px;
   -webkit-overflow-scrolling:touch;
   scroll-snap-type:x mandatory;
+  max-width:100%;
+}
+@media(min-width:768px){
+  .featured-scroll{max-width:900px;margin:0 auto;}
+  .act-card{width:260px;}
 }
 .featured-scroll::-webkit-scrollbar{display:none}
 
 /* ── 活動卡片（固定主題 + 近期活動 共用）── */
 .act-card{
-  flex-shrink:0;width:300px;
+  flex-shrink:0;width:280px;
   scroll-snap-align:start;
   background:#fff;border-radius:var(--r);
   box-shadow:var(--sh);
@@ -1027,7 +1032,7 @@ function navToTab(tab){
     const pg=document.getElementById('pageNotif');
     if(pg) pg.classList.add('active');
   } else if(tab==='member'){
-    navTo('member');
+    goMemberPage();
   }
 }
 
