@@ -1006,6 +1006,8 @@ function goBack(){
 
 // ── UI v2：底部五分類導覽 ──
 function navToTab(tab){
+  // 記住當前 tab
+  try{ localStorage.setItem('2bl_current_tab', tab); }catch(e){}
   // 更新底部 active 狀態
   ['botHome','botExplore','botMyRegs','botNotif','botMember'].forEach(id=>{
     const el=document.getElementById(id);

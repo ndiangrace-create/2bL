@@ -3853,7 +3853,7 @@ async function saveAgreementTemplate() {
   const btn = document.querySelector('[onclick="saveAgreementTemplate()"]');
   if (btn) { btn.disabled = true; btn.textContent = '儲存中…'; }
   try {
-    const res = await api({
+    const res = await apiPost({
       action: 'saveAgreementTemplate',
       email: ST.email, token: ST.token, tenant: TENANT_ID,
       title: (document.getElementById('tmpl_agreement_title')||{}).value || '',
