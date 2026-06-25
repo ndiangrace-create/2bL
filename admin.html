@@ -391,6 +391,7 @@ textarea{min-height:64px;resize:vertical}
 .modal-overlay.show{display:flex}
 @media(min-width:640px){.overlay{align-items:center}}
 .modal{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;padding:24px 20px 44px}
+@media(min-width:900px){.modal{max-width:min(92vw,900px)}}
 @media(min-width:640px){.modal{border-radius:18px;margin:0 12px}}
 .modal-title{font-size:17px;font-weight:800;margin-bottom:16px;color:var(--dk)}
 .modal-actions{display:flex;gap:8px;margin-top:20px}
@@ -1436,7 +1437,7 @@ async function withBtnLock(btn, loadingText, task){
     }
   }
 }
-function money(n){return 'NT$'+(Number(n)||0).toLocaleString();}
+function money(n){return '$'+(Number(n)||0).toLocaleString();}
 
 function toggleSb(){
   $('sidebar').classList.toggle('open');
@@ -1934,7 +1935,7 @@ function fmtOverviewDateRangeText(s){
     return str;
   };
   if(dates.length>=2){
-    return `<span style="display:inline-block;line-height:1.35">${fmt(dates[0])}<br><span style="font-size:.88em;color:#666">至 ${fmt(dates[dates.length-1])}</span></span>`;
+    return `<span style="display:inline-block;line-height:1.35">${fmt(dates[0])}<br><span style="font-size:.80em;color:#888">~ ${fmt(dates[dates.length-1])}</span></span>`;
   }
   return dates.map(fmt).join('<br>');
 }
@@ -2020,8 +2021,8 @@ function renderOverviewSessionsFn(){
       <td style="padding:8px 6px;text-align:center"><span onclick="goToSesCheckin('${s.id}')" style="font-size:17px;font-weight:900;color:#1D9E75;cursor:pointer;text-decoration:underline">${s.paid||0}</span></td>
       <td style="padding:8px 6px;text-align:center;font-size:12px;color:#2d6a4f;font-weight:900;max-width:120px;white-space:normal" title="${capacityShort}">${capacityNum}<div style="font-size:10px;color:#777;font-weight:700">正式攤</div></td>
       <td style="padding:8px 6px;font-size:12px;color:#555;max-width:150px;white-space:normal">${equipStr}</td>
-      <td style="padding:8px 6px;text-align:right;font-size:13px;font-weight:800;white-space:nowrap">NT$${(s.revenue||0).toLocaleString()}</td>
-      <td style="padding:8px 6px;text-align:right;font-size:13px;white-space:nowrap">NT$${(s.depositTotal||0).toLocaleString()}</td>
+      <td style="padding:8px 6px;text-align:right;font-size:13px;font-weight:800;white-space:nowrap">$${(s.revenue||0).toLocaleString()}</td>
+      <td style="padding:8px 6px;text-align:right;font-size:13px;white-space:nowrap">$${(s.depositTotal||0).toLocaleString()}</td>
       <td style="padding:8px 6px;text-align:center;font-size:15px;color:#185FA5;font-weight:800">${s.seated||0}</td>
       <td style="padding:8px 6px;text-align:center;white-space:nowrap">
         <button onclick="editSes('${s.id}')" style="background:#f0f0f0;border:1px solid #ccc;border-radius:7px;padding:8px 12px;cursor:pointer;font-size:14px;font-weight:800;margin:2px">編輯</button>
@@ -2048,8 +2049,8 @@ function renderOverviewSessionsFn(){
         <div class="ov-metric"><div class="label">繳費確認</div><div class="num" style="color:#D97706" onclick="goPage('payments');ST._payFilterSesId='${s.id}';setTimeout(()=>renderPaymentManagement(),80)">${pendingPayCount}</div></div>
         <div class="ov-metric"><div class="label">已繳費</div><div class="num" onclick="goToSesCheckin('${s.id}')">${s.paid||0}</div></div>
         <div class="ov-metric"><div class="label">正式攤位</div><div class="num" title="${capacityShort}">${capacityNum}</div></div>
-        <div class="ov-metric"><div class="label">已收費用</div><div class="num" style="font-size:18px">NT$${(s.revenue||0).toLocaleString()}</div></div>
-        <div class="ov-metric"><div class="label">押金</div><div class="num" style="font-size:18px;color:#854F0B">NT$${(s.depositTotal||0).toLocaleString()}</div></div>
+        <div class="ov-metric"><div class="label">已收費用</div><div class="num" style="font-size:18px">$${(s.revenue||0).toLocaleString()}</div></div>
+        <div class="ov-metric"><div class="label">押金</div><div class="num" style="font-size:18px;color:#854F0B">$${(s.depositTotal||0).toLocaleString()}</div></div>
         <div class="ov-metric"><div class="label">已報到</div><div class="num" style="color:#185FA5">${s.seated||0}</div></div>
       </div>
       <div class="ov-equips"><strong>設備：</strong>${equipText}</div>
@@ -2064,7 +2065,7 @@ function renderOverviewSessionsFn(){
       </div>
     </div>`;
   }).join('');
-  el.innerHTML=renderOverviewStatusFilters()+`<div class="overview-desktop-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100vw"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:1120px"><thead><tr style="background:#f5f5f5;border-bottom:1.5px solid #e0e0e0"><th style="padding:9px 6px;text-align:left;width:44px"></th><th style="padding:9px 6px;text-align:left;white-space:nowrap">類型</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">場次名稱</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">活動日期</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">報名</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">待審核</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">繳費確認</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已繳費</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">正式攤位</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">設備</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">已收費用</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">押金</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已報到</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">操作</th></tr></thead><tbody>${rowHtml}</tbody></table></div><div class="overview-mobile-list">${cardHtml}</div>`;
+  el.innerHTML=renderOverviewStatusFilters()+`<div class="overview-desktop-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100vw"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px"><thead><tr style="background:#f5f5f5;border-bottom:1.5px solid #e0e0e0"><th style="padding:6px 4px;text-align:left;width:36px"></th><th style="padding:9px 6px;text-align:left;white-space:nowrap">類型</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">場次名稱</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">活動日期</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">報名</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">待審核</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">繳費確認</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已繳費</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">正式攤位</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">設備</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">已收費用</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">押金</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已報到</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">操作</th></tr></thead><tbody>${rowHtml}</tbody></table></div><div class="overview-mobile-list">${cardHtml}</div>`;
 }
 
 function toggleMoreMenu(){
