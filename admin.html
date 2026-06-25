@@ -799,6 +799,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
     <a href="#settings-staff" class="qb-btn qb-st">👥 管理員</a>
     <a href="#settings-announce" class="qb-btn qb-st">📢 公告</a>
     <a href="#settings-appearance" class="qb-btn qb-st">🎨 外觀</a>
+    <a href="#settings-agreement" class="qb-btn qb-st">📋 合約</a>
     <a href="#settings-email" class="qb-btn qb-st">✉️ 通知</a>
     <span class="qb-btn qb-st-dim" title="待實作">📋 表單</span>
     <span class="qb-btn qb-st-dim" title="待實作">⬇ 匯出</span>
@@ -837,7 +838,19 @@ input[type=date],input[type=time],input[type=password],textarea,select{
 
   <!-- ✉️ 寄信診斷 -->
   <div style="margin-top:24px;padding-top:16px;border-top:2px solid var(--gp)">
-    <div id="settings-email" style="font-size:14px;font-weight:700;color:var(--st-txt);margin-bottom:12px">✉️ 信件系統診斷</div>
+    <!-- 預設合約範本 -->
+  <div id="settings-agreement" style="font-size:14px;font-weight:700;color:var(--st-txt);margin:24px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--st-border)">📋 預設合約範本</div>
+  <div style="font-size:13px;color:var(--md);margin-bottom:10px">建立新場次時自動帶入，個別場次可再微調。</div>
+  <label>合約標題</label>
+  <input type="text" id="tmpl_agreement_title" placeholder="報名合約／活動細則與攤商規範" style="margin-bottom:8px">
+  <label>合約版本</label>
+  <input type="text" id="tmpl_agreement_version" placeholder="例：v1.0" style="margin-bottom:8px;width:160px">
+  <label>合約正文</label>
+  <textarea id="tmpl_agreement_content" rows="12" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
+  <button class="btn btn-g" onclick="saveAgreementTemplate()" style="margin-bottom:24px">💾 儲存預設合約</button>
+  <div id="tmpl_agreement_msg" style="display:none;font-size:13px;color:var(--g);margin-bottom:16px">✓ 已儲存</div>
+
+  <div id="settings-email" style="font-size:14px;font-weight:700;color:var(--st-txt);margin-bottom:12px">✉️ 信件系統診斷</div>
     <div style="font-size:13px;color:var(--md);margin-bottom:10px">輸入你自己的 Email，按「測試寄信」，看看信件系統是否正常運作。</div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <input type="email" id="testEmailAddr" placeholder="輸入你的 Email" style="flex:1;padding:9px 12px;border:1.5px solid #d0e8d8;border-radius:10px;font-size:13px">
@@ -2082,6 +2095,8 @@ function goPage(name, opts){
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   const page=$('page-'+name);
   if(page) page.classList.add('active');
+  // 設定頁：載入合約範本
+  if(name==='settings') { try{ loadAgreementTemplate(); }catch(e){} }
   const tab=$('atab-'+name);
   if(tab) tab.classList.add('active');
   // BUG-A FIX: 同步底部 Tab Bar 高亮
@@ -2735,7 +2750,19 @@ function resetSesModal(){
   const agReq = document.getElementById('ses_agreement_required');
   if(agReq) agReq.checked = true;
   const agTitle = document.getElementById('ses_agreement_title');
-  if(agTitle) agTitle.value = '報名合約／活動細則與攤商規範';
+  // 自動帶入預設合約範本
+  try {
+    const tmplTitle = (document.getElementById('tmpl_agreement_title')||{}).value;
+    const tmplVersion = (document.getElementById('tmpl_agreement_version')||{}).value;
+    const tmplContent = (document.getElementById('tmpl_agreement_content')||{}).value;
+    if(agTitle) agTitle.value = tmplTitle || '報名合約／活動細則與攤商規範';
+    const agVersion = document.getElementById('ses_agreement_version');
+    if(agVersion) agVersion.value = tmplVersion || '';
+    const agContent = document.getElementById('ses_agreement_content');
+    if(agContent) agContent.value = tmplContent || '';
+  } catch(e) {
+    if(agTitle) agTitle.value = '報名合約／活動細則與攤商規範';
+  }
   const agVer = document.getElementById('ses_agreement_version');
   if(agVer) agVer.value = 'v1.0';
   const agContent = document.getElementById('ses_agreement_content');
@@ -3803,6 +3830,42 @@ async function loadSiteConfig(){
       if(el) el.value=cfg.infoText;
     }
   }catch(e){}
+}
+
+
+// 載入預設合約範本
+async function loadAgreementTemplate() {
+  try {
+    const res = await adminApi({action:'getAgreementTemplate', email:ST.email, token:ST.token, tenant:TENANT_ID});
+    if (res && !res.error) {
+      const t = document.getElementById('tmpl_agreement_title');
+      const v = document.getElementById('tmpl_agreement_version');
+      const c = document.getElementById('tmpl_agreement_content');
+      if (t) t.value = res.title || '';
+      if (v) v.value = res.version || '';
+      if (c) c.value = res.content || '';
+    }
+  } catch(e) { console.error('loadAgreementTemplate failed', e); }
+}
+
+// 儲存預設合約範本
+async function saveAgreementTemplate() {
+  const btn = document.querySelector('[onclick="saveAgreementTemplate()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '儲存中…'; }
+  try {
+    const res = await adminApi({
+      action: 'saveAgreementTemplate',
+      email: ST.email, token: ST.token, tenant: TENANT_ID,
+      title: (document.getElementById('tmpl_agreement_title')||{}).value || '',
+      version: (document.getElementById('tmpl_agreement_version')||{}).value || '',
+      content: (document.getElementById('tmpl_agreement_content')||{}).value || '',
+    });
+    const msg = document.getElementById('tmpl_agreement_msg');
+    if (msg) { msg.style.display = 'block'; setTimeout(()=>{ msg.style.display='none'; }, 2000); }
+  } catch(e) { alert('儲存失敗：' + e.message); }
+  finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 儲存預設合約'; }
+  }
 }
 
 async function saveSiteConfig(){
