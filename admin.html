@@ -749,15 +749,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
   </div>
 
   <!-- 金流頁專屬快捷區 -->
-  <div id="paymentsQuickBar" class="page-quick-bar py-quick-bar">
-    <span class="quick-lbl">快捷篩選</span>
-    <button onclick="setPaymentsQuick('待確認')" id="pqb-pending" class="qb-btn qb-py-warn pqb-btn">付款待確認</button>
-    <button onclick="setPaymentsQuick('未繳費')" id="pqb-unpaid" class="qb-btn qb-py pqb-btn">未繳費</button>
-    <button onclick="setPaymentsQuick('已繳費')" id="pqb-paid" class="qb-btn qb-py-ok pqb-btn">已繳費</button>
-    <button onclick="setPaymentsQuick('申請退費')" id="pqb-refundreq" class="qb-btn qb-py-err pqb-btn">申請退費</button>
-    <button onclick="setPaymentsQuick('已退費')" id="pqb-refunded" class="qb-btn qb-py-ok pqb-btn">已退費</button>
-    <button onclick="setPaymentsQuick('已取消')" id="pqb-cancelled" class="qb-btn qb-py-grey pqb-btn">已取消</button>
-  </div>
+  
 
   <!-- 第一層：各場次金流統計（桌機一行、手機一卡） -->
   <div id="paymentsSummaryLayer" style="display:block">
@@ -2423,20 +2415,40 @@ function renderPaymentsSummary(){
     return `<span style="cursor:pointer;font-weight:800;text-decoration:underline;color:var(--g)" onclick="goPaymentsList('${sesId}','${sesName}','${filter}')">${cnt}</span>`;
   }
 
-  // 全場次加總卡片
+  // 全場次加總卡片（大按鈕版）
   const totalCard = `
     <div style="background:linear-gradient(135deg,#f0fdf4,#e8f7ee);border:2px solid var(--g);border-radius:14px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:14px;font-weight:900;color:var(--g);margin-bottom:10px">📊 全場次加總</div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:13px">
-        <div><div style="font-size:11px;color:#888;margin-bottom:2px">待確認</div>${clickNum('all','全場次','待確認',total.pending)}</div>
-        <div><div style="font-size:11px;color:#888;margin-bottom:2px">未繳費</div>${clickNum('all','全場次','未繳費',total.unpaid)}</div>
-        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已繳費</div>${clickNum('all','全場次','已繳費',total.paid)}</div>
-        <div><div style="font-size:11px;color:#888;margin-bottom:2px">申請退費</div>${clickNum('all','全場次','申請退費',total.refundReq)}</div>
-        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已退費</div>${clickNum('all','全場次','已退費',total.refunded)}</div>
-        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已取消</div>${clickNum('all','全場次','已取消',total.cancelled)}</div>
-        <div><div style="font-size:11px;color:#888;margin-bottom:2px">已收費用</div><span style="font-weight:800;color:var(--g)">$${total.paidAmt.toLocaleString()}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:900;color:var(--g)">📊 全場次加總</div>
+        <button class="enter-btn py-enter" onclick="goPaymentsList('all','全場次','')" style="padding:6px 14px;font-size:12px">全部清單 →</button>
       </div>
-      <button class="enter-btn py-enter" onclick="goPaymentsList('all','全場次','')" style="width:100%;margin-top:10px;padding:8px">進入全場次清單 →</button>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+        <button onclick="goPaymentsList('all','全場次','待確認')" style="background:#fff8e1;border:1.5px solid #f5c518;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit">
+          <div style="font-size:22px;font-weight:900;color:#e6a800">${total.pending}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">待確認</div>
+        </button>
+        <button onclick="goPaymentsList('all','全場次','未繳費')" style="background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit">
+          <div style="font-size:22px;font-weight:900;color:#e53e3e">${total.unpaid}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">未繳費</div>
+        </button>
+        <button onclick="goPaymentsList('all','全場次','已繳費')" style="background:#f0fdf4;border:1.5px solid #68d391;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit">
+          <div style="font-size:22px;font-weight:900;color:#276749">${total.paid}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">已繳費</div>
+        </button>
+        <button onclick="goPaymentsList('all','全場次','申請退費')" style="background:#fff5f5;border:1.5px solid #fc8181;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit">
+          <div style="font-size:22px;font-weight:900;color:#c53030">${total.refundReq}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">申請退費</div>
+        </button>
+        <button onclick="goPaymentsList('all','全場次','已退費')" style="background:#f7fafc;border:1.5px solid #a0aec0;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit">
+          <div style="font-size:22px;font-weight:900;color:#4a5568">${total.refunded}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">已退費</div>
+        </button>
+        <button onclick="goPaymentsList('all','全場次','已取消')" style="background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit">
+          <div style="font-size:22px;font-weight:900;color:#718096">${total.cancelled}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">已取消</div>
+        </button>
+      </div>
+      <div style="text-align:right;font-size:13px;font-weight:700;color:var(--g);margin-top:10px">已收費用 $${total.paidAmt.toLocaleString()}</div>
     </div>`;
 
   // 每場次一列（桌面版）
