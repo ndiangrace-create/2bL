@@ -1677,7 +1677,11 @@ function initAdmin(name,role){
   applyRoleUi();
   initAdminHistory();
   startAdminDbSync();
-  loadAllData();
+  loadAllData().then(()=>{
+    // 還原上次所在頁面
+    const lastPage = localStorage.getItem('2bl_admin_page') || 'overview';
+    try{ goPage(lastPage); }catch(e){ goPage('overview'); }
+  });
 }
 
 // ── 頁面切換 ──
@@ -2152,6 +2156,8 @@ function goPage(name, opts){
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   const page=$('page-'+name);
   if(page) page.classList.add('active');
+  // 記住當前頁面
+  try{ localStorage.setItem('2bl_admin_page', name); }catch(e){}
   // 設定頁：載入合約範本
   if(name==='settings') { try{ loadAgreementTemplate(); }catch(e){} }
   const tab=$('atab-'+name);

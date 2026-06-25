@@ -3177,14 +3177,11 @@ if(document.readyState==='loading'){
   const lastTab = localStorage.getItem('2bl_current_tab') || 'home';
   if (lastTab === 'member' && savedEmail) {
     await safeLoadMemberPage(savedEmail);
-  } else if (lastTab === 'explore') {
-    loadHome();
-    setTimeout(()=>{ navToTab('explore'); }, 100);
-  } else if (lastTab === 'myregs' && savedEmail) {
-    loadHome();
-    setTimeout(()=>{ goMemberPage(); }, 100);
   } else {
-    loadHome();
+    await loadHome();
+    if (lastTab && lastTab !== 'home') {
+      setTimeout(()=>{ navToTab(lastTab); }, 200);
+    }
   }
 }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootDbFront,{once:true}); else setTimeout(bootDbFront,0);
