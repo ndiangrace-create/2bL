@@ -863,22 +863,21 @@ function startMemberGoogleLogin() {
 
 // OAuth callback 後，URL 帶 member_token 回來
 async function handleMemberOAuthCallback() {
-  const params = new URLSearchParams(window.location.search);
-  const memberToken = params.get('member_token');
-  const displayName = params.get('display_name') || '';
-  const tenant = params.get('tenant') || TENANT_ID;
-  const loginError = params.get('login_error');
+  // member_token 已由 IIFE 存入 sessionStorage（因為 IIFE 會先清除網址）
+  const memberToken = sessionStorage.getItem('2bl_member_token_pending');
+  const displayName = sessionStorage.getItem('2bl_display_name_pending') || '';
+  const loginError = new URLSearchParams(window.location.search).get('login_error');
 
   if (loginError) {
     const errEl = document.getElementById('memberLoginErr');
     if (errEl) { errEl.textContent = '登入失敗：' + loginError; errEl.style.display = 'block'; }
-    window.history.replaceState({}, '', window.location.pathname);
     return;
   }
   if (!memberToken) return;
 
-  // 清除網址列（不加 tenant，由 sessionStorage 維持）
-  window.history.replaceState({}, '', window.location.pathname);
+  // 清除暫存的 pending token
+  sessionStorage.removeItem('2bl_member_token_pending');
+  sessionStorage.removeItem('2bl_display_name_pending');
 
   // 解析 JWT payload 取 email
   try {
@@ -902,10 +901,16 @@ const _urlParams = new URLSearchParams(window.location.search);
 // 租戶解析：優先從 URL 讀取，存入 sessionStorage 後清除網址列參數
 (function(){
   const urlTenant = _urlParams.get('tenant') || _urlParams.get('tenantId');
-  if (urlTenant) {
-    sessionStorage.setItem('2bl_tenant', urlTenant);
-    const cleanUrl = window.location.pathname;
-    window.history.replaceState({}, '', cleanUrl);
+  const urlMemberToken = _urlParams.get('member_token');
+  const urlDisplayName = _urlParams.get('display_name') || '';
+  // 先把所有需要的參數存起來，再清除網址
+  if (urlTenant) sessionStorage.setItem('2bl_tenant', urlTenant);
+  if (urlMemberToken) {
+    sessionStorage.setItem('2bl_member_token_pending', urlMemberToken);
+    sessionStorage.setItem('2bl_display_name_pending', urlDisplayName);
+  }
+  if (urlTenant || urlMemberToken) {
+    window.history.replaceState({}, '', window.location.pathname);
   }
 })();
 const TENANT_ID = sessionStorage.getItem('2bl_tenant') || _urlParams.get('tenant') || _urlParams.get('tenantId') || '';
