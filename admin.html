@@ -840,15 +840,66 @@ input[type=date],input[type=time],input[type=password],textarea,select{
   <div style="margin-top:24px;padding-top:16px;border-top:2px solid var(--gp)">
     <!-- 預設合約範本 -->
   <div id="settings-agreement" style="font-size:14px;font-weight:700;color:var(--st-txt);margin:24px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--st-border)">📋 預設合約範本</div>
-  <div style="font-size:13px;color:var(--md);margin-bottom:10px">建立新場次時自動帶入，個別場次可再微調。</div>
-  <label>合約標題</label>
-  <input type="text" id="tmpl_agreement_title" placeholder="報名合約／活動細則與攤商規範" style="margin-bottom:8px">
-  <label>合約版本</label>
-  <input type="text" id="tmpl_agreement_version" placeholder="例：v1.0" style="margin-bottom:8px;width:160px">
-  <label>合約正文</label>
-  <textarea id="tmpl_agreement_content" rows="12" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
-  <button class="btn btn-g" onclick="saveAgreementTemplate()" style="margin-bottom:24px">💾 儲存預設合約</button>
-  <div id="tmpl_agreement_msg" style="display:none;font-size:13px;color:var(--g);margin-bottom:16px">✓ 已儲存</div>
+  <div style="font-size:13px;color:var(--md);margin-bottom:12px">最多 3 款，建立場次時選擇套用。</div>
+  <div id="agreement-templates-wrap">
+    <!-- 範本1 -->
+    <div class="agr-slot" style="border:1px solid #d0e8d8;border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f0fdf4;cursor:pointer" onclick="toggleAgrSlot(1)">
+        <span style="font-weight:700;font-size:14px">📄 <span id="agr_label_1">範本 1</span></span>
+        <span id="agr_arrow_1" style="font-size:16px">▼</span>
+      </div>
+      <div id="agr_body_1" style="display:none;padding:12px 14px">
+        <label>範本名稱</label>
+        <input type="text" id="agr_label_input_1" placeholder="例：市集標準合約" style="margin-bottom:8px" oninput="document.getElementById('agr_label_1').textContent=this.value||'範本 1'">
+        <label>合約標題</label>
+        <input type="text" id="agr_title_1" placeholder="報名合約／活動細則與攤商規範" style="margin-bottom:8px">
+        <label>合約版本</label>
+        <input type="text" id="agr_version_1" placeholder="例：v1.0" style="margin-bottom:8px;width:160px">
+        <label>合約正文</label>
+        <textarea id="agr_content_1" rows="8" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
+        <button class="btn btn-g btn-sm" onclick="saveAgreementTemplate(1)">💾 儲存範本 1</button>
+        <span id="agr_msg_1" style="display:none;font-size:13px;color:var(--g);margin-left:10px">✓ 已儲存</span>
+      </div>
+    </div>
+    <!-- 範本2 -->
+    <div class="agr-slot" style="border:1px solid #d0e8d8;border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f0fdf4;cursor:pointer" onclick="toggleAgrSlot(2)">
+        <span style="font-weight:700;font-size:14px">📄 <span id="agr_label_2">範本 2</span></span>
+        <span id="agr_arrow_2" style="font-size:16px">▼</span>
+      </div>
+      <div id="agr_body_2" style="display:none;padding:12px 14px">
+        <label>範本名稱</label>
+        <input type="text" id="agr_label_input_2" placeholder="例：體驗活動合約" style="margin-bottom:8px" oninput="document.getElementById('agr_label_2').textContent=this.value||'範本 2'">
+        <label>合約標題</label>
+        <input type="text" id="agr_title_2" placeholder="報名合約／活動細則與攤商規範" style="margin-bottom:8px">
+        <label>合約版本</label>
+        <input type="text" id="agr_version_2" placeholder="例：v1.0" style="margin-bottom:8px;width:160px">
+        <label>合約正文</label>
+        <textarea id="agr_content_2" rows="8" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
+        <button class="btn btn-g btn-sm" onclick="saveAgreementTemplate(2)">💾 儲存範本 2</button>
+        <span id="agr_msg_2" style="display:none;font-size:13px;color:var(--g);margin-left:10px">✓ 已儲存</span>
+      </div>
+    </div>
+    <!-- 範本3 -->
+    <div class="agr-slot" style="border:1px solid #d0e8d8;border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f0fdf4;cursor:pointer" onclick="toggleAgrSlot(3)">
+        <span style="font-weight:700;font-size:14px">📄 <span id="agr_label_3">範本 3</span></span>
+        <span id="agr_arrow_3" style="font-size:16px">▼</span>
+      </div>
+      <div id="agr_body_3" style="display:none;padding:12px 14px">
+        <label>範本名稱</label>
+        <input type="text" id="agr_label_input_3" placeholder="例：寄賣合約" style="margin-bottom:8px" oninput="document.getElementById('agr_label_3').textContent=this.value||'範本 3'">
+        <label>合約標題</label>
+        <input type="text" id="agr_title_3" placeholder="報名合約／活動細則與攤商規範" style="margin-bottom:8px">
+        <label>合約版本</label>
+        <input type="text" id="agr_version_3" placeholder="例：v1.0" style="margin-bottom:8px;width:160px">
+        <label>合約正文</label>
+        <textarea id="agr_content_3" rows="8" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
+        <button class="btn btn-g btn-sm" onclick="saveAgreementTemplate(3)">💾 儲存範本 3</button>
+        <span id="agr_msg_3" style="display:none;font-size:13px;color:var(--g);margin-left:10px">✓ 已儲存</span>
+      </div>
+    </div>
+  </div>
 
   <div id="settings-email" style="font-size:14px;font-weight:700;color:var(--st-txt);margin-bottom:12px">✉️ 信件系統診斷</div>
     <div style="font-size:13px;color:var(--md);margin-bottom:10px">輸入你自己的 Email，按「測試寄信」，看看信件系統是否正常運作。</div>
@@ -1186,6 +1237,12 @@ input[type=date],input[type=time],input[type=password],textarea,select{
         <input type="checkbox" id="ses_agreement_required" checked style="width:18px;height:18px;accent-color:var(--g)">
         啟用報名合約同意（報名時強制顯示並要求勾選）
       </label>
+      <div style="margin-bottom:10px">
+        <label style="font-size:13px;color:var(--md)">套用預設範本（選後自動帶入，可修改）</label>
+        <select id="ses_agreement_template_select" onchange="applyAgreementTemplate(this.value)" style="width:100%;padding:8px;border-radius:8px;border:1px solid #d0e8d8;font-size:13px;margin-top:4px">
+          <option value="">不套用範本</option>
+        </select>
+      </div>
       <label>合約標題</label>
       <input type="text" id="ses_agreement_title" placeholder="報名合約／活動細則與攤商規範" style="font-size:13px">
       <label>合約版本</label>
@@ -2749,6 +2806,7 @@ function resetSesModal(){
   // ── 合約同意欄位預設值 ────────────────────────────────
   const agReq = document.getElementById('ses_agreement_required');
   if(agReq) agReq.checked = true;
+  refreshAgreementSelectOptions();
   const agTitle = document.getElementById('ses_agreement_title');
   // 自動帶入預設合約範本
   try {
@@ -3833,39 +3891,92 @@ async function loadSiteConfig(){
 }
 
 
-// 載入預設合約範本
+// 收合/展開合約範本
+function toggleAgrSlot(slot) {
+  const body = document.getElementById('agr_body_'+slot);
+  const arrow = document.getElementById('agr_arrow_'+slot);
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▼' : '▲';
+}
+
+// 載入所有合約範本
 async function loadAgreementTemplate() {
   try {
     const res = await api({action:'getAgreementTemplate', email:ST.email, token:ST.token, tenant:TENANT_ID});
-    if (res && !res.error) {
-      const t = document.getElementById('tmpl_agreement_title');
-      const v = document.getElementById('tmpl_agreement_version');
-      const c = document.getElementById('tmpl_agreement_content');
-      if (t) t.value = res.title || '';
-      if (v) v.value = res.version || '';
-      if (c) c.value = res.content || '';
-    }
+    if (!res || res.error || !Array.isArray(res)) return;
+    res.forEach(t => {
+      const s = t.slot_no;
+      const li = document.getElementById('agr_label_input_'+s);
+      const ti = document.getElementById('agr_title_'+s);
+      const ve = document.getElementById('agr_version_'+s);
+      const co = document.getElementById('agr_content_'+s);
+      const lb = document.getElementById('agr_label_'+s);
+      if (li) li.value = t.label || '';
+      if (ti) ti.value = t.title || '';
+      if (ve) ve.value = t.version || '';
+      if (co) co.value = t.content || '';
+      if (lb) lb.textContent = t.label || ('範本 '+s);
+    });
   } catch(e) { console.error('loadAgreementTemplate failed', e); }
 }
 
-// 儲存預設合約範本
-async function saveAgreementTemplate() {
-  const btn = document.querySelector('[onclick="saveAgreementTemplate()"]');
+// 儲存指定 slot 的合約範本
+async function saveAgreementTemplate(slot) {
+  const btn = document.querySelector('[onclick="saveAgreementTemplate('+slot+')"]');
   if (btn) { btn.disabled = true; btn.textContent = '儲存中…'; }
   try {
-    const res = await apiPost({
+    await apiPost({
       action: 'saveAgreementTemplate',
       email: ST.email, token: ST.token, tenant: TENANT_ID,
-      title: (document.getElementById('tmpl_agreement_title')||{}).value || '',
-      version: (document.getElementById('tmpl_agreement_version')||{}).value || '',
-      content: (document.getElementById('tmpl_agreement_content')||{}).value || '',
+      slot_no: slot,
+      label: (document.getElementById('agr_label_input_'+slot)||{}).value || ('範本'+slot),
+      title: (document.getElementById('agr_title_'+slot)||{}).value || '',
+      version: (document.getElementById('agr_version_'+slot)||{}).value || '',
+      content: (document.getElementById('agr_content_'+slot)||{}).value || '',
     });
-    const msg = document.getElementById('tmpl_agreement_msg');
-    if (msg) { msg.style.display = 'block'; setTimeout(()=>{ msg.style.display='none'; }, 2000); }
+    const msg = document.getElementById('agr_msg_'+slot);
+    if (msg) { msg.style.display = 'inline'; setTimeout(()=>{ msg.style.display='none'; }, 2000); }
+    // 更新場次建立的下拉選單
+    refreshAgreementSelectOptions();
   } catch(e) { alert('儲存失敗：' + e.message); }
   finally {
-    if (btn) { btn.disabled = false; btn.textContent = '💾 儲存預設合約'; }
+    if (btn) { btn.disabled = false; btn.textContent = '💾 儲存範本 '+slot; }
   }
+}
+
+// 更新場次建立下拉選單選項
+function refreshAgreementSelectOptions() {
+  const sel = document.getElementById('ses_agreement_template_select');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">不套用範本</option>';
+  [1,2,3].forEach(s => {
+    const label = (document.getElementById('agr_label_input_'+s)||{}).value || ('範本 '+s);
+    const title = (document.getElementById('agr_title_'+s)||{}).value || '';
+    if (title) {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    }
+  });
+  if (current) sel.value = current;
+}
+
+// 套用合約範本到場次
+function applyAgreementTemplate(slot) {
+  if (!slot) return;
+  const title = (document.getElementById('agr_title_'+slot)||{}).value || '';
+  const version = (document.getElementById('agr_version_'+slot)||{}).value || '';
+  const content = (document.getElementById('agr_content_'+slot)||{}).value || '';
+  const t = document.getElementById('ses_agreement_title');
+  const v = document.getElementById('ses_agreement_version');
+  const c = document.getElementById('ses_agreement_content');
+  if (t) t.value = title;
+  if (v) v.value = version;
+  if (c) c.value = content;
 }
 
 async function saveSiteConfig(){
