@@ -765,7 +765,7 @@ function startLogoHold(e){
   _logoHoldTimer = setTimeout(()=>{
     const url = location.origin + location.pathname.replace('register.html','admin.html') + location.search;
     if(confirm('進入管理後台？')) location.href = url;
-  }, 2000);
+  }, 5000);
 }
 function stopLogoHold(){
   if(_logoHoldTimer){ clearTimeout(_logoHoldTimer); _logoHoldTimer = null; }
