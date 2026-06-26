@@ -141,7 +141,7 @@ button,a,[onclick]{touch-action:manipulation}
 .faq-item.open .faq-a{display:block}
 
 /* ── 底部導覽（四顆）── */
-.bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:flex;gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+.bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
 @media(min-width:600px){.bottom-fixed{max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;border:1px solid var(--border)}}
 .bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:15px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
 .bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
@@ -885,16 +885,13 @@ button,a,[onclick]{touch-action:manipulation}
 <!-- ══ 底部四顆導覽 ══ -->
 <div class="bottom-fixed" id="bottomNav">
   <button class="bot-btn active" id="botHome" onclick="navToTab('home')" style="--btn-color:#DDEAD1">
-    <span class="bot-label">🏠 首頁</span>
+    <span class="bot-label">🏠 報名</span>
   </button>
-  <button class="bot-btn" id="botMyRegs" onclick="navToTab('myregs')" style="--btn-color:#FAEEC7">
-    <span class="bot-label">📋 我的報名</span>
+  <button class="bot-btn" id="botMember" onclick="navToTab('member')" style="--btn-color:#FAEEC7">
+    <span class="bot-label" id="botMemberLabel">📋 我的紀錄</span>
   </button>
   <button class="bot-btn" id="botSupport" onclick="navToTab('support')" style="--btn-color:#DCD7ED">
     <span class="bot-label">💬 客服</span>
-  </button>
-  <button class="bot-btn" id="botMember" onclick="navToTab('member')" style="--btn-color:#D9E5EE">
-    <span class="bot-label" id="botMemberLabel">👤 會員</span>
   </button>
 </div>
 
@@ -1148,18 +1145,18 @@ function goBack(){
 // ── UI v2：底部五分類導覽 ──
 function navToTab(tab){
   try{ localStorage.setItem('2bl_current_tab', tab); }catch(e){}
-  ['botHome','botMyRegs','botSupport','botMember'].forEach(id=>{
+  ['botHome','botMember','botSupport'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.classList.remove('active');
   });
-  const tabMap={home:'botHome',myregs:'botMyRegs',support:'botSupport',member:'botMember'};
+  const tabMap={home:'botHome',member:'botMember',support:'botSupport'};
   const activeBtn=document.getElementById(tabMap[tab]);
   if(activeBtn) activeBtn.classList.add('active');
   if(tab==='home'){
     navTo('home');
-  } else if(tab==='myregs'){
-    // 我的報名 → 進會員頁，切到「我的報名」模式
-    const email = ST.memberEmail||memberSafeEmail();
+  } else if(tab==='member'){
+    // 我的紀錄 → 進會員頁，預設顯示「我的報名」頁籤
+    const email=ST.memberEmail||memberSafeEmail();
     if(email){
       memberShowArea('regs');
       navTo('member');
@@ -1171,16 +1168,6 @@ function navToTab(tab){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('pageSupport');
     if(pg) pg.classList.add('active');
-  } else if(tab==='member'){
-    // 會員 → 進會員頁，切到「會員資料」模式
-    const email = ST.memberEmail||memberSafeEmail();
-    if(email){
-      memberShowArea('profile');
-      navTo('member');
-    } else {
-      navTo('member');
-      memberShowLogin();
-    }
   }
 }
 
@@ -1354,8 +1341,14 @@ function memberShowArea(mode){
   const memberArea=$('memberArea');
   if(loginArea) loginArea.style.display='none';
   if(memberArea) memberArea.style.display='block';
-  // 切換到對應模式
   switchMemberMode(mode||'regs');
+  // 更新底部按鈕 active
+  ['botHome','botMember','botSupport'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const btn=document.getElementById('botMember');
+  if(btn) btn.classList.add('active');
 }
 function switchMemberMode(mode){
   const regsDiv = $('myRegsMode');
@@ -2907,9 +2900,16 @@ function memberLogout(){
   ST.member = null;
   // 回到登入畫面
   memberShowLogin();
-  // 更新底部按鈕標籤
+  // 更新底部標籤
   const lbl = $('botMemberLabel');
-  if(lbl) lbl.textContent = '會員';
+  if(lbl) lbl.textContent = '📋 我的紀錄';
+  // 更新 active
+  ['botHome','botMember','botSupport'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const home=document.getElementById('botHome');
+  if(home) home.classList.add('active');
   toast('已登出');
 }
 
@@ -3483,15 +3483,27 @@ if(document.readyState==='loading'){
     ST.memberEmail = savedEmail;
     ST.memberToken = savedToken;
   }
-  // 還原上次所在頁面
-  const lastTab = localStorage.getItem('2bl_current_tab') || 'home';
+  // 還原上次所在頁面（只支援三顆：home / member / support）
+  const rawTab = localStorage.getItem('2bl_current_tab') || 'home';
+  // 舊版 myregs 對應到 member
+  const lastTab = (rawTab === 'myregs') ? 'member' : rawTab;
+  // OAuth 回來後不強制跳會員頁，停在首頁讓使用者自己點
+  const isOAuthReturn = !!(new URLSearchParams(location.search).get('member_token') ||
+    sessionStorage.getItem('2bl_member_token_pending'));
+  if(isOAuthReturn){
+    await loadHome();
+    navToTab('home');
+    return;
+  }
   if (lastTab === 'member' && savedEmail) {
-    await safeLoadMemberPage(savedEmail);
+    await loadHome();
+    setTimeout(()=>{ navToTab('member'); }, 200);
+  } else if (lastTab === 'support') {
+    await loadHome();
+    setTimeout(()=>{ navToTab('support'); }, 200);
   } else {
     await loadHome();
-    if (lastTab && lastTab !== 'home') {
-      setTimeout(()=>{ navToTab(lastTab); }, 200);
-    }
+    navToTab('home');
   }
 }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootDbFront,{once:true}); else setTimeout(bootDbFront,0);
