@@ -43,11 +43,9 @@ button,a,[onclick]{touch-action:manipulation}
 .header-login-btn{background:var(--c1);border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--s-ok);cursor:pointer;font-family:inherit}
 
 /* ── Hero ── */
-.hero{position:relative;height:220px;overflow:hidden;background:var(--c1);cursor:pointer}
-@media(min-width:600px){.hero{height:320px}}
-.hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero-mascot{position:absolute;right:0;bottom:0;height:140px;width:auto;z-index:2;pointer-events:none}
-@media(min-width:600px){.hero-mascot{height:200px}}
+.hero{position:relative;width:100%;overflow:hidden;background:var(--c1);cursor:pointer;aspect-ratio:1672/941}
+.hero-bg-img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+.hero-mascot{display:none}
 .hero-info-band{background:var(--c2);padding:8px 16px;display:flex;align-items:center;gap:8px}
 .hero-info-band strong{font-size:13px;font-weight:700;color:#6a4a00}
 
@@ -70,6 +68,18 @@ button,a,[onclick]{touch-action:manipulation}
 .cat-name{font-size:14px;font-weight:900;color:var(--txt)}
 .cat-sub{font-size:10px;color:var(--muted);margin-top:2px}
 
+/* ── 活動卡片（JS 動態產出相容）── */
+.event-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .15s}
+.event-card:hover{border-color:var(--c1)}
+.event-cover{position:relative;height:140px;background:var(--c1);overflow:hidden}
+.event-cover img{width:100%;height:100%;object-fit:cover}
+.event-cover-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:var(--c1)}
+.event-status-tag{position:absolute;top:8px;right:8px;background:var(--c1);color:var(--s-ok);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.event-info{padding:12px}
+.event-name{font-size:15px;font-weight:900;color:var(--txt);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-meta{font-size:12px;color:var(--muted);margin-bottom:4px}
+.session-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.session-card:hover{border-color:var(--c1)}
 /* ── 活動卡片 ── */
 .events-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 16px 8px;scrollbar-width:none}
 .events-scroll::-webkit-scrollbar{display:none}
@@ -175,10 +185,13 @@ button,a,[onclick]{touch-action:manipulation}
 .stall-cell.selected{background:var(--c1);border-color:var(--gl);color:var(--s-ok)}
 .notif-area,.pageNotif,.pageExplore{display:none!important}
 @media(min-width:600px){
-  body{padding-bottom:0}
+  body{padding-bottom:80px}
   .site-header{display:flex}
-  .bottom-fixed{display:none}
-  .desktop-nav{display:flex!important}
+  .bottom-fixed{max-width:100%;left:0;transform:none;border-radius:0;border-top:1px solid var(--border)}
+  .event-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .ec-inner{flex-direction:column;padding:0}
+  .ec-thumb-sq{width:100%;height:160px;border-radius:var(--r) var(--r) 0 0}
+  .ec-info{padding:12px}
 }
 </style>
 </head>
@@ -196,10 +209,6 @@ button,a,[onclick]{touch-action:manipulation}
     <img class="hero-bg-img" data-skin-hero
       src="前台封面.jpg"
       alt="兔彼樂共創村"
-      onerror="this.style.display='none'">
-    <img class="hero-mascot" data-skin-mascot-home
-      src="IP歡迎.png"
-      alt=""
       onerror="this.style.display='none'">
   </div>
 
@@ -3068,10 +3077,36 @@ if(document.readyState==='loading'){
     }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; renderEvents(); }
   };
   window.renderEvents = function(){
-    const el=$('eventsList'); if(!el) return; const events=asArr(ST.events); const sessions=uniqueSessions(ST.allSessionsData).filter(openSess);
-    if(events.length){ el.innerHTML=events.map(e=>`<div class="event-card" style="cursor:default"><div class="event-cover">${e.cover?`<img src="${esc(e.cover)}" alt="" onerror="this.parentElement.innerHTML='<div class=event-cover-placeholder>🎪</div>'">`:`<div class="event-cover-placeholder">🎪</div>`}<div class="event-status-tag">報名中</div></div><div class="event-info"><div class="event-name">${esc(e.title||'主題活動')}</div>${e.location?`<div class="event-meta">📍 ${esc(e.location)}</div>`:''}${e.desc?`<div class="event-meta">${esc(String(e.desc).slice(0,28))}</div>`:''}<button type="button" onclick="openEvent('${esc(e.id)}')" style="margin-top:8px;width:100%;border:none;background:var(--gp);color:var(--g);border-radius:10px;padding:10px;font-size:16px;font-weight:900">查看場次</button></div></div>`).join(''); }
-    else if(sessions.length){ el.innerHTML=sessions.slice(0,10).map(s=>renderSessionCard(s)).join(''); }
-    else{ el.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center;line-height:1.7">目前尚無開放報名<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>'; }
+    // ── 近期活動（場次列表）──
+    const el=$('eventsList');
+    if(el){
+      const sessions=uniqueSessions(ST.allSessionsData).filter(openSess);
+      if(sessions.length){
+        el.innerHTML=sessions.slice(0,12).map(s=>renderSessionCard(s)).join('');
+      } else {
+        el.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center;line-height:1.7">目前尚無開放報名<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>';
+      }
+    }
+    // ── 精選主題活動（活動層）──
+    const fl=$('featuredEventsList');
+    if(fl){
+      const events=asArr(ST.events);
+      if(events.length){
+        fl.innerHTML=events.map(e=>`<div class="event-card-h" style="cursor:pointer" onclick="openEvent('${esc(e.id)}')">
+          <div class="ec-thumb" style="height:120px;background:var(--c1);overflow:hidden;position:relative">
+            ${e.cover?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div style=\"display:flex;align-items:center;justify-content:center;height:100%;font-size:40px\">🎪</div>'">`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px">🎪</div>`}
+            <span style="position:absolute;top:8px;left:8px;background:var(--c1);color:var(--s-ok);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700">報名中</span>
+          </div>
+          <div class="ec-body">
+            <div class="ec-title">${esc(e.title||'主題活動')}</div>
+            ${e.location?`<div class="ec-meta">📍 ${esc(e.location)}</div>`:''}
+            <button type="button" style="margin-top:6px;width:100%;border:none;background:var(--c1);color:var(--s-ok);border-radius:8px;padding:8px;font-size:13px;font-weight:700;cursor:pointer">查看場次</button>
+          </div>
+        </div>`).join('');
+      } else {
+        fl.innerHTML='<div style="padding:20px;color:#aaa;font-size:13px">目前無主題活動</div>';
+      }
+    }
     setTimeout(enableDragScroll,100);
   };
   window.renderSessionCard = function(s){
