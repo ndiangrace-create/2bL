@@ -1199,12 +1199,148 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
   background:#DDEAD1; display:flex; align-items:center; justify-content:center;
   font-size:28px;
 }
+
+/* ══ 首頁 HC CSS ══ */
+/* 封面圖 */
+#siteHero{width:100%;overflow:hidden;border-radius:0 0 24px 24px;background:#DDEAD1}
+#siteHero img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;max-height:260px}
+
+/* info band */
+#siteInfoBand{margin:12px 18px 10px;padding:10px 14px;background:#FAEEC7;border-radius:999px;text-align:center;font-size:17px;font-weight:900;letter-spacing:.04em;display:flex;align-items:center;gap:8px;justify-content:space-between}
+#siteInfoBand strong{flex:1}
+#siteInfoBand .band-arrow{font-size:18px;flex-shrink:0;color:#8a6000}
+
+/* 四大分類 */
+.hc-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 18px 16px}
+.hc-cat-card{min-height:108px;border-radius:20px;border:1px solid rgba(17,17,17,.10);padding:12px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 12px rgba(0,0,0,.04);cursor:pointer}
+.hc-cat-card.c-green{background:linear-gradient(135deg,#fff,#DDEAD1)}
+.hc-cat-card.c-yellow{background:linear-gradient(135deg,#fff,#FAEEC7)}
+.hc-cat-card.c-blue{background:linear-gradient(135deg,#fff,#D9E5EE)}
+.hc-cat-card.c-pink{background:linear-gradient(135deg,#fff,#FAE1DD)}
+.hc-cat-card img{width:56px;height:72px;object-fit:contain;flex:0 0 auto}
+.hc-cat-title{font-size:22px;line-height:1;font-weight:900;letter-spacing:.06em}
+.hc-cat-sub{margin-top:6px;font-size:15px;font-weight:700;color:#444}
+
+/* section head */
+.hc-section{padding:0 18px 16px}
+.hc-section-head{display:flex;align-items:center;justify-content:space-between;margin:4px 0 12px}
+.hc-section-title{font-size:21px;font-weight:900}
+.hc-section-more{font-size:15px;font-weight:900;color:#5b8b49;cursor:pointer}
+
+/* 精選主題活動 - 橫向 3 欄並排（設計稿是並排不滑動）*/
+.hc-feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:480px){.hc-feature-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}}
+.hc-theme-card{border:1px solid rgba(17,17,17,.08);border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.05);cursor:pointer}
+.hc-theme-img{height:100px;background:#DDEAD1;overflow:hidden}
+.hc-theme-img img{width:100%;height:100%;object-fit:cover}
+.hc-theme-body{padding:10px;text-align:center}
+.hc-theme-name{font-size:15px;font-weight:900;line-height:1.3;margin-bottom:8px}
+.hc-theme-desc{font-size:12px;color:#666;line-height:1.4;margin-bottom:8px}
+.hc-theme-btn{height:34px;border-radius:999px;background:#91B574;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;cursor:pointer;border:none;font-family:inherit;width:100%}
+
+/* 近期場次 */
+.hc-session-list{display:flex;flex-direction:column;gap:10px}
+.hc-session-card{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:18px;padding:12px;box-shadow:0 3px 12px rgba(0,0,0,.04);cursor:pointer}
+.hc-session-thumb{width:90px;height:76px;border-radius:14px;overflow:hidden;background:#DDEAD1;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.hc-session-thumb img{width:100%;height:100%;object-fit:cover}
+.hc-session-name{font-size:17px;font-weight:900;line-height:1.25;margin-bottom:4px}
+.hc-session-meta{font-size:12px;color:#555;line-height:1.5}
+.hc-session-price{font-size:16px;font-weight:900;color:#5b8b49;margin-top:4px}
+.hc-session-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.hc-share-btn{width:30px;height:30px;border-radius:50%;border:1px solid rgba(17,17,17,.1);background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer}
+.hc-reg-btn{min-width:82px;height:40px;border-radius:13px;background:#91B574;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;cursor:pointer;border:none;font-family:inherit;white-space:nowrap}
+
+/* 底部三顆 HC 樣式 */
+.bottom-fixed{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid rgba(17,17,17,.08);
+  padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.06);
+}
+.bot-btn{height:54px;border-radius:20px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:17px;font-weight:900;border:none;cursor:pointer;font-family:inherit;transition:all .15s}
+#botHome{background:#DDEAD1;color:#4d7f39}
+#botMember{background:#fff;color:#888;border:1px solid rgba(17,17,17,.08)}
+#botSupport{background:#fff;color:#888;border:1px solid rgba(17,17,17,.08)}
+#botHome.active{background:#DDEAD1;color:#4d7f39;box-shadow:inset 0 0 0 2px rgba(0,0,0,.05)}
+#botMember.active{background:#FAEEC7;color:#9a6f00}
+#botSupport.active{background:#DCD7ED;color:#5f4ca0}
+
+/* ══ 報名表單 HC CSS ══ */
+/* 頂部列 */
+.hc-reg-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid rgba(17,17,17,.08);position:sticky;top:0;background:#fff;z-index:10}
+.hc-reg-topbar-close{font-size:24px;cursor:pointer;background:none;border:none;padding:0;color:#555;line-height:1}
+.hc-reg-topbar-title{font-size:20px;font-weight:900}
+.hc-reg-topbar-ip{width:68px;height:68px;object-fit:contain}
+
+/* step card */
+.hc-step-card{border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:14px;margin:0 14px 12px;background:#fff}
+.hc-step-card.sc-green{background:linear-gradient(135deg,#fff,#DDEAD1)}
+.hc-step-card.sc-yellow{background:linear-gradient(135deg,#fff,#FAEEC7)}
+.hc-step-card.sc-blue{background:linear-gradient(135deg,#fff,#D9E5EE)}
+.hc-step-card.sc-pink{background:linear-gradient(135deg,#fff,#FAE1DD)}
+.hc-step-card.sc-purple{background:linear-gradient(135deg,#fff,#DCD7ED)}
+.hc-step-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.hc-step-num{width:30px;height:30px;border-radius:50%;background:#91B574;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0}
+.hc-step-name{font-size:18px;font-weight:900}
+
+/* ① 活動資訊 */
+.hc-act-row{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start}
+.hc-act-img{width:96px;height:80px;border-radius:14px;object-fit:cover;background:#DDEAD1}
+.hc-act-name{font-size:18px;font-weight:900;margin-bottom:6px;line-height:1.3}
+.hc-act-meta{font-size:13px;color:#555;line-height:1.6}
+.hc-act-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.hc-act-tag{background:#DDEAD1;color:#2a6a10;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700}
+
+/* ② 設備表格 */
+.hc-equip-table{width:100%;border-collapse:collapse;font-size:14px}
+.hc-equip-table th{color:#888;font-size:12px;font-weight:900;text-align:left;padding:6px 4px;border-bottom:1px solid rgba(0,0,0,.06)}
+.hc-equip-table td{border-top:1px solid rgba(0,0,0,.06);padding:9px 4px;vertical-align:middle}
+.hc-equip-table .col-money{font-weight:900;text-align:right;white-space:nowrap}
+.hc-qty{display:inline-flex;align-items:center;border:1px solid rgba(17,17,17,.12);border-radius:999px;overflow:hidden;background:#fff;height:32px}
+.hc-qty-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:32px;font-weight:900;font-size:15px;background:none;border:none;cursor:pointer;font-family:inherit;color:#333}
+.hc-qty-num{min-width:30px;height:32px;border-left:1px solid rgba(17,17,17,.12);border-right:1px solid rgba(17,17,17,.12);display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:15px}
+
+/* ③ 總計 */
+.hc-total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:700;margin:8px 0}
+.hc-total-final{border-top:1px dashed rgba(0,0,0,.15);margin-top:10px;padding-top:12px;display:flex;justify-content:space-between;align-items:center}
+.hc-total-final-label{font-size:17px;font-weight:900}
+.hc-total-final-amount{font-size:28px;font-weight:900;color:#5b8b49}
+
+/* ④⑤ 會員/發票資料 */
+.hc-info-grid{display:grid;grid-template-columns:80px 1fr;gap:7px 10px;font-size:15px}
+.hc-info-label{color:#666;font-weight:700}
+.hc-info-value{color:#111;font-weight:700}
+.hc-edit-btn{margin-left:auto;padding:6px 14px;border:1px solid rgba(17,17,17,.1);background:#fff;border-radius:999px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit}
+.hc-social-row{display:flex;gap:8px;margin-top:8px}
+.hc-social-icon{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid rgba(17,17,17,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;text-decoration:none;color:#111}
+
+/* ⑥ 合約 */
+.hc-contract-box{background:#fff8e6;border:1px solid #f0d48d;border-radius:14px;padding:14px 16px}
+.hc-contract-row{display:flex;align-items:center;gap:12px;margin-top:10px}
+.hc-contract-text{flex:1;font-size:14px;color:#555;line-height:1.5}
+.hc-contract-cta{height:40px;padding:0 16px;border-radius:12px;border:none;background:#91B574;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
+.hc-contract-cta.done{background:#DDEAD1;color:#2a6a10}
+.hc-contract-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:#888}
+.hc-contract-done-badge{display:none;background:#DDEAD1;color:#2a6a10;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:900;margin-left:auto}
+
+/* ⑦ 備註 */
+.hc-note-textarea{width:100%;min-height:82px;border:1px solid rgba(17,17,17,.1);border-radius:14px;padding:12px;font-size:15px;resize:none;background:#fff;font-family:inherit;color:#111}
+.hc-note-count{text-align:right;font-size:12px;color:#aaa;margin-top:4px}
+
+/* ⑧ 送出 */
+.hc-submit-hint{font-size:14px;color:#888;text-align:center;margin-bottom:10px;line-height:1.5}
+.hc-submit-btn{width:100%;height:56px;border-radius:18px;background:#91B574;color:#fff;font-size:20px;font-weight:900;border:none;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.hc-submit-btn:disabled{opacity:.4;cursor:not-allowed;background:#ccc}
+.hc-submit-btn:not(:disabled){box-shadow:0 6px 16px rgba(145,181,116,.4)}
+.hc-reg-footer{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-top:14px;padding-bottom:20px}
+.hc-reg-footer img{width:110px;height:80px;object-fit:contain}
 </style>
 </head>
 <body>
 
 <!-- ══ 首頁 ══ -->
-<div id="pageHome" class="page active" style="padding-bottom:100px">
+<div id="pageHome" class="page active" style="background:#fffaf6;padding-bottom:100px">
 
   <!-- 封面圖（長按5秒進後台）-->
   <div id="siteHero"
@@ -1216,49 +1352,54 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
       onerror="this.style.display='none'">
   </div>
 
-  <!-- info band -->
+  <!-- 最新消息帶 -->
   <div id="siteInfoBand">
-    <strong data-site-info-text>🌼 探索活動，找到屬於你的市集旅程 🌼</strong>
+    <span style="font-size:18px">📢</span>
+    <strong data-site-info-text>探索活動，找到屬於你的市集旅程</strong>
+    <span class="band-arrow">›</span>
   </div>
+
+  <!-- 探索標題 -->
+  <div style="padding:4px 18px 0;font-size:18px;font-weight:900">🐾 探索你的市集旅程 🐾</div>
 
   <!-- 四大分類 -->
-  <div class="mk-cat-grid">
-    <div class="mk-cat-card c-green" onclick="filterCat('市集報名',this)">
+  <div class="hc-cat-grid">
+    <div class="hc-cat-card c-green" onclick="filterCat('市集報名',this)">
       <img src="IP歡迎.png" alt="市集" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
-      <div><div class="mk-cat-title">市集</div><div class="mk-cat-sub">市集報名</div></div>
+      <div><div class="hc-cat-title">市集報名</div><div class="hc-cat-sub">各地市集活動<br>報名參加</div></div>
     </div>
-    <div class="mk-cat-card c-yellow" onclick="filterCat('通路寄賣',this)">
+    <div class="hc-cat-card c-yellow" onclick="filterCat('通路寄賣',this)">
       <img src="IP指引.png" alt="寄賣" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
-      <div><div class="mk-cat-title">寄賣</div><div class="mk-cat-sub">攤位寄賣</div></div>
+      <div><div class="hc-cat-title">通路寄賣</div><div class="hc-cat-sub">通路寄賣合作<br>商品上架</div></div>
     </div>
-    <div class="mk-cat-card c-blue" onclick="filterCat('體驗活動',this)">
+    <div class="hc-cat-card c-blue" onclick="filterCat('體驗活動',this)">
       <img src="IP資料.png" alt="體驗" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
-      <div><div class="mk-cat-title">體驗</div><div class="mk-cat-sub">體驗活動</div></div>
+      <div><div class="hc-cat-title">體驗活動</div><div class="hc-cat-sub">手作DIY・<br>親子體驗・課程</div></div>
     </div>
-    <div class="mk-cat-card c-pink" onclick="filterCat('合作洽詢',this)">
+    <div class="hc-cat-card c-pink" onclick="filterCat('合作洽詢',this)">
       <img src="IP會員.png" alt="合作" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
-      <div><div class="mk-cat-title">合作</div><div class="mk-cat-sub">合作洽詢</div></div>
+      <div><div class="hc-cat-title">合作洽詢</div><div class="hc-cat-sub">品牌合作・<br>場地合作・共創</div></div>
     </div>
   </div>
 
-  <!-- 精選主題活動（查看場次，不直接報名）-->
-  <div class="mk-section">
-    <div class="mk-section-head">
-      <div class="mk-section-title">🌸 精選主題活動</div>
-      <div class="mk-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
+  <!-- 精選主題活動 -->
+  <div class="hc-section">
+    <div class="hc-section-head">
+      <div class="hc-section-title">🌸 精選主題活動</div>
+      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
     </div>
-    <div id="featuredEventsList" class="mk-feature-row">
-      <div style="padding:20px;color:#aaa;font-size:14px">載入中…</div>
+    <div id="featuredEventsList" class="hc-feature-row">
+      <div style="padding:20px;color:#aaa;font-size:14px;grid-column:1/-1">載入中…</div>
     </div>
   </div>
 
   <!-- 近期場次 -->
-  <div class="mk-section" id="recentSection">
-    <div class="mk-section-head">
-      <div class="mk-section-title">🌸 近期場次</div>
-      <div class="mk-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
+  <div class="hc-section" id="recentSection">
+    <div class="hc-section-head">
+      <div class="hc-section-title">🌸 近期場次</div>
+      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
     </div>
-    <div id="eventsList" class="mk-session-list">
+    <div id="eventsList" class="hc-session-list">
       <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
     </div>
   </div>
@@ -1290,47 +1431,53 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 </div>
 
 <!-- ══ 報名表 Modal ══ -->
-<div class="page" id="regFormModal" style="background:#fff;min-height:100vh">
+<div class="page" id="regFormModal" style="background:#fffaf6;min-height:100vh">
 
-  <!-- 頂部返回列 -->
-  <div class="mk-reg-topbar">
-    <button class="mk-reg-topbar-back" onclick="closeRegFormModal()">←</button>
-    <span id="formBackTitle" class="mk-reg-topbar-title">報名表單</span>
-    <img src="IP報名.png" alt="" class="mk-reg-topbar-ip" onerror="this.style.display='none'">
+  <!-- 頂部列 -->
+  <div class="hc-reg-topbar">
+    <button class="hc-reg-topbar-close" onclick="closeRegFormModal()">×</button>
+    <span class="hc-reg-topbar-title">報名表單</span>
+    <img src="IP報名.png" alt="" class="hc-reg-topbar-ip" onerror="this.style.display='none'">
   </div>
 
-  <!-- formHero（buildFormHero 需要，保留隱藏）-->
+  <!-- formHero（buildFormHero 需要）-->
   <div id="formHero" style="display:none"></div>
 
   <!-- 錯誤提示 -->
   <div id="formError" style="display:none;margin:10px 14px;background:#fff0f0;border:1.5px solid #f87171;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#c0392b"></div>
 
-  <!-- 動態表單（八個區塊由 JS 產生）-->
-  <div id="dynForm" style="padding-top:8px"></div>
+  <!-- 動態表單 -->
+  <div id="dynForm" style="padding-top:6px"></div>
 
-  <!-- 合約同意區（agreementArea，JS 控制顯示）-->
+  <!-- 合約同意區（由 JS 控制）-->
   <div id="agreementArea" style="display:none;margin:0 14px 12px">
-    <div style="background:#f0faf4;border:1px solid #b7e4c7;border-radius:14px;padding:14px 16px">
+    <div class="hc-contract-box">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:20px">📋</span>
+        <span style="font-size:15px;color:#555">請先閱讀「活動合作合約條款」並同意後，才能送出報名。</span>
+      </div>
       <button type="button" id="agreementViewBtn" onclick="openAgreementModal()"
-        style="display:block;width:100%;background:none;border:1px solid #5b8b49;color:#5b8b49;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:10px;font-family:inherit">
-        📋 點此查看報名合約／活動規範
+        style="height:38px;padding:0 16px;border-radius:12px;border:none;background:#91B574;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">
+        閱讀合約條款
       </button>
-      <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#444;cursor:not-allowed;opacity:.5">
+      <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#666;margin-top:10px;cursor:not-allowed;opacity:.5">
         <input type="checkbox" id="agreementCheckbox" disabled
           onchange="onAgreementCheck(this.checked)"
-          style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:#5b8b49">
-        <span>我已閱讀並同意本場次報名合約／活動規範</span>
+          style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#91B574">
+        <span>完成閱讀並同意後，請勾選確認你已完成條款</span>
       </label>
     </div>
   </div>
 
   <!-- 送出按鈕 -->
-  <div style="padding:8px 14px 80px">
-    <button class="mk-submit-btn" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
-    <div class="mk-reg-footer-ip">
-      <img src="IP報名.png" alt="" onerror="this.style.display='none'">
-    </div>
+  <div style="padding:8px 14px 0">
+    <button class="hc-submit-btn" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
   </div>
+  <!-- 底部 IP 裝飾 -->
+  <div class="hc-reg-footer">
+    <img src="IP報名.png" alt="" onerror="this.style.display='none'">
+  </div>
+
 </div>
 
 
@@ -2604,7 +2751,6 @@ function renderDynFormFull(s, isNew=false){
   const vTaxId=V.taxId||V.tax_id||'';
   const vCompany=V.company||'';
   const vInvEmail=V.invoiceEmail||V.invoice_email||'';
-  const isCompany=!!vTaxId;
 
   ST.equipQty={};ST.addonQty={};ST.stallCount=1;
   const cover=s.cover||s.coverUrl||'';
@@ -2612,13 +2758,12 @@ function renderDynFormFull(s, isNew=false){
 
   const dates=asArr(s.dates);
   let dateStr='';
-  if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);}
-  else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');}
-  const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString()+'／攤':'免費';
-  const sType=s.type||'市集場次';
-  const isCollab=sType==='合作申請';
-  const isMkt=sType==='市集場次'||sType==='通路寄賣';
-  const stallUnit=isMkt?'攤':'份';
+  if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'\uff5e'+fmt(dates[dates.length-1].date);}
+  else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'\uff5e'+d.end:'');}
+  const sType=s.type||'\u5e02\u96c6\u5834\u6b21';
+  const isCollab=sType==='\u5408\u4f5c\u7533\u8acb';
+  const isMkt=sType==='\u5e02\u96c6\u5834\u6b21'||sType==='\u901a\u8def\u5bc4\u8ce3';
+  const stallUnit=isMkt?'\u651e':'\u4efd';
   const equipDefs=Object.entries(s.equip||{}).filter(([k,v])=>v&&(v.open===true||v.open==='true'));
   const addons=(s.addons||[]).map((a,i)=>({...a,_idx:i})).filter(a=>a.open===true||a.open==='true');
 
@@ -2626,134 +2771,135 @@ function renderDynFormFull(s, isNew=false){
   html+=`<input type="hidden" id="f_email" value="${esc(email)}">`;
 
   // ── ① 活動資訊 ──
-  html+=`<div class="mk-step-card c-green">
-    <div class="mk-step-head"><div class="mk-step-num">1</div><div class="mk-step-name">活動資訊</div></div>
-    <div class="mk-act-row">
-      ${cover
-        ?`<img class="mk-act-img" src="${esc(cover)}" alt="" onerror="this.src='IP歡迎.png'">`
-        :`<img class="mk-act-img" src="IP歡迎.png" alt="">`}
+  const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString()+'\uff0f\u651e':'\u514d\u8cbb';
+  const typeTag=s.type?`<span class="hc-act-tag">${esc(s.type)}</span>`:'';
+  html+=`<div class="hc-step-card sc-green">
+    <div class="hc-step-head"><div class="hc-step-num">1</div><div class="hc-step-name">\u6d3b\u52d5\u8cc7\u8a0a</div></div>
+    <div class="hc-act-row">
+      ${cover?`<img class="hc-act-img" src="${esc(cover)}" alt="" onerror="this.src='IP\u6b61\u8fce.png'">`:`<img class="hc-act-img" src="IP\u6b61\u8fce.png" alt="">`}
       <div>
-        <div class="mk-act-name">${esc(s.name||'')}</div>
-        <div class="mk-act-meta">
-          ${dateStr?`📅 ${esc(dateStr)}<br>`:''}
-          ${s.venue?`📍 ${esc(s.venue)}<br>`:''}
-          ${feeStr?`🏷 ${feeStr}`:''}
+        <div class="hc-act-name">${esc(s.name||'')}</div>
+        <div class="hc-act-meta">
+          ${dateStr?`\ud83d\udcc5 ${esc(dateStr)}<br>`:''}
+          ${s.venue?`\ud83d\udccd ${esc(s.venue)}<br>`:''}
+          ${feeStr?`\ud83c\udff7 ${feeStr}`:''}
         </div>
+        ${typeTag?`<div class="hc-act-tags">${typeTag}</div>`:''}
       </div>
     </div>
     ${s.description?`<div style="font-size:14px;color:#555;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.07)">${esc(s.description)}</div>`:''}
   </div>`;
 
-  // ── 多日選擇（如有）──
+  // ── 多日選擇 ──
   if(dates.length>1){
-    html+=`<div class="mk-step-card">
-      <div class="mk-step-head"><div class="mk-step-num" style="background:#aaa">＋</div><div class="mk-step-name">選擇參加日期</div></div>`;
+    html+=`<div class="hc-step-card">
+      <div class="hc-step-head"><div class="hc-step-num" style="background:#aaa">+</div><div class="hc-step-name">\u9078\u64c7\u53c3\u52a0\u65e5\u671f</div></div>`;
     dates.forEach((d,i)=>{
       html+=`<label style="display:flex;align-items:center;gap:10px;margin:8px 0;cursor:pointer;font-size:16px;font-weight:600">
         <input type="checkbox" id="dp_${i}" onchange="updateFee()" style="width:22px;height:22px;accent-color:#91B574;flex-shrink:0">
-        <span>${d.date||''} ${d.start||''}${d.end?'～'+d.end:''} <strong style="color:#5b8b49">${d.fee?'NT$'+d.fee:''}</strong></span>
+        <span>${d.date||''} ${d.start||''}${d.end?'\uff5e'+d.end:''} <strong style="color:#5b8b49">${d.fee?'NT$'+d.fee:''}</strong></span>
       </label>`;
     });
-    if(s.fee>0){
-      html+=`<div id="fullPkgHint" style="display:none;background:#DDEAD1;border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#2a6a10">
-        🎉 全程優惠 NT$${s.fee}／攤
-      </div>`;
-    }
+    if(s.fee>0){html+=`<div id="fullPkgHint" style="display:none;background:#DDEAD1;border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#2a6a10">\ud83c\udf89 \u5168\u7a0b\u512a\u60e0 NT$${s.fee}\uff0f\u651e</div>`;}
     html+=`</div>`;
   }
 
-  // ── ② 攤位與設備（表格式：項目｜單價｜-數字+｜小計）──
+  // ── ② 攤位與設備選擇（表格式）──
   if(!isCollab){
-    html+=`<div class="mk-step-card c-green">
-      <div class="mk-step-head"><div class="mk-step-num">2</div><div class="mk-step-name">攤位與設備選擇</div></div>
-      <table class="mk-equip-table">
-        <thead><tr><th>項目</th><th>單價</th><th>數量</th><th class="money">小計</th></tr></thead>
+    html+=`<div class="hc-step-card sc-green">
+      <div class="hc-step-head"><div class="hc-step-num">2</div><div class="hc-step-name">\u651e\u4f4d\u8207\u8a2d\u5099\u9078\u64c7</div></div>
+      <table class="hc-equip-table">
+        <thead><tr><th>\u9805\u76ee</th><th>\u55ae\u50f9</th><th>\u6578\u91cf</th><th class="col-money">\u5c0f\u8a08</th></tr></thead>
         <tbody>
           <tr>
             <td>${stallUnit}</td>
-            <td>${Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'免費'}</td>
+            <td>${Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'\u514d\u8cbb'}</td>
             <td>
-              <div class="mk-qty">
-                <button class="mk-qty-btn" type="button" onclick="adjStall(-1)">－</button>
-                <span class="mk-qty-num" id="stallDisplay">1</span>
-                <button class="mk-qty-btn" type="button" onclick="adjStall(1)">＋</button>
+              <div class="hc-qty">
+                <button class="hc-qty-btn" type="button" onclick="adjStall(-1)">\u2193</button>
+                <span class="hc-qty-num" id="stallDisplay">1</span>
+                <button class="hc-qty-btn" type="button" onclick="adjStall(1)">\u2191</button>
               </div>
             </td>
-            <td class="money" id="stallTotal">NT$${Number(s.fee)||0}</td>
+            <td class="col-money" id="stallTotal">NT$${Number(s.fee)||0}</td>
           </tr>`;
 
     equipDefs.forEach(([k,v])=>{
       ST.equipQty[k]=v.incl||0;
-      const inclNote=Number(v.incl)>0?`（含${v.incl}）`:'';
-      const unitPrice=Number(v.price)>0?'NT$'+v.price:'免費';
+      const inclNote=Number(v.incl)>0?`\uff08\u542b${v.incl}\uff09`:'';
+      const unitPrice=Number(v.price)>0?'NT$'+Number(v.price).toLocaleString():'\u514d\u8cbb';
       html+=`<tr>
         <td>${esc(k)}${inclNote}</td>
         <td>${unitPrice}</td>
         <td>
-          <div class="mk-qty">
-            <button class="mk-qty-btn" type="button" onclick="adjEquip('${k}',-1)">－</button>
-            <span class="mk-qty-num" id="eq_num_${k}">${v.incl||0}</span>
-            <button class="mk-qty-btn" type="button" onclick="adjEquip('${k}',1)">＋</button>
+          <div class="hc-qty">
+            <button class="hc-qty-btn" type="button" onclick="adjEquip('${k}',-1)">\u2193</button>
+            <span class="hc-qty-num" id="eq_num_${k}">${v.incl||0}</span>
+            <button class="hc-qty-btn" type="button" onclick="adjEquip('${k}',1)">\u2191</button>
           </div>
-          <div id="eq_hint_${k.replace(/[^a-zA-Z0-9]/g,'_')}" style="font-size:11px;color:#5b8b49;margin-top:3px"></div>
+          <div id="eq_hint_${k.replace(/[^a-zA-Z0-9]/g,'_')}" style="font-size:11px;color:#5b8b49;margin-top:2px"></div>
         </td>
-        <td class="money" id="eqTotal_${k}">NT$0</td>
+        <td class="col-money" id="eqTotal_${k}">NT$0</td>
       </tr>`;
     });
 
     addons.forEach(a=>{
       ST.addonQty[a._idx]=0;
-      const unitPrice=Number(a.price)>0?'NT$'+a.price:'免費';
+      const unitPrice=Number(a.price)>0?'NT$'+a.price:'\u514d\u8cbb';
       html+=`<tr>
         <td>${esc(a.name||'')}</td>
         <td>${unitPrice}</td>
         <td>
-          <div class="mk-qty">
-            <button class="mk-qty-btn" type="button" onclick="adjAddon(${a._idx},-1)">－</button>
-            <span class="mk-qty-num" id="addon_num_${a._idx}">0</span>
-            <button class="mk-qty-btn" type="button" onclick="adjAddon(${a._idx},1)">＋</button>
+          <div class="hc-qty">
+            <button class="hc-qty-btn" type="button" onclick="adjAddon(${a._idx},-1)">\u2193</button>
+            <span class="hc-qty-num" id="addon_num_${a._idx}">0</span>
+            <button class="hc-qty-btn" type="button" onclick="adjAddon(${a._idx},1)">\u2191</button>
           </div>
         </td>
-        <td class="money" id="addonTotal_${a._idx}">NT$0</td>
+        <td class="col-money" id="addonTotal_${a._idx}">NT$0</td>
       </tr>`;
     });
 
     html+=`</tbody></table></div>`;
 
     // ── ③ 費用總計 ──
-    html+=`<div class="mk-step-card c-yellow" id="feeBox">
-      <div class="mk-step-head"><div class="mk-step-num">3</div><div class="mk-step-name">費用總計</div></div>
-      <div class="mk-total-line" id="feeBaseRow"><span>攤位小計</span><span id="feeBase">NT$0</span></div>
-      <div class="mk-total-line" id="feeEquipRow" style="display:none"><span>設備小計</span><span id="feeEquip">NT$0</span></div>
-      <div class="mk-total-line" id="feeAddonRow" style="display:none"><span>加購小計</span><span id="feeAddon">NT$0</span></div>
-      <div class="mk-total-line" id="feeDepRow"><span>保證金</span><span id="feeDeposit">NT$${s.deposit||0}</span></div>
-      <div class="mk-total-final" id="feeTotal">NT$${Number(s.fee)||0}</div>
+    html+=`<div class="hc-step-card sc-yellow" id="feeBox">
+      <div class="hc-step-head"><div class="hc-step-num">3</div><div class="hc-step-name">\u8cbb\u7528\u7e3d\u8a08</div></div>
+      <div class="hc-total-row" id="feeBaseRow"><span>\u651e\u4f4d\u5c0f\u8a08</span><span id="feeBase">NT$0</span></div>
+      <div class="hc-total-row" id="feeEquipRow" style="display:none"><span>\u8a2d\u5099\u5c0f\u8a08</span><span id="feeEquip">NT$0</span></div>
+      <div class="hc-total-row" id="feeAddonRow" style="display:none"><span>\u52a0\u8cfc\u5c0f\u8a08</span><span id="feeAddon">NT$0</span></div>
+      <div class="hc-total-row" id="feeDepRow"><span>\u4fdd\u8b49\u91d1</span><span id="feeDeposit">NT$${s.deposit||0}</span></div>
+      <div class="hc-total-final">
+        <span class="hc-total-final-label">\u7e3d\u8a08\u91d1\u984d</span>
+        <span class="hc-total-final-amount" id="feeTotal">NT$${Number(s.fee)||0}</span>
+      </div>
     </div>`;
   }
 
   const cardNum=isCollab?2:4;
 
   // ── ④ 會員資料 ──
-  const socialHtml=(vFb||vIg||vWeb)?`<div class="mk-social-row">
-    ${vFb?`<a href="${esc(vFb)}" target="_blank" class="mk-social-icon" style="background:#1877F2;color:#fff;border-color:#1877F2">FB</a>`:''}
-    ${vIg?`<a href="${esc(vIg)}" target="_blank" class="mk-social-icon" style="background:#C13584;color:#fff;border-color:#C13584">IG</a>`:''}
-    ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="mk-social-icon">🌐</a>`:''}
+  const socialHtml=(vFb||vIg||vWeb)?`<div class="hc-social-row">
+    ${vFb?`<a href="${esc(vFb)}" target="_blank" class="hc-social-icon" style="background:#1877F2;color:#fff;border-color:#1877F2">f</a>`:''}
+    ${vIg?`<a href="${esc(vIg)}" target="_blank" class="hc-social-icon" style="background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);color:#fff;border-color:transparent;font-size:11px">IG</a>`:''}
+    ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="hc-social-icon">\ud83d\udd17</a>`:''}
   </div>`:'';
 
-  html+=`<div class="mk-step-card">
-    <div class="mk-step-head">
-      <div class="mk-step-num">${cardNum}</div>
-      <div class="mk-step-name">會員資料</div>
-      <button class="mk-edit-btn" type="button" onclick="openMemberEditModal()">修改</button>
+  html+=`<div class="hc-step-card">
+    <div class="hc-step-head">
+      <div class="hc-step-num">${cardNum}</div>
+      <div class="hc-step-name">\u6703\u54e1\u8cc7\u6599</div>
+      <button class="hc-edit-btn" type="button" onclick="openMemberEditModal()">\u4fee\u6539</button>
     </div>
-    <div class="mk-info-grid">
-      <div class="mk-info-label">姓名</div><div id="disp_name">${esc(V.name||'')}</div>
-      <div class="mk-info-label">Email</div><div>${esc(email)}</div>
-      <div class="mk-info-label">攤位名稱</div><div id="disp_brand">${esc(V.brand||V.brand_name||'')}</div>
-      <div class="mk-info-label">聯絡電話</div><div id="disp_phone">${esc(V.phone||'')}</div>
+    <div class="hc-info-grid">
+      <span class="hc-info-label">\u59d3\u540d</span><span class="hc-info-value" id="disp_name">${esc(V.name||'')}</span>
+      <span class="hc-info-label">Email</span><span class="hc-info-value">${esc(email)}</span>
+      <span class="hc-info-label">\u54c1\u724c\u540d\u7a31</span><span class="hc-info-value" id="disp_brand">${esc(V.brand||V.brand_name||'')}</span>
+      <span class="hc-info-label">\u806f\u7d61\u96fb\u8a71</span><span class="hc-info-value" id="disp_phone">${esc(V.phone||'')}</span>
     </div>
     ${socialHtml}
   </div>`;
+
   html+=`<input type="hidden" id="f_brand" value="${esc(V.brand||V.brand_name||'')}">`;
   html+=`<input type="hidden" id="f_name" value="${esc(V.name||'')}">`;
   html+=`<input type="hidden" id="f_phone" value="${esc(V.phone||'')}">`;
@@ -2761,20 +2907,21 @@ function renderDynFormFull(s, isNew=false){
   html+=`<input type="hidden" id="f_ig" value="${esc(vIg)}">`;
 
   // ── ⑤ 發票資訊 ──
-  const invTypeStr=isCompany?'公司戶（三聯式）':'個人（二聯式）';
-  html+=`<div class="mk-step-card c-blue">
-    <div class="mk-step-head">
-      <div class="mk-step-num">${cardNum+1}</div>
-      <div class="mk-step-name">發票資訊</div>
-      <button class="mk-edit-btn" type="button" onclick="openMemberEditModal()">修改</button>
+  const invTypeStr=vTaxId?'\u516c\u53f8\u6236\uff08\u4e09\u806f\u5f0f\uff09':'\u4e8c\u806f\u5f0f\u96fb\u5b50\u767c\u7968';
+  html+=`<div class="hc-step-card sc-blue">
+    <div class="hc-step-head">
+      <div class="hc-step-num">${cardNum+1}</div>
+      <div class="hc-step-name">\u767c\u7968\u8cc7\u8a0a</div>
+      <button class="hc-edit-btn" type="button" onclick="openMemberEditModal()">\u4fee\u6539</button>
     </div>
-    <div class="mk-info-grid">
-      <div class="mk-info-label">發票類型</div><div id="disp_invType">${invTypeStr}</div>
-      ${vTaxId?`<div class="mk-info-label">統一編號</div><div id="disp_taxId">${esc(vTaxId)}</div>`:''}
-      ${vCompany?`<div class="mk-info-label">抬頭</div><div id="disp_company">${esc(vCompany)}</div>`:''}
-      <div class="mk-info-label">載具/Email</div><div id="disp_carrier">${esc(vCarrier||vInvEmail||email)}</div>
+    <div class="hc-info-grid">
+      <span class="hc-info-label">\u767c\u7968\u985e\u578b</span><span class="hc-info-value" id="disp_invType">${invTypeStr}</span>
+      ${vTaxId?`<span class="hc-info-label">\u7d71\u7de8</span><span class="hc-info-value" id="disp_taxId">${esc(vTaxId)}</span>`:''}
+      ${vCompany?`<span class="hc-info-label">\u62ac\u982d</span><span class="hc-info-value" id="disp_company">${esc(vCompany)}</span>`:''}
+      <span class="hc-info-label">Email</span><span class="hc-info-value" id="disp_carrier">${esc(vCarrier||vInvEmail||email)}</span>
     </div>
   </div>`;
+
   html+=`<input type="hidden" id="f_taxId" value="${esc(vTaxId)}">`;
   html+=`<input type="hidden" id="f_company" value="${esc(vCompany)}">`;
   html+=`<input type="hidden" id="f_invoiceCarrier" value="${esc(vCarrier)}">`;
@@ -2784,55 +2931,65 @@ function renderDynFormFull(s, isNew=false){
   const customFields=(s.customFields||s.modules?.customFields||[]).filter(f=>f&&f.label);
   if(customFields.length){
     customFields.forEach((f,i)=>{
-      html+=`<div class="mk-step-card">
-        <div class="mk-step-name" style="margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:13px">必填</span>`:''}</div>`;
+      html+=`<div class="hc-step-card"><div class="hc-step-name" style="margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:13px">\u5fc5\u586b</span>`:''}</div>`;
       if(f.type==='select'&&f.options){
-        html+=`<select id="cf_${i}" style="width:100%;padding:10px 12px;border:1px solid var(--mk-line);border-radius:12px;font-size:15px;font-family:inherit;background:#fff">
-          <option value="">請選擇</option>
-          ${(f.options||[]).map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}
-        </select>`;
+        html+=`<select id="cf_${i}" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.1);border-radius:12px;font-size:15px;font-family:inherit;background:#fff"><option value="">\u8acb\u9078\u64c7</option>${(f.options||[]).map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select>`;
       } else if(f.type==='textarea'){
-        html+=`<textarea id="cf_${i}" rows="3" placeholder="${esc(f.placeholder||'')}" style="width:100%;padding:10px 12px;border:1px solid var(--mk-line);border-radius:12px;font-size:15px;font-family:inherit;resize:none"></textarea>`;
+        html+=`<textarea id="cf_${i}" rows="3" placeholder="${esc(f.placeholder||'')}" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.1);border-radius:12px;font-size:15px;font-family:inherit;resize:none"></textarea>`;
       } else {
-        html+=`<input type="${f.type==='number'?'number':'text'}" id="cf_${i}" placeholder="${esc(f.placeholder||f.label||'')}" style="width:100%;padding:10px 12px;border:1px solid var(--mk-line);border-radius:12px;font-size:15px;font-family:inherit">`;
+        html+=`<input type="${f.type==='number'?'number':'text'}" id="cf_${i}" placeholder="${esc(f.placeholder||f.label||'')}" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.1);border-radius:12px;font-size:15px;font-family:inherit">`;
       }
       html+=`</div>`;
     });
   }
 
-  // ── ⑥ 合約（外頁只有按鈕，不可直接勾選）──
-  html+=`<div class="mk-step-card c-yellow" id="contractCard">
-    <div class="mk-step-head">
-      <div class="mk-step-num">${cardNum+2}</div>
-      <div class="mk-step-name">合約條款</div>
-      <span class="mk-contract-done" id="contractDoneBadge">✅ 已同意</span>
+  // ── ⑥ 合約條款 ──
+  html+=`<div class="hc-step-card sc-yellow" id="contractCard">
+    <div class="hc-step-head">
+      <div class="hc-step-num">${cardNum+2}</div>
+      <div class="hc-step-name">\u5408\u7d04\u6761\u6b3e</div>
+      <span class="hc-contract-done-badge" id="contractDoneBadge">\u2705 \u5df2\u540c\u610f</span>
     </div>
-    <div class="mk-contract-row">
-      <div class="mk-contract-text">請先閱讀活動合約，同意後才能送出報名。</div>
-      <button class="mk-contract-cta" type="button" onclick="openAgreementModal()">閱讀合約 ›</button>
+    <div class="hc-contract-box">
+      <div style="font-size:14px;color:#555;line-height:1.5;margin-bottom:10px">
+        \ud83d\udccb \u8acb\u5148\u95b1\u8b80\u300c\u6d3b\u52d5\u5408\u4f5c\u5408\u7d04\u6761\u6b3e\u300d\u4e26\u540c\u610f\u5f8c\uff0c\u624d\u80fd\u9001\u51fa\u5831\u540d\u3002
+      </div>
+      <div class="hc-contract-row">
+        <div class="hc-contract-text">\u5b8c\u6210\u95b1\u8b80\u5f8c\u8acb\u9ede\u64ca\u6309\u9215\u9032\u884c\u5ba1\u95b1</div>
+        <button type="button" class="hc-contract-cta" onclick="openAgreementModal()">\u95b1\u8b80\u5408\u7d04\u689d\u6b3e</button>
+      </div>
+      <div class="hc-contract-status">
+        <span id="contractStatusText">\ud83d\udd12 \u5c9a\u672a\u5b8c\u6210</span>
+      </div>
     </div>
   </div>`;
 
   // ── ⑦ 備註留言 ──
-  html+=`<div class="mk-step-card c-pink">
-    <div class="mk-step-head">
-      <div class="mk-step-num">${cardNum+3}</div>
-      <div class="mk-step-name">備註留言 <span style="font-size:13px;font-weight:500;color:#888">選填</span></div>
+  html+=`<div class="hc-step-card sc-pink">
+    <div class="hc-step-head">
+      <div class="hc-step-num">${cardNum+3}</div>
+      <div class="hc-step-name">\u5099\u8a3b\u7559\u8a00 <span style="font-size:14px;font-weight:500;color:#888">\uff08\u9078\u586b\uff09</span></div>
     </div>
-    <textarea id="f_note" class="mk-note-textarea" maxlength="200"
-      placeholder="有任何需求或想告訴我們的話，歡迎留言…"
+    <textarea id="f_note" class="hc-note-textarea" maxlength="200"
+      placeholder="\u6709\u4efb\u4f55\u9700\u6c42\u6216\u60f3\u544a\u8a34\u6211\u5011\u7684\uff0c\u6b61\u8fce\u7559\u8a00\u2026"
       oninput="$('noteCount').textContent=this.value.length+' / 200'"></textarea>
-    <div class="mk-note-count" id="noteCount">0 / 200</div>
+    <div class="hc-note-count" id="noteCount">0 / 200</div>
+  </div>`;
+
+  // ── ⑧ 送出說明 ──
+  html+=`<div class="hc-step-card">
+    <div class="hc-step-head">
+      <div class="hc-step-num">${cardNum+4}</div>
+      <div class="hc-step-name">\u9001\u51fa\u5831\u540d</div>
+    </div>
+    <div class="hc-submit-hint">\u8acb\u5148\u5b8c\u6210\u5408\u7d04\u7684\u95b1\u8b80\u4e26\u540c\u610f\uff0c\u624d\u80fd\u9001\u51fa\u5831\u540d\u55a6\uff01</div>
   </div>`;
 
   const dynEl=$('dynForm');
   if(dynEl) dynEl.innerHTML=html;
 
-  // 合約區隱藏（用新版 contractCard 取代 agreementArea）
   const agArea=$('agreementArea');
   if(agArea) agArea.style.display='none';
-
-  // 送出按鈕初始 disabled
   const subBtn=$('submitBtn');
   if(subBtn){ subBtn.style.display='block'; subBtn.disabled=true; }
 
@@ -3638,12 +3795,19 @@ function onAgreementRead() {
 function onAgreementCheck(checked) {
   ST._agreementAccepted = !!checked;
   const submitBtn = $('submitBtn');
-  if (!submitBtn) return;
+  const badge = $('contractDoneBadge');
+  const statusText = $('contractStatusText');
+  const ctaBtn = document.querySelector('.hc-contract-cta');
   if (checked) {
-    submitBtn.style.display = 'block';
-    submitBtn.disabled = false;
+    if(submitBtn){ submitBtn.disabled = false; submitBtn.style.display = 'block'; }
+    if(badge){ badge.style.display = 'inline-block'; }
+    if(statusText){ statusText.textContent = '✅ 已完成合約同意'; statusText.style.color = '#5b8b49'; }
+    if(ctaBtn){ ctaBtn.textContent = '重新查看合約'; ctaBtn.classList.add('done'); }
   } else {
-    submitBtn.style.display = 'none';
+    if(submitBtn){ submitBtn.disabled = true; }
+    if(badge){ badge.style.display = 'none'; }
+    if(statusText){ statusText.textContent = '🔒 尚未完成'; statusText.style.color = '#888'; }
+    if(ctaBtn){ ctaBtn.textContent = '閱讀合約條款'; ctaBtn.classList.remove('done'); }
   }
 }
 
@@ -4296,30 +4460,31 @@ if(document.readyState==='loading'){
     }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; renderEvents(); }
   };
   window.renderEvents = function(){
-    // ── 精選主題活動（只顯示活動圖+名稱+查看場次，不顯示價格不直接報名）──
+    // ── 精選主題活動（3欄並排，只顯示圖+名稱+說明+查看場次）──
     const fl=$('featuredEventsList');
     if(fl){
       const events=asArr(ST.events);
       if(events.length){
         fl.innerHTML=events.map(e=>{
           const hasCover=!!(e.cover||e.coverUrl);
-          const coverEl=hasCover
-            ?`<img src="${esc(e.cover||e.coverUrl)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<img src=IP歡迎.png style=width:56px;height:56px;object-fit:contain;margin:auto;display:block;padding-top:10px>';">`
-            :`<img src="IP歡迎.png" alt="" style="width:56px;height:56px;object-fit:contain;margin:auto;display:block;padding-top:10px;">`;
-          return `<div class="mk-theme-card" onclick="openEvent('${esc(e.id)}')">
-            <div class="mk-theme-img">${coverEl}</div>
-            <div class="mk-theme-body">
-              <div class="mk-theme-name">${esc(e.title||'')}</div>
-              <button class="mk-theme-btn" onclick="event.stopPropagation();openEvent('${esc(e.id)}')">查看場次</button>
+          const imgHtml=hasCover
+            ?`<img src="${esc(e.cover||e.coverUrl)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<img src=IP歡迎.png style=width:52px;height:52px;object-fit:contain;margin:auto;display:block;padding-top:18px>'">`
+            :`<img src="IP歡迎.png" alt="" style="width:52px;height:52px;object-fit:contain;margin:auto;display:block;padding-top:18px">`;
+          return `<div class="hc-theme-card" onclick="openEvent('${esc(e.id)}')">
+            <div class="hc-theme-img">${imgHtml}</div>
+            <div class="hc-theme-body">
+              <div class="hc-theme-name">${esc(e.title||'')}</div>
+              ${e.desc||e.description?`<div class="hc-theme-desc">${esc(String(e.desc||e.description||'').slice(0,30))}</div>`:''}
+              <button class="hc-theme-btn" onclick="event.stopPropagation();openEvent('${esc(e.id)}')">查看場次</button>
             </div>
           </div>`;
         }).join('');
       } else {
-        fl.innerHTML='<div style="padding:16px;color:#aaa;font-size:14px">目前無主題活動</div>';
+        fl.innerHTML='<div style="padding:16px;color:#aaa;font-size:14px;grid-column:1/-1">目前無主題活動</div>';
       }
     }
 
-    // ── 近期場次（有縮圖、日期、地點、價格、分享、立即報名）──
+    // ── 近期場次（左圖+中間資訊+右邊分享+立即報名）──
     const el=$('eventsList');
     if(el){
       const sessions=uniqueSessions(ST.allSessionsData).filter(openSess);
@@ -4331,19 +4496,19 @@ if(document.readyState==='loading'){
           else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');}
           const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'免費';
           const hasCover=!!(s.coverUrl||s.cover);
-          const coverEl=hasCover
-            ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:48px;height:48px;object-fit:contain>';">`
-            :`<img src="IP指引.png" alt="" style="width:48px;height:48px;object-fit:contain;">`;
-          return `<div class="mk-session-card" onclick="openSession('${esc(s.id)}')">
-            <div class="mk-session-thumb">${coverEl}</div>
-            <div>
-              <div class="mk-session-name">${esc(s.name||'')}</div>
-              <div class="mk-session-meta">${dateStr?'📅 '+esc(dateStr):''}${s.venue?'<br>📍 '+esc(s.venue):''}</div>
-              <div class="mk-session-price">${feeStr}</div>
+          const thumbHtml=hasCover
+            ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`
+            :`<img src="IP指引.png" alt="" style="width:48px;height:48px;object-fit:contain">`;
+          return `<div class="hc-session-card" onclick="openSession('${esc(s.id)}')">
+            <div class="hc-session-thumb">${thumbHtml}</div>
+            <div style="min-width:0">
+              <div class="hc-session-name">${esc(s.name||'')}</div>
+              <div class="hc-session-meta">${dateStr?'📅 '+esc(dateStr)+'<br>':''}${s.venue?'📍 '+esc(s.venue):''}</div>
+              <div class="hc-session-price">${feeStr}</div>
             </div>
-            <div class="mk-session-action">
-              <button class="mk-share-btn" onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')">🔗</button>
-              <button class="mk-reg-btn" onclick="event.stopPropagation();openSession('${esc(s.id)}')">立即報名</button>
+            <div class="hc-session-actions">
+              <button class="hc-share-btn" onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')">🔗</button>
+              <button class="hc-reg-btn" onclick="event.stopPropagation();openSession('${esc(s.id)}')">立即報名</button>
             </div>
           </div>`;
         }).join('');
