@@ -409,21 +409,10 @@ button,a,[onclick]{touch-action:manipulation}
 /* ── 全域字體 ── */
 body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#fffaf6; }
 
-/* ── 電腦版置中限寬 ── */
-#pageHome, #pagePortal, #pageSession, #regFormModal, #pageMember, #pageSupport {
-  max-width:480px; margin:0 auto;
-}
+/* ── 電腦版全寬，最大 1600px ── */
 @media(min-width:700px){
-  body{ background:#f0ede8; }
-  #pageHome, #pagePortal, #pageSession, #regFormModal, #pageMember, #pageSupport {
-    max-width:480px;
-    box-shadow:var(--mk-shadow);
-    border:1px solid var(--mk-line);
-    border-radius:32px;
-    overflow:hidden;
-    margin-top:20px;
-  }
-  .bottom-fixed{ max-width:480px; left:50%; transform:translateX(-50%); border-radius:0 0 32px 32px; }
+  body{ max-width:1600px; margin:0 auto; }
+  .bottom-fixed{ max-width:1600px; left:50%; transform:translateX(-50%); }
 }
 
 /* ── 封面圖 ── */
@@ -562,11 +551,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 #botSupport.active{ background:var(--mk-purple); color:#5f4ca0; }
 
 /* ── 報名表頁面 ── */
-#regFormModal.page{
-  background:#fff;
-  padding-bottom:80px;
-  min-height:100vh;
-}
+#regFormModal/* .page 樣式已在主 CSS 定義 */
 /* 頂部返回列 */
 .mk-reg-topbar{
   display:flex; align-items:center; justify-content:space-between;
@@ -789,6 +774,9 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
     <span id="formBackTitle" class="mk-reg-topbar-title">報名表單</span>
     <img src="IP報名.png" alt="" class="mk-reg-topbar-ip" onerror="this.style.display='none'">
   </div>
+
+  <!-- formHero（buildFormHero 需要，保留隱藏）-->
+  <div id="formHero" style="display:none"></div>
 
   <!-- 錯誤提示 -->
   <div id="formError" style="display:none;margin:10px 14px;background:#fff0f0;border:1.5px solid #f87171;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#c0392b"></div>
