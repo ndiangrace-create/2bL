@@ -1503,16 +1503,482 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 
 
 <!-- ══ 會員 / 我的報名 ══ -->
-<div id="pageMember" class="page" style="background:#f8f9fa;min-height:100vh;padding-bottom:100px">
+<div id="pageMember" class="page">
+<style>
+/* ══════════════════════════════
+   會員專區 定案樣式
+   照設計稿還原，不自行改動
+   ══════════════════════════════ */
+
+/* 會員頁容器限寬，手機版優先 */
+#pageMember {
+  max-width: 430px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  min-height: 100vh;
+  padding-bottom: 100px;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+}
+
+/* 返回列 */
+.m-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px 12px;
+}
+.m-topbar-back {
+  border: none;
+  background: transparent;
+  font-size: 26px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  color: #333;
+}
+.m-topbar-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #111;
+}
+
+/* 會員資訊卡 */
+.m-hero {
+  margin: 0 16px 14px;
+  border-radius: 22px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.m-hero-record {
+  background: linear-gradient(160deg, #f9fbf6 0%, #e8f5e0 100%);
+  border: 1px solid #c8deb8;
+}
+.m-hero-profile {
+  background: linear-gradient(160deg, #faf8fe 0%, #e8e2f8 100%);
+  border: 1px solid #cdc5ee;
+}
+.m-hero-ip {
+  width: 88px;
+  height: 110px;
+  flex-shrink: 0;
+}
+.m-hero-ip img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.m-hero-info h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #111;
+}
+.m-hero-mail {
+  margin: 0 0 5px;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.4;
+}
+.m-hero-brand {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2f6d28;
+}
+.m-hero-profile .m-hero-brand {
+  color: #5a42a8;
+}
+.m-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.m-btn-edit-green {
+  min-width: 72px;
+  height: 42px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #b9d3a5;
+  color: #3f7a2a;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+}
+.m-btn-edit-purple {
+  min-width: 72px;
+  height: 42px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #cdbef0;
+  color: #7656c6;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+}
+.m-btn-logout {
+  min-width: 72px;
+  height: 42px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #f2b4be;
+  color: #d9485f;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* 分頁頁籤 */
+.m-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 16px 16px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #dfe5d6;
+}
+.m-tab {
+  height: 54px;
+  border: none;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  background: #fff;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.m-tab.active-record {
+  background: #eef6e6;
+  color: #4d7a33;
+}
+.m-tab.active-profile {
+  background: #f0ebfb;
+  color: #7357bb;
+}
+
+/* 報名紀錄卡片 */
+.m-record-list {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.m-record-card {
+  background: #fff;
+  border: 1px solid #e2ecd9;
+  border-radius: 22px;
+  padding: 14px;
+  cursor: pointer;
+}
+.m-record-top {
+  display: grid;
+  grid-template-columns: 100px 1fr 32px;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 12px;
+}
+.m-record-thumb {
+  width: 100px;
+  height: 86px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #DDEAD1;
+  flex-shrink: 0;
+}
+.m-record-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.m-record-name {
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  color: #111;
+}
+.m-record-meta {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+.m-record-arrow {
+  font-size: 28px;
+  color: #bbb;
+  line-height: 1;
+  text-align: right;
+  margin-top: 4px;
+}
+.m-record-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.m-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.m-status-note {
+  font-size: 13px;
+  color: #666;
+  flex: 1;
+}
+.m-action-btn {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* 找不到紀錄提示卡（紫色）*/
+.m-helper-record {
+  margin: 18px 16px 0;
+  border-radius: 22px;
+  padding: 18px;
+  background: #f3effe;
+  border: 1px solid #d8c8f8;
+  display: none;
+  grid-template-columns: 100px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+.m-helper-record.show {
+  display: grid;
+}
+.m-helper-record-ip {
+  width: 100px;
+  height: 120px;
+  object-fit: contain;
+}
+.m-helper-record-title {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0 0 8px;
+  line-height: 1.4;
+  color: #111;
+}
+.m-helper-record-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+.m-helper-record-btn {
+  height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 14px;
+  background: #9c7ce3;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 會員資料頁：個人資料卡（紫系）*/
+.m-profile-section {
+  padding: 0 16px;
+}
+.m-profile-card {
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.m-profile-card-purple {
+  background: #fcfaff;
+  border: 1px solid #d8c8f8;
+}
+.m-profile-card-blue {
+  background: #f8fbff;
+  border: 1px solid #c4d8f0;
+}
+.m-profile-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.m-profile-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.m-profile-card-icon.purple { background: #ede5fb; }
+.m-profile-card-icon.blue   { background: #dff0fb; }
+.m-profile-card-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #111;
+  flex: 1;
+}
+.m-profile-card-deco {
+  font-size: 22px;
+}
+
+/* 資料內容區（左文字 + 右IP圖）*/
+.m-profile-body {
+  display: grid;
+  grid-template-columns: 1fr 96px;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+.m-profile-grid {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid #ececec;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.m-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.m-profile-row-icon {
+  font-size: 17px;
+  width: 22px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.m-profile-row-label {
+  font-size: 14px;
+  color: #888;
+  font-weight: 700;
+  width: 72px;
+  flex-shrink: 0;
+}
+.m-profile-row-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  flex: 1;
+  word-break: break-word;
+}
+.m-profile-ip {
+  width: 96px;
+  height: 116px;
+  object-fit: contain;
+  display: block;
+}
+.m-social-row {
+  display: flex;
+  gap: 8px;
+}
+.m-social-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+  border: 1px solid rgba(0,0,0,.1);
+}
+.m-full-btn {
+  width: 100%;
+  height: 46px;
+  border-radius: 16px;
+  border: none;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.m-full-btn-purple { background: #ece5fb; color: #7357bb; }
+.m-full-btn-blue   { background: #e2f0fb; color: #4e78a5; }
+
+/* 奶黃提醒卡 */
+.m-helper-profile {
+  margin: 0 0 16px;
+  border-radius: 22px;
+  padding: 16px;
+  background: #fff9e6;
+  border: 1px solid #f0d48d;
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.m-helper-profile-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border: 1px solid #f0d48d;
+}
+.m-helper-profile-title {
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.5;
+  margin: 0 0 6px;
+  color: #111;
+}
+.m-helper-profile-text {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+</style>
 
   <!-- ── 登入區 ── -->
-  <div id="memberLoginArea" style="padding:20px 16px">
+  <div id="memberLoginArea" style="padding:20px 16px;max-width:430px;margin:0 auto">
     <div style="text-align:center;padding:40px 20px">
-      <img src="IP會員.png" style="width:100px;height:120px;object-fit:contain;margin-bottom:16px" onerror="this.style.display='none'">
+      <img src="IP會員.png" style="width:110px;height:130px;object-fit:contain;margin-bottom:16px" onerror="this.style.display='none'">
       <div style="font-size:20px;font-weight:900;margin-bottom:8px">歡迎來到會員專區</div>
       <div style="font-size:15px;color:#666;margin-bottom:24px">登入後可查看報名紀錄與會員資料</div>
       <div id="memberGoogleBtn"></div>
-      <div style="margin-top:12px">
+      <div style="margin-top:14px">
         <input type="email" id="step1Email" placeholder="輸入 Email 查詢"
           style="width:100%;padding:12px 16px;border:1.5px solid #d9d9d9;border-radius:14px;font-size:16px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
         <div id="step1Err" style="color:#e74c3c;font-size:14px;margin-bottom:8px"></div>
@@ -1528,61 +1994,51 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
   <!-- ── 登入後主區塊 ── -->
   <div id="memberArea" style="display:none">
 
-    <!-- 頂部返回列 -->
-    <div style="display:flex;align-items:center;gap:10px;padding:16px 18px 12px;font-size:20px;font-weight:900">
-      <button onclick="navToTab('home')" style="border:none;background:transparent;font-size:26px;cursor:pointer;padding:0;line-height:1">←</button>
-      <span>會員專區</span>
+    <!-- 返回列 -->
+    <div class="m-topbar">
+      <button class="m-topbar-back" onclick="navToTab('home')">←</button>
+      <span class="m-topbar-title">會員專區</span>
     </div>
 
-    <!-- 會員資訊卡 -->
-    <div id="memberHeroCard" style="margin:0 16px 14px;border-radius:22px;padding:16px;display:grid;grid-template-columns:92px 1fr auto;gap:14px;align-items:center;background:linear-gradient(180deg,#f9fbf6,#eef6e7);border:1px solid #d8e8c8;position:relative;overflow:hidden">
-      <!-- 裝飾葉子 -->
-      <div style="position:absolute;right:90px;bottom:0;font-size:52px;opacity:.12;pointer-events:none;line-height:1">🌿</div>
-      <div id="memberHeroIp" style="flex-shrink:0">
-        <img src="IP會員.png" alt="" style="width:88px;height:110px;object-fit:contain" onerror="this.style.display='none'">
+    <!-- 會員資訊卡（JS 切換綠/紫） -->
+    <div id="memberHeroCard" class="m-hero m-hero-record">
+      <div class="m-hero-ip">
+        <img src="IP會員.png" alt="會員" onerror="this.style.display='none'">
       </div>
-      <div>
-        <div id="memberName" style="font-size:22px;font-weight:900;margin-bottom:6px"></div>
-        <div id="memberEmail2" style="font-size:15px;color:#555;margin-bottom:4px"></div>
-        <div id="memberBrandShow" style="font-size:15px;font-weight:700;color:#2f6d28"></div>
+      <div class="m-hero-info">
+        <h2 id="memberName"></h2>
+        <p class="m-hero-mail" id="memberEmail2"></p>
+        <p class="m-hero-brand" id="memberBrandShow"></p>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <button onclick="openMemberEditModal()" id="memberEditBtn"
-          style="min-width:72px;height:40px;border-radius:14px;background:#fff;border:1.5px solid #b9d3a5;color:#3f7a2a;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
-          ✏️ 編輯
-        </button>
-        <button onclick="memberLogout()"
-          style="min-width:72px;height:40px;border-radius:14px;background:#fff;border:1.5px solid #f2b4be;color:#d9485f;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
-          登出
-        </button>
+      <div class="m-hero-actions">
+        <button id="memberEditBtn" class="m-btn-edit-green" onclick="openMemberEditModal()">編輯</button>
+        <button class="m-btn-logout" onclick="memberLogout()">登出</button>
       </div>
     </div>
 
     <!-- 分頁頁籤 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;margin:0 16px 16px;border-radius:18px;overflow:hidden;border:1px solid #dfe5d6">
-      <button id="tabMyRegs" onclick="switchMemberMode('regs')"
-        style="height:54px;border:none;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;background:#eef6e6;color:#4d7a33;display:flex;align-items:center;justify-content:center;gap:6px">
+    <div class="m-tabs">
+      <button id="tabMyRegs" class="m-tab active-record" onclick="switchMemberMode('regs')">
         📋 我的報名
       </button>
-      <button id="tabProfile" onclick="switchMemberMode('profile')"
-        style="height:54px;border:none;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;background:#fff;color:#888">
+      <button id="tabProfile" class="m-tab" onclick="switchMemberMode('profile')">
         會員資料
       </button>
     </div>
 
     <!-- ── 我的報名 mode ── -->
-    <div id="myRegsMode" style="padding:0 16px">
-      <div id="myRegsList" style="display:flex;flex-direction:column;gap:14px">
+    <div id="myRegsMode">
+      <div id="myRegsList" class="m-record-list">
         <div style="text-align:center;color:#aaa;padding:30px;font-size:15px">報名紀錄載入中…</div>
       </div>
-      <!-- 找不到紀錄 -->
-      <div id="noRegsHelper" style="display:none;margin-top:18px;border-radius:22px;padding:16px;background:#f6f0fd;border:1px solid #ddd0f6;display:none;grid-template-columns:92px 1fr;gap:14px;align-items:center">
-        <img src="IP客服.png" alt="" style="width:88px;height:108px;object-fit:contain" onerror="this.style.display='none'">
+
+      <!-- 紫色客服提示卡 -->
+      <div id="noRegsHelper" class="m-helper-record">
+        <img src="IP客服.png" alt="" class="m-helper-record-ip" onerror="this.style.display='none'">
         <div>
-          <div style="font-size:18px;font-weight:900;margin-bottom:8px;line-height:1.4">找不到報名紀錄嗎？</div>
-          <div style="font-size:14px;color:#666;line-height:1.55;margin-bottom:12px">我們可以幫你查找遺漏的報名紀錄，或協助解決任何報名問題！</div>
-          <button onclick="navToTab('support')"
-            style="height:42px;padding:0 18px;border:none;border-radius:14px;background:#9c7ce3;color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
+          <h4 class="m-helper-record-title">找不到報名紀錄嗎？</h4>
+          <p class="m-helper-record-text">我們可以幫你查找遺漏的報名紀錄，或協助解決任何報名問題！</p>
+          <button class="m-helper-record-btn" onclick="navToTab('support')">
             🎧 聯絡客服小幫手
           </button>
         </div>
@@ -1590,72 +2046,59 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
     </div>
 
     <!-- ── 會員資料 mode ── -->
-    <div id="profileMode" style="display:none;padding:0 16px">
+    <div id="profileMode" style="display:none">
+      <div class="m-profile-section">
 
-      <!-- 個人基本資料卡 -->
-      <div style="background:#fcfbff;border:1px solid #ddd0f6;border-radius:22px;padding:18px;margin-bottom:16px">
-        <!-- 卡片標題 -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="width:36px;height:36px;border-radius:50%;background:#ede5fb;display:flex;align-items:center;justify-content:center;font-size:18px">👤</span>
-            <span style="font-size:20px;font-weight:900">個人基本資料</span>
+        <!-- 個人基本資料卡（紫系）-->
+        <div class="m-profile-card m-profile-card-purple">
+          <div class="m-profile-card-title-row">
+            <div class="m-profile-card-icon purple">👤</div>
+            <span class="m-profile-card-title">個人基本資料</span>
+            <span class="m-profile-card-deco">🦋</span>
           </div>
-          <span style="font-size:22px">🦋</span>
+          <div class="m-profile-body">
+            <div class="m-profile-grid" id="memberProfileContent">
+              <div style="text-align:center;color:#aaa;font-size:14px;padding:12px">載入中…</div>
+            </div>
+            <img src="IP報名.png" alt="" class="m-profile-ip" onerror="this.style.display='none'">
+          </div>
+          <button class="m-full-btn m-full-btn-purple" onclick="openMemberEditModal()">
+            ✏️ 編輯資料
+          </button>
         </div>
-        <!-- 資料列表 + IP 圖 -->
-        <div style="display:grid;grid-template-columns:1fr 100px;gap:14px;align-items:end">
-          <div id="memberProfileContent" style="background:#fff;border-radius:16px;padding:14px;border:1px solid #ececec;display:flex;flex-direction:column;gap:12px">
-            <div style="text-align:center;color:#aaa;font-size:14px">載入中…</div>
+
+        <!-- 發票資訊卡（藍系）-->
+        <div class="m-profile-card m-profile-card-blue">
+          <div class="m-profile-card-title-row">
+            <div class="m-profile-card-icon blue">🧾</div>
+            <span class="m-profile-card-title">發票資訊</span>
+            <span class="m-profile-card-deco">☆</span>
           </div>
-          <div style="display:flex;align-items:flex-end;justify-content:center">
-            <img src="IP報名.png" alt="" style="width:90px;height:110px;object-fit:contain" onerror="this.style.display='none'">
+          <div class="m-profile-body">
+            <div class="m-profile-grid" id="invoiceProfileContent">
+              <div style="text-align:center;color:#aaa;font-size:14px;padding:12px">載入中…</div>
+            </div>
+            <img src="IP歡迎.png" alt="" class="m-profile-ip" onerror="this.style.display='none'">
+          </div>
+          <button class="m-full-btn m-full-btn-blue" onclick="openMemberEditModal()" style="width:auto;padding:0 20px">
+            ✏️ 修改
+          </button>
+        </div>
+
+        <!-- 奶黃提醒卡 -->
+        <div class="m-helper-profile">
+          <div class="m-helper-profile-icon">🪪</div>
+          <div>
+            <p class="m-helper-profile-title">會員資料只需填寫一次，下次報名將自動帶入，省時又方便！</p>
+            <p class="m-helper-profile-text">資料如有異動，請記得更新哦～</p>
           </div>
         </div>
-        <button onclick="openMemberEditModal()"
-          style="width:100%;height:46px;border-radius:16px;border:none;margin-top:14px;font-size:17px;font-weight:900;cursor:pointer;background:#ece5fb;color:#7357bb;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
-          ✏️ 編輯資料
-        </button>
+
       </div>
-
-      <!-- 發票資訊卡 -->
-      <div style="background:#fbfdff;border:1px solid #d5e3f0;border-radius:22px;padding:18px;margin-bottom:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="width:36px;height:36px;border-radius:50%;background:#dff0fb;display:flex;align-items:center;justify-content:center;font-size:18px">🧾</span>
-            <span style="font-size:20px;font-weight:900">發票資訊</span>
-          </div>
-          <span style="font-size:22px">☆</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 100px;gap:14px;align-items:end">
-          <div id="invoiceProfileContent" style="background:#fff;border-radius:16px;padding:14px;border:1px solid #ececec;display:flex;flex-direction:column;gap:12px">
-            <div style="text-align:center;color:#aaa;font-size:14px">載入中…</div>
-          </div>
-          <div style="display:flex;align-items:flex-end;justify-content:center">
-            <img src="IP歡迎.png" alt="" style="width:90px;height:110px;object-fit:contain" onerror="this.style.display='none'">
-          </div>
-        </div>
-        <button onclick="openMemberEditModal()"
-          style="width:auto;height:40px;padding:0 20px;border-radius:14px;border:none;margin-top:14px;font-size:16px;font-weight:900;cursor:pointer;background:#e6f1fb;color:#4e78a5;font-family:inherit;display:flex;align-items:center;gap:6px">
-          ✏️ 修改
-        </button>
-      </div>
-
-      <!-- 提醒卡 -->
-      <div style="background:#fff9e6;border:1px solid #f2dfaa;border-radius:22px;padding:16px;margin-bottom:16px;display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center">
-        <div style="width:58px;height:58px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:28px">🪪</div>
-        <div>
-          <div style="font-size:16px;font-weight:900;line-height:1.5;margin-bottom:6px">會員資料只需填寫一次，下次報名將自動帶入，省時又方便！</div>
-          <div style="font-size:14px;color:#666">資料如有異動，請記得更新哦～</div>
-        </div>
-      </div>
-
     </div>
 
   </div>
 
-
-
-<!-- ══ 客服頁 ══ -->
 <div id="pageSupport" class="page">
 
   <!-- 客服 IP 區塊 -->
@@ -2220,104 +2663,102 @@ function memberShowLogin(){
   if(memberArea) memberArea.style.display='none';
 }
 function memberShowArea(mode){
-  const loginArea = $('memberLoginArea');
-  const memberArea = $('memberArea');
-  if(loginArea) loginArea.style.display = 'none';
-  if(memberArea) memberArea.style.display = 'block';
-  switchMemberMode(mode || 'regs');
-  // 底部按鈕 active
+  const loginArea=$('memberLoginArea');
+  const memberArea=$('memberArea');
+  if(loginArea) loginArea.style.display='none';
+  if(memberArea) memberArea.style.display='block';
+  switchMemberMode(mode||'regs');
   ['botHome','botMember','botSupport'].forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(el) el.classList.remove('active');
   });
-  const btn = $('botMember');
+  const btn=$('botMember');
   if(btn) btn.classList.add('active');
 }
 function switchMemberMode(mode){
-  const regsDiv = $('myRegsMode');
-  const profileDiv = $('profileMode');
-  const tabRegs = $('tabMyRegs');
-  const tabProfile = $('tabProfile');
-  const heroCard = $('memberHeroCard');
+  const regsDiv=$('myRegsMode');
+  const profileDiv=$('profileMode');
+  const tabRegs=$('tabMyRegs');
+  const tabProfile=$('tabProfile');
+  const heroCard=$('memberHeroCard');
+  const editBtn=$('memberEditBtn');
 
-  if(mode === 'regs'){
-    if(regsDiv) regsDiv.style.display = 'block';
-    if(profileDiv) profileDiv.style.display = 'none';
-    if(tabRegs){ tabRegs.style.background='#eef6e6'; tabRegs.style.color='#4d7a33'; }
-    if(tabProfile){ tabProfile.style.background='#fff'; tabProfile.style.color='#888'; }
-    if(heroCard){
-      heroCard.style.background='linear-gradient(180deg,#f9fbf6,#eef6e7)';
-      heroCard.style.borderColor='#d8e8c8';
-      const eb=$('memberEditBtn'); if(eb){ eb.style.borderColor='#b9d3a5'; eb.style.color='#3f7a2a'; }
-    }
+  if(mode==='regs'){
+    if(regsDiv) regsDiv.style.display='block';
+    if(profileDiv) profileDiv.style.display='none';
+    // 頁籤
+    if(tabRegs){ tabRegs.className='m-tab active-record'; }
+    if(tabProfile){ tabProfile.className='m-tab'; }
+    // 會員卡換綠系
+    if(heroCard){ heroCard.className='m-hero m-hero-record'; }
+    if(editBtn){ editBtn.className='m-btn-edit-green'; }
+    // 品牌字綠色
+    const brand=$('memberBrandShow');
+    if(brand) brand.style.color='#2f6d28';
   } else {
-    if(regsDiv) regsDiv.style.display = 'none';
-    if(profileDiv) profileDiv.style.display = 'block';
-    if(tabRegs){ tabRegs.style.background='#fff'; tabRegs.style.color='#888'; }
-    if(tabProfile){ tabProfile.style.background='#f0ebfb'; tabProfile.style.color='#7357bb'; }
-    if(heroCard){
-      heroCard.style.background='linear-gradient(180deg,#faf8fe,#efebfa)';
-      heroCard.style.borderColor='#d9cfee';
-      const eb=$('memberEditBtn'); if(eb){ eb.style.borderColor='#cdbef0'; eb.style.color='#7656c6'; }
-    }
+    if(regsDiv) regsDiv.style.display='none';
+    if(profileDiv) profileDiv.style.display='block';
+    // 頁籤
+    if(tabRegs){ tabRegs.className='m-tab'; }
+    if(tabProfile){ tabProfile.className='m-tab active-profile'; }
+    // 會員卡換紫系
+    if(heroCard){ heroCard.className='m-hero m-hero-profile'; }
+    if(editBtn){ editBtn.className='m-btn-edit-purple'; }
+    // 品牌字紫色
+    const brand=$('memberBrandShow');
+    if(brand) brand.style.color='#5a42a8';
     renderMemberProfile();
   }
 }
 
 function renderMemberProfile(){
-  const m = ST.member || {};
-  const email = ST.memberEmail || m.email || '';
-  const vFb = m.fb || m.fb_url || '';
-  const vIg = m.ig || m.ig_url || '';
-  const vWeb = m.website || m.web || '';
-  const vCarrier = m.invoiceCarrier || m.invoice_carrier || '';
-  const vTaxId = m.taxId || m.tax_id || '';
-  const vCompany = m.company || '';
-  const vInvEmail = m.invoiceEmail || m.invoice_email || '';
+  const m=ST.member||{};
+  const email=ST.memberEmail||m.email||'';
+  const vFb=m.fb||m.fb_url||'';
+  const vIg=m.ig||m.ig_url||'';
+  const vWeb=m.website||m.web||'';
+  const vCarrier=m.invoiceCarrier||m.invoice_carrier||'';
+  const vTaxId=m.taxId||m.tax_id||'';
+  const vCompany=m.company||'';
+  const vInvEmail=m.invoiceEmail||m.invoice_email||'';
 
-  // 資料列樣式
-  const row = (icon, label, val) => !val ? '' : `
-    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0">
-      <span style="font-size:18px;width:24px;flex-shrink:0">${icon}</span>
-      <span style="font-size:15px;color:#888;width:70px;flex-shrink:0">${label}</span>
-      <span style="font-size:16px;font-weight:700;flex:1;word-break:break-word">${esc(val)}</span>
+  const row=(icon,label,val)=>!val?'':`
+    <div class="m-profile-row">
+      <span class="m-profile-row-icon">${icon}</span>
+      <span class="m-profile-row-label">${label}</span>
+      <span class="m-profile-row-value">${esc(val)}</span>
     </div>`;
 
-  // 社群 icon 列
-  const socialHtml = (vFb||vIg||vWeb) ? `
-    <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
-      <span style="font-size:18px;width:24px;flex-shrink:0">🌐</span>
-      <span style="font-size:15px;color:#888;width:70px;flex-shrink:0">社群 / 官網</span>
-      <div style="display:flex;gap:8px">
-        ${vFb?`<a href="${esc(vFb)}" target="_blank" style="width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;text-decoration:none">f</a>`:''}
-        ${vIg?`<a href="${esc(vIg)}" target="_blank" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;text-decoration:none">IG</a>`:''}
-        ${vWeb?`<a href="${esc(vWeb)}" target="_blank" style="width:38px;height:38px;border-radius:50%;background:#DDEAD1;border:1px solid #b9d3a5;color:#2a6a10;display:flex;align-items:center;justify-content:center;font-size:16px;text-decoration:none">🔗</a>`:''}
+  // 社群 icon（不顯示長網址）
+  const socialRow=(vFb||vIg||vWeb)?`
+    <div class="m-profile-row">
+      <span class="m-profile-row-icon">🌐</span>
+      <span class="m-profile-row-label">社群 / 官網</span>
+      <div class="m-social-row">
+        ${vFb?`<a href="${esc(vFb)}" target="_blank" class="m-social-icon" style="background:#1877F2;color:#fff;border-color:#1877F2">f</a>`:''}
+        ${vIg?`<a href="${esc(vIg)}" target="_blank" class="m-social-icon" style="background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);color:#fff;border-color:transparent;font-size:11px">IG</a>`:''}
+        ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="m-social-icon" style="background:#DDEAD1;color:#2a6a10;border-color:#b9d3a5">🔗</a>`:''}
       </div>
-    </div>` : '';
+    </div>`:'';
 
-  // ── 個人資料 ──
-  const profileEl = $('memberProfileContent');
-  if(profileEl){
-    profileEl.innerHTML =
-      row('👤','姓名', m.name) +
-      row('✉️','Email', email) +
-      row('📱','手機', m.phone) +
-      row('🏷','品牌名稱', m.brand||m.brand_name) +
-      socialHtml;
-    if(!profileEl.innerHTML.trim())
-      profileEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:16px;font-size:14px">尚未填寫資料</div>';
+  // 個人資料
+  const pEl=$('memberProfileContent');
+  if(pEl){
+    const html=row('👤','姓名',m.name)+row('✉️','Email',email)+row('📱','手機',m.phone)+row('🏷','品牌名稱',m.brand||m.brand_name)+socialRow;
+    pEl.innerHTML=html||'<div style="text-align:center;color:#aaa;padding:12px;font-size:14px">尚未填寫資料</div>';
   }
 
-  // ── 發票資訊 ──
-  const invEl = $('invoiceProfileContent');
-  if(invEl){
-    const invType = vTaxId ? '公司戶（三聯式）' : '個人（二聯式）';
-    invEl.innerHTML =
-      row('🧾','發票類型', invType) +
-      (vTaxId ? row('🔢','統一編號', vTaxId) : '') +
-      (vCompany ? row('🏢','抬頭', vCompany) : '') +
-      row('✉️','載具 / Email', vCarrier||vInvEmail||email);
+  // 發票資訊
+  const iEl=$('invoiceProfileContent');
+  if(iEl){
+    const invType=vTaxId?'公司戶（三聯式）':'個人（二聯式）';
+    iEl.innerHTML=row('🧾','發票類型',invType)+(vTaxId?row('🔢','統一編號',vTaxId):'')+(vCompany?row('🏢','抬頭',vCompany):'')+row('✉️','載具/Email',vCarrier||vInvEmail||email);
   }
+}
+
+function profileRow(label,val){
+  if(!val) return '';
+  return `<div class="m-profile-row"><span class="m-profile-row-label">${label}</span><span class="m-profile-row-value">${val}</span></div>`;
 }
 
 function profileRow(label, val){
@@ -3991,75 +4432,71 @@ function payBadge(reg){
 function escHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function renderMyRegs(regs){
-  ST.regs = Array.isArray(regs) ? regs : [];
-  const el = $('myRegsList');
+  ST.regs=Array.isArray(regs)?regs:[];
+  const el=$('myRegsList');
   if(!el) return;
-  const helper = $('noRegsHelper');
+  const helper=$('noRegsHelper');
 
   if(!ST.regs.length){
-    el.innerHTML = '';
-    if(helper){ helper.style.display='grid'; }
+    el.innerHTML='';
+    if(helper) helper.classList.add('show');
     handlePendingPayLink(ST.regs);
     return;
   }
-  if(helper){ helper.style.display='none'; }
+  if(helper) helper.classList.remove('show');
 
-  const statusCfg = {
-    '\u5f85\u5be9\u6838':  { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u{1f550}', label:'\u5be9\u6838\u4e2d', note:'\u4e3b\u8fa6\u55ae\u4f4d\u5be9\u6838\u4e2d\uff0c\u8acb\u8010\u5fc3\u7b49\u5019' },
-    '\u5df2\u9304\u53d6':  { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u2705', label:'\u5df2\u9304\u53d6', note:'\u8acb\u524d\u5f80\u7e73\u8cbb\u5b8c\u6210\u5831\u540d' },
-    '\u5099\u53d6':    { bg:'#fff6df', color:'#be8616', border:'#edd18e', icon:'\u23f3', label:'\u5099\u53d6\u4e2d', note:'\u60a8\u76ee\u524d\u70ba\u5099\u53d6\u540d\u55ae' },
-    '\u5f85\u78ba\u8a8d':  { bg:'#fff6df', color:'#be8616', border:'#edd18e', icon:'\u{1f4b3}', label:'\u78ba\u8a8d\u4e2d', note:'\u4ed8\u6b3e\u78ba\u8a8d\u4e2d\uff0c\u8acb\u7a0d\u5019' },
-    '\u5df2\u7e73\u8cbb':  { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u2705', label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
-    '\u514d\u8cbb':    { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u2705', label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
-    '\u7533\u8acb\u9000\u8cbb':{ bg:'#fff6df', color:'#be8616', border:'#edd18e', icon:'\u{1f4b0}', label:'\u9000\u8cbb\u4e2d', note:'\u9000\u8cbb\u7533\u8acb\u8655\u7406\u4e2d' },
-    '\u5df2\u9000\u8cbb':  { bg:'#f5f5f5', color:'#888', border:'#ddd', icon:'\u{1f4b8}', label:'\u5df2\u9000\u8cbb', note:'\u9000\u8cbb\u5df2\u5b8c\u6210' },
-    '\u5df2\u53d6\u6d88':  { bg:'#f5f5f5', color:'#888', border:'#ddd', icon:'\u274c', label:'\u5df2\u53d6\u6d88', note:'\u6b64\u5831\u540d\u5df2\u53d6\u6d88' },
-    '\u4e0d\u9304\u53d6':  { bg:'#fff0f0', color:'#c0392b', border:'#f4b8b8', icon:'\ud83d\ude22', label:'\u672a\u9304\u53d6', note:'\u5f88\u62b1\u6b49\u6b64\u6b21\u672a\u80fd\u9304\u53d6' },
+  // 狀態設定
+  const SC={
+    '\u5f85\u5be9\u6838':{ bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\ud83d\udd50',label:'\u5be9\u6838\u4e2d', note:'\u4e3b\u8fa6\u55ae\u4f4d\u5be9\u6838\u4e2d\uff0c\u8acb\u8010\u5fc3\u7b49\u5019' },
+    '\u5df2\u9304\u53d6':{ bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\u2705',label:'\u5df2\u9304\u53d6', note:'\u8acb\u524d\u5f80\u7e73\u8cbb\u5b8c\u6210\u5831\u540d' },
+    '\u5099\u53d6':   { bg:'#fff6df',color:'#be8616',border:'#edd18e',icon:'\u23f3',label:'\u5099\u53d6\u4e2d', note:'\u60a8\u76ee\u524d\u70ba\u5099\u53d6\u540d\u55ae' },
+    '\u5f85\u78ba\u8a8d':{ bg:'#fff6df',color:'#be8616',border:'#edd18e',icon:'\ud83d\udcb3',label:'\u78ba\u8a8d\u4e2d', note:'\u4ed8\u6b3e\u78ba\u8a8d\u4e2d\uff0c\u8acb\u7a0d\u5019' },
+    '\u5df2\u7e73\u8cbb':{ bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\u2705',label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
+    '\u514d\u8cbb':   { bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\u2705',label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
+    '\u7533\u8acb\u9000\u8cbb':{ bg:'#fff6df',color:'#be8616',border:'#edd18e',icon:'\ud83d\udcb0',label:'\u9000\u8cbb\u4e2d', note:'\u9000\u8cbb\u7533\u8acb\u8655\u7406\u4e2d' },
+    '\u5df2\u9000\u8cbb':{ bg:'#f5f5f5',color:'#888',border:'#ddd',icon:'\ud83d\udcb8',label:'\u5df2\u9000\u8cbb', note:'\u9000\u8cbb\u5df2\u5b8c\u6210' },
+    '\u5df2\u53d6\u6d88':{ bg:'#f5f5f5',color:'#888',border:'#ddd',icon:'\u274c',label:'\u5df2\u53d6\u6d88', note:'\u6b64\u5831\u540d\u5df2\u53d6\u6d88' },
+    '\u4e0d\u9304\u53d6':{ bg:'#fff0f0',color:'#c0392b',border:'#f4b8b8',icon:'\ud83d\ude22',label:'\u672a\u9304\u53d6', note:'\u5f88\u62b1\u6b49\u6b64\u6b21\u672a\u80fd\u9304\u53d6' },
   };
-  const btnCfg = {
-    '\u5df2\u9304\u53d6': { label:'\u524d\u5f80\u7e73\u8cbb', bg:'#fdebc0', color:'#be8616' },
-    '\u5f85\u78ba\u8a8d': { label:'\u67e5\u770b\u8a73\u60c5', bg:'#dfeecf', color:'#4f7d36' },
-    '\u7533\u8acb\u9000\u8cbb':{ label:'\u67e5\u770b\u72c0\u614b', bg:'#dfeecf', color:'#4f7d36' },
+  const BC={
+    '\u5df2\u9304\u53d6':{ label:'\u524d\u5f80\u7e73\u8cbb',bg:'#fdebc0',color:'#be8616' },
+    '\u5f85\u78ba\u8a8d':{ label:'\u67e5\u770b\u8a73\u60c5',bg:'#dfeecf',color:'#4f7d36' },
+    '\u7533\u8acb\u9000\u8cbb':{ label:'\u67e5\u770b\u72c0\u614b',bg:'#dfeecf',color:'#4f7d36' },
   };
-  const defBtn = { label:'\u67e5\u770b\u8a73\u60c5', bg:'#dfeecf', color:'#4f7d36' };
+  const defBC={ label:'\u67e5\u770b\u8a73\u60c5',bg:'#dfeecf',color:'#4f7d36' };
 
-  el.innerHTML = ST.regs.map(r => {
-    const sk = r.payStatus==='\u5df2\u7e73\u8cbb'?'\u5df2\u7e73\u8cbb':r.payStatus==='\u514d\u8cbb'?'\u514d\u8cbb':r.payStatus==='\u5f85\u78ba\u8a8d'?'\u5f85\u78ba\u8a8d':
-               r.status==='\u5df2\u9304\u53d6'&&r.payStatus==='\u672a\u7e73\u8cbb'?'\u5df2\u9304\u53d6':r.status||'\u5f85\u5be9\u6838';
-    const sc = statusCfg[sk] || { bg:'#f5f5f5', color:'#888', border:'#ddd', icon:'\ud83d\udccb', label:sk, note:'' };
-    const bc = btnCfg[sk] || defBtn;
-    const cover = r.cover||r.sessionCover||r.eventCover||'';
-    const thumbHtml = cover
-      ? `<img src="${esc(cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px" onerror="this.style.display='none'">`
-      : `<div style="width:100%;height:100%;border-radius:16px;background:#DDEAD1;display:flex;align-items:center;justify-content:center;font-size:28px">\ud83c\udfaa</div>`;
-    const dates = Array.isArray(r.dates)?r.dates:[];
+  el.innerHTML=ST.regs.map(r=>{
+    const sk=r.payStatus==='\u5df2\u7e73\u8cbb'?'\u5df2\u7e73\u8cbb':r.payStatus==='\u514d\u8cbb'?'\u514d\u8cbb':r.payStatus==='\u5f85\u78ba\u8a8d'?'\u5f85\u78ba\u8a8d':r.status==='\u5df2\u9304\u53d6'&&r.payStatus==='\u672a\u7e73\u8cbb'?'\u5df2\u9304\u53d6':r.status||'\u5f85\u5be9\u6838';
+    const sc=SC[sk]||{bg:'#f5f5f5',color:'#888',border:'#ddd',icon:'\ud83d\udccb',label:sk,note:''};
+    const bc=BC[sk]||defBC;
+    const cover=r.cover||r.sessionCover||r.eventCover||'';
+    const thumbHtml=cover
+      ?`<img src="${esc(cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='#DDEAD1'">`
+      :`<div style="width:100%;height:100%;background:#DDEAD1;display:flex;align-items:center;justify-content:center;font-size:28px">\ud83c\udfaa</div>`;
+    const dates=Array.isArray(r.dates)?r.dates:[];
     let dateStr=r.date||'';
-    if(dates.length>1){
-      const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
-      dateStr=fmt(dates[0].date)+'\uff5e'+fmt(dates[dates.length-1].date);
-    } else if(dates.length===1){
-      const d=dates[0];
-      dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'\uff5e'+d.end:'');
-    }
-    return `<div style="background:#fff;border:1px solid #e5eede;border-radius:22px;padding:14px;cursor:pointer" onclick="openRegDetail('${esc(r.id)}')">
-      <div style="display:grid;grid-template-columns:100px 1fr 36px;gap:12px;align-items:start;margin-bottom:12px">
-        <div style="width:100px;height:86px">${thumbHtml}</div>
+    if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'\uff5e'+fmt(dates[dates.length-1].date);}
+    else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'\uff5e'+d.end:'');}
+
+    return `<div class="m-record-card" onclick="openRegDetail('${esc(r.id)}')">
+      <div class="m-record-top">
+        <div class="m-record-thumb">${thumbHtml}</div>
         <div>
-          <div style="font-size:19px;font-weight:900;margin-bottom:6px;line-height:1.3">${esc(r.sessionName||r.name||'')}</div>
-          ${dateStr?`<div style="font-size:14px;color:#555;margin-bottom:4px">\ud83d\udcc5 ${esc(dateStr)}</div>`:''}
-          ${r.venue?`<div style="font-size:14px;color:#555">\ud83d\udccd ${esc(r.venue)}</div>`:''}
+          <div class="m-record-name">${esc(r.sessionName||r.name||'')}</div>
+          <div class="m-record-meta">
+            ${dateStr?`\ud83d\udcc5 ${esc(dateStr)}<br>`:''}
+            ${r.venue?`\ud83d\udccd ${esc(r.venue)}`:''}
+          </div>
         </div>
-        <div style="font-size:32px;color:#aaa;line-height:1;text-align:right">\u203a</div>
+        <div class="m-record-arrow">\u203a</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span style="display:inline-flex;align-items:center;gap:5px;min-width:84px;height:34px;border-radius:999px;padding:0 12px;font-size:14px;font-weight:900;background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">
+      <div class="m-record-bottom">
+        <span class="m-status-pill" style="background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">
           ${sc.icon} ${sc.label}
         </span>
-        <span style="font-size:14px;color:#666;flex:1">${sc.note}</span>
-        <button onclick="event.stopPropagation();openRegDetail('${esc(r.id)}')"
-          style="height:40px;padding:0 16px;border-radius:14px;border:none;font-size:15px;font-weight:900;cursor:pointer;background:${bc.bg};color:${bc.color};font-family:inherit;white-space:nowrap">
-          ${bc.label}
-        </button>
+        <span class="m-status-note">${sc.note}</span>
+        <button class="m-action-btn" style="background:${bc.bg};color:${bc.color}"
+          onclick="event.stopPropagation();openRegDetail('${esc(r.id)}')">${bc.label}</button>
       </div>
     </div>`;
   }).join('');
