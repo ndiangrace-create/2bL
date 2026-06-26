@@ -2262,6 +2262,9 @@ function goRegsList(sesId,sesName,statusFilter){
   if(rSesEl && sesId!=='all') rSesEl.value=sesId;
   const rStatEl=$('regStatusFilter');
   if(rStatEl){ rStatEl.value=statusFilter||''; ST._showAllRegStatus=!statusFilter; }
+  // 全場次模式隱藏下載按鈕（下載必須指定單一場次）
+  const dlBtn=$('regsDownloadBtn');
+  if(dlBtn) dlBtn.style.display=sesId==='all'?'none':'inline-flex';
   setTimeout(()=>{ renderRegs(); },80);
 }
 function renderRegsSummary(){
@@ -2687,19 +2690,151 @@ function setPaymentsQuick(status){
 }
 
 // ── 名單下載（單場強制）──────────────────────────────────────────
-function downloadRegsCSV(){
+async function downloadRegsCSV(){
   const sesId=ST._filterSesId||$('regSesFilter')?.value||'';
   if(!sesId){toast('請先選定場次才能下載名單');return;}
-  const regs=(ST.allRegs||[]).filter(r=>String(r.sessionId||r.sesId||'')===String(sesId));
   const ses=(ST.sdData||[]).find(s=>String(s.id)===String(sesId));
   const sesName=ses?.title||ses?.name||sesId;
-  const headers=['報名編號','品牌名稱','聯絡姓名','Email','手機','狀態','繳費狀態','金額','攤位','申請時間'];
-  const rows=regs.map(r=>[r.regNo||r.id,r.brand||'',r.name||'',r.email||'',r.phone||'',r.status||r.reviewStatus||'',r.payStatus||'',r.amount||'',r.stall||'',r.createdAt||'']);
-  const csv=[headers,...rows].map(row=>row.map(v=>'"'+(String(v||'')).replace(/"/g,'""')+'"').join(',')).join('\n');
+  toast('⏳ 下載準備中…');
+
+  // 撈完整報名資料（含設備JSON）
+  const regs=await api({action:'getRegsBySession',sessionId:sesId,email:ST.email,token:ST.token});
+  // 撈財務明細
+  const finItems=await api({action:'getFinance',sessionId:sesId,email:ST.email,token:ST.token});
+
+  const csv=buildFullSessionCSV(ses, regs||[], finItems||[]);
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=`名單_${sesName}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download=`${sesName}_完整資料_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
+}
+
+function buildFullSessionCSV(ses, regs, finItems){
+  const esc=v=>'"'+(String(v??'')).replace(/"/g,'""')+'"';
+  const row=arr=>arr.map(esc).join(',')+\`\n\`;
+  let csv='';
+
+  // ── 第一區：場次基本資訊 ──
+  csv+=row(['場次資訊','']);
+  csv+=row(['欄位','內容']);
+  csv+=row(['場次名稱', ses?.title||ses?.name||'']);
+  csv+=row(['活動名稱', ses?.eventName||ses?.event||'']);
+  csv+=row(['場地', ses?.venue||'']);
+  csv+=row(['活動日期', ses?.date||ses?.eventDate||'']);
+  csv+=row(['場次ID', ses?.id||'']);
+  csv+=row(['下載時間', new Date().toLocaleString('zh-TW')]);
+  csv+='\n';
+
+  // ── 第二區：財報摘要 ──
+  const isPaid=r=>['已繳費','免費'].includes(r.payStatus||'');
+  const isCancelled=r=>['已取消','cancelled'].includes(r.status||r.reviewStatus||'');
+  const isRefunded=r=>['已退費','已退款'].includes(r.payStatus||'');
+  const isApproved=r=>['已錄取','approved'].includes(r.status||r.reviewStatus||'');
+  const eligible=regs.filter(r=>isApproved(r)&&isPaid(r)&&!isCancelled(r)&&!isRefunded(r));
+
+  const totalPaidAmt=regs.filter(r=>isPaid(r)&&!isCancelled(r)).reduce((s,r)=>s+(Number(r.amount)||0),0);
+  const totalDeposit=regs.filter(r=>isPaid(r)&&!isCancelled(r)).reduce((s,r)=>s+(Number(r.deposit)||0),0);
+  const depositRefunded=regs.filter(r=>r.depositRefunded==='已退押金'||r.depositRefunded==='已退').reduce((s,r)=>s+(Number(r.deposit)||0),0);
+  const depositPending=totalDeposit-depositRefunded;
+
+  // 設備收入（計費設備）
+  let equipIncome=0;
+  regs.forEach(r=>{
+    try{
+      const eq=typeof r.equip==='string'?JSON.parse(r.equip||'{}'):r.equip||{};
+      // 設備收入直接從 amount - 基本費算，這裡用 finItems 的設備項目
+    }catch(e){}
+  });
+
+  // 手動收入/支出
+  const manualIn=(finItems||[]).filter(f=>f.type==='收入'&&!f.isAuto).reduce((s,f)=>s+(Number(f.amount)||0),0);
+  const manualOut=(finItems||[]).filter(f=>f.type==='支出').reduce((s,f)=>s+(Number(f.amount)||0),0);
+  const activityIncome=totalPaidAmt; // 前台已收（含設備含押金）
+  const netIncome=totalPaidAmt-totalDeposit+manualIn-manualOut; // 不含押金的損益
+
+  csv+=row(['財報摘要（該場次最新資料）','','']);
+  csv+=row(['項目','金額/數量','備註']);
+  csv+=row(['總報名筆數', regs.length, '該場次所有報名']);
+  csv+=row(['已錄取/已繳費筆數', eligible.length, '設備統計主要參考']);
+  csv+=row(['已繳費筆數', regs.filter(r=>isPaid(r)&&!isCancelled(r)).length, '列入已收費用']);
+  csv+=row(['待確認繳費', regs.filter(r=>['待確認','待核款'].includes(r.payStatus||'')).length, '付款狀態為待確認/待核款']);
+  csv+=row(['前台已收總額', totalPaidAmt, '活動費／設備／加購與押金合計']);
+  csv+=row(['列入損益收入', totalPaidAmt-totalDeposit, '前台已收總額扣除押金']);
+  csv+=row(['手動收入', manualIn, '財報明細收入項目']);
+  csv+=row(['手動支出', manualOut, '財報明細支出項目']);
+  csv+=row(['收入合計', (totalPaidAmt-totalDeposit)+manualIn, '列入損益收入＋手動收入']);
+  csv+=row(['支出合計', manualOut, '手動支出']);
+  csv+=row(['試算淨額', netIncome, '收入合計－支出合計']);
+  csv+=row(['押金收取', totalDeposit, '不列入損益']);
+  csv+=row(['押金已退', depositRefunded, '不列入損益']);
+  csv+=row(['押金未退', depositPending, '不列入損益']);
+  csv+='\n';
+
+  // 手動收支明細
+  if((finItems||[]).length>0){
+    csv+=row(['手動收支明細','','']);
+    csv+=row(['類型','項目名稱','金額']);
+    finItems.forEach(f=>{
+      if(!f.isAuto) csv+=row([f.type||'', f.name||'', f.amount||0]);
+    });
+    csv+='\n';
+  }
+
+  // ── 第三區：報名明細（每人一行，設備橫向展開）──
+  // 收集所有設備品項
+  const equipItems=new Set();
+  regs.forEach(r=>{
+    try{
+      const eq=typeof r.equip==='string'?JSON.parse(r.equip||'{}'):r.equip||{};
+      Object.keys(eq).forEach(k=>{ if(Number(eq[k])>0) equipItems.add(k); });
+    }catch(e){}
+  });
+  const equipCols=[...equipItems].sort();
+
+  const regHeaders=[
+    '場次名稱','報名ID','姓名','品牌','手機','Email',
+    '攤位數','審核狀態','付款狀態','應繳/已收金額','押金','付款方式',
+    '已報到','已清場','退押金','攤位號碼',
+    ...equipCols.map(e=>e+'(設備)'),
+    '統編','發票抬頭','發票Email','發票狀態',
+    '報名時間','管理員備註'
+  ];
+
+  csv+=row(['報名明細（每位報名一列）']);
+  csv+=row(regHeaders);
+
+  regs.forEach(r=>{
+    let eq={};
+    try{ eq=typeof r.equip==='string'?JSON.parse(r.equip||'{}'):r.equip||{}; }catch(e){}
+    const equipVals=equipCols.map(k=>Number(eq[k]||0)>0?eq[k]:0);
+    csv+=row([
+      ses?.title||ses?.name||'',
+      r.id||'',
+      r.name||'',
+      r.brand||'',
+      r.phone||'',
+      r.email||'',
+      r.stallCount||1,
+      r.status||r.reviewStatus||'',
+      r.payStatus||'',
+      r.amount||0,
+      r.deposit||0,
+      r.payMethod||'',
+      r.checkin||'未報到',
+      r.clearStatus||'未清場',
+      r.depositRefunded||'未退押金',
+      r.stallNo||'',
+      ...equipVals,
+      r.taxId||'',
+      r.invoiceTitle||'',
+      r.invoiceEmail||'',
+      r.invoiceStatus||'',
+      r.createdAt?new Date(r.createdAt).toLocaleString('zh-TW'):'',
+      r.adminNote||'',
+    ]);
+  });
+
+  return csv;
 }
 
 
