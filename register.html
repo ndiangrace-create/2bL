@@ -143,10 +143,10 @@ button,a,[onclick]{touch-action:manipulation}
 /* ── 底部導覽（四顆）── */
 .bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:flex;gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
 @media(min-width:600px){.bottom-fixed{max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;border:1px solid var(--border)}}
-.bot-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;border-radius:12px;font-size:10px;font-weight:700;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
-.bot-btn.active{color:var(--s-ok)}
-.bot-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:1px}
-.bot-btn.active .bot-icon{background:var(--c1)}
+.bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:15px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
+.bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
+.bot-btn.active{background:var(--btn-color,#DDEAD1);color:#111}
+.bot-icon{display:none}
 
 /* ── Portal / Session / Member 相容 CSS ── */
 .mcard{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);padding:16px;margin-bottom:12px}
@@ -437,25 +437,43 @@ button,a,[onclick]{touch-action:manipulation}
   <!-- 已登入區 -->
   <div id="memberArea" style="display:none;padding:0 0 100px">
 
-    <!-- 會員資料小卡片 -->
-    <div style="margin:12px 16px;background:linear-gradient(135deg,#2d6a4f,#52b788);border-radius:16px;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:12px">
+    <!-- 頂部會員卡（登入狀態共用）-->
+    <div style="margin:14px 16px;background:#DDEAD1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px">
       <div style="flex:1;min-width:0">
-        <div style="font-size:15px;font-weight:900" id="memberName"></div>
-        <div style="font-size:14px;opacity:.8;margin-top:2px" id="memberEmail2"></div>
-        <div style="font-size:15px;opacity:.9;margin-top:4px" id="memberBrandShow"></div>
-        <div style="font-size:14px;opacity:.65;margin-top:3px">✏️ 資料可隨時更新，下次報名自動帶入</div>
+        <div style="font-size:18px;font-weight:900;color:#111" id="memberName"></div>
+        <div style="font-size:15px;color:#444;margin-top:3px" id="memberEmail2"></div>
+        <div style="font-size:15px;font-weight:700;color:#2a6a10;margin-top:3px" id="memberBrandShow"></div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0">
-        <button onclick="openMemberEditModal()" style="background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.6);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">✏️ 編輯</button>
-        <button onclick="memberLogout()" style="background:rgba(0,0,0,.2);border:none;color:rgba(255,255,255,.85);padding:10px 14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">登出</button>
+        <button onclick="openMemberEditModal()" style="background:#fff;border:1.5px solid #b8d4a0;color:#2a6a10;padding:10px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">編輯</button>
+        <button onclick="memberLogout()" style="background:#FAE1DD;border:none;color:#8b1c1c;padding:10px 14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">登出</button>
       </div>
     </div>
 
-    <!-- 報名紀錄 -->
-    <div style="padding:0 16px">
-      <div style="font-size:14px;font-weight:700;color:var(--md);margin:4px 0 10px">我的報名紀錄</div>
+    <!-- 模式切換頁籤 -->
+    <div style="display:flex;gap:0;margin:0 16px 16px;border-radius:12px;overflow:hidden;border:1.5px solid #DDEAD1">
+      <button id="tabMyRegs" onclick="switchMemberMode('regs')"
+        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#DDEAD1;color:#2a6a10;font-family:inherit">
+        我的報名
+      </button>
+      <button id="tabProfile" onclick="switchMemberMode('profile')"
+        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#fff;color:#666;font-family:inherit">
+        會員資料
+      </button>
+    </div>
+
+    <!-- 我的報名紀錄 -->
+    <div id="myRegsMode" style="padding:0 16px">
       <div id="myRegsList"></div>
     </div>
+
+    <!-- 會員個人資料 -->
+    <div id="profileMode" style="display:none;padding:0 16px">
+      <div id="memberProfileContent">
+        <div style="text-align:center;padding:30px;color:#aaa">載入中…</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- 會員資料編輯 Modal -->
@@ -711,21 +729,17 @@ button,a,[onclick]{touch-action:manipulation}
 
 <!-- ══ 底部四顆導覽 ══ -->
 <div class="bottom-fixed" id="bottomNav">
-  <button class="bot-btn active" id="botHome" onclick="navToTab('home')">
-    <span class="bot-icon">🏠</span>
-    <span class="bot-label">首頁</span>
+  <button class="bot-btn active" id="botHome" onclick="navToTab('home')" style="--btn-color:#DDEAD1">
+    <span class="bot-label">🏠 首頁</span>
   </button>
-  <button class="bot-btn" id="botMyRegs" onclick="navToTab('myregs')">
-    <span class="bot-icon">📋</span>
-    <span class="bot-label">我的報名</span>
+  <button class="bot-btn" id="botMyRegs" onclick="navToTab('myregs')" style="--btn-color:#FAEEC7">
+    <span class="bot-label">📋 我的報名</span>
   </button>
-  <button class="bot-btn" id="botSupport" onclick="navToTab('support')">
-    <span class="bot-icon">💬</span>
-    <span class="bot-label">客服</span>
+  <button class="bot-btn" id="botSupport" onclick="navToTab('support')" style="--btn-color:#DCD7ED">
+    <span class="bot-label">💬 客服</span>
   </button>
-  <button class="bot-btn" id="botMember" onclick="navToTab('member')">
-    <span class="bot-icon">👤</span>
-    <span class="bot-label" id="botMemberLabel">會員</span>
+  <button class="bot-btn" id="botMember" onclick="navToTab('member')" style="--btn-color:#D9E5EE">
+    <span class="bot-label" id="botMemberLabel">👤 會員</span>
   </button>
 </div>
 
@@ -989,19 +1003,29 @@ function navToTab(tab){
   if(tab==='home'){
     navTo('home');
   } else if(tab==='myregs'){
-    // 我的報名 → 進會員頁並顯示報名紀錄
-    safeLoadMemberPage(ST.memberEmail||memberSafeEmail());
-    setTimeout(()=>{
-      const regsArea=$('myRegsList');
-      if(regsArea) regsArea.scrollIntoView({behavior:'smooth',block:'start'});
-    },300);
+    // 我的報名 → 進會員頁，切到「我的報名」模式
+    const email = ST.memberEmail||memberSafeEmail();
+    if(email){
+      memberShowArea('regs');
+      navTo('member');
+    } else {
+      navTo('member');
+      memberShowLogin();
+    }
   } else if(tab==='support'){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('pageSupport');
     if(pg) pg.classList.add('active');
   } else if(tab==='member'){
-    // 會員 → 進會員頁（個人資料）
-    safeLoadMemberPage(ST.memberEmail||memberSafeEmail());
+    // 會員 → 進會員頁，切到「會員資料」模式
+    const email = ST.memberEmail||memberSafeEmail();
+    if(email){
+      memberShowArea('profile');
+      navTo('member');
+    } else {
+      navTo('member');
+      memberShowLogin();
+    }
   }
 }
 
@@ -1172,14 +1196,64 @@ function memberShowLogin(){
   if(loginArea) loginArea.style.display='block';
   if(memberArea) memberArea.style.display='none';
 }
-function memberShowArea(){
+function memberShowArea(mode){
   const loginArea=$('memberLoginArea');
   const memberArea=$('memberArea');
   if(loginArea) loginArea.style.display='none';
   if(memberArea) memberArea.style.display='block';
-  const lbl=$('botMemberLabel');
-  if(lbl) lbl.textContent='我的紀錄';
+  // 切換到對應模式
+  switchMemberMode(mode||'regs');
 }
+function switchMemberMode(mode){
+  const regsDiv = $('myRegsMode');
+  const profileDiv = $('profileMode');
+  const tabRegs = $('tabMyRegs');
+  const tabProfile = $('tabProfile');
+  if(mode === 'regs'){
+    if(regsDiv) regsDiv.style.display = 'block';
+    if(profileDiv) profileDiv.style.display = 'none';
+    if(tabRegs){ tabRegs.style.background='#DDEAD1'; tabRegs.style.color='#2a6a10'; }
+    if(tabProfile){ tabProfile.style.background='#fff'; tabProfile.style.color='#666'; }
+  } else {
+    if(regsDiv) regsDiv.style.display = 'none';
+    if(profileDiv) profileDiv.style.display = 'block';
+    if(tabRegs){ tabRegs.style.background='#fff'; tabRegs.style.color='#666'; }
+    if(tabProfile){ tabProfile.style.background='#DDEAD1'; tabProfile.style.color='#2a6a10'; }
+    // 填入會員資料
+    renderMemberProfile();
+  }
+}
+
+function renderMemberProfile(){
+  const m = ST.member || {};
+  const el = $('memberProfileContent');
+  if(!el) return;
+  el.innerHTML = `
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #DDEAD1;padding:20px;margin-bottom:12px">
+      <div style="font-size:18px;font-weight:900;margin-bottom:16px;color:#111">個人基本資料</div>
+      <div style="display:grid;gap:12px">
+        ${profileRow('姓名', m.name)}
+        ${profileRow('Email', m.email||ST.memberEmail)}
+        ${profileRow('手機', m.phone)}
+        ${profileRow('品牌名稱', m.brand)}
+        ${profileRow('品牌簡介', m.brandDesc)}
+        ${profileRow('Facebook', m.fb)}
+        ${profileRow('Instagram', m.ig)}
+        ${profileRow('LINE ID', m.lineId)}
+      </div>
+      <button onclick="openMemberEditModal()" style="margin-top:18px;width:100%;background:#DDEAD1;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:900;color:#2a6a10;cursor:pointer;font-family:inherit">編輯資料</button>
+    </div>
+  `;
+}
+
+function profileRow(label, val){
+  if(!val) return '';
+  return `<div style="display:flex;gap:12px;align-items:flex-start">
+    <div style="font-size:14px;color:#888;width:80px;flex-shrink:0">${label}</div>
+    <div style="font-size:16px;font-weight:700;color:#111;flex:1">${val}</div>
+  </div>`;
+}
+
 function fillMemberCard(member){
   const m=member||{};
   const email=String(m.email||ST.memberEmail||memberSafeEmail()||'').trim();
