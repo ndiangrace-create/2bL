@@ -194,27 +194,36 @@ button,a,[onclick]{touch-action:manipulation}
   .ec-info{padding:12px}
 }
 
-/* ── 場次卡片（左圖、中資訊、右按鈕）── */
-.ses-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);display:flex;overflow:hidden;cursor:pointer;transition:border-color .15s;min-height:120px}
+/* ── 場次卡片（手機：上圖下文 / 電腦：左圖右文）── */
+.ses-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column}
 .ses-card:hover{border-color:var(--c1)}
 .ses-card-closed{opacity:.7}
-.ses-card-img{width:100px;min-width:100px;background:var(--c1);position:relative;overflow:hidden;flex-shrink:0}
+/* 手機：圖片在上，固定高度 */
+.ses-card-img{width:100%;height:160px;background:var(--c1);position:relative;overflow:hidden;flex-shrink:0}
 .ses-card-img img{width:100%;height:100%;object-fit:cover}
-.ses-card-initial{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:var(--s-ok);background:var(--c1)}
-.ses-card-body{flex:1;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
-.ses-card-top{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-.ses-card-name{font-size:17px;font-weight:900;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ses-card-meta{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ses-card-fee{font-size:16px;font-weight:900;color:var(--s-ok);margin-top:2px}
-.ses-card-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px 12px;flex-shrink:0;border-left:1px solid var(--border)}
-.ses-reg-btn{background:var(--c1);border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:900;color:var(--s-ok);cursor:pointer;font-family:inherit;white-space:nowrap;width:80px;text-align:center}
+.ses-card-initial{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:var(--s-ok);background:var(--c1)}
+.ses-card-body{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ses-card-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ses-card-name{font-size:18px;font-weight:900;color:var(--txt)}
+.ses-card-meta{font-size:14px;color:var(--muted)}
+.ses-card-fee{font-size:18px;font-weight:900;color:var(--s-ok)}
+.ses-card-actions{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border);background:#fafaf8}
+.ses-reg-btn{flex:1;background:var(--c1);border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:900;color:var(--s-ok);cursor:pointer;font-family:inherit;text-align:center}
 .ses-reg-btn:hover{background:var(--gl)}
-.ses-share-btn{background:none;border:1px solid var(--border);border-radius:10px;padding:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-family:inherit;width:80px}
+.ses-share-btn{background:none;border:1.5px solid var(--border);border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap}
 .ses-share-btn:hover{border-color:var(--c1);color:var(--s-ok)}
+/* 電腦版：左圖右文+右側按鈕 */
 @media(min-width:600px){
-  .ses-card-img{width:120px;min-width:120px}
-  .ses-card-name{font-size:18px}
-  .ses-card-meta{font-size:14px}
+  .ses-card{flex-direction:row;min-height:130px}
+  .ses-card-img{width:140px;min-width:140px;height:auto}
+  .ses-card-initial{font-size:40px}
+  .ses-card-body{padding:14px 16px;justify-content:center}
+  .ses-card-name{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ses-card-meta{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ses-card-fee{font-size:16px}
+  .ses-card-actions{flex-direction:column;border-top:none;border-left:1px solid var(--border);padding:14px 16px;background:transparent;justify-content:center;width:100px;flex-shrink:0}
+  .ses-reg-btn{flex:0;width:100%;padding:10px;font-size:14px}
+  .ses-share-btn{width:100%;justify-content:center;padding:8px;font-size:13px}
 }
 
 /* ── 精選主題活動卡片 ── */
@@ -980,14 +989,19 @@ function navToTab(tab){
   if(tab==='home'){
     navTo('home');
   } else if(tab==='myregs'){
-    goMemberPage();
-    setTimeout(()=>{ const p=$('pageMember'); if(p){ p.classList.add('active'); } },80);
+    // 我的報名 → 進會員頁並顯示報名紀錄
+    safeLoadMemberPage(ST.memberEmail||memberSafeEmail());
+    setTimeout(()=>{
+      const regsArea=$('myRegsList');
+      if(regsArea) regsArea.scrollIntoView({behavior:'smooth',block:'start'});
+    },300);
   } else if(tab==='support'){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('pageSupport');
     if(pg) pg.classList.add('active');
   } else if(tab==='member'){
-    goMemberPage();
+    // 會員 → 進會員頁（個人資料）
+    safeLoadMemberPage(ST.memberEmail||memberSafeEmail());
   }
 }
 
@@ -2608,14 +2622,25 @@ async function submitReg(ev){
 
 // ── 會員登出 ──
 function memberLogout(){
-  try { localStorage.removeItem('tb_member'); localStorage.removeItem('tb_member_email'); } catch(e){}
-  ST.memberEmail=''; ST.member=null;
-  ST.member=null;ST.memberEmail=null;
-  $('loginEmail').value='';
-  $('memberLoginArea').style.display='block';
-  $('memberArea').style.display='none';
-  const lbl=$('botMemberLabel');
-  if(lbl) lbl.textContent='我的紀錄';
+  // 清除所有前台會員 token（報名者登出）
+  try {
+    localStorage.removeItem('2bl_member_token');
+    localStorage.removeItem('2bl_member_token_pending');
+    localStorage.removeItem('2bl_display_name');
+    localStorage.removeItem('2bl_display_name_pending');
+    localStorage.removeItem('tb_member');
+    localStorage.removeItem('tb_member_email');
+    localStorage.removeItem('tb_member_email_v2');
+  } catch(e){}
+  ST.memberEmail = '';
+  ST.memberToken = '';
+  ST.member = null;
+  // 回到登入畫面
+  memberShowLogin();
+  // 更新底部按鈕標籤
+  const lbl = $('botMemberLabel');
+  if(lbl) lbl.textContent = '會員';
+  toast('已登出');
 }
 
 function isPaidText(v){ return String(v||'').indexOf('已繳費')>=0 || String(v||'')==='免費'; }
