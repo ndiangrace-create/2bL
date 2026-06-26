@@ -143,9 +143,9 @@ button,a,[onclick]{touch-action:manipulation}
 /* ── 底部導覽（四顆）── */
 
 @media(min-width:600px){}
-.bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:15px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
+
 .bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
-.bot-btn.active{background:var(--btn-color,#DDEAD1);color:#111}
+
 .bot-icon{display:none}
 
 /* ── Portal / Session / Member 相容 CSS ── */
@@ -343,46 +343,7 @@ button,a,[onclick]{touch-action:manipulation}
 .ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
 .ses-list-reg{min-width:88px;height:42px;border-radius:12px;border:none;background:#DCD7ED;color:#111;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0 12px}
 
-/* 電腦版：最大寬度 + 3欄大卡片 */
-@media(min-width:700px){
-  body{max-width:960px;margin:0 auto}
-  #pageHome,#pagePortal,#pageSession,#pageMember,#pageSupport{max-width:960px;margin:0 auto}
-  
 
-  /* 近期場次：3欄大卡片 */
-  #recentSection #eventsList{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:14px;
-  }
-  .ses-list-card{
-    grid-template-columns:1fr;
-    grid-template-rows:auto 1fr auto;
-    align-items:stretch;
-    padding:0;
-    overflow:hidden;
-    margin-bottom:0;
-    gap:0;
-  }
-  .ses-list-img{
-    width:100%;
-    height:160px;
-    border-radius:0;
-  }
-  .ses-list-body{padding:14px 14px 6px}
-  .ses-list-name{font-size:19px}
-  .ses-list-meta{font-size:14px}
-  .ses-list-fee{font-size:18px;margin-top:6px}
-  .ses-list-actions{
-    flex-direction:row;
-    align-items:center;
-    justify-content:flex-end;
-    padding:8px 14px 14px;
-    gap:10px;
-  }
-  .ses-list-reg{min-width:100px;height:44px;font-size:16px}
-  .ses-list-share{width:38px;height:38px;font-size:16px}
-}
 
 /* ══════════════════════════════════════
    MOCKUP 套版 CSS  (front_mockup.css)
@@ -530,27 +491,11 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 }
 
 /* ── 底部三顆導覽 ── */
-.bottom-fixed{
-  position:fixed;
-  bottom:0; left:0; right:0;
-  background:white;
-  border-top:1px solid var(--mk-line);
-  padding:10px 14px calc(14px + env(safe-area-inset-bottom));
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  z-index:200;
-  box-shadow:0 -2px 12px rgba(0,0,0,.06);
-}
-.bot-btn{
-  height:54px; border-radius:20px;
-  display:flex; align-items:center; justify-content:center;
-  gap:8px; font-size:18px; font-weight:900;
-  border:none; cursor:pointer; font-family:inherit;
-  background:transparent; color:#555;
-  transition:all .15s;
-}
-.bot-btn.active, #botHome.active{ background:var(--mk-green); color:#4d7f39; }
+
+
+#botHome.active{ background:#DDEAD1; color:#4d7f39; }
+#botMember.active{ background:#FAEEC7; color:#9a6f00; }
+#botSupport.active{ background:#DCD7ED; color:#5f4ca0; }
 #botMember.active{ background:var(--mk-yellow); color:#9a6f00; }
 #botSupport.active{ background:var(--mk-purple); color:#5f4ca0; }
 
@@ -1240,7 +1185,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 
 /* 近期場次 */
 .hc-session-list{display:flex;flex-direction:column;gap:10px}
-.hc-session-card{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:18px;padding:12px;box-shadow:0 3px 12px rgba(0,0,0,.04);cursor:pointer}
+.hc-session-card{display:grid;grid-template-columns:88px 1fr 86px;gap:10px;align-items:center;background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:18px;padding:12px;margin-bottom:0;box-shadow:0 3px 12px rgba(0,0,0,.04);cursor:pointer}
 .hc-session-thumb{width:90px;height:76px;border-radius:14px;overflow:hidden;background:#DDEAD1;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .hc-session-thumb img{width:100%;height:100%;object-fit:cover}
 .hc-session-name{font-size:17px;font-weight:900;line-height:1.25;margin-bottom:4px}
@@ -1801,6 +1746,15 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
   line-height: 1.5;
 }
 
+
+@media(min-width:700px){
+  body{ background:#f5f5f0; }
+  #pageHome, #pagePortal, #pageSession, #regFormModal, #pageMember, #pageSupport {
+    max-width:680px; margin:0 auto; background:#fff;
+    box-shadow:0 0 30px rgba(0,0,0,.08);
+  }
+  .bottom-fixed{ max-width:680px; left:50%; transform:translateX(-50%); right:auto; }
+}
 </style>
 </head>
 <body>
@@ -2492,9 +2446,17 @@ function navToTab(tab){
       memberShowLogin();
     }
   } else if(tab==='support'){
+    // 切換到客服頁
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('pageSupport');
-    if(pg){ pg.classList.add('active'); }
+    if(pg) pg.classList.add('active');
+    // 底部 active
+    ['botHome','botMember','botSupport'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.classList.remove('active');
+    });
+    const sb=document.getElementById('botSupport');
+    if(sb) sb.classList.add('active');
     window.scrollTo(0,0);
     try{ localStorage.setItem('2bl_current_tab','support'); }catch(e){}
   }
@@ -4909,7 +4871,7 @@ if(document.readyState==='loading'){
           const hasCover=!!(e.cover||e.coverUrl);
           const imgHtml=hasCover
             ?`<img src="${esc(e.cover||e.coverUrl)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<img src=IP歡迎.png style=width:52px;height:52px;object-fit:contain;margin:auto;display:block;padding-top:18px>'">`
-            :`<img src="IP歡迎.png" alt="" style="width:52px;height:52px;object-fit:contain;margin:auto;display:block;padding-top:18px">`;
+            :`<div style="width:100%;height:100%;background:#DDEAD1;display:flex;align-items:center;justify-content:center;font-size:32px">🎪</div>`;
           return `<div class="hc-theme-card" onclick="openEvent('${esc(e.id)}')">
             <div class="hc-theme-img">${imgHtml}</div>
             <div class="hc-theme-body">
