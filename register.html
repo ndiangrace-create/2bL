@@ -1356,13 +1356,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 }
 .m-hero-mail {
   margin: 0 0 5px;
-  font-size: 15px;
+  font-size: 16px;
   color: #555;
   line-height: 1.4;
 }
 .m-hero-brand {
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #2f6d28;
 }
@@ -1479,14 +1479,14 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
   object-fit: cover;
 }
 .m-record-name {
-  font-size: 19px;
+  font-size: 21px;
   font-weight: 900;
   line-height: 1.3;
   margin-bottom: 6px;
   color: #111;
 }
 .m-record-meta {
-  font-size: 13px;
+  font-size: 15px;
   color: #555;
   line-height: 1.5;
 }
@@ -1515,7 +1515,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
   white-space: nowrap;
 }
 .m-status-note {
-  font-size: 13px;
+  font-size: 15px;
   color: #666;
   flex: 1;
 }
@@ -1657,14 +1657,14 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
   text-align: center;
 }
 .m-profile-row-label {
-  font-size: 14px;
+  font-size: 16px;
   color: #888;
   font-weight: 700;
-  width: 72px;
+  width: 80px;
   flex-shrink: 0;
 }
 .m-profile-row-value {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: #111;
   flex: 1;
@@ -1748,12 +1748,8 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 
 
 @media(min-width:700px){
-  body{ background:#f5f5f0; }
-  #pageHome, #pagePortal, #pageSession, #regFormModal, #pageMember, #pageSupport {
-    max-width:680px; margin:0 auto; background:#fff;
-    box-shadow:0 0 30px rgba(0,0,0,.08);
-  }
-  .bottom-fixed{ max-width:680px; left:50%; transform:translateX(-50%); right:auto; }
+  body{ max-width:1600px; margin:0 auto; }
+  .bottom-fixed{ max-width:1600px; left:50%; transform:translateX(-50%); right:auto; }
 }
 </style>
 </head>
@@ -2015,7 +2011,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
             <div class="m-profile-grid" id="memberProfileContent">
               <div style="text-align:center;color:#aaa;font-size:14px;padding:12px">載入中…</div>
             </div>
-            <img src="IP報名.png" alt="" class="m-profile-ip" onerror="this.style.display='none'">
+            
           </div>
           <button class="m-full-btn m-full-btn-purple" onclick="openMemberEditModal()">
             ✏️ 編輯資料
@@ -2033,7 +2029,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
             <div class="m-profile-grid" id="invoiceProfileContent">
               <div style="text-align:center;color:#aaa;font-size:14px;padding:12px">載入中…</div>
             </div>
-            <img src="IP歡迎.png" alt="" class="m-profile-ip" onerror="this.style.display='none'">
+            
           </div>
           <button class="m-full-btn m-full-btn-blue" onclick="openMemberEditModal()" style="width:auto;padding:0 20px">
             ✏️ 修改
