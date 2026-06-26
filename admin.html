@@ -2711,7 +2711,7 @@ async function downloadRegsCSV(){
 
 function buildFullSessionCSV(ses, regs, finItems){
   const esc=v=>'"'+(String(v??'')).replace(/"/g,'""')+'"';
-  const row=arr=>arr.map(esc).join(',')+\`\n\`;
+  const row=arr=>arr.map(esc).join(',')+'\n';
   let csv='';
 
   // ── 第一區：場次基本資訊 ──
