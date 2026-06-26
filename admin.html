@@ -18,67 +18,67 @@
 /* ── CSS 變數 ── */
 :root{
   /* 全域 */
-  --bg:#F5F6F4;
+  --bg:#FFFFFF;
   --wh:#FFFFFF;
   --dk:#2C2C2C;
-  --md:#555555;
-  --lt:#999999;
+  --md:#444444;
+  --lt:#888888;
   --sh:0 1px 6px rgba(0,0,0,.07);
   --sh2:0 2px 14px rgba(0,0,0,.10);
   --r:12px;
   --r-sm:8px;
 
-  /* 場次：霧綠 */
-  --ov-bg:#F3F8F3;
-  --ov-lbl:#DDEEDF;
-  --ov-btn:#7FAE86;
-  --ov-btn-dk:#5C8C63;
-  --ov-border:#C8DFC9;
-  --ov-txt:#3A6B42;
+  /* 場次：薄荷綠 #DDEAD1 */
+  --ov-bg:#DDEAD1;
+  --ov-lbl:#C8DFB8;
+  --ov-btn:#DDEAD1;
+  --ov-btn-dk:#B8D49A;
+  --ov-border:#C8DFB8;
+  --ov-txt:#2C2C2C;
 
-  /* 名單：粉藍 */
-  --rg-bg:#F3F7FB;
-  --rg-lbl:#DDEAF5;
-  --rg-btn:#7FA6C7;
-  --rg-btn-dk:#5A86A8;
-  --rg-border:#C4D8EE;
-  --rg-txt:#2E5C80;
+  /* 名單：霧藍 #D9E5EE */
+  --rg-bg:#D9E5EE;
+  --rg-lbl:#C0D4E8;
+  --rg-btn:#D9E5EE;
+  --rg-btn-dk:#B8CCE0;
+  --rg-border:#C0D4E8;
+  --rg-txt:#2C2C2C;
 
-  /* 現場：奶油黃 */
-  --ck-bg:#FFF9ED;
-  --ck-lbl:#F5E4B8;
-  --ck-btn:#C9A85A;
-  --ck-btn-dk:#A88840;
-  --ck-border:#EDD5A0;
-  --ck-txt:#7A6030;
+  /* 現場：奶黃 #FAEEC7 */
+  --ck-bg:#FAEEC7;
+  --ck-lbl:#F5E0A0;
+  --ck-btn:#FAEEC7;
+  --ck-btn-dk:#F5E0A0;
+  --ck-border:#F5E0A0;
+  --ck-txt:#2C2C2C;
 
-  /* 金流：珊瑚粉 */
-  --py-bg:#FFF4F0;
-  --py-lbl:#F2D1C6;
-  --py-btn:#D88A72;
-  --py-btn-dk:#B86A52;
-  --py-border:#E8C4B4;
-  --py-txt:#8B3C28;
+  /* 金流：粉紅 #FAE1DD */
+  --py-bg:#FAE1DD;
+  --py-lbl:#F5C8C0;
+  --py-btn:#FAE1DD;
+  --py-btn-dk:#F5C8C0;
+  --py-border:#F5C8C0;
+  --py-txt:#2C2C2C;
 
-  /* 更多：奶茶灰 */
-  --st-bg:#F8F5EF;
-  --st-lbl:#E8DED0;
-  --st-btn:#9B8A73;
-  --st-btn-dk:#7D6E5A;
-  --st-border:#D8CCBC;
-  --st-txt:#5A4E40;
+  /* 更多：薰衣草 #DCD7ED */
+  --st-bg:#DCD7ED;
+  --st-lbl:#C8C0E0;
+  --st-btn:#DCD7ED;
+  --st-btn-dk:#C8C0E0;
+  --st-border:#C8C0E0;
+  --st-txt:#2C2C2C;
 
-  /* 狀態色 */
-  --s-ok-bg:#EAF5EE;       --s-ok:#2D7A4F;       /* 成功/已完成 */
-  --s-warn-bg:#FFF8E6;     --s-warn:#A07020;     /* 待處理/警示 */
-  --s-info-bg:#EAF1FB;     --s-info:#2E5C80;     /* 一般資訊 */
-  --s-err-bg:#FDF0ED;      --s-err:#B84030;      /* 警告/退費 */
-  --s-grey-bg:#F2F2F0;     --s-grey:#777777;     /* 已取消/低頻 */
+  /* 狀態色（淡色系） */
+  --s-ok-bg:#DDEAD1;       --s-ok:#2C6E2C;
+  --s-warn-bg:#FAEEC7;     --s-warn:#7A5C00;
+  --s-info-bg:#D9E5EE;     --s-info:#1E4060;
+  --s-err-bg:#FAE1DD;      --s-err:#8B2C1C;
+  --s-grey-bg:#DCD7ED;     --s-grey:#444444;
 
-  /* 相容舊變數 */
-  --g:#7FAE86;--gl:#5C8C63;--gp:#DDEEDF;--gp2:#F3F8F3;
-  --rd:#B84030;--rdp:#FDF0ED;--yl:#A07020;--ylp:#FFF8E6;
-  --bl:#2E5C80;--blp:#EAF1FB;
+  /* 相容舊變數 → 全換淡色 */
+  --g:#B8D49A;--gl:#A0C080;--gp:#DDEAD1;--gp2:#EDFAE4;
+  --rd:#F5C8C0;--rdp:#FAE1DD;--yl:#F5E0A0;--ylp:#FAEEC7;
+  --bl:#C0D4E8;--blp:#D9E5EE;
 }
 
 /* ── Reset ── */
@@ -97,7 +97,7 @@ body{
 .login-page{
   min-height:100vh;
   display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(150deg,#3A6B42 0%,#5C8C63 55%,#7FAE86 100%);
+  background:linear-gradient(150deg,#D9E5EE 0%,#DDEAD1 55%,#FAEEC7 100%);
 }
 .login-box{
   background:#fff;border-radius:18px;
@@ -109,8 +109,8 @@ body{
 
 /* ── 頂部列 ── */
 .topbar{
-  background:var(--ov-btn-dk);
-  color:#fff;
+  background:#DDEAD1;
+  color:#2C2C2C;
   padding:0 16px;
   height:50px;
   display:flex;align-items:center;justify-content:space-between;
@@ -120,9 +120,9 @@ body{
 .topbar-logo{font-size:16px;font-weight:800;letter-spacing:.02em}
 .topbar-right{display:flex;gap:8px;align-items:center;font-size:14px;opacity:.95}
 .topbar-front-btn{
-  background:rgba(255,255,255,.20);
-  border:1px solid rgba(255,255,255,.38);
-  color:#fff;border-radius:8px;
+  background:rgba(255,255,255,.60);
+  border:1px solid rgba(0,0,0,.15);
+  color:#2C2C2C;border-radius:8px;
   padding:6px 12px;font-size:14px;font-weight:700;
   text-decoration:none;
   display:inline-flex;align-items:center;gap:4px;
@@ -214,7 +214,7 @@ textarea{min-height:64px;resize:vertical}
   font-size:13px;color:var(--ov-txt);font-weight:700;
   border-bottom:2px solid var(--ov-border);white-space:nowrap;
 }
-.ses-table td{padding:11px 10px;border-bottom:1px solid #F2F2F0;vertical-align:middle}
+.ses-table td{padding:11px 10px;border-bottom:1px solid #DCD7ED;vertical-align:middle}
 .ses-table tr:last-child td{border-bottom:none}
 .ses-table tr:hover td{background:var(--ov-bg)}
 .ses-row-event{font-size:10px;color:var(--lt);margin-top:1px}
@@ -230,7 +230,7 @@ textarea{min-height:64px;resize:vertical}
 /* ── 報名列表 ── */
 .reg-table{width:100%;border-collapse:collapse;font-size:15px}
 .reg-table th{background:var(--rg-bg);padding:9px 10px;text-align:left;font-size:13px;color:var(--rg-txt);font-weight:700;border-bottom:2px solid var(--rg-border);white-space:nowrap}
-.reg-table td{padding:10px 10px;border-bottom:1px solid #F2F2F0;vertical-align:middle}
+.reg-table td{padding:10px 10px;border-bottom:1px solid #DCD7ED;vertical-align:middle}
 .reg-table tr:hover td{background:var(--rg-bg)}
 
 /* ── 場次卡片（手機版） ── */
@@ -287,7 +287,7 @@ textarea{min-height:64px;resize:vertical}
 .rg-quick-bar{background:var(--rg-bg);border:1px solid var(--rg-border)}
 .qb-rg{border-color:var(--rg-border);background:#fff;color:var(--rg-txt)}
 .qb-rg:hover{background:var(--rg-lbl)}
-.qb-rg-warn{border-color:#D8BE80;background:#FFF8E6;color:#7A6030}
+.qb-rg-warn{border-color:#FAEEC7;background:#FAEEC7;color:#2C2C2C}
 .qb-rg-err{border-color:#DDBBAA;background:#FDF4F0;color:#833020}
 .qb-rg-grey{border-color:#D4D0CC;background:#F8F6F3;color:#777}
 
@@ -295,16 +295,16 @@ textarea{min-height:64px;resize:vertical}
 .ck-quick-bar{background:var(--ck-bg);border:1px solid var(--ck-border)}
 .qb-ck{border-color:var(--ck-border);background:#fff;color:var(--ck-txt)}
 .qb-ck:hover{background:var(--ck-lbl)}
-.qb-ck-ok{border-color:#A8CCB8;background:#EAF5EE;color:#2D6040}
-.qb-ck-warn{border-color:#D8BE80;background:#FFF8E6;color:#7A6030}
+.qb-ck-ok{border-color:#DDEAD1;background:#DDEAD1;color:#2C2C2C}
+.qb-ck-warn{border-color:#FAEEC7;background:#FAEEC7;color:#2C2C2C}
 
 /* 金流快捷色 */
 .py-quick-bar{background:var(--py-bg);border:1px solid var(--py-border)}
 .qb-py{border-color:var(--py-border);background:#fff;color:var(--py-txt)}
 .qb-py:hover{background:var(--py-lbl)}
-.qb-py-warn{border-color:#E0C090;background:#FFF8E6;color:#8A5820}
+.qb-py-warn{border-color:#FAEEC7;background:#FAEEC7;color:#2C2C2C}
 .qb-py-err{border-color:#DDBBAA;background:#FDF4F0;color:#8B3C28}
-.qb-py-ok{border-color:#A8CEB8;background:#EAF5EE;color:#2D6040}
+.qb-py-ok{border-color:#DDEAD1;background:#DDEAD1;color:#2C2C2C}
 .qb-py-grey{border-color:#D4D0CC;background:#F8F6F3;color:#777}
 
 /* 更多快捷色 */
@@ -434,7 +434,7 @@ textarea{min-height:64px;resize:vertical}
 .finance-card{background:#fff;border-radius:18px;width:min(96vw,1180px);height:min(90vh,860px);display:flex;flex-direction:column;box-shadow:0 10px 48px rgba(0,0,0,.22);overflow:hidden}
 .finance-card-head{position:sticky;top:0;background:#fff;z-index:2;padding:14px 16px 10px;border-bottom:1px solid #EDEDEA;display:flex;align-items:flex-start;gap:10px}
 .finance-card-title{flex:1;min-width:0}
-.finance-card-close{width:36px;height:36px;border:none;border-radius:50%;background:#F2F2F0;color:#444;font-size:24px;line-height:1;cursor:pointer;flex-shrink:0}
+.finance-card-close{width:36px;height:36px;border:none;border-radius:50%;background:#DCD7ED;color:#444;font-size:24px;line-height:1;cursor:pointer;flex-shrink:0}
 .finance-card-close:active{transform:scale(.94);background:#E8E8E4}
 .finance-card-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 96px}
 .finance-card-footer{position:sticky;bottom:0;background:#fff;border-top:1px solid #EDEDEA;padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:.7fr 1.2fr 1.2fr;gap:8px;z-index:50;box-shadow:0 -4px 14px rgba(0,0,0,.06)}
@@ -660,7 +660,15 @@ input[type=date],input[type=time],input[type=password],textarea,select{
 
   <!-- 第二層：單場名單（點入後才顯示） -->
   <div id="regsDetailLayer" style="display:none">
-    <select id="regSesFilter" onchange="onRegSesFilterChange()" style="width:100%;padding:10px;border:1.5px solid #d0e8d8;border-radius:10px;font-size:14px;margin-bottom:8px;background:#fff"><option value="">所有場次</option></select>
+    <select id="regSesFilter" onchange="onRegSesFilterChange()" style="width:100%;padding:10px;border:1.5px solid #D9E5EE;border-radius:10px;font-size:14px;margin-bottom:8px;background:#fff"><option value="">所有場次</option></select>
+    <select id="regStatusFilter" onchange="ST._showAllRegStatus=this.value==='';renderRegs();" style="width:100%;padding:10px;border:1.5px solid #D9E5EE;border-radius:10px;font-size:14px;margin-bottom:8px;background:#fff;font-family:inherit">
+      <option value="">全部狀態</option>
+      <option value="待審核">待審核</option>
+      <option value="已錄取">已錄取</option>
+      <option value="備取">備取</option>
+      <option value="不錄取">不錄取</option>
+      <option value="已取消">已取消</option>
+    </select>
     <input type="text" id="regSearch" placeholder="搜尋品牌/姓名/Email/手機" oninput="renderRegs()" style="margin-bottom:10px">
     <div id="regCount" style="font-size:12px;color:var(--md);margin-bottom:8px"></div>
     <div style="display:flex;align-items:center;gap:8px;padding:4px 0 10px;flex-wrap:wrap">
@@ -724,10 +732,15 @@ input[type=date],input[type=time],input[type=password],textarea,select{
       <div id="checkinStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px"></div>
       <div id="checkinEquipTotal"></div>
       <input type="text" id="checkinSearch" placeholder="搜尋姓名/品牌/電話/Email/攤位" oninput="filterCheckinList()" style="margin-bottom:10px;font-size:14px;padding:10px">
-      <div style="display:flex;gap:6px;margin-bottom:12px">
-        <button id="cf-all" onclick="setCFFilter('')" class="btn btn-sm" style="flex:1;background:var(--g);color:#fff">全部</button>
-        <button id="cf-not" onclick="setCFFilter('未報到')" class="btn btn-sm" style="flex:1;background:#f0f0f0;color:var(--md)">未報到</button>
-        <button id="cf-in" onclick="setCFFilter('已報到')" class="btn btn-sm" style="flex:1;background:#f0f0f0;color:var(--md)">已報到</button>
+      <div style="margin-bottom:10px">
+        <select id="checkinStatusFilter" onchange="setCFFilter(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid #FAEEC7;border-radius:10px;font-size:14px;background:#fff;color:#2C2C2C;font-family:inherit">
+          <option value="">全部</option>
+          <option value="未報到">未報到</option>
+          <option value="已報到">已報到</option>
+          <option value="未清場">未清場</option>
+          <option value="已清場">已清場</option>
+          <option value="押金">押金待退</option>
+        </select>
       </div>
       <div style="display:flex;align-items:center;gap:8px;padding:4px 0 10px;flex-wrap:wrap">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--md);cursor:pointer">
@@ -1683,15 +1696,10 @@ let ST_cfFilter = '';
 
 function setCFFilter(val){
   ST_cfFilter=val;
-  ['all','not','in'].forEach(k=>{
-    const btn=$('cf-'+k);
-    if(btn) btn.style.background=
-      (k==='all'&&!val)||(k==='not'&&val==='未報到')||(k==='in'&&val==='已報到')
-      ?'var(--g)':'#f0f0f0';
-    if(btn) btn.style.color=
-      (k==='all'&&!val)||(k==='not'&&val==='未報到')||(k==='in'&&val==='已報到')
-      ?'#fff':'var(--md)';
-  });
+  ST._checkinFilter=val;
+  // 同步 select（③ 持久化）
+  const sel=$('checkinStatusFilter');
+  if(sel && sel.value!==val) sel.value=val||'';
   filterCheckinList();
 }
 
@@ -1775,6 +1783,7 @@ function updateCheckinStats(){
 
 function filterCheckinList(){
   const kw=($('checkinSearch')?.value||'').toLowerCase();
+  const cfVal=ST._checkinFilter||ST_cfFilter||$('checkinStatusFilter')?.value||'';
   let list=ST_checkinRegs.filter(r=>{
     const matchKw=!kw||
       (r.name||'').toLowerCase().includes(kw)||
@@ -1782,7 +1791,13 @@ function filterCheckinList(){
       (r.phone||'').includes(kw)||
       (r.email||'').toLowerCase().includes(kw)||
       (r.stallNo||'').toLowerCase().includes(kw);
-    const matchStatus=!ST_cfFilter||(r.checkin||'未報到')===ST_cfFilter;
+    let matchStatus=true;
+    if(cfVal==='未報到') matchStatus=(r.checkin||'未報到')==='未報到';
+    else if(cfVal==='已報到') matchStatus=r.checkin==='已報到';
+    else if(cfVal==='未清場') matchStatus=r.clearStatus!=='已清場';
+    else if(cfVal==='已清場') matchStatus=r.clearStatus==='已清場';
+    else if(cfVal==='押金') matchStatus=(r.deposit||0)>0&&r.depositRefunded!=='已退押金'&&r.depositRefunded!=='已退';
+    else if(cfVal==='已退押金') matchStatus=r.depositRefunded==='已退押金'||r.depositRefunded==='已退';
     return matchKw&&matchStatus;
   });
   if(!list.length){$('checkinList').innerHTML='<div style="color:#aaa;text-align:center;padding:20px">無符合資料</div>';return;}
@@ -2249,6 +2264,21 @@ function onRegSesFilterChange(){
   $('regsBackBtn').style.display='none';
   renderRegs();
 }
+function goRegsList(sesId,sesName,statusFilter){
+  ST._filterSesId=sesId==='all'?'':sesId;
+  ST._filterStatusFilter=statusFilter||'';
+  const s=$('regsSummaryLayer'),d=$('regsDetailLayer'),b=$('regsBackBtn'),t=$('regsTitle');
+  if(s) s.style.display='none';
+  if(d) d.style.display='block';
+  if(b) b.style.display='inline-flex';
+  if(t) t.textContent=sesId==='all'?'名單 › 全場次':('名單 › '+sesName);
+  // ④ 同步設定 select，讓篩選持久化
+  const rSesEl=$('regSesFilter');
+  if(rSesEl && sesId!=='all') rSesEl.value=sesId;
+  const rStatEl=$('regStatusFilter');
+  if(rStatEl){ rStatEl.value=statusFilter||''; ST._showAllRegStatus=!statusFilter; }
+  setTimeout(()=>{ renderRegs(); },80);
+}
 function renderRegsSummary(){
   const el=$('regsSummaryList');
   if(!el) return;
@@ -2267,11 +2297,18 @@ function renderRegsSummary(){
     const dateStr=s.date||s.eventDate||'';
     return {s,total,pending,approved,waitlist,rejected,cancelled,dateStr};
   });
-  // 桌機表格
-  const desktopHtml=`<div class="summary-desktop"><table class="summary-table rg-theme" style="min-width:820px"><thead><tr><th style="text-align:left">場次名稱</th><th>日期</th><th>全部</th><th>待審核</th><th>已錄取</th><th>備取</th><th>不錄取</th><th>已取消</th><th>操作</th></tr></thead><tbody>${rows.map(r=>`<tr><td><span class="summary-card-title" style="font-size:14px">${r.s.title||r.s.name||'未命名'}</span></td><td><span class="summary-stat-lbl">${r.dateStr||'-'}</span></td><td style="font-weight:800">${r.total}</td><td style="font-weight:800;color:var(--s-warn)">${r.pending}</td><td style="font-weight:800;color:var(--s-ok)">${r.approved}</td><td>${r.waitlist}</td><td style="color:var(--s-err)">${r.rejected}</td><td style="color:var(--s-grey)">${r.cancelled}</td><td><button class="enter-btn rg-enter" onclick="showRegsDetailLayer('${r.s.id}','${(r.s.title||r.s.name||'').replace(/'/g,"\\'")}')">進入 →</button></td></tr>`).join('')}</tbody></table></div>`;
-  // 手機卡片
-  const mobileHtml=`<div class="overview-mobile-list">${rows.map(r=>`<div class="summary-card rg-theme"><div class="summary-card-title">${r.s.title||r.s.name||'未命名'}</div><div class="summary-card-date">${r.dateStr||'日期未設定'}</div><div class="summary-stat-grid"><div class="summary-stat"><div class="summary-stat-num">${r.total}</div><div class="summary-stat-lbl">全部</div></div><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-warn)">${r.pending}</div><div class="summary-stat-lbl">待審核</div></div><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-ok)">${r.approved}</div><div class="summary-stat-lbl">已錄取</div></div><div class="summary-stat"><div class="summary-stat-num">${r.waitlist}</div><div class="summary-stat-lbl">備取</div></div><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-err)">${r.rejected}</div><div class="summary-stat-lbl">不錄取</div></div><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-grey)">${r.cancelled}</div><div class="summary-stat-lbl">已取消</div></div></div><button class="enter-btn rg-enter" style="width:100%;padding:10px" onclick="showRegsDetailLayer('${r.s.id}','${(r.s.title||r.s.name||'').replace(/'/g,"\\'")}')">進入此場名單 →</button></div>`).join('')}</div>`;
-  el.innerHTML=desktopHtml+mobileHtml;
+  const tot={
+    all:rows.reduce((a,r)=>a+r.total,0),
+    pending:rows.reduce((a,r)=>a+r.pending,0),
+    approved:rows.reduce((a,r)=>a+r.approved,0),
+    waitlist:rows.reduce((a,r)=>a+r.waitlist,0),
+    rejected:rows.reduce((a,r)=>a+r.rejected,0),
+    cancelled:rows.reduce((a,r)=>a+r.cancelled,0),
+  };
+  const totalCard=`<div style="background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:2px solid #667eea;border-radius:14px;padding:14px 16px;margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div style="font-size:14px;font-weight:900;color:#5a67d8">📋 全場次加總</div><button class="enter-btn rg-enter" onclick="goRegsList('all','全場次','')" style="padding:6px 14px;font-size:12px">全部名單 →</button></div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px"><button onclick="goRegsList('all','全場次','')" style="background:#f7f7ff;border:1.5px solid #c3c8f5;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#4a5568">${tot.all}</div><div style="font-size:11px;color:#888;margin-top:2px">全部</div></button><button onclick="goRegsList('all','全場次','待審核')" style="background:#fff8e1;border:1.5px solid #f5c518;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#e6a800">${tot.pending}</div><div style="font-size:11px;color:#888;margin-top:2px">待審核</div></button><button onclick="goRegsList('all','全場次','已錄取')" style="background:#f0fdf4;border:1.5px solid #68d391;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#276749">${tot.approved}</div><div style="font-size:11px;color:#888;margin-top:2px">已錄取</div></button><button onclick="goRegsList('all','全場次','備取')" style="background:#f7fafc;border:1.5px solid #a0aec0;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#4a5568">${tot.waitlist}</div><div style="font-size:11px;color:#888;margin-top:2px">備取</div></button><button onclick="goRegsList('all','全場次','不錄取')" style="background:#fff5f5;border:1.5px solid #fc8181;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#c53030">${tot.rejected}</div><div style="font-size:11px;color:#888;margin-top:2px">不錄取</div></button><button onclick="goRegsList('all','全場次','已取消')" style="background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#718096">${tot.cancelled}</div><div style="font-size:11px;color:#888;margin-top:2px">已取消</div></button></div></div>`;
+  const desktopHtml=`<div class="summary-desktop"><table class="summary-table rg-theme" style="min-width:820px"><thead><tr><th style="text-align:left">場次名稱</th><th>日期</th><th>全部</th><th>待審核</th><th>已錄取</th><th>備取</th><th>不錄取</th><th>已取消</th><th>操作</th></tr></thead><tbody>${rows.map(r=>{const id=r.s.id,nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");return `<tr><td><span class="summary-card-title" style="font-size:14px">${r.s.title||r.s.name||'未命名'}</span></td><td><span class="summary-stat-lbl">${r.dateStr||'-'}</span></td><td><button onclick="goRegsList('${id}','${nm}','')" style="background:#f7f7ff;border:1.5px solid #c3c8f5;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;font-family:inherit;min-width:36px">${r.total}</button></td><td><button onclick="goRegsList('${id}','${nm}','待審核')" style="background:#fff8e1;border:1.5px solid #f5c518;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#e6a800;font-family:inherit;min-width:36px">${r.pending}</button></td><td><button onclick="goRegsList('${id}','${nm}','已錄取')" style="background:#f0fdf4;border:1.5px solid #68d391;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#276749;font-family:inherit;min-width:36px">${r.approved}</button></td><td><button onclick="goRegsList('${id}','${nm}','備取')" style="background:#f7fafc;border:1.5px solid #a0aec0;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;font-family:inherit;min-width:36px">${r.waitlist}</button></td><td><button onclick="goRegsList('${id}','${nm}','不錄取')" style="background:#fff5f5;border:1.5px solid #fc8181;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#c53030;font-family:inherit;min-width:36px">${r.rejected}</button></td><td><button onclick="goRegsList('${id}','${nm}','已取消')" style="background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#718096;font-family:inherit;min-width:36px">${r.cancelled}</button></td><td><button class="enter-btn rg-enter" onclick="goRegsList('${id}','${nm}','')">進入 →</button></td></tr>`;}).join('')}</tbody></table></div>`;
+  const mobileHtml=`<div class="overview-mobile-list">${rows.map(r=>{const id=r.s.id,nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");return `<div class="summary-card rg-theme"><div class="summary-card-title">${r.s.title||r.s.name||'未命名'}</div><div class="summary-card-date">${r.dateStr||'日期未設定'}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0"><button onclick="goRegsList('${id}','${nm}','待審核')" style="background:#fff8e1;border:1.5px solid #f5c518;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#e6a800">${r.pending}</div><div style="font-size:11px;color:#888;margin-top:2px">待審核</div></button><button onclick="goRegsList('${id}','${nm}','已錄取')" style="background:#f0fdf4;border:1.5px solid #68d391;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#276749">${r.approved}</div><div style="font-size:11px;color:#888;margin-top:2px">已錄取</div></button><button onclick="goRegsList('${id}','${nm}','備取')" style="background:#f7fafc;border:1.5px solid #a0aec0;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#4a5568">${r.waitlist}</div><div style="font-size:11px;color:#888;margin-top:2px">備取</div></button><button onclick="goRegsList('${id}','${nm}','不錄取')" style="background:#fff5f5;border:1.5px solid #fc8181;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#c53030">${r.rejected}</div><div style="font-size:11px;color:#888;margin-top:2px">不錄取</div></button><button onclick="goRegsList('${id}','${nm}','已取消')" style="background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#718096">${r.cancelled}</div><div style="font-size:11px;color:#888;margin-top:2px">已取消</div></button><button onclick="goRegsList('${id}','${nm}','')" style="background:#f7f7ff;border:1.5px solid #c3c8f5;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#4a5568">${r.total}</div><div style="font-size:11px;color:#888;margin-top:2px">全部</div></button></div><button class="enter-btn rg-enter" style="width:100%;padding:10px" onclick="goRegsList('${id}','${nm}','')">進入此場名單 →</button></div>`;}).join('')}</div>`;
+  el.innerHTML=totalCard+desktopHtml+mobileHtml;
 }
 function setRegsQuick(type){
   const regs=ST.allRegs||[];
@@ -2315,13 +2352,32 @@ function backToCheckinSummary(){
   showCheckinSummaryLayer();
   renderCheckinSummary();
 }
+function goCheckinList(sesId,sesName,filter){
+  const s=$('checkinSummaryLayer'),d=$('checkinDetailLayer'),b=$('checkinBackBtn'),t=$('checkinTitle');
+  if(sesId==='all'){
+    // 全場次模式：直接進第二層，不篩場次
+    if(s) s.style.display='none';
+    if(d) d.style.display='block';
+    if(b) b.style.display='inline-flex';
+    if(t) t.textContent='現場 › 全場次';
+    const sel=$('checkinSesFilter');
+    if(sel){ sel.value=''; loadCheckinRegs(); }
+  } else {
+    showCheckinDetailLayer(sesId,sesName);
+  }
+}
 function renderCheckinSummary(){
   const el=$('checkinSummaryList');
   if(!el) return;
-  const sessions=(ST.sdData||[]).filter(s=>!isArchivedSession(s));
+  const allSessions=(ST.sdData||[]).filter(s=>!isArchivedSession(s));
   const regs=ST.allRegs||[];
-  if(!sessions.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa">無場次資料</div>';return;}
-  const rows=sessions.map(s=>{
+  if(!allSessions.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa">無場次資料</div>';return;}
+
+  // 取得目前篩選狀態（由 ST._ckSummaryFilter 控制）
+  const activeFilter=ST._ckSummaryFilter||'';
+
+  // 計算每場次資料
+  const allRows=allSessions.map(s=>{
     const sr=regs.filter(r=>String(r.sessionId||r.sesId||'')===String(s.id)&&isOnsiteEligibleReg(r));
     const total=sr.length;
     const checked=sr.filter(r=>r.checkin==='已報到').length;
@@ -2330,12 +2386,137 @@ function renderCheckinSummary(){
     const notCleared=total-cleared;
     const depTotal=sr.filter(r=>(r.deposit||0)>0).length;
     const depRefunded=sr.filter(r=>r.depositRefunded==='已退押金'||r.depositRefunded==='已退').length;
+    const depPending=depTotal-depRefunded;
     const dateStr=s.date||s.eventDate||'';
-    return {s,total,checked,notChecked,cleared,notCleared,depTotal,depRefunded,dateStr};
+    return {s,total,checked,notChecked,cleared,notCleared,depTotal,depRefunded,depPending,dateStr};
   });
-  const desktopHtml=`<div class="summary-desktop"><table class="summary-table ck-theme" style="min-width:820px"><thead><tr><th style="text-align:left">場次名稱</th><th>日期</th><th>應報到</th><th>已報到</th><th>未報到</th><th>已清場</th><th>未清場</th><th>押金需退</th><th>已退押金</th><th>操作</th></tr></thead><tbody>${rows.map(r=>`<tr><td><span class="summary-card-title" style="font-size:14px">${r.s.title||r.s.name||'未命名'}</span></td><td><span class="summary-stat-lbl">${r.dateStr||'-'}</span></td><td style="font-weight:800">${r.total}</td><td style="font-weight:800;color:var(--s-ok)">${r.checked}</td><td style="font-weight:800;color:var(--s-warn)">${r.notChecked}</td><td>${r.cleared}</td><td style="color:var(--s-grey)">${r.notCleared}</td><td>${r.depTotal}</td><td style="color:var(--s-ok)">${r.depRefunded}</td><td><button class="enter-btn ck-enter" onclick="showCheckinDetailLayer('${r.s.id}','${(r.s.title||r.s.name||'').replace(/'/g,"\\'")}')">進入 →</button></td></tr>`).join('')}</tbody></table></div>`;
-  const mobileHtml=`<div class="overview-mobile-list">${rows.map(r=>`<div class="summary-card ck-theme"><div class="summary-card-title">${r.s.title||r.s.name||'未命名'}</div><div class="summary-card-date">${r.dateStr||'日期未設定'}</div><div class="summary-stat-grid"><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-ok)">${r.checked}</div><div class="summary-stat-lbl">已報到</div></div><div class="summary-stat"><div class="summary-stat-num" style="color:var(--s-warn)">${r.notChecked}</div><div class="summary-stat-lbl">未報到</div></div><div class="summary-stat"><div class="summary-stat-num">${r.depRefunded}/${r.depTotal}</div><div class="summary-stat-lbl">押金已退</div></div></div><button class="enter-btn ck-enter" style="width:100%;padding:10px" onclick="showCheckinDetailLayer('${r.s.id}','${(r.s.title||r.s.name||'').replace(/'/g,"\\'")}')">進入此場現場 →</button></div>`).join('')}</div>`;
-  el.innerHTML=desktopHtml+mobileHtml;
+
+  // 全場次加總
+  const tot={
+    total:allRows.reduce((a,r)=>a+r.total,0),
+    checked:allRows.reduce((a,r)=>a+r.checked,0),
+    notChecked:allRows.reduce((a,r)=>a+r.notChecked,0),
+    cleared:allRows.reduce((a,r)=>a+r.cleared,0),
+    notCleared:allRows.reduce((a,r)=>a+r.notCleared,0),
+    depPending:allRows.reduce((a,r)=>a+r.depPending,0),
+    depRefunded:allRows.reduce((a,r)=>a+r.depRefunded,0),
+  };
+
+  // 篩選後的場次列表
+  const rows = activeFilter ? allRows.filter(r=>{
+    if(activeFilter==='已報到') return r.checked>0;
+    if(activeFilter==='未報到') return r.notChecked>0;
+    if(activeFilter==='已清場') return r.cleared>0;
+    if(activeFilter==='未清場') return r.notCleared>0;
+    if(activeFilter==='押金待退') return r.depPending>0;
+    if(activeFilter==='已退押金') return r.depRefunded>0;
+    return true;
+  }) : allRows;
+
+  // 加總卡片按鈕 helper
+  function totBtn(label, val, color){
+    const active=activeFilter===label;
+    return `<button onclick="ST._ckSummaryFilter='${active?'':label}';renderCheckinSummary();" style="background:${active?color:'#fff'};border:1.5px solid ${color};border-radius:10px;padding:10px 6px;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s">
+      <div style="font-size:22px;font-weight:900;color:#2C2C2C">${val}</div>
+      <div style="font-size:11px;color:#444;margin-top:3px">${label}</div>
+    </button>`;
+  }
+
+  const totalCard=`
+    <div style="background:#fff;border:1.5px solid #FAEEC7;border-radius:14px;padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+      <div style="font-size:13px;font-weight:900;color:#2C2C2C;margin-bottom:10px">📍 全場次加總${activeFilter?`　<span style="background:#FAEEC7;border-radius:6px;padding:2px 10px;font-size:12px">篩選中：${activeFilter}</span>`:''}</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+        ${totBtn('應報到',tot.total,'#DDEAD1')}
+        ${totBtn('已報到',tot.checked,'#DDEAD1')}
+        ${totBtn('未報到',tot.notChecked,'#FAEEC7')}
+        ${totBtn('已清場',tot.cleared,'#DDEAD1')}
+        ${totBtn('未清場',tot.notCleared,'#FAEEC7')}
+        ${totBtn('押金待退',tot.depPending,'#FAE1DD')}
+        ${totBtn('已退押金',tot.depRefunded,'#D9E5EE')}
+      </div>
+      ${activeFilter?`<div style="text-align:right;margin-top:8px"><button onclick="ST._ckSummaryFilter='';renderCheckinSummary();" style="background:#DCD7ED;border:none;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit">✕ 清除篩選</button></div>`:''}
+    </div>`;
+
+  // 場次列數字框框按鈕 helper（點了進該場並套篩選）
+  function sesBtn(id, nm, label, val, color, cfFilter){
+    if(!val && val!==0) return `<span style="color:#ccc">0</span>`;
+    return `<button onclick="showCheckinDetailLayerFiltered('${id}','${nm}','${cfFilter}')" style="background:#fff;border:1.5px solid ${color};border-radius:8px;padding:4px 8px;cursor:pointer;font-weight:800;font-size:15px;font-family:inherit;min-width:32px;color:#2C2C2C">${val}</button>`;
+  }
+
+  const desktopHtml=`<div class="summary-desktop"><table class="summary-table ck-theme" style="min-width:860px"><thead><tr>
+    <th style="text-align:left">場次名稱</th><th>日期</th>
+    <th>應報到</th><th>已報到</th><th>未報到</th>
+    <th>已清場</th><th>未清場</th><th>押金待退</th><th>已退押金</th>
+    <th>操作</th>
+  </tr></thead><tbody>${rows.map(r=>{
+    const id=r.s.id,nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");
+    return `<tr>
+      <td><span class="summary-card-title" style="font-size:14px">${r.s.title||r.s.name||'未命名'}</span></td>
+      <td><span class="summary-stat-lbl">${r.dateStr||'-'}</span></td>
+      <td>${sesBtn(id,nm,'應報到',r.total,'#DDEAD1','')}</td>
+      <td>${sesBtn(id,nm,'已報到',r.checked,'#DDEAD1','已報到')}</td>
+      <td>${sesBtn(id,nm,'未報到',r.notChecked,'#FAEEC7','未報到')}</td>
+      <td>${sesBtn(id,nm,'已清場',r.cleared,'#DDEAD1','已清場')}</td>
+      <td>${sesBtn(id,nm,'未清場',r.notCleared,'#FAEEC7','未清場')}</td>
+      <td>${sesBtn(id,nm,'押金待退',r.depPending,'#FAE1DD','押金')}</td>
+      <td>${sesBtn(id,nm,'已退押金',r.depRefunded,'#D9E5EE','已退押金')}</td>
+      <td><button class="enter-btn ck-enter" onclick="showCheckinDetailLayerFiltered('${id}','${nm}','')">進入 →</button></td>
+    </tr>`;
+  }).join('')}</tbody></table></div>`;
+
+  const mobileHtml=`<div class="overview-mobile-list">${rows.map(r=>{
+    const id=r.s.id,nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");
+    return `<div class="summary-card ck-theme">
+      <div class="summary-card-title">${r.s.title||r.s.name||'未命名'}</div>
+      <div class="summary-card-date">${r.dateStr||'日期未設定'}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0">
+        <button onclick="showCheckinDetailLayerFiltered('${id}','${nm}','已報到')" style="background:#fff;border:1.5px solid #DDEAD1;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#2C2C2C">${r.checked}</div>
+          <div style="font-size:11px;color:#444;margin-top:2px">已報到</div>
+        </button>
+        <button onclick="showCheckinDetailLayerFiltered('${id}','${nm}','未報到')" style="background:#fff;border:1.5px solid #FAEEC7;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#2C2C2C">${r.notChecked}</div>
+          <div style="font-size:11px;color:#444;margin-top:2px">未報到</div>
+        </button>
+        <button onclick="showCheckinDetailLayerFiltered('${id}','${nm}','押金')" style="background:#fff;border:1.5px solid #FAE1DD;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#2C2C2C">${r.depPending}</div>
+          <div style="font-size:11px;color:#444;margin-top:2px">押金待退</div>
+        </button>
+        <button onclick="showCheckinDetailLayerFiltered('${id}','${nm}','已清場')" style="background:#fff;border:1.5px solid #DDEAD1;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#2C2C2C">${r.cleared}</div>
+          <div style="font-size:11px;color:#444;margin-top:2px">已清場</div>
+        </button>
+        <button onclick="showCheckinDetailLayerFiltered('${id}','${nm}','未清場')" style="background:#fff;border:1.5px solid #FAEEC7;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#2C2C2C">${r.notCleared}</div>
+          <div style="font-size:11px;color:#444;margin-top:2px">未清場</div>
+        </button>
+        <button onclick="showCheckinDetailLayerFiltered('${id}','${nm}','')" style="background:#fff;border:1.5px solid #DCD7ED;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#2C2C2C">${r.total}</div>
+          <div style="font-size:11px;color:#444;margin-top:2px">全部</div>
+        </button>
+      </div>
+      <button class="enter-btn ck-enter" style="width:100%;padding:10px" onclick="showCheckinDetailLayerFiltered('${id}','${nm}','')">進入此場現場 →</button>
+    </div>`;
+  }).join('')}</div>`;
+
+  el.innerHTML = rows.length ? totalCard+desktopHtml+mobileHtml :
+    totalCard+'<div style="text-align:center;padding:20px;color:#aaa;font-size:14px">目前無「'+activeFilter+'」狀態的場次</div>';
+}
+
+// 進入場次並套用篩選（①②共用）
+function showCheckinDetailLayerFiltered(sesId, sesName, cfFilter){
+  const s=$('checkinSummaryLayer'),d=$('checkinDetailLayer'),b=$('checkinBackBtn'),t=$('checkinTitle');
+  if(s) s.style.display='none';
+  if(d) d.style.display='block';
+  if(b) b.style.display='inline-flex';
+  if(t) t.textContent='現場 › '+sesName;
+  const sel=$('checkinSesFilter');
+  if(sel){ sel.value=sesId; }
+  // ③ 持久篩選 select
+  const filterSel=$('checkinStatusFilter');
+  if(filterSel) filterSel.value=cfFilter||'';
+  ST._checkinFilter=cfFilter||'';
+  loadCheckinRegs();
 }
 function setCheckinQuick(type){
   // 篩選有今日報到 / 對應狀態的場次
@@ -3427,12 +3608,15 @@ function renderRegs(){
   let list=(ST.allRegs||[]).filter(r=>{
     const matchKw=!kw||[r.brand,r.name,r.email,r.phone,r.fb,r.ig].some(v=>(v||'').toLowerCase().includes(kw));
     const matchSes=!sesId||(String(r.sessionId)===String(sesId));
-    const statusFilter=ST._filterStatusFilter||'';
-    const matchStatus=ST._showAllRegStatus?true:(statusFilter?r.status===statusFilter:r.status==='待審核');
+    // ④ 持久篩選：優先讀 select，_filterStatusFilter 只做一次性初始設定
+    const statusFilter=ST._filterStatusFilter||$('regStatusFilter')?.value||'';
+    let matchStatus;
+    if(ST._showAllRegStatus||statusFilter==='') matchStatus=true;
+    else matchStatus=r.status===statusFilter||r.reviewStatus===statusFilter;
     return matchKw&&matchSes&&matchStatus;
   });
   // 依報名時間倒序
-  ST._filterStatusFilter=null; // 用完清除
+  ST._filterStatusFilter=null; // 用完清除（select 已接手持久化）
   list.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
   const cnt=$('regCount');
   if(cnt) cnt.textContent=`共 ${list.length} 筆`;
