@@ -679,6 +679,526 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 .mk-submit-btn:not(:disabled){ box-shadow:0 6px 16px rgba(0,0,0,.14); }
 .mk-reg-footer-ip{ display:flex; justify-content:center; margin-top:10px; }
 .mk-reg-footer-ip img{ width:120px; height:84px; object-fit:contain; }
+
+/* ══ 會員專區 HC 樣式 ══ */
+
+
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.topbar h1 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 900;
+}
+
+.back-btn {
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.member-hero {
+  border-radius: 22px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid #dfe7d6;
+}
+
+.hero-record {
+  background: linear-gradient(180deg, #f9fbf6 0%, #eef6e7 100%);
+}
+
+.hero-profile {
+  background: linear-gradient(180deg, #faf8fe 0%, #efebfa 100%);
+  border-color: #d9cfee;
+}
+
+.hero-ip img {
+  width: 88px;
+  height: 110px;
+  object-fit: contain;
+}
+
+.hero-info h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.hero-mail,
+.hero-brand {
+  margin: 0 0 6px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.hero-brand {
+  color: #2f6d28;
+  font-weight: 700;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn {
+  min-width: 88px;
+  height: 44px;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.btn-outline-green {
+  border: 1.5px solid #b9d3a5;
+  color: #3f7a2a;
+}
+
+.btn-outline-purple {
+  border: 1.5px solid #cdbef0;
+  color: #7656c6;
+}
+
+.btn-outline-red {
+  border: 1.5px solid #f2b4be;
+  color: #d9485f;
+}
+
+.member-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 16px 0 18px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #dfe5d6;
+}
+
+.tab-btn {
+  height: 54px;
+  border: none;
+  background: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tab-record {
+  background: #eef6e6;
+  color: #4d7a33;
+}
+
+.tab-profile {
+  background: #f0ebfb;
+  color: #7357bb;
+}
+
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.record-card {
+  display: grid;
+  grid-template-columns: 100px 1fr 88px;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #dfe5d6;
+  border-radius: 22px;
+  padding: 14px;
+}
+
+.record-thumb img {
+  width: 100%;
+  height: 86px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.record-main h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.record-main p {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.45;
+}
+
+.record-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 84px;
+  height: 36px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 900;
+  border: 1px solid transparent;
+}
+
+.status-review {
+  background: #eef6e6;
+  color: #4f7d36;
+  border-color: #cfe2bf;
+}
+
+.status-pay {
+  background: #fff6df;
+  color: #be8616;
+  border-color: #edd18e;
+}
+
+.status-done {
+  background: #eef6e6;
+  color: #4f7d36;
+  border-color: #cfe2bf;
+}
+
+.status-note {
+  font-size: 14px;
+  color: #666;
+}
+
+.record-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.record-arrow {
+  border: none;
+  background: transparent;
+  font-size: 34px;
+  line-height: 1;
+  color: #777;
+  cursor: pointer;
+}
+
+.action-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 16px;
+  border: none;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.action-btn.green {
+  background: #dfeecf;
+  color: #4f7d36;
+}
+
+.action-btn.yellow {
+  background: #fdebc0;
+  color: #be8616;
+}
+
+.helper-card {
+  margin-top: 18px;
+  border-radius: 22px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 14px;
+}
+
+.helper-card img {
+  width: 88px;
+  height: 108px;
+  object-fit: contain;
+}
+
+.helper-record {
+  background: #f6f0fd;
+  border: 1px solid #ddd0f6;
+}
+
+.helper-profile {
+  background: #fff7df;
+  border: 1px solid #f2dfaa;
+  grid-template-columns: 58px 1fr;
+  align-items: center;
+}
+
+.helper-icon-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.helper-text h4 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 900;
+}
+
+.helper-text p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--c-text-soft);
+  line-height: 1.55;
+}
+
+.helper-btn {
+  margin-top: 12px;
+  height: 42px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.helper-btn-purple {
+  background: #9c7ce3;
+  color: #fff;
+}
+
+.profile-card {
+  border-radius: 22px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card-purple {
+  background: #fcfbff;
+  border: 1px solid #ddd0f6;
+}
+
+.card-blue {
+  background: #fbfdff;
+  border: 1px solid #d5e3f0;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-title-row h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.section-deco {
+  font-size: 22px;
+  color: #a48ed8;
+}
+
+.profile-box {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  gap: 14px;
+  align-items: end;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px 10px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px;
+  border: 1px solid #ececec;
+}
+
+.label {
+  font-size: 15px;
+  color: #666;
+  font-weight: 700;
+}
+
+.value {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.social-icons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.social-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.profile-ip-side {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.profile-ip-side img {
+  width: 88px;
+  height: 108px;
+  object-fit: contain;
+}
+
+.full-btn {
+  width: 100%;
+  height: 46px;
+  border-radius: 16px;
+  border: none;
+  margin-top: 14px;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.purple-btn {
+  background: #ece5fb;
+  color: #7357bb;
+}
+
+.blue-btn {
+  background: #e6f1fb;
+  color: #4e78a5;
+}
+
+.bottom-nav {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 14px 16px 18px;
+  background: #fff;
+  border-top: 1px solid #eee;
+  border-radius: 24px 24px 0 0;
+}
+
+.nav-btn {
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  background: #fff;
+}
+
+.nav-green {
+  background: #eef6e6;
+  color: #4f7d36;
+  border-color: #d8e8c8;
+}
+
+.nav-yellow {
+  background: #fff4d7;
+  color: #b88619;
+  border-color: #f0d48d;
+}
+
+.nav-purple {
+  background: #f1ebfb;
+  color: #7357bb;
+  border-color: #d7c9f4;
+}
+
+.nav-pink {
+  background: #fdecef;
+  color: #c66377;
+  border-color: #f4c8d1;
+}
+
+.nav-btn.active {
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.04);
+}
+
+
+}
+
+
+  .record-side {
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .profile-box {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    flex-direction: row;
+    grid-column: 1 / -1;
+  }
+
+  .member-hero {
+    grid-template-columns: 80px 1fr;
+  }
+}
+
+/* ── 會員頁頂部 ── */
+#pageMember .hc-topbar{
+  display:flex; align-items:center; gap:10px;
+  padding:16px 18px 12px;
+  font-size:20px; font-weight:900;
+}
+#pageMember .hc-topbar-back{
+  border:none; background:transparent; font-size:26px; cursor:pointer; padding:0;
+}
+/* 我的紀錄模式主色：綠系 */
+#myRegsMode .tab-record{ background:#eef6e6; color:#4d7a33; }
+/* 會員資料模式主色：紫系 */
+#profileMode .tab-profile{ background:#f0ebfb; color:#7357bb; }
+/* 報名紀錄卡片縮圖預設 */
+.record-thumb-default{
+  width:100%; height:86px; border-radius:16px;
+  background:#DDEAD1; display:flex; align-items:center; justify-content:center;
+  font-size:28px;
+}
 </style>
 </head>
 <body>
@@ -836,210 +1356,155 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 
 
 <!-- ══ 會員 / 我的報名 ══ -->
-<div id="pageMember" class="page">
-  <div class="back-bar" onclick="navTo('home')">
-    <span class="arrow">←</span>
-    <span class="title">會員專區</span>
-  </div>
+<div id="pageMember" class="page" style="background:#f8f9fa;min-height:100vh;padding-bottom:100px">
 
-  <!-- 登入區 -->
+  <!-- ── 登入區 ── -->
   <div id="memberLoginArea" style="padding:20px 16px">
-    <div class="mcard">
-      <div style="font-size:18px;font-weight:900;margin-bottom:8px">會員登入</div>
-      <div style="font-size:14px;color:var(--md);margin-bottom:20px">使用 Google 帳號登入，資料自動帶入，下次報名更快速</div>
-      <button id="googleMemberLoginBtn" onclick="startMemberGoogleLogin()"
-        style="width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
-               padding:14px 20px;border-radius:12px;border:1.5px solid #dadce0;
-               background:#fff;color:#3c4043;font-size:16px;font-weight:700;
-               font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-        <svg width="20" height="20" viewBox="0 0 48 48">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        </svg>
-        使用 Google 帳號登入
-      </button>
-      <div id="memberLoginErr" style="font-size:13px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
+    <div style="text-align:center;padding:40px 20px">
+      <img src="IP會員.png" style="width:100px;height:120px;object-fit:contain;margin-bottom:16px" onerror="this.style.display='none'">
+      <div style="font-size:20px;font-weight:900;margin-bottom:8px">歡迎來到會員專區</div>
+      <div style="font-size:15px;color:#666;margin-bottom:24px">登入後可查看報名紀錄與會員資料</div>
+      <div id="memberGoogleBtn"></div>
+      <div style="margin-top:12px">
+        <input type="email" id="step1Email" placeholder="輸入 Email 查詢"
+          style="width:100%;padding:12px 16px;border:1.5px solid #d9d9d9;border-radius:14px;font-size:16px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
+        <div id="step1Err" style="color:#e74c3c;font-size:14px;margin-bottom:8px"></div>
+        <div id="step1Status" style="font-size:14px;color:#5b8b49;margin-bottom:8px"></div>
+        <button onclick="checkMemberStep()"
+          style="width:100%;height:48px;background:#DDEAD1;border:none;border-radius:14px;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;color:#2a6a10">
+          查詢 / 繼續 →
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- 已登入區 -->
-  <div id="memberArea" style="display:none;padding:0 0 100px">
+  <!-- ── 登入後主區塊 ── -->
+  <div id="memberArea" style="display:none">
 
-    <!-- 頂部會員卡（登入狀態共用）-->
-    <div style="margin:14px 16px;background:#DDEAD1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:18px;font-weight:900;color:#111" id="memberName"></div>
-        <div style="font-size:15px;color:#444;margin-top:3px" id="memberEmail2"></div>
-        <div style="font-size:15px;font-weight:700;color:#2a6a10;margin-top:3px" id="memberBrandShow"></div>
+    <!-- 頂部返回列 -->
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 18px 12px;font-size:20px;font-weight:900">
+      <button onclick="navToTab('home')" style="border:none;background:transparent;font-size:26px;cursor:pointer;padding:0;line-height:1">←</button>
+      <span>會員專區</span>
+    </div>
+
+    <!-- 會員資訊卡 -->
+    <div id="memberHeroCard" style="margin:0 16px 14px;border-radius:22px;padding:16px;display:grid;grid-template-columns:92px 1fr auto;gap:14px;align-items:center;background:linear-gradient(180deg,#f9fbf6,#eef6e7);border:1px solid #d8e8c8;position:relative;overflow:hidden">
+      <!-- 裝飾葉子 -->
+      <div style="position:absolute;right:90px;bottom:0;font-size:52px;opacity:.12;pointer-events:none;line-height:1">🌿</div>
+      <div id="memberHeroIp" style="flex-shrink:0">
+        <img src="IP會員.png" alt="" style="width:88px;height:110px;object-fit:contain" onerror="this.style.display='none'">
       </div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
-        <button onclick="openMemberEditModal()" style="background:#fff;border:1.5px solid #b8d4a0;color:#2a6a10;padding:10px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">編輯</button>
-        <button onclick="memberLogout()" style="background:#FAE1DD;border:none;color:#8b1c1c;padding:10px 14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">登出</button>
+      <div>
+        <div id="memberName" style="font-size:22px;font-weight:900;margin-bottom:6px"></div>
+        <div id="memberEmail2" style="font-size:15px;color:#555;margin-bottom:4px"></div>
+        <div id="memberBrandShow" style="font-size:15px;font-weight:700;color:#2f6d28"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onclick="openMemberEditModal()" id="memberEditBtn"
+          style="min-width:72px;height:40px;border-radius:14px;background:#fff;border:1.5px solid #b9d3a5;color:#3f7a2a;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
+          ✏️ 編輯
+        </button>
+        <button onclick="memberLogout()"
+          style="min-width:72px;height:40px;border-radius:14px;background:#fff;border:1.5px solid #f2b4be;color:#d9485f;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
+          登出
+        </button>
       </div>
     </div>
 
-    <!-- 模式切換頁籤 -->
-    <div style="display:flex;gap:0;margin:0 16px 16px;border-radius:12px;overflow:hidden;border:1.5px solid #DDEAD1">
+    <!-- 分頁頁籤 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;margin:0 16px 16px;border-radius:18px;overflow:hidden;border:1px solid #dfe5d6">
       <button id="tabMyRegs" onclick="switchMemberMode('regs')"
-        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#DDEAD1;color:#2a6a10;font-family:inherit">
-        我的報名
+        style="height:54px;border:none;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;background:#eef6e6;color:#4d7a33;display:flex;align-items:center;justify-content:center;gap:6px">
+        📋 我的報名
       </button>
       <button id="tabProfile" onclick="switchMemberMode('profile')"
-        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#fff;color:#666;font-family:inherit">
+        style="height:54px;border:none;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;background:#fff;color:#888">
         會員資料
       </button>
     </div>
 
-    <!-- 我的報名紀錄 -->
+    <!-- ── 我的報名 mode ── -->
     <div id="myRegsMode" style="padding:0 16px">
-      <div id="myRegsList"></div>
+      <div id="myRegsList" style="display:flex;flex-direction:column;gap:14px">
+        <div style="text-align:center;color:#aaa;padding:30px;font-size:15px">報名紀錄載入中…</div>
+      </div>
+      <!-- 找不到紀錄 -->
+      <div id="noRegsHelper" style="display:none;margin-top:18px;border-radius:22px;padding:16px;background:#f6f0fd;border:1px solid #ddd0f6;display:none;grid-template-columns:92px 1fr;gap:14px;align-items:center">
+        <img src="IP客服.png" alt="" style="width:88px;height:108px;object-fit:contain" onerror="this.style.display='none'">
+        <div>
+          <div style="font-size:18px;font-weight:900;margin-bottom:8px;line-height:1.4">找不到報名紀錄嗎？</div>
+          <div style="font-size:14px;color:#666;line-height:1.55;margin-bottom:12px">我們可以幫你查找遺漏的報名紀錄，或協助解決任何報名問題！</div>
+          <button onclick="navToTab('support')"
+            style="height:42px;padding:0 18px;border:none;border-radius:14px;background:#9c7ce3;color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
+            🎧 聯絡客服小幫手
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- 會員個人資料 -->
+    <!-- ── 會員資料 mode ── -->
     <div id="profileMode" style="display:none;padding:0 16px">
-      <div id="memberProfileContent">
-        <div style="text-align:center;padding:30px;color:#aaa">載入中…</div>
-      </div>
-    </div>
 
-  </div>
-
-  <!-- 會員資料編輯 Modal -->
-  <div class="modal-overlay" id="memberEditModal" onclick="if(event.target===this)closeModal('memberEditModal')" style="align-items:flex-end">
-    <div class="modal-box" style="max-height:88vh;overflow-y:auto;padding:20px 18px 40px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:20px;font-weight:900;color:var(--dk)">編輯會員資料</div>
-        <button onclick="closeModal('memberEditModal')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--md)">×</button>
-      </div>
-      <div style="font-size:14px;color:var(--g);background:var(--gp);border-radius:10px;padding:8px 12px;margin-bottom:14px">
-        💡 填寫後存檔，下次報名自動帶入，不需每場重填好方便
-      </div>
-      <div id="memberEditHint" style="display:none;font-size:15px;color:#c0392b;background:#fdecea;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-weight:800;line-height:1.6"></div>
-
-      <!-- 卡片一：基本聯絡資訊 -->
-      <div style="background:#e8f4fd;border:1px solid #b8d9f0;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">👤 基本聯絡資訊</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">姓名</label><input type="text" id="editName"></div>
-          <div><label style="font-size:14px;color:var(--md)">手機</label><input type="tel" id="editPhone" inputmode="tel"></div>
+      <!-- 個人基本資料卡 -->
+      <div style="background:#fcfbff;border:1px solid #ddd0f6;border-radius:22px;padding:18px;margin-bottom:16px">
+        <!-- 卡片標題 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="width:36px;height:36px;border-radius:50%;background:#ede5fb;display:flex;align-items:center;justify-content:center;font-size:18px">👤</span>
+            <span style="font-size:20px;font-weight:900">個人基本資料</span>
+          </div>
+          <span style="font-size:22px">🦋</span>
         </div>
-        <label style="font-size:14px;color:var(--md)">LINE ID</label>
-        <input type="text" id="editLineId">
-      </div>
-
-      <!-- 卡片二：品牌資訊 -->
-      <div style="background:#fde8f0;border:1px solid #f0b8d0;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🏷️ 品牌資訊</div>
-        <label style="font-size:14px;color:var(--md)">品牌名稱</label>
-        <input type="text" id="editBrand" style="margin-bottom:8px">
-        <label style="font-size:14px;color:var(--md)">品牌介紹</label>
-        <textarea id="editBrandIntro" placeholder="簡短介紹您的品牌…" style="height:56px;margin-bottom:8px"></textarea>
-        <label style="font-size:14px;color:var(--md)">出攤照（連結）</label>
-        <input type="url" id="editPhoto" placeholder="https://...">
-      </div>
-
-      <!-- 卡片三：社群連結（審核必要）-->
-      <div style="background:#e8fdf0;border:1px solid #b8f0d0;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:4px">🔗 社群連結</div>
-        <div style="font-size:12px;color:#c0392b;margin-bottom:10px">審核必要，至少填一項</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">FB</label><input type="url" id="editFb" placeholder="https://facebook.com/..."></div>
-          <div><label style="font-size:14px;color:var(--md)">IG</label><input type="url" id="editIg" placeholder="https://instagram.com/..."></div>
+        <!-- 資料列表 + IP 圖 -->
+        <div style="display:grid;grid-template-columns:1fr 100px;gap:14px;align-items:end">
+          <div id="memberProfileContent" style="background:#fff;border-radius:16px;padding:14px;border:1px solid #ececec;display:flex;flex-direction:column;gap:12px">
+            <div style="text-align:center;color:#aaa;font-size:14px">載入中…</div>
+          </div>
+          <div style="display:flex;align-items:flex-end;justify-content:center">
+            <img src="IP報名.png" alt="" style="width:90px;height:110px;object-fit:contain" onerror="this.style.display='none'">
+          </div>
         </div>
-        <label style="font-size:14px;color:var(--md)">官網</label>
-        <input type="url" id="editCollabUrl" placeholder="https://...">
+        <button onclick="openMemberEditModal()"
+          style="width:100%;height:46px;border-radius:16px;border:none;margin-top:14px;font-size:17px;font-weight:900;cursor:pointer;background:#ece5fb;color:#7357bb;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
+          ✏️ 編輯資料
+        </button>
       </div>
 
-      <!-- 卡片四：常用發票資訊 -->
-      <div style="background:#fdfbe8;border:1px solid #f0e8b8;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🧾 常用發票資訊</div>
-        <label style="font-size:14px;color:var(--md)">手機載具</label>
-        <input type="text" id="editInvoiceCarrier" placeholder="/ABC-1234" style="margin-bottom:8px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">統一編號</label><input type="text" id="editTaxId" inputmode="numeric" maxlength="8"></div>
-          <div><label style="font-size:14px;color:var(--md)">公司抬頭</label><input type="text" id="editCompany"></div>
+      <!-- 發票資訊卡 -->
+      <div style="background:#fbfdff;border:1px solid #d5e3f0;border-radius:22px;padding:18px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="width:36px;height:36px;border-radius:50%;background:#dff0fb;display:flex;align-items:center;justify-content:center;font-size:18px">🧾</span>
+            <span style="font-size:20px;font-weight:900">發票資訊</span>
+          </div>
+          <span style="font-size:22px">☆</span>
         </div>
-        <label style="font-size:14px;color:var(--md)">收發票 Email</label>
-        <input type="email" id="editInvoiceEmail" inputmode="email">
+        <div style="display:grid;grid-template-columns:1fr 100px;gap:14px;align-items:end">
+          <div id="invoiceProfileContent" style="background:#fff;border-radius:16px;padding:14px;border:1px solid #ececec;display:flex;flex-direction:column;gap:12px">
+            <div style="text-align:center;color:#aaa;font-size:14px">載入中…</div>
+          </div>
+          <div style="display:flex;align-items:flex-end;justify-content:center">
+            <img src="IP歡迎.png" alt="" style="width:90px;height:110px;object-fit:contain" onerror="this.style.display='none'">
+          </div>
+        </div>
+        <button onclick="openMemberEditModal()"
+          style="width:auto;height:40px;padding:0 20px;border-radius:14px;border:none;margin-top:14px;font-size:16px;font-weight:900;cursor:pointer;background:#e6f1fb;color:#4e78a5;font-family:inherit;display:flex;align-items:center;gap:6px">
+          ✏️ 修改
+        </button>
       </div>
-      <button id="saveMemberBtn" class="btn-p" onclick="saveMemberEdit()" style="width:100%;margin-top:16px">儲存資料</button>
-      <div id="saveSuccessMsg" style="display:none;text-align:center;color:var(--g);font-weight:700;padding:8px;font-size:14px">✓ 更新完成！</div>
-    </div>
-  </div>
-</div>
 
-<!-- ══ Modals ══ -->
-<div class="modal-overlay" id="payModal" onclick="if(event.target===this)closeModal('payModal')">
-  <div class="modal-box" style="max-height:88vh;overflow:auto">
-    <div class="modal-title" id="payModalTitle">前往繳費</div>
-    <div id="payModalInfo" style="background:var(--gp);border-radius:10px;padding:12px;margin-bottom:12px;font-size:18px;line-height:1.6"></div>
-    <div id="payFormArea">
-      <label style="font-size:17px;color:var(--md);font-weight:800">付款方式</label>
-      <select id="payMethod" onchange="onPayMethodChange()" style="width:100%;padding:12px;border:1.5px solid #d0e8d8;border-radius:10px;font-size:18px;margin:4px 0 10px;background:#fff">
-        <option value="ATM 轉帳">ATM／銀行轉帳</option>
-        <option value="LINE Pay">LINE Pay</option>
-        <option value="信用卡付款">信用卡</option>
-      </select>
-      <div style="font-size:16px;color:#8a6d3b;background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:900">付款前請先注意：完成付款後，請務必截圖保留付款證明。付款完成後請回到「我的紀錄」按「我已完成付款，回報付款」，並將付款卡片與付款截圖一起傳至官方 LINE。主辦確認入帳後，狀態才會更新為「已繳費」。</div>
-      <div id="bankPayBox" style="background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:12px;margin-bottom:12px;font-size:17px;line-height:1.65;color:#5a3a05">
-        <div style="font-weight:900;font-size:18px;margin-bottom:4px">ATM 轉帳</div>
-        <div id="bankInfoDisplay" style="color:#aaa;font-size:15px">付款資訊載入中…</div>
+      <!-- 提醒卡 -->
+      <div style="background:#fff9e6;border:1px solid #f2dfaa;border-radius:22px;padding:16px;margin-bottom:16px;display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center">
+        <div style="width:58px;height:58px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:28px">🪪</div>
+        <div>
+          <div style="font-size:16px;font-weight:900;line-height:1.5;margin-bottom:6px">會員資料只需填寫一次，下次報名將自動帶入，省時又方便！</div>
+          <div style="font-size:14px;color:#666">資料如有異動，請記得更新哦～</div>
+        </div>
       </div>
-      <div id="payLastFiveWrap">
-        <label style="font-size:17px;color:var(--md);font-weight:800">帳號末五碼 *</label>
-        <input type="text" id="payLastFive" placeholder="例如 12345" inputmode="numeric" maxlength="5" style="margin:4px 0 14px;font-size:18px;padding:12px;width:100%;box-sizing:border-box;border:1.5px solid #d0e8d8;border-radius:10px">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px">
-        <button type="button" id="immediatePayBtn" onclick="openExternalPay()" class="btn-p" style="width:100%;font-size:18px;padding:13px">立即付款</button>
-        <button type="button" id="reportPaymentBtn" onclick="submitPaymentForm()" style="width:100%;background:#40916c;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">我已完成付款，回報付款</button>
-      </div>
-      <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">取消</button>
-    </div>
-    <div id="paySuccessArea" style="display:none">
-      <div style="font-size:22px;font-weight:900;color:#b45309;margin-bottom:4px">⚠️ 付款回報已送出，尚未完成付款確認</div>
-      <div style="font-size:17px;color:var(--dk);font-weight:900;margin-bottom:12px;line-height:1.55">請不要直接關閉此畫面。請先複製下方付款卡片，並連同付款截圖一起傳至官方 LINE。主辦確認入帳後，狀態才會更新為「已繳費」。</div>
-      <pre id="paymentCopyCard" onclick="copyPaymentCard()" style="white-space:pre-wrap;background:#fff;border:1.5px solid #d0e8d8;border-radius:14px;padding:14px;font-size:17px;line-height:1.55;color:#1a1a18;font-family:inherit;cursor:pointer;margin:0 0 12px"></pre>
-      <div style="font-size:16px;color:var(--md);font-weight:900;margin-bottom:12px">👇 請點一下上方付款卡片框框，即可複製內容。請連同付款截圖一起傳至官方 LINE。</div>
-      <button type="button" onclick="openLine()" style="width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">前往 LINE 客服</button>
-      <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">我已傳 LINE，關閉</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="cancelModal" onclick="if(event.target===this)closeModal('cancelModal')">
-  <div class="modal-box">
-    <div class="modal-title">取消報名確認</div>
-    <div style="font-size:18px;font-weight:700;color:var(--dk);margin-bottom:12px" id="cancelModalSesName"></div>
-    <div id="cancelRefundPolicy" style="background:var(--rdp);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.9;color:var(--dk)">
-      <div style="font-weight:700;margin-bottom:6px;color:var(--rd)">取消報名前請先確認以下退款原則：</div>
-      <div>1. 活動前 7 日以上取消<br><span style="color:var(--md)">酌收行政處理費 NT$500，餘額退還。</span></div>
-      <div style="margin-top:6px">2. 活動前 3～6 日取消<br><span style="color:var(--md)">退還報名費 50%，保證金不退還。</span></div>
-      <div style="margin-top:6px">3. 活動前 3 日內取消或活動當日未出席<br><span style="color:var(--md)">報名費與保證金皆不退還。</span></div>
-      <div style="margin-top:6px">4. 因天災、疫情或其他不可抗力因素導致活動取消<br><span style="color:var(--md)">主辦單位將依實際情況安排延期，或辦理部分退費。</span></div>
-    </div>
-    <div id="cancelDirectPolicy" style="display:none;background:#f8f8f8;border-radius:12px;padding:14px;margin-bottom:14px;font-size:15px;line-height:1.8;color:var(--dk)">尚未完成付款，取消後此報名紀錄將保留，不涉及金流。</div>
-    <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border:1.5px solid #e8b5b5;border-radius:10px;cursor:pointer;font-size:13px;color:var(--dk);margin-bottom:14px">
-      <input type="checkbox" id="cancelConfirmCheck" onchange="onCancelCheckChange()" style="width:18px;height:18px;flex-shrink:0;accent-color:var(--rd);margin-top:1px">
-      <span id="cancelConfirmLabel">我已了解取消與退款規則，仍要送出取消申請</span>
-    </label>
-    <div class="modal-actions">
-      <button class="btn-s2" onclick="closeModal('cancelModal')" style="flex:1;padding:12px;font-size:14px">返回，不取消</button>
-      <button id="cancelSubmitBtn" onclick="doSubmitCancel()" disabled style="flex:1;padding:12px;font-size:14px;font-weight:700;background:var(--rd);color:#fff;border:none;border-radius:10px;cursor:not-allowed;opacity:.5">我已了解，送出取消申請</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="stallPickerModal" onclick="if(event.target===this)closeModal('stallPickerModal')">
-  <div class="modal-box">
-    <div class="modal-title" id="stallPickerTitle">選擇攤位</div>
-    <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">綠色=可選　黃色=預留中　紅色=已選走</div>
-    <div id="stallGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
-    <button id="stallConfirmBtn" onclick="submitSelectedStalls()" style="width:100%;margin-top:14px;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;font-size:17px;font-weight:900">確認選位</button>
-    <button class="btn-s2" onclick="closeModal('stallPickerModal')" style="width:100%;margin-top:8px">取消</button>
-  </div>
-</div>
 
-<div id="toast" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
+    </div>
+
+  </div>
 
 
 
@@ -1608,17 +2073,17 @@ function memberShowLogin(){
   if(memberArea) memberArea.style.display='none';
 }
 function memberShowArea(mode){
-  const loginArea=$('memberLoginArea');
-  const memberArea=$('memberArea');
-  if(loginArea) loginArea.style.display='none';
-  if(memberArea) memberArea.style.display='block';
-  switchMemberMode(mode||'regs');
-  // 更新底部按鈕 active
+  const loginArea = $('memberLoginArea');
+  const memberArea = $('memberArea');
+  if(loginArea) loginArea.style.display = 'none';
+  if(memberArea) memberArea.style.display = 'block';
+  switchMemberMode(mode || 'regs');
+  // 底部按鈕 active
   ['botHome','botMember','botSupport'].forEach(id=>{
-    const el=document.getElementById(id);
+    const el = document.getElementById(id);
     if(el) el.classList.remove('active');
   });
-  const btn=document.getElementById('botMember');
+  const btn = $('botMember');
   if(btn) btn.classList.add('active');
 }
 function switchMemberMode(mode){
@@ -1626,41 +2091,96 @@ function switchMemberMode(mode){
   const profileDiv = $('profileMode');
   const tabRegs = $('tabMyRegs');
   const tabProfile = $('tabProfile');
+  const heroCard = $('memberHeroCard');
+
   if(mode === 'regs'){
     if(regsDiv) regsDiv.style.display = 'block';
     if(profileDiv) profileDiv.style.display = 'none';
-    if(tabRegs){ tabRegs.style.background='#DDEAD1'; tabRegs.style.color='#2a6a10'; }
-    if(tabProfile){ tabProfile.style.background='#fff'; tabProfile.style.color='#666'; }
+    if(tabRegs){ tabRegs.style.background='#eef6e6'; tabRegs.style.color='#4d7a33'; }
+    if(tabProfile){ tabProfile.style.background='#fff'; tabProfile.style.color='#888'; }
+    if(heroCard){
+      heroCard.style.background='linear-gradient(180deg,#f9fbf6,#eef6e7)';
+      heroCard.style.borderColor='#d8e8c8';
+      const eb=$('memberEditBtn'); if(eb){ eb.style.borderColor='#b9d3a5'; eb.style.color='#3f7a2a'; }
+    }
   } else {
     if(regsDiv) regsDiv.style.display = 'none';
     if(profileDiv) profileDiv.style.display = 'block';
-    if(tabRegs){ tabRegs.style.background='#fff'; tabRegs.style.color='#666'; }
-    if(tabProfile){ tabProfile.style.background='#DDEAD1'; tabProfile.style.color='#2a6a10'; }
-    // 填入會員資料
+    if(tabRegs){ tabRegs.style.background='#fff'; tabRegs.style.color='#888'; }
+    if(tabProfile){ tabProfile.style.background='#f0ebfb'; tabProfile.style.color='#7357bb'; }
+    if(heroCard){
+      heroCard.style.background='linear-gradient(180deg,#faf8fe,#efebfa)';
+      heroCard.style.borderColor='#d9cfee';
+      const eb=$('memberEditBtn'); if(eb){ eb.style.borderColor='#cdbef0'; eb.style.color='#7656c6'; }
+    }
     renderMemberProfile();
   }
 }
 
 function renderMemberProfile(){
   const m = ST.member || {};
-  const el = $('memberProfileContent');
-  if(!el) return;
-  el.innerHTML = `
-    <div style="background:#fff;border-radius:14px;border:1.5px solid #DDEAD1;padding:20px;margin-bottom:12px">
-      <div style="font-size:18px;font-weight:900;margin-bottom:16px;color:#111">個人基本資料</div>
-      <div style="display:grid;gap:12px">
-        ${profileRow('姓名', m.name)}
-        ${profileRow('Email', m.email||ST.memberEmail)}
-        ${profileRow('手機', m.phone)}
-        ${profileRow('品牌名稱', m.brand)}
-        ${profileRow('品牌簡介', m.brandDesc)}
-        ${profileRow('Facebook', m.fb)}
-        ${profileRow('Instagram', m.ig)}
-        ${profileRow('LINE ID', m.lineId)}
+  const email = ST.memberEmail || m.email || '';
+  const vFb = m.fb || m.fb_url || '';
+  const vIg = m.ig || m.ig_url || '';
+  const vWeb = m.website || m.web || '';
+  const vCarrier = m.invoiceCarrier || m.invoice_carrier || '';
+  const vTaxId = m.taxId || m.tax_id || '';
+  const vCompany = m.company || '';
+  const vInvEmail = m.invoiceEmail || m.invoice_email || '';
+
+  // 資料列樣式
+  const row = (icon, label, val) => !val ? '' : `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0">
+      <span style="font-size:18px;width:24px;flex-shrink:0">${icon}</span>
+      <span style="font-size:15px;color:#888;width:70px;flex-shrink:0">${label}</span>
+      <span style="font-size:16px;font-weight:700;flex:1;word-break:break-word">${esc(val)}</span>
+    </div>`;
+
+  // 社群 icon 列
+  const socialHtml = (vFb||vIg||vWeb) ? `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+      <span style="font-size:18px;width:24px;flex-shrink:0">🌐</span>
+      <span style="font-size:15px;color:#888;width:70px;flex-shrink:0">社群 / 官網</span>
+      <div style="display:flex;gap:8px">
+        ${vFb?`<a href="${esc(vFb)}" target="_blank" style="width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;text-decoration:none">f</a>`:''}
+        ${vIg?`<a href="${esc(vIg)}" target="_blank" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;text-decoration:none">IG</a>`:''}
+        ${vWeb?`<a href="${esc(vWeb)}" target="_blank" style="width:38px;height:38px;border-radius:50%;background:#DDEAD1;border:1px solid #b9d3a5;color:#2a6a10;display:flex;align-items:center;justify-content:center;font-size:16px;text-decoration:none">🔗</a>`:''}
       </div>
-      <button onclick="openMemberEditModal()" style="margin-top:18px;width:100%;background:#DDEAD1;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:900;color:#2a6a10;cursor:pointer;font-family:inherit">編輯資料</button>
-    </div>
-  `;
+    </div>` : '';
+
+  // ── 個人資料 ──
+  const profileEl = $('memberProfileContent');
+  if(profileEl){
+    profileEl.innerHTML =
+      row('👤','姓名', m.name) +
+      row('✉️','Email', email) +
+      row('📱','手機', m.phone) +
+      row('🏷','品牌名稱', m.brand||m.brand_name) +
+      socialHtml;
+    if(!profileEl.innerHTML.trim())
+      profileEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:16px;font-size:14px">尚未填寫資料</div>';
+  }
+
+  // ── 發票資訊 ──
+  const invEl = $('invoiceProfileContent');
+  if(invEl){
+    const invType = vTaxId ? '公司戶（三聯式）' : '個人（二聯式）';
+    invEl.innerHTML =
+      row('🧾','發票類型', invType) +
+      (vTaxId ? row('🔢','統一編號', vTaxId) : '') +
+      (vCompany ? row('🏢','抬頭', vCompany) : '') +
+      row('✉️','載具 / Email', vCarrier||vInvEmail||email);
+  }
+}
+
+function profileRow(label, val){
+  if(!val) return '';
+  return `<div class="label">${label}</div><div class="value">${val}</div>`;
+}
+
+function profileRow(label, val){
+  if(!val) return '';
+  return `<div class="label">${label}</div><div class="value">${val}</div>`;
 }
 
 function profileRow(label, val){
@@ -3308,66 +3828,75 @@ function escHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt
 
 function renderMyRegs(regs){
   ST.regs = Array.isArray(regs) ? regs : [];
-  const el=$('myRegsList');
+  const el = $('myRegsList');
   if(!el) return;
+  const helper = $('noRegsHelper');
+
   if(!ST.regs.length){
-    el.innerHTML='<div style="color:#aaa;font-size:16px;text-align:center;padding:20px">目前無報名紀錄</div>';
+    el.innerHTML = '';
+    if(helper){ helper.style.display='grid'; }
     handlePendingPayLink(ST.regs);
     return;
   }
-  const statusColor={'待審核':'#f5a623','已錄取':'#2d6a4f','不錄取':'#d94f4f','已取消':'#aaa','已報到':'#1a7f5a'};
-  el.innerHTML=ST.regs.map(r=>{
-    const color=statusColor[r.status]||'#888';
-    const pb=payBadge(r);
-    const cancelled=isCancelledReg(r);
-    const payBtn=canPayReg(r)?`<button onclick="event.stopPropagation();showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${escHtml(r.sessionName||r.sesName||'場次')}" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;margin-top:10px;font-size:18px;font-weight:900">前往繳費</button>`:'';
-    const waitMsg=(!cancelled && isPendingPayText(r.payStatus))?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:17px;font-weight:800">已回報，等待主辦確認</div>`:'';
-    const cancelMsg=cancelled?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:17px;font-weight:800">已取消，報名紀錄保留</div>`:'';
-    const refundBtn=canRefundReg(r)?`<button onclick="event.stopPropagation();cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${escHtml(r.sessionName||r.sesName||'')}" style="width:100%;background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd);border-radius:10px;padding:11px;margin-top:9px;font-size:17px;font-weight:900">申請取消／退款</button>`:'';
-    const transfer=(!cancelled && r.transferStatus)?`<div style="font-size:16px;color:#b45309;font-weight:800;margin-top:6px">退款狀態：${escHtml(r.transferStatus)}</div>`:'';
-    const stallHtml=stallSelectionHtml(r);
+  if(helper){ helper.style.display='none'; }
 
-    // ── 不可抗力狀態顯示（後端 API 回傳，前台只顯示）──
-    const fs = String(r.forceStatus||'');
-    let forceBanner = '';
-    if (fs === 'pending_force_choice') {
-      const dlText = r.forceChoiceDeadline ? new Date(r.forceChoiceDeadline).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false}) : '';
-      const hasTransfer = r.forceMode === 'transfer_or_refund';
-      forceBanner = `<div style="background:#fff1f2;border:1.5px solid #fda4af;border-radius:10px;padding:12px;margin-top:10px">
-        <div style="font-size:15px;font-weight:900;color:#be123c;margin-bottom:6px">🚨 選擇處理方式</div>
-        <div style="font-size:12px;color:#9f1239;margin-bottom:8px">此場次因不可抗力取消。${dlText?'請於 '+dlText+' 前選擇':''}</div>
-        <div style="display:flex;gap:8px">
-          ${hasTransfer?`<button onclick="event.stopPropagation();agreeForceTransferFn('${r.id}',this)" style="flex:1;background:#2d6a4f;color:#fff;border:none;border-radius:9px;padding:11px;font-size:16px;font-weight:900">同意延期</button>`:''}
-          <button onclick="event.stopPropagation();applyForceRefundFn('${r.id}',this)" style="flex:1;background:#be123c;color:#fff;border:none;border-radius:9px;padding:11px;font-size:16px;font-weight:900">申請退費</button>
-        </div>
-      </div>`;
-    } else if (fs === 'transferred') {
-      forceBanner = `<div style="background:#f0fdf4;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#2d6a4f">✅ 已同意延期至新場次</div>`;
-    } else if (fs === 'refund_requested') {
-      forceBanner = `<div style="background:#fff8ed;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#92400e">📋 已申請退費，等待主辦退款</div>`;
-    } else if (fs === 'auto_refund_requested') {
-      forceBanner = `<div style="background:#f3f4f6;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#374151">⏰ 逾期未選擇，系統已自動申請退費</div>`;
-    } else if (fs === 'refunded') {
-      forceBanner = `<div style="background:#f0fdf4;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#2d6a4f">✅ 已退費完成</div>`;
-    } else if (fs === 'cancel_notice_only') {
-      const cancelNoticeMsg = r.status==='待審核' ?
-        '此場次因不可抗力取消，審核流程已中止。' : '此場次因不可抗力取消，繳費流程已停止。';
-      forceBanner = `<div style="background:#f3f4f6;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#374151">📌 ${cancelNoticeMsg}</div>`;
-    } else if (fs === 'refund_only_auto') {
-      forceBanner = `<div style="background:#fff8ed;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#92400e">📋 此場次因不可抗力取消，已進入退費流程，等待主辦退款</div>`;
+  const statusCfg = {
+    '\u5f85\u5be9\u6838':  { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u{1f550}', label:'\u5be9\u6838\u4e2d', note:'\u4e3b\u8fa6\u55ae\u4f4d\u5be9\u6838\u4e2d\uff0c\u8acb\u8010\u5fc3\u7b49\u5019' },
+    '\u5df2\u9304\u53d6':  { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u2705', label:'\u5df2\u9304\u53d6', note:'\u8acb\u524d\u5f80\u7e73\u8cbb\u5b8c\u6210\u5831\u540d' },
+    '\u5099\u53d6':    { bg:'#fff6df', color:'#be8616', border:'#edd18e', icon:'\u23f3', label:'\u5099\u53d6\u4e2d', note:'\u60a8\u76ee\u524d\u70ba\u5099\u53d6\u540d\u55ae' },
+    '\u5f85\u78ba\u8a8d':  { bg:'#fff6df', color:'#be8616', border:'#edd18e', icon:'\u{1f4b3}', label:'\u78ba\u8a8d\u4e2d', note:'\u4ed8\u6b3e\u78ba\u8a8d\u4e2d\uff0c\u8acb\u7a0d\u5019' },
+    '\u5df2\u7e73\u8cbb':  { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u2705', label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
+    '\u514d\u8cbb':    { bg:'#eef6e6', color:'#4f7d36', border:'#cfe2bf', icon:'\u2705', label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
+    '\u7533\u8acb\u9000\u8cbb':{ bg:'#fff6df', color:'#be8616', border:'#edd18e', icon:'\u{1f4b0}', label:'\u9000\u8cbb\u4e2d', note:'\u9000\u8cbb\u7533\u8acb\u8655\u7406\u4e2d' },
+    '\u5df2\u9000\u8cbb':  { bg:'#f5f5f5', color:'#888', border:'#ddd', icon:'\u{1f4b8}', label:'\u5df2\u9000\u8cbb', note:'\u9000\u8cbb\u5df2\u5b8c\u6210' },
+    '\u5df2\u53d6\u6d88':  { bg:'#f5f5f5', color:'#888', border:'#ddd', icon:'\u274c', label:'\u5df2\u53d6\u6d88', note:'\u6b64\u5831\u540d\u5df2\u53d6\u6d88' },
+    '\u4e0d\u9304\u53d6':  { bg:'#fff0f0', color:'#c0392b', border:'#f4b8b8', icon:'\ud83d\ude22', label:'\u672a\u9304\u53d6', note:'\u5f88\u62b1\u6b49\u6b64\u6b21\u672a\u80fd\u9304\u53d6' },
+  };
+  const btnCfg = {
+    '\u5df2\u9304\u53d6': { label:'\u524d\u5f80\u7e73\u8cbb', bg:'#fdebc0', color:'#be8616' },
+    '\u5f85\u78ba\u8a8d': { label:'\u67e5\u770b\u8a73\u60c5', bg:'#dfeecf', color:'#4f7d36' },
+    '\u7533\u8acb\u9000\u8cbb':{ label:'\u67e5\u770b\u72c0\u614b', bg:'#dfeecf', color:'#4f7d36' },
+  };
+  const defBtn = { label:'\u67e5\u770b\u8a73\u60c5', bg:'#dfeecf', color:'#4f7d36' };
+
+  el.innerHTML = ST.regs.map(r => {
+    const sk = r.payStatus==='\u5df2\u7e73\u8cbb'?'\u5df2\u7e73\u8cbb':r.payStatus==='\u514d\u8cbb'?'\u514d\u8cbb':r.payStatus==='\u5f85\u78ba\u8a8d'?'\u5f85\u78ba\u8a8d':
+               r.status==='\u5df2\u9304\u53d6'&&r.payStatus==='\u672a\u7e73\u8cbb'?'\u5df2\u9304\u53d6':r.status||'\u5f85\u5be9\u6838';
+    const sc = statusCfg[sk] || { bg:'#f5f5f5', color:'#888', border:'#ddd', icon:'\ud83d\udccb', label:sk, note:'' };
+    const bc = btnCfg[sk] || defBtn;
+    const cover = r.cover||r.sessionCover||r.eventCover||'';
+    const thumbHtml = cover
+      ? `<img src="${esc(cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px" onerror="this.style.display='none'">`
+      : `<div style="width:100%;height:100%;border-radius:16px;background:#DDEAD1;display:flex;align-items:center;justify-content:center;font-size:28px">\ud83c\udfaa</div>`;
+    const dates = Array.isArray(r.dates)?r.dates:[];
+    let dateStr=r.date||'';
+    if(dates.length>1){
+      const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
+      dateStr=fmt(dates[0].date)+'\uff5e'+fmt(dates[dates.length-1].date);
+    } else if(dates.length===1){
+      const d=dates[0];
+      dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'\uff5e'+d.end:'');
     }
-
-    return `<div onclick="openRegDetail('${r.id}')" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:15px;margin-bottom:12px;cursor:pointer;border-left:4px solid ${color}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
-        <div style="font-size:20px;font-weight:900;color:var(--dk);flex:1;line-height:1.35">${escHtml(r.sessionName||r.sesName||'場次')}</div>
-        <span style="background:${pb.bg};color:${pb.c};padding:5px 10px;border-radius:20px;font-size:17px;font-weight:900;white-space:nowrap">${pb.t}</span>
+    return `<div style="background:#fff;border:1px solid #e5eede;border-radius:22px;padding:14px;cursor:pointer" onclick="openRegDetail('${esc(r.id)}')">
+      <div style="display:grid;grid-template-columns:100px 1fr 36px;gap:12px;align-items:start;margin-bottom:12px">
+        <div style="width:100px;height:86px">${thumbHtml}</div>
+        <div>
+          <div style="font-size:19px;font-weight:900;margin-bottom:6px;line-height:1.3">${esc(r.sessionName||r.name||'')}</div>
+          ${dateStr?`<div style="font-size:14px;color:#555;margin-bottom:4px">\ud83d\udcc5 ${esc(dateStr)}</div>`:''}
+          ${r.venue?`<div style="font-size:14px;color:#555">\ud83d\udccd ${esc(r.venue)}</div>`:''}
+        </div>
+        <div style="font-size:32px;color:#aaa;line-height:1;text-align:right">\u203a</div>
       </div>
-      <div style="font-size:17px;color:var(--md);font-weight:700">審核：${escHtml(r.status||'')}　攤位數：${r.stallCount||1} 攤</div>
-      <div style="font-size:18px;color:var(--g);font-weight:900;margin-top:3px">${r.total>0?'NT$ '+Number(r.total||0).toLocaleString():r.payStatus==='免費'?'免費':''}</div>
-      ${r.equipmentText?`<div style="font-size:16px;color:var(--md);margin-top:3px">設備：${escHtml(r.equipmentText)}</div>`:''}
-      ${participantTextFromData(r.participants)?`<div style="font-size:16px;color:var(--md);margin-top:3px">參加者：${escHtml(participantTextFromData(r.participants))}</div>`:''}
-      ${r.agreementAccepted?`<div style="font-size:12px;color:#2d6a4f;margin-top:5px">✅ 已同意報名合約${r.agreementVersion?' ('+r.agreementVersion+')':''}</div>`:''}
-      ${forceBanner||cancelMsg}${!forceBanner?waitMsg:''}${stallHtml}${!fs?refundBtn:''}${!fs?transfer:''}${!fs?payBtn:''}
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:5px;min-width:84px;height:34px;border-radius:999px;padding:0 12px;font-size:14px;font-weight:900;background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">
+          ${sc.icon} ${sc.label}
+        </span>
+        <span style="font-size:14px;color:#666;flex:1">${sc.note}</span>
+        <button onclick="event.stopPropagation();openRegDetail('${esc(r.id)}')"
+          style="height:40px;padding:0 16px;border-radius:14px;border:none;font-size:15px;font-weight:900;cursor:pointer;background:${bc.bg};color:${bc.color};font-family:inherit;white-space:nowrap">
+          ${bc.label}
+        </button>
+      </div>
     </div>`;
   }).join('');
   handlePendingPayLink(ST.regs);
