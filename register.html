@@ -1335,176 +1335,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 .hc-submit-btn:not(:disabled){box-shadow:0 6px 16px rgba(145,181,116,.4)}
 .hc-reg-footer{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-top:14px;padding-bottom:20px}
 .hc-reg-footer img{width:110px;height:80px;object-fit:contain}
-</style>
-</head>
-<body>
 
-<!-- ══ 首頁 ══ -->
-<div id="pageHome" class="page active" style="background:#fffaf6;padding-bottom:100px">
-
-  <!-- 封面圖（長按5秒進後台）-->
-  <div id="siteHero"
-    onmousedown="startLogoHold()" onmouseup="stopLogoHold()"
-    onmouseleave="stopLogoHold()" ontouchstart="startLogoHold(event)"
-    ontouchend="stopLogoHold()" ontouchcancel="stopLogoHold()"
-    oncontextmenu="return false">
-    <img data-skin-hero src="前台封面.jpg" alt="兔彼樂共創村"
-      onerror="this.style.display='none'">
-  </div>
-
-  <!-- 最新消息帶 -->
-  <div id="siteInfoBand">
-    <span style="font-size:18px">📢</span>
-    <strong data-site-info-text>探索活動，找到屬於你的市集旅程</strong>
-    <span class="band-arrow">›</span>
-  </div>
-
-  <!-- 探索標題 -->
-  <div style="padding:4px 18px 0;font-size:18px;font-weight:900">🐾 探索你的市集旅程 🐾</div>
-
-  <!-- 四大分類 -->
-  <div class="hc-cat-grid">
-    <div class="hc-cat-card c-green" onclick="filterCat('市集報名',this)">
-      <img src="IP歡迎.png" alt="市集" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
-      <div><div class="hc-cat-title">市集報名</div><div class="hc-cat-sub">各地市集活動<br>報名參加</div></div>
-    </div>
-    <div class="hc-cat-card c-yellow" onclick="filterCat('通路寄賣',this)">
-      <img src="IP指引.png" alt="寄賣" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
-      <div><div class="hc-cat-title">通路寄賣</div><div class="hc-cat-sub">通路寄賣合作<br>商品上架</div></div>
-    </div>
-    <div class="hc-cat-card c-blue" onclick="filterCat('體驗活動',this)">
-      <img src="IP資料.png" alt="體驗" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
-      <div><div class="hc-cat-title">體驗活動</div><div class="hc-cat-sub">手作DIY・<br>親子體驗・課程</div></div>
-    </div>
-    <div class="hc-cat-card c-pink" onclick="filterCat('合作洽詢',this)">
-      <img src="IP會員.png" alt="合作" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
-      <div><div class="hc-cat-title">合作洽詢</div><div class="hc-cat-sub">品牌合作・<br>場地合作・共創</div></div>
-    </div>
-  </div>
-
-  <!-- 精選主題活動 -->
-  <div class="hc-section">
-    <div class="hc-section-head">
-      <div class="hc-section-title">🌸 精選主題活動</div>
-      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
-    </div>
-    <div id="featuredEventsList" class="hc-feature-row">
-      <div style="padding:20px;color:#aaa;font-size:14px;grid-column:1/-1">載入中…</div>
-    </div>
-  </div>
-
-  <!-- 近期場次 -->
-  <div class="hc-section" id="recentSection">
-    <div class="hc-section-head">
-      <div class="hc-section-title">🌸 近期場次</div>
-      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
-    </div>
-    <div id="eventsList" class="hc-session-list">
-      <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
-    </div>
-  </div>
-
-</div>
-
-
-<!-- ══ 場次列表頁 ══ -->
-<div id="pagePortal" class="page">
-  <div class="back-bar" onclick="goBack()">
-    <span class="arrow">←</span>
-    <span class="title" id="portalTitle">場次列表</span>
-  </div>
-  <div style="padding:0 16px 100px" id="portalSessionList">
-    <div style="padding:20px;color:#aaa;font-size:13px;text-align:center">載入中…</div>
-  </div>
-</div>
-
-<!-- ══ 場次頁 ══ -->
-
-
-<!-- ══ 場次詳細頁 ══ -->
-<div id="pageSession" class="page">
-  <div class="back-bar" onclick="backToHome()">
-    <span class="arrow">←</span>
-    <span class="title" id="sessionEventName">場次列表</span>
-  </div>
-  <div id="sessionsList"></div>
-</div>
-
-<!-- ══ 報名表 Modal ══ -->
-<div class="page" id="regFormModal" style="background:#fffaf6;min-height:100vh">
-
-  <!-- 頂部列 -->
-  <div class="hc-reg-topbar">
-    <button class="hc-reg-topbar-close" onclick="closeRegFormModal()">×</button>
-    <span class="hc-reg-topbar-title">報名表單</span>
-    <img src="IP報名.png" alt="" class="hc-reg-topbar-ip" onerror="this.style.display='none'">
-  </div>
-
-  <!-- formHero（buildFormHero 需要）-->
-  <div id="formHero" style="display:none"></div>
-
-  <!-- 錯誤提示 -->
-  <div id="formError" style="display:none;margin:10px 14px;background:#fff0f0;border:1.5px solid #f87171;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#c0392b"></div>
-
-  <!-- 動態表單 -->
-  <div id="dynForm" style="padding-top:6px"></div>
-
-  <!-- 合約同意區（由 JS 控制）-->
-  <div id="agreementArea" style="display:none;margin:0 14px 12px">
-    <div class="hc-contract-box">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:20px">📋</span>
-        <span style="font-size:15px;color:#555">請先閱讀「活動合作合約條款」並同意後，才能送出報名。</span>
-      </div>
-      <button type="button" id="agreementViewBtn" onclick="openAgreementModal()"
-        style="height:38px;padding:0 16px;border-radius:12px;border:none;background:#91B574;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">
-        閱讀合約條款
-      </button>
-      <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#666;margin-top:10px;cursor:not-allowed;opacity:.5">
-        <input type="checkbox" id="agreementCheckbox" disabled
-          onchange="onAgreementCheck(this.checked)"
-          style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#91B574">
-        <span>完成閱讀並同意後，請勾選確認你已完成條款</span>
-      </label>
-    </div>
-  </div>
-
-  <!-- 送出按鈕 -->
-  <div style="padding:8px 14px 0">
-    <button class="hc-submit-btn" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
-  </div>
-  <!-- 底部 IP 裝飾 -->
-  <div class="hc-reg-footer">
-    <img src="IP報名.png" alt="" onerror="this.style.display='none'">
-  </div>
-
-</div>
-
-
-<!-- ══ 合約 Modal ══ -->
-<div id="agreementModal" class="overlay" onclick="if(event.target===this)closeAgreementModal()" style="display:none;z-index:9999;position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center">
-  <div class="modal-box" style="max-width:680px;width:94%;max-height:88vh;display:flex;flex-direction:column;border-radius:18px;overflow:hidden">
-    <div style="padding:16px 20px 10px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div id="agreementModalTitle" style="font-size:16px;font-weight:800;color:#1b4332">📋 報名合約</div>
-      <button onclick="closeAgreementModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1">×</button>
-    </div>
-    <div id="agreementModalBody" style="overflow-y:auto;padding:18px 20px;font-size:13px;line-height:1.9;white-space:pre-wrap;word-break:break-word;flex:1;color:#333">
-      <div style="color:#aaa;text-align:center;padding:40px 0">載入中…</div>
-    </div>
-    <div style="padding:14px 20px;border-top:1px solid #eee;flex-shrink:0;background:#fff">
-      <button onclick="onAgreementRead()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">
-        我已閱讀，關閉
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ 會員頁 ══ -->
-
-
-<!-- ══ 會員 / 我的報名 ══ -->
-<div id="pageMember" class="page">
-<style>
 /* ══════════════════════════════
    會員專區 定案樣式
    照設計稿還原，不自行改動
@@ -1969,7 +1800,177 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
   margin: 0;
   line-height: 1.5;
 }
+
 </style>
+</head>
+<body>
+
+<!-- ══ 首頁 ══ -->
+<div id="pageHome" class="page active" style="background:#fffaf6;padding-bottom:100px">
+
+  <!-- 封面圖（長按5秒進後台）-->
+  <div id="siteHero"
+    onmousedown="startLogoHold()" onmouseup="stopLogoHold()"
+    onmouseleave="stopLogoHold()" ontouchstart="startLogoHold(event)"
+    ontouchend="stopLogoHold()" ontouchcancel="stopLogoHold()"
+    oncontextmenu="return false">
+    <img data-skin-hero src="前台封面.jpg" alt="兔彼樂共創村"
+      onerror="this.style.display='none'">
+  </div>
+
+  <!-- 最新消息帶 -->
+  <div id="siteInfoBand">
+    <span style="font-size:18px">📢</span>
+    <strong data-site-info-text>探索活動，找到屬於你的市集旅程</strong>
+    <span class="band-arrow">›</span>
+  </div>
+
+  <!-- 探索標題 -->
+  <div style="padding:4px 18px 0;font-size:18px;font-weight:900">🐾 探索你的市集旅程 🐾</div>
+
+  <!-- 四大分類 -->
+  <div class="hc-cat-grid">
+    <div class="hc-cat-card c-green" onclick="filterCat('市集報名',this)">
+      <img src="IP歡迎.png" alt="市集" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
+      <div><div class="hc-cat-title">市集報名</div><div class="hc-cat-sub">各地市集活動<br>報名參加</div></div>
+    </div>
+    <div class="hc-cat-card c-yellow" onclick="filterCat('通路寄賣',this)">
+      <img src="IP指引.png" alt="寄賣" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
+      <div><div class="hc-cat-title">通路寄賣</div><div class="hc-cat-sub">通路寄賣合作<br>商品上架</div></div>
+    </div>
+    <div class="hc-cat-card c-blue" onclick="filterCat('體驗活動',this)">
+      <img src="IP資料.png" alt="體驗" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
+      <div><div class="hc-cat-title">體驗活動</div><div class="hc-cat-sub">手作DIY・<br>親子體驗・課程</div></div>
+    </div>
+    <div class="hc-cat-card c-pink" onclick="filterCat('合作洽詢',this)">
+      <img src="IP會員.png" alt="合作" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
+      <div><div class="hc-cat-title">合作洽詢</div><div class="hc-cat-sub">品牌合作・<br>場地合作・共創</div></div>
+    </div>
+  </div>
+
+  <!-- 精選主題活動 -->
+  <div class="hc-section">
+    <div class="hc-section-head">
+      <div class="hc-section-title">🌸 精選主題活動</div>
+      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
+    </div>
+    <div id="featuredEventsList" class="hc-feature-row">
+      <div style="padding:20px;color:#aaa;font-size:14px;grid-column:1/-1">載入中…</div>
+    </div>
+  </div>
+
+  <!-- 近期場次 -->
+  <div class="hc-section" id="recentSection">
+    <div class="hc-section-head">
+      <div class="hc-section-title">🌸 近期場次</div>
+      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
+    </div>
+    <div id="eventsList" class="hc-session-list">
+      <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══ 場次列表頁 ══ -->
+<div id="pagePortal" class="page">
+  <div class="back-bar" onclick="goBack()">
+    <span class="arrow">←</span>
+    <span class="title" id="portalTitle">場次列表</span>
+  </div>
+  <div style="padding:0 16px 100px" id="portalSessionList">
+    <div style="padding:20px;color:#aaa;font-size:13px;text-align:center">載入中…</div>
+  </div>
+</div>
+
+<!-- ══ 場次頁 ══ -->
+
+
+<!-- ══ 場次詳細頁 ══ -->
+<div id="pageSession" class="page">
+  <div class="back-bar" onclick="backToHome()">
+    <span class="arrow">←</span>
+    <span class="title" id="sessionEventName">場次列表</span>
+  </div>
+  <div id="sessionsList"></div>
+</div>
+
+<!-- ══ 報名表 Modal ══ -->
+<div class="page" id="regFormModal" style="background:#fffaf6;min-height:100vh">
+
+  <!-- 頂部列 -->
+  <div class="hc-reg-topbar">
+    <button class="hc-reg-topbar-close" onclick="closeRegFormModal()">×</button>
+    <span class="hc-reg-topbar-title">報名表單</span>
+    <img src="IP報名.png" alt="" class="hc-reg-topbar-ip" onerror="this.style.display='none'">
+  </div>
+
+  <!-- formHero（buildFormHero 需要）-->
+  <div id="formHero" style="display:none"></div>
+
+  <!-- 錯誤提示 -->
+  <div id="formError" style="display:none;margin:10px 14px;background:#fff0f0;border:1.5px solid #f87171;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#c0392b"></div>
+
+  <!-- 動態表單 -->
+  <div id="dynForm" style="padding-top:6px"></div>
+
+  <!-- 合約同意區（由 JS 控制）-->
+  <div id="agreementArea" style="display:none;margin:0 14px 12px">
+    <div class="hc-contract-box">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:20px">📋</span>
+        <span style="font-size:15px;color:#555">請先閱讀「活動合作合約條款」並同意後，才能送出報名。</span>
+      </div>
+      <button type="button" id="agreementViewBtn" onclick="openAgreementModal()"
+        style="height:38px;padding:0 16px;border-radius:12px;border:none;background:#91B574;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">
+        閱讀合約條款
+      </button>
+      <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#666;margin-top:10px;cursor:not-allowed;opacity:.5">
+        <input type="checkbox" id="agreementCheckbox" disabled
+          onchange="onAgreementCheck(this.checked)"
+          style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#91B574">
+        <span>完成閱讀並同意後，請勾選確認你已完成條款</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 送出按鈕 -->
+  <div style="padding:8px 14px 0">
+    <button class="hc-submit-btn" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
+  </div>
+  <!-- 底部 IP 裝飾 -->
+  <div class="hc-reg-footer">
+    <img src="IP報名.png" alt="" onerror="this.style.display='none'">
+  </div>
+
+</div>
+
+
+<!-- ══ 合約 Modal ══ -->
+<div id="agreementModal" class="overlay" onclick="if(event.target===this)closeAgreementModal()" style="display:none;z-index:9999;position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center">
+  <div class="modal-box" style="max-width:680px;width:94%;max-height:88vh;display:flex;flex-direction:column;border-radius:18px;overflow:hidden">
+    <div style="padding:16px 20px 10px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div id="agreementModalTitle" style="font-size:16px;font-weight:800;color:#1b4332">📋 報名合約</div>
+      <button onclick="closeAgreementModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1">×</button>
+    </div>
+    <div id="agreementModalBody" style="overflow-y:auto;padding:18px 20px;font-size:13px;line-height:1.9;white-space:pre-wrap;word-break:break-word;flex:1;color:#333">
+      <div style="color:#aaa;text-align:center;padding:40px 0">載入中…</div>
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid #eee;flex-shrink:0;background:#fff">
+      <button onclick="onAgreementRead()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">
+        我已閱讀，關閉
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 會員頁 ══ -->
+
+
+<!-- ══ 會員 / 我的報名 ══ -->
+<div id="pageMember" class="page">
+
 
   <!-- ── 登入區 ── -->
   <div id="memberLoginArea" style="padding:20px 16px;max-width:430px;margin:0 auto">
@@ -2493,7 +2494,9 @@ function navToTab(tab){
   } else if(tab==='support'){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('pageSupport');
-    if(pg) pg.classList.add('active');
+    if(pg){ pg.classList.add('active'); }
+    window.scrollTo(0,0);
+    try{ localStorage.setItem('2bl_current_tab','support'); }catch(e){}
   }
 }
 
@@ -4962,18 +4965,17 @@ if(document.readyState==='loading'){
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
   await handleMemberOAuthCallback();
-  // 從 localStorage 恢復登入狀態
+  // 恢復登入狀態
   const savedToken = localStorage.getItem('2bl_member_token');
   const savedEmail = readEmail();
   if (savedToken && savedEmail) {
     ST.memberEmail = savedEmail;
     ST.memberToken = savedToken;
   }
-  // 還原上次所在頁面（只支援三顆：home / member / support）
+  // 還原上次所在頁面
   const rawTab = localStorage.getItem('2bl_current_tab') || 'home';
-  // 舊版 myregs 對應到 member
   const lastTab = (rawTab === 'myregs') ? 'member' : rawTab;
-  // OAuth 回來後不強制跳會員頁，停在首頁讓使用者自己點
+  // OAuth 回來停首頁
   const isOAuthReturn = !!(new URLSearchParams(location.search).get('member_token') ||
     sessionStorage.getItem('2bl_member_token_pending'));
   if(isOAuthReturn){
@@ -4981,10 +4983,11 @@ if(document.readyState==='loading'){
     navToTab('home');
     return;
   }
-  if (lastTab === 'member' && savedEmail) {
+  if(lastTab === 'member' && savedEmail){
     await loadHome();
-    setTimeout(()=>{ navToTab('member'); }, 200);
-  } else if (lastTab === 'support') {
+    // 還原會員頁：需呼叫 safeLoadMemberPage 才能載入報名紀錄
+    setTimeout(()=>{ safeLoadMemberPage(savedEmail); }, 200);
+  } else if(lastTab === 'support'){
     await loadHome();
     setTimeout(()=>{ navToTab('support'); }, 200);
   } else {
