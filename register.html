@@ -141,8 +141,8 @@ button,a,[onclick]{touch-action:manipulation}
 .faq-item.open .faq-a{display:block}
 
 /* ── 底部導覽（四顆）── */
-.bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
-@media(min-width:600px){.bottom-fixed{max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;border:1px solid var(--border)}}
+
+@media(min-width:600px){}
 .bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:15px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
 .bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
 .bot-btn.active{background:var(--btn-color,#DDEAD1);color:#111}
@@ -188,7 +188,7 @@ button,a,[onclick]{touch-action:manipulation}
 @media(min-width:600px){
   body{padding-bottom:80px}
   .site-header{display:flex}
-  .bottom-fixed{max-width:100%;left:0;transform:none;border-radius:0;border-top:1px solid var(--border)}
+  
   .event-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
   .ec-inner{flex-direction:column;padding:0}
   .ec-thumb-sq{width:100%;height:160px;border-radius:var(--r) var(--r) 0 0}
@@ -347,7 +347,7 @@ button,a,[onclick]{touch-action:manipulation}
 @media(min-width:700px){
   body{max-width:960px;margin:0 auto}
   #pageHome,#pagePortal,#pageSession,#pageMember,#pageSupport{max-width:960px;margin:0 auto}
-  .bottom-fixed{max-width:960px;left:50%;transform:translateX(-50%)}
+  
 
   /* 近期場次：3欄大卡片 */
   #recentSection #eventsList{
@@ -412,7 +412,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 /* ── 電腦版全寬，最大 1600px ── */
 @media(min-width:700px){
   body{ max-width:1600px; margin:0 auto; }
-  .bottom-fixed{ max-width:1600px; left:50%; transform:translateX(-50%); }
+  
 }
 
 /* ── 封面圖 ── */
@@ -531,11 +531,15 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 
 /* ── 底部三顆導覽 ── */
 .bottom-fixed{
-  position:fixed; bottom:0; left:0; right:0;
-  background:white; border-top:1px solid var(--mk-line);
+  position:fixed;
+  bottom:0; left:0; right:0;
+  background:white;
+  border-top:1px solid var(--mk-line);
   padding:10px 14px calc(14px + env(safe-area-inset-bottom));
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:10px; z-index:100;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  z-index:200;
   box-shadow:0 -2px 12px rgba(0,0,0,.06);
 }
 .bot-btn{
