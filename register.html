@@ -142,7 +142,7 @@ button,a,[onclick]{touch-action:manipulation}
 
 /* ── 底部導覽（四顆）── */
 .bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
-@media(min-width:600px){.bottom-fixed{max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;border:1px solid var(--border)}}
+@media(min-width:600px){}
 .bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:15px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
 .bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
 .bot-btn.active{background:var(--btn-color,#DDEAD1);color:#111}
@@ -188,7 +188,7 @@ button,a,[onclick]{touch-action:manipulation}
 @media(min-width:600px){
   body{padding-bottom:80px}
   .site-header{display:flex}
-  .bottom-fixed{max-width:100%;left:0;transform:none;border-radius:0;border-top:1px solid var(--border)}
+  
   .event-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
   .ec-inner{flex-direction:column;padding:0}
   .ec-thumb-sq{width:100%;height:160px;border-radius:var(--r) var(--r) 0 0}
@@ -343,46 +343,7 @@ button,a,[onclick]{touch-action:manipulation}
 .ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
 .ses-list-reg{min-width:88px;height:42px;border-radius:12px;border:none;background:#DCD7ED;color:#111;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0 12px}
 
-/* 電腦版：最大寬度 + 3欄大卡片 */
-@media(min-width:700px){
-  body{max-width:960px;margin:0 auto}
-  #pageHome,#pagePortal,#pageSession,#pageMember,#pageSupport{max-width:960px;margin:0 auto}
-  .bottom-fixed{max-width:960px;left:50%;transform:translateX(-50%)}
 
-  /* 近期場次：3欄大卡片 */
-  #recentSection #eventsList{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:14px;
-  }
-  .ses-list-card{
-    grid-template-columns:1fr;
-    grid-template-rows:auto 1fr auto;
-    align-items:stretch;
-    padding:0;
-    overflow:hidden;
-    margin-bottom:0;
-    gap:0;
-  }
-  .ses-list-img{
-    width:100%;
-    height:160px;
-    border-radius:0;
-  }
-  .ses-list-body{padding:14px 14px 6px}
-  .ses-list-name{font-size:19px}
-  .ses-list-meta{font-size:14px}
-  .ses-list-fee{font-size:18px;margin-top:6px}
-  .ses-list-actions{
-    flex-direction:row;
-    align-items:center;
-    justify-content:flex-end;
-    padding:8px 14px 14px;
-    gap:10px;
-  }
-  .ses-list-reg{min-width:100px;height:44px;font-size:16px}
-  .ses-list-share{width:38px;height:38px;font-size:16px}
-}
 
 
 /* ══════════════════════════════════════
@@ -393,9 +354,7 @@ button,a,[onclick]{touch-action:manipulation}
 body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
 /* 電腦版置中 */
-@media(min-width:700px){
-  body{ max-width:1600px; margin:0 auto; }
-}
+/* 電腦版不限寬，自動最寬 */
 
 /* ── 封面圖 ── */
 #siteHero{ width:100%; overflow:hidden; border-radius:0 0 22px 22px; }
@@ -656,7 +615,6 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
 /* ── 會員頁 HC ── */
 #pageMember{
-  max-width:430px; margin:0 auto;
   background:#fff; min-height:100vh;
   padding-bottom:100px;
 }
@@ -2059,7 +2017,13 @@ function renderSessionCard(s){
   if(closed){
     return `<div style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div></div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
   }
-  return `<div role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div></div><span style="color:var(--g);font-size:24px;flex-shrink:0;line-height:1;font-weight:700">›</span></div>`;
+  return `<div role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+      <span style="color:var(--g);font-size:24px;line-height:1;font-weight:700">›</span>
+      <button onclick="event.stopPropagation();openSessionFromCard(event,'${esc(s.id)}')"
+        style="min-width:82px;height:40px;border-radius:13px;background:#91B574;color:#fff;border:none;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
+        立即報名
+      </button>
+    </div></div>`;
 }
 function renderSessions(){
   const el=$('sessionsList');
@@ -2148,6 +2112,139 @@ async function checkMemberStep(){
 }
 
 // 完整報名表（Email 查詢後才顯示）
+function renderDynFormFull(s, isNew=false){
+  const V=ST.member||{};
+  const email=ST.memberEmail||V.email||'';
+  const vFb=V.fb||V.fb_url||'';
+  const vIg=V.ig||V.ig_url||'';
+  const vWeb=V.website||V.web||'';
+  const vCarrier=V.invoiceCarrier||V.invoice_carrier||'';
+  const vTaxId=V.taxId||V.tax_id||'';
+  const vCompany=V.company||'';
+  const vInvEmail=V.invoiceEmail||V.invoice_email||'';
+  const isCompany=!!vTaxId;
+
+  ST.equipQty={};ST.addonQty={};ST.stallCount=1;
+  const cover=s.cover||s.coverUrl||'';
+  buildFormHero(s,cover);
+
+  // 取得日期字串
+  const dates=s.dates||[];
+  let dateStr='';
+  if(dates.length>1){
+    const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
+    dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
+  } else if(dates.length===1){
+    const d=dates[0];
+    dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
+  }
+  const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString()+'／攤':'免費';
+  const sType=s.type||'市集場次';
+  const isCollab=sType==='合作申請';
+  const isMkt=sType==='市集場次'||sType==='通路寄賣';
+  const stallUnit=isMkt?'攤':'份';
+  const equipDefs=Object.entries(s.equip||{}).filter(([k,v])=>v&&(v.open===true||v.open==='true'));
+  const addons=(s.addons||[]).map((a,i)=>({...a,_idx:i})).filter(a=>a.open===true||a.open==='true');
+
+  let html='';
+  html+=`<input type="hidden" id="f_email" value="${esc(email)}">`;
+
+  // ── ① 活動資訊 ──
+  html+=`<div class="form-card-new">
+    <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
+    ${cover?`<img class="act-img" src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:
+    `<div style="width:100%;height:140px;border-radius:var(--radius-md);background:var(--c-green);display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:12px">🎪</div>`}
+    <div class="act-name">${esc(s.name||'')}</div>
+    <div class="act-price">${esc(feeStr)}</div>
+    ${dateStr?`<div class="act-meta-row"><span class="act-meta-icon">📅</span><span>${esc(dateStr)}</span></div>`:''}
+    ${s.venue?`<div class="act-meta-row"><span class="act-meta-icon">📍</span><span>${esc(s.venue)+(s.region&&s.region!==s.venue?' · '+s.region:'')}</span></div>`:''}
+    ${s.description?`<div class="act-desc">${esc(s.description)}</div>`:''}
+  </div>`;
+
+  // ── 多日選擇（如有）──
+  if(dates.length>1){
+    html+=`<div class="form-card-new"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">+</span>選擇參加日期</div>`;
+    dates.forEach((d,i)=>{
+      html+=`<label style="display:flex;align-items:center;gap:12px;margin:10px 0;cursor:pointer;font-size:17px;font-weight:600">
+        <input type="checkbox" id="dp_${i}" onchange="updateFee()" style="width:24px;height:24px;accent-color:var(--c-green);flex-shrink:0">
+        <span>${d.date||''} ${d.start||''}${d.end?'～'+d.end:''} <strong style="color:#2a6a10">${d.fee?'NT$'+d.fee:''}</strong></span>
+      </label>`;
+    });
+    if(s.fee>0){
+      html+=`<div id="fullPkgHint" style="display:none;background:var(--c-green);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#111">
+        🎉 全程參加優惠 NT$${s.fee}／攤
+      </div>`;
+    }
+    html+=`</div>`;
+  }
+
+  // ── ② 攤位與設備選擇（表格式：項目｜單價｜-數字+｜小計）──
+  if(!isCollab){
+    html+=`<div class="form-card-new card-yellow">
+      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-yellow)">2</span>攤位與設備</div>
+      <table style="width:100%;border-collapse:collapse;font-size:15px">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(0,0,0,.08)">
+            <th style="text-align:left;padding:6px 4px;color:#888;font-size:13px;font-weight:900">項目</th>
+            <th style="text-align:right;padding:6px 4px;color:#888;font-size:13px;font-weight:900;white-space:nowrap">單價</th>
+            <th style="text-align:center;padding:6px 4px;color:#888;font-size:13px;font-weight:900">數量</th>
+            <th style="text-align:right;padding:6px 4px;color:#888;font-size:13px;font-weight:900;white-space:nowrap">小計</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top:1px solid rgba(0,0,0,.06)">
+            <td style="padding:10px 4px;font-size:16px;font-weight:700">${stallUnit}</td>
+            <td style="padding:10px 4px;text-align:right;white-space:nowrap;font-size:15px;color:#555">${Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'-'}</td>
+            <td style="padding:10px 4px;text-align:center">
+              <div style="display:inline-flex;align-items:center;border:1px solid rgba(0,0,0,.15);border-radius:999px;overflow:hidden;height:34px">
+                <button type="button" onclick="adjStall(-1)" style="width:30px;height:34px;border:none;background:none;font-size:16px;font-weight:900;cursor:pointer;color:#333">－</button>
+                <span id="stallDisplay" style="min-width:32px;text-align:center;font-weight:900;font-size:16px;border-left:1px solid rgba(0,0,0,.15);border-right:1px solid rgba(0,0,0,.15);height:34px;display:inline-flex;align-items:center;justify-content:center">1</span>
+                <button type="button" onclick="adjStall(1)" style="width:30px;height:34px;border:none;background:none;font-size:16px;font-weight:900;cursor:pointer;color:#333">＋</button>
+              </div>
+            </td>
+            <td style="padding:10px 4px;text-align:right;font-weight:900;font-size:16px;white-space:nowrap" id="stallTotal">NT$${Number(s.fee)||0}</td>
+          </tr>`;
+
+    equipDefs.forEach(([k,v])=>{
+      ST.equipQty[k]=v.incl||0;
+      const inclNote=Number(v.incl)>0?`（含${v.incl}）`:'';
+      const unitPrice=Number(v.price)>0?'NT$'+Number(v.price).toLocaleString():'-';
+      html+=`
+          <tr style="border-top:1px solid rgba(0,0,0,.06)">
+            <td style="padding:10px 4px;font-size:16px;font-weight:700">${esc(k)}${inclNote}</td>
+            <td style="padding:10px 4px;text-align:right;white-space:nowrap;font-size:15px;color:#555">${unitPrice}</td>
+            <td style="padding:10px 4px;text-align:center">
+              <div style="display:inline-flex;align-items:center;border:1px solid rgba(0,0,0,.15);border-radius:999px;overflow:hidden;height:34px">
+                <button type="button" onclick="adjEquip('${k}',-1)" style="width:30px;height:34px;border:none;background:none;font-size:16px;font-weight:900;cursor:pointer;color:#333">－</button>
+                <span id="eq_num_${k}" style="min-width:32px;text-align:center;font-weight:900;font-size:16px;border-left:1px solid rgba(0,0,0,.15);border-right:1px solid rgba(0,0,0,.15);height:34px;display:inline-flex;align-items:center;justify-content:center">${v.incl||0}</span>
+                <button type="button" onclick="adjEquip('${k}',1)" style="width:30px;height:34px;border:none;background:none;font-size:16px;font-weight:900;cursor:pointer;color:#333">＋</button>
+              </div>
+            </td>
+            <td style="padding:10px 4px;text-align:right;font-weight:900;font-size:16px;white-space:nowrap" id="eqTotal_${k}">NT$0</td>
+          </tr>`;
+    });
+
+    addons.forEach((a)=>{
+      ST.addonQty[a._idx]=0;
+      const unitPrice=Number(a.price)>0?'NT$'+Number(a.price).toLocaleString():'-';
+      html+=`
+          <tr style="border-top:1px solid rgba(0,0,0,.06)">
+            <td style="padding:10px 4px;font-size:16px;font-weight:700">${esc(a.name||'')}</td>
+            <td style="padding:10px 4px;text-align:right;white-space:nowrap;font-size:15px;color:#555">${unitPrice}</td>
+            <td style="padding:10px 4px;text-align:center">
+              <div style="display:inline-flex;align-items:center;border:1px solid rgba(0,0,0,.15);border-radius:999px;overflow:hidden;height:34px">
+                <button type="button" onclick="adjAddon(${a._idx},-1)" style="width:30px;height:34px;border:none;background:none;font-size:16px;font-weight:900;cursor:pointer;color:#333">－</button>
+                <span id="addon_num_${a._idx}" style="min-width:32px;text-align:center;font-weight:900;font-size:16px;border-left:1px solid rgba(0,0,0,.15);border-right:1px solid rgba(0,0,0,.15);height:34px;display:inline-flex;align-items:center;justify-content:center">0</span>
+                <button type="button" onclick="adjAddon(${a._idx},1)" style="width:30px;height:34px;border:none;background:none;font-size:16px;font-weight:900;cursor:pointer;color:#333">＋</button>
+              </div>
+            </td>
+            <td style="padding:10px 4px;text-align:right;font-weight:900;font-size:16px;white-space:nowrap" id="addonTotal_${a._idx}">NT$0</td>
+          </tr>`;
+    });
+
+    html+=`</tbody></table></div>`;
+
+
 function renderDynFormFull(s, isNew=false){
   const V=ST.member||{};
   const email=ST.memberEmail||V.email||'';
@@ -3049,6 +3146,27 @@ function updateFee(){
   // feeBox 在卡片內時永遠顯示（不需要切換）
   const feeBoxEl=$('feeBox');
   if(feeBoxEl && !feeBoxEl.closest('#dynForm')) feeBoxEl.style.display=total>0?'block':'none';
+  // 更新表格式設備各列小計
+  const _s=ST.currentSession||{};
+  // 攤位小計
+  const stEl=$('stallTotal');
+  if(stEl) stEl.textContent='NT$'+fee;
+  // 設備各列小計
+  Object.entries(_s.equip||{}).forEach(([k,v])=>{
+    if(!v||!v.open) return;
+    const _stalls=ST.stallCount||1;
+    const _incl=frontEffectiveEquipIncl(k,v,_s.basicEquip||_s.basic_equip||'')*_stalls;
+    const _want=ST.equipQty[k]||0;
+    const _extra=Math.max(0,_want-_incl);
+    const _sub=(Number(v.price)||0)*_extra;
+    const _el=$('eqTotal_'+k); if(_el) _el.textContent='NT$'+_sub;
+  });
+  // 加購各列小計
+  (_s.addons||[]).forEach((a,i)=>{
+    if(!a||!(a.open===true||a.open==='true')) return;
+    const _sub2=(Number(a.price)||0)*(ST.addonQty&&ST.addonQty[i]||0);
+    const _el2=$('addonTotal_'+i); if(_el2) _el2.textContent='NT$'+_sub2;
+  });
 }
 
 
