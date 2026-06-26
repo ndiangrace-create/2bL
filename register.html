@@ -144,7 +144,7 @@ button,a,[onclick]{touch-action:manipulation}
 
 @media(min-width:600px){}
 
-.bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
+
 
 .bot-icon{display:none}
 
@@ -236,145 +236,6 @@ button,a,[onclick]{touch-action:manipulation}
 .feat-title{font-size:14px;font-weight:900;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
 .feat-meta{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
 .feat-btn{width:100%;border:none;background:var(--c1);color:var(--s-ok);border-radius:8px;padding:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
-
-/* ══ 報名表單新版 CSS ══ */
-:root{
-  --c-blue:#D9E5EE;
-  --c-yellow:#FAEEC7;
-  --c-green:#DDEAD1;
-  --c-pink:#FAE1DD;
-  --c-purple:#DCD7ED;
-  --bg:#FFFFFF;
-  --txt:#111111;
-  --muted:#666666;
-  --line:#E8E8E4;
-  --radius-lg:22px;
-  --radius-md:16px;
-  --radius-sm:12px;
-  --font-title:22px;
-  --font-card-title:18px;
-  --font-base:16px;
-  --font-small:14px;
-  --font-btn:17px;
-}
-.reg-page{padding:12px 12px 100px;background:#fff}
-.form-card-new{background:#fff;border-radius:var(--radius-lg);border:1.5px solid var(--line);padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.04)}
-.form-card-new.card-yellow{border-color:var(--c-yellow);background:linear-gradient(180deg,#fff,var(--c-yellow))}
-.form-card-new.card-green{border-color:var(--c-green);background:linear-gradient(180deg,#fff,var(--c-green))}
-.form-card-new.card-blue{border-color:var(--c-blue);background:linear-gradient(180deg,#fff,var(--c-blue))}
-.form-card-new.card-pink{border-color:var(--c-pink);background:linear-gradient(180deg,#fff,var(--c-pink))}
-.form-card-new.card-purple{border-color:var(--c-purple);background:linear-gradient(180deg,#fff,var(--c-purple))}
-.form-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.form-card-num{width:30px;height:30px;border-radius:50%;background:var(--c-pink);color:#111;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:8px}
-.form-card-title-new{font-size:20px;font-weight:900;color:#111;display:flex;align-items:center;gap:8px}
-.edit-pill-btn{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
-/* 活動資訊 */
-.act-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:12px}
-.act-name{font-size:22px;font-weight:900;color:#111;line-height:1.3;margin-bottom:8px}
-.act-price{font-size:20px;font-weight:900;color:#111;margin-bottom:6px}
-.act-meta-row{display:flex;align-items:flex-start;gap:8px;font-size:15px;color:#555;margin-bottom:4px}
-.act-meta-icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.act-desc{font-size:15px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
-/* 設備確認 */
-.qty-row{display:grid;grid-template-columns:1fr 60px 28px auto;align-items:center;gap:8px;min-height:50px;border-bottom:1px solid rgba(0,0,0,.06)}
-.qty-row:last-child{border-bottom:0}
-.qty-icon{font-size:22px;margin-right:2px}
-.qty-name-wrap{display:flex;align-items:center;gap:6px}
-.qty-name{font-size:16px;font-weight:800;color:#111}
-.qty-input{width:60px;height:40px;border:1.5px solid var(--line);border-radius:10px;text-align:center;font-size:18px;font-weight:900;background:#fff;font-family:inherit}
-.qty-spin{display:flex;flex-direction:column;gap:2px}
-.qty-spin button{width:28px;height:18px;border:0;border-radius:6px;background:var(--c-purple);color:#111;font-size:13px;font-weight:900;line-height:1;cursor:pointer;font-family:inherit}
-.qty-total{font-size:14px;font-weight:800;color:#111;white-space:nowrap;text-align:right}
-/* 總計費用 */
-.total-new{background:linear-gradient(135deg,#fff,var(--c-yellow));border:1.5px solid var(--c-yellow);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px}
-.total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-bottom:6px}
-.total-final-row{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px dashed rgba(0,0,0,.16);margin-top:6px}
-.total-final-label{font-size:18px;font-weight:900}
-.total-final-amt{font-size:30px;font-weight:900;color:#111}
-/* 會員/發票資料 */
-.info-grid-new{display:grid;grid-template-columns:80px 1fr;gap:6px 10px;font-size:15px}
-.info-label-new{color:#555;font-weight:700}
-.info-value-new{color:#111;font-weight:800}
-.social-row{display:flex;gap:8px;align-items:center;margin-top:8px}
-.social-icon-new{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:1.5px solid var(--line);background:#fff;text-decoration:none;font-weight:700}
-/* 合約 */
-.contract-open-btn{width:100%;height:48px;border:0;border-radius:14px;background:var(--c-purple);color:#111;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit}
-.contract-done-badge{background:var(--c-green);color:#111;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:900;display:none}
-/* 備註 */
-.note-textarea{width:100%;min-height:96px;border:1.5px solid var(--line);border-radius:14px;padding:12px;font-size:16px;resize:none;background:#fff;font-family:inherit}
-.note-count{text-align:right;font-size:13px;color:var(--muted);margin-top:4px}
-/* 送出按鈕 */
-.submit-btn-new{width:100%;height:56px;border:0;border-radius:18px;background:var(--c-pink);color:#111;font-size:20px;font-weight:900;cursor:pointer;font-family:inherit;transition:opacity .2s}
-.submit-btn-new:disabled{opacity:.45;cursor:not-allowed}
-.submit-btn-new:not(:disabled){box-shadow:0 6px 16px rgba(0,0,0,.12)}
-
-/* ══ 近期場次卡片 ══ */
-/* 手機版：左圖右文單行 */
-.ses-list-card{
-  position:relative;
-  display:grid;
-  grid-template-columns:88px 1fr auto;
-  gap:12px;
-  align-items:center;
-  background:#fff;
-  border-radius:16px;
-  border:1px solid rgba(0,0,0,.08);
-  padding:12px;
-  margin-bottom:10px;
-  box-shadow:0 3px 10px rgba(0,0,0,.04);
-  cursor:pointer;
-}
-.ses-list-img{
-  width:88px;
-  height:78px;
-  border-radius:12px;
-  background:#DDEAD1;
-  flex-shrink:0;
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.ses-list-body{flex:1;min-width:0}
-.ses-list-name{font-size:17px;font-weight:900;color:#111;line-height:1.3;margin-bottom:4px}
-.ses-list-meta{font-size:13px;color:#555;line-height:1.5}
-.ses-list-fee{font-size:16px;font-weight:900;color:#111;margin-top:4px}
-.ses-list-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
-.ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
-.ses-list-reg{min-width:88px;height:42px;border-radius:12px;border:none;background:#DCD7ED;color:#111;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0 12px}
-
-
-
-/* ══════════════════════════════════════
-   MOCKUP 套版 CSS  (front_mockup.css)
-   只改視覺，不改 JS 邏輯
-   ══════════════════════════════════════ */
-:root{
-  --mk-green:#DDEAD1;
-  --mk-yellow:#FAEEC7;
-  --mk-blue:#D9E5EE;
-  --mk-pink:#FAE1DD;
-  --mk-purple:#DCD7ED;
-  --mk-white:#FFFFFF;
-  --mk-black:#111111;
-  --mk-muted:#5f5f5f;
-  --mk-line:rgba(17,17,17,.10);
-  --mk-shadow:0 8px 24px rgba(0,0,0,.07);
-  --mk-accent:#91B574;
-  --mk-accent-dark:#5b8b49;
-  --r-lg:24px;
-  --r-md:18px;
-  --r-sm:14px;
-}
-
-/* ── 全域字體 ── */
-body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#fffaf6; }
-
-/* ── 電腦版全寬，最大 1600px ── */
-@media(min-width:700px){
-  body{ max-width:1600px; margin:0 auto; }
-  
-}
 
 /* ── 封面圖 ── */
 #siteHero{ width:100%; overflow:hidden; border-radius:0 0 24px 24px; background:var(--mk-green); height:210px; }
@@ -493,11 +354,11 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 /* ── 底部三顆導覽 ── */
 
 
-#botHome.active{ background:#DDEAD1; color:#4d7f39; }
-#botMember.active{ background:#FAEEC7; color:#9a6f00; }
-#botSupport.active{ background:#DCD7ED; color:#5f4ca0; }
-#botMember.active{ background:var(--mk-yellow); color:#9a6f00; }
-#botSupport.active{ background:var(--mk-purple); color:#5f4ca0; }
+
+
+
+
+
 
 /* ── 報名表頁面 ── */
 #regFormModal/* .page 樣式已在主 CSS 定義 */
@@ -1749,7 +1610,30 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#ff
 
 @media(min-width:700px){
   body{ max-width:1600px; margin:0 auto; }
-  .bottom-fixed{ max-width:1600px; left:50%; transform:translateX(-50%); right:auto; }
+}
+
+@media(min-width:700px){
+  .hc-cat-grid{ gap:14px; padding:10px 24px 20px; }
+  .hc-cat-card{ min-height:120px; padding:16px; gap:14px; }
+  .hc-cat-card img{ width:72px; height:88px; }
+  .hc-cat-title{ font-size:26px; }
+  .hc-cat-sub{ font-size:16px; }
+  .hc-section{ padding:0 24px 20px; }
+  .hc-section-title{ font-size:24px; }
+  .hc-theme-card{ min-width:auto; }
+  .hc-theme-name{ font-size:17px; }
+  .hc-session-card{ grid-template-columns:110px 1fr 96px; padding:14px; }
+  .hc-session-thumb{ width:110px; height:88px; }
+  .hc-session-name{ font-size:19px; }
+  .hc-session-meta{ font-size:14px; }
+  .hc-session-price{ font-size:18px; }
+  .hc-reg-btn{ min-width:96px; height:44px; font-size:16px; }
+  
+  #siteInfoBand{ font-size:18px; }
+  .m-hero-info h2{ font-size:24px; }
+  .m-record-name{ font-size:22px; }
+  .m-profile-card-title{ font-size:22px; }
+  .bot-btn{ height:60px; font-size:18px; }
 }
 </style>
 </head>
@@ -3709,7 +3593,7 @@ window.addEventListener('popstate', function(e){
   if(regDM){ regDM.remove(); return; }
   // Layer 2：報名表 Modal 開著 → 關閉 Modal
   const modal=$('regFormModal');
-  if(modal && modal.classList.contains('show')){
+  if(modal && modal.classList.contains('active')){
     closeRegFormModal();
     return;
   }
@@ -3767,7 +3651,7 @@ async function openSession(sessionId){
     const titleEl=$('formBackTitle');
     if(titleEl) titleEl.textContent=s.name||'報名表';
     const modal=$('regFormModal');
-    if(!modal || !modal.classList.contains('show')) openRegFormModal();
+    if(!modal || !modal.classList.contains('active')) openRegFormModal();
     if(ST.member && ST.memberEmail){
       try{
         const myRegs=await api({action:'getMyRegs',email:ST.memberEmail,_t:Date.now()});
