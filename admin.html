@@ -642,14 +642,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
   </div>
 
   <!-- 名單頁專屬快捷區 -->
-  <div id="regsQuickBar" class="page-quick-bar rg-quick-bar">
-    <span class="quick-lbl">快捷篩選</span>
-    <button onclick="setRegsQuick('pending')" id="rqb-pending" class="qb-btn qb-rg-warn rqb-btn">待審核</button>
-    <button onclick="setRegsQuick('approved')" id="rqb-approved" class="qb-btn qb-rg rqb-btn">已錄取</button>
-    <button onclick="setRegsQuick('waitlist')" id="rqb-waitlist" class="qb-btn qb-rg rqb-btn">備取</button>
-    <button onclick="setRegsQuick('rejected')" id="rqb-rejected" class="qb-btn qb-rg-err rqb-btn">不錄取</button>
-    <button onclick="setRegsQuick('cancelled')" id="rqb-cancelled" class="qb-btn qb-rg-grey rqb-btn">已取消</button>
-  </div>
+  
 
   <!-- 第一層：各場次名單統計總覽（桌機一行、手機一卡） -->
   <div id="regsSummaryLayer" style="display:block">
@@ -704,15 +697,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
   </div>
 
   <!-- 現場頁專屬快捷區 -->
-  <div id="checkinQuickBar" class="page-quick-bar ck-quick-bar">
-    <span class="quick-lbl">快捷篩選</span>
-    <button onclick="setCheckinQuick('today')" id="cqb-today" class="qb-btn qb-ck-ok cqb-btn">今日報到</button>
-    <button onclick="setCheckinQuick('notchecked')" id="cqb-notchecked" class="qb-btn qb-ck-warn cqb-btn">未報到</button>
-    <button onclick="setCheckinQuick('checked')" id="cqb-checked" class="qb-btn qb-ck cqb-btn">已報到</button>
-    <button onclick="setCheckinQuick('notcleared')" id="cqb-notcleared" class="qb-btn qb-ck cqb-btn">未清場</button>
-    <button onclick="setCheckinQuick('deposit')" id="cqb-deposit" class="qb-btn qb-ck cqb-btn">退押金</button>
-    <button onclick="setCheckinQuick('equip')" id="cqb-equip" class="qb-btn qb-ck cqb-btn">設備</button>
-  </div>
+  
 
   <!-- 第一層：各場次現場統計（桌機一行、手機一卡） -->
   <div id="checkinSummaryLayer" style="display:block">
