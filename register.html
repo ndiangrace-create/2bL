@@ -216,6 +216,16 @@ button,a,[onclick]{touch-action:manipulation}
   .ses-card-name{font-size:18px}
   .ses-card-meta{font-size:14px}
 }
+
+/* ── 精選主題活動卡片 ── */
+.feat-card{min-width:160px;width:160px;background:var(--wh);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;cursor:pointer;flex-shrink:0}
+.feat-thumb{height:110px;background:var(--c1);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.feat-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.feat-initial{font-size:36px;font-weight:900;color:var(--s-ok);position:relative;z-index:1}
+.feat-body{padding:10px 10px 12px}
+.feat-title{font-size:14px;font-weight:900;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.feat-meta{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.feat-btn{width:100%;border:none;background:var(--c1);color:var(--s-ok);border-radius:8px;padding:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
@@ -3115,17 +3125,20 @@ if(document.readyState==='loading'){
     if(fl){
       const events=asArr(ST.events);
       if(events.length){
-        fl.innerHTML=events.map(e=>`<div class="event-card-h" style="cursor:pointer" onclick="openEvent('${esc(e.id)}')">
-          <div class="ec-thumb" style="height:120px;background:var(--c1);overflow:hidden;position:relative">
-            ${e.cover?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div style=\"display:flex;align-items:center;justify-content:center;height:100%;font-size:40px\">🎪</div>'">`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:40px">🎪</div>`}
-
+        fl.innerHTML=events.map(e=>{
+        const firstChar=(e.title||'活')[0];
+        const thumbHtml=e.cover
+          ?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`
+          :``;
+        return `<div class="feat-card" onclick="openEvent('${esc(e.id)}')">
+          <div class="feat-thumb">${thumbHtml}<span class="feat-initial">${esc(firstChar)}</span></div>
+          <div class="feat-body">
+            <div class="feat-title">${esc(e.title||'主題活動')}</div>
+            ${e.location?`<div class="feat-meta">📍 ${esc(e.location)}</div>`:''}
+            <button type="button" class="feat-btn">查看場次</button>
           </div>
-          <div class="ec-body">
-            <div class="ec-title">${esc(e.title||'主題活動')}</div>
-            ${e.location?`<div class="ec-meta">📍 ${esc(e.location)}</div>`:''}
-            <button type="button" style="margin-top:6px;width:100%;border:none;background:var(--c1);color:var(--s-ok);border-radius:8px;padding:8px;font-size:13px;font-weight:700;cursor:pointer">查看場次</button>
-          </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
       } else {
         fl.innerHTML='<div style="padding:20px;color:#aaa;font-size:13px">目前無主題活動</div>';
       }
