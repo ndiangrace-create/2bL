@@ -141,11 +141,11 @@ button,a,[onclick]{touch-action:manipulation}
 .faq-item.open .faq-a{display:block}
 
 /* ── 底部導覽（四顆）── */
-
-@media(min-width:600px){}
-
-
-
+.bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+@media(min-width:600px){.bottom-fixed{max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;border:1px solid var(--border)}}
+.bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:15px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
+.bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
+.bot-btn.active{background:var(--btn-color,#DDEAD1);color:#111}
 .bot-icon{display:none}
 
 /* ── Portal / Session / Member 相容 CSS ── */
@@ -188,7 +188,7 @@ button,a,[onclick]{touch-action:manipulation}
 @media(min-width:600px){
   body{padding-bottom:80px}
   .site-header{display:flex}
-  
+  .bottom-fixed{max-width:100%;left:0;transform:none;border-radius:0;border-top:1px solid var(--border)}
   .event-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
   .ec-inner{flex-direction:column;padding:0}
   .ec-thumb-sq{width:100%;height:160px;border-radius:var(--r) var(--r) 0 0}
@@ -237,1469 +237,582 @@ button,a,[onclick]{touch-action:manipulation}
 .feat-meta{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
 .feat-btn{width:100%;border:none;background:var(--c1);color:var(--s-ok);border-radius:8px;padding:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
 
+/* ══ 報名表單新版 CSS ══ */
+:root{
+  --c-blue:#D9E5EE;
+  --c-yellow:#FAEEC7;
+  --c-green:#DDEAD1;
+  --c-pink:#FAE1DD;
+  --c-purple:#DCD7ED;
+  --bg:#FFFFFF;
+  --txt:#111111;
+  --muted:#666666;
+  --line:#E8E8E4;
+  --radius-lg:22px;
+  --radius-md:16px;
+  --radius-sm:12px;
+  --font-title:22px;
+  --font-card-title:18px;
+  --font-base:16px;
+  --font-small:14px;
+  --font-btn:17px;
+}
+.reg-page{padding:12px 12px 100px;background:#fff}
+.form-card-new{background:#fff;border-radius:var(--radius-lg);border:1.5px solid var(--line);padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+.form-card-new.card-yellow{border-color:var(--c-yellow);background:linear-gradient(180deg,#fff,var(--c-yellow))}
+.form-card-new.card-green{border-color:var(--c-green);background:linear-gradient(180deg,#fff,var(--c-green))}
+.form-card-new.card-blue{border-color:var(--c-blue);background:linear-gradient(180deg,#fff,var(--c-blue))}
+.form-card-new.card-pink{border-color:var(--c-pink);background:linear-gradient(180deg,#fff,var(--c-pink))}
+.form-card-new.card-purple{border-color:var(--c-purple);background:linear-gradient(180deg,#fff,var(--c-purple))}
+.form-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.form-card-num{width:30px;height:30px;border-radius:50%;background:var(--c-pink);color:#111;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:8px}
+.form-card-title-new{font-size:20px;font-weight:900;color:#111;display:flex;align-items:center;gap:8px}
+.edit-pill-btn{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
+/* 活動資訊 */
+.act-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:12px}
+.act-name{font-size:22px;font-weight:900;color:#111;line-height:1.3;margin-bottom:8px}
+.act-price{font-size:20px;font-weight:900;color:#111;margin-bottom:6px}
+.act-meta-row{display:flex;align-items:flex-start;gap:8px;font-size:15px;color:#555;margin-bottom:4px}
+.act-meta-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.act-desc{font-size:15px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+/* 設備確認 */
+.qty-row{display:grid;grid-template-columns:1fr 60px 28px auto;align-items:center;gap:8px;min-height:50px;border-bottom:1px solid rgba(0,0,0,.06)}
+.qty-row:last-child{border-bottom:0}
+.qty-icon{font-size:22px;margin-right:2px}
+.qty-name-wrap{display:flex;align-items:center;gap:6px}
+.qty-name{font-size:16px;font-weight:800;color:#111}
+.qty-input{width:60px;height:40px;border:1.5px solid var(--line);border-radius:10px;text-align:center;font-size:18px;font-weight:900;background:#fff;font-family:inherit}
+.qty-spin{display:flex;flex-direction:column;gap:2px}
+.qty-spin button{width:28px;height:18px;border:0;border-radius:6px;background:var(--c-purple);color:#111;font-size:13px;font-weight:900;line-height:1;cursor:pointer;font-family:inherit}
+.qty-total{font-size:14px;font-weight:800;color:#111;white-space:nowrap;text-align:right}
+/* 總計費用 */
+.total-new{background:linear-gradient(135deg,#fff,var(--c-yellow));border:1.5px solid var(--c-yellow);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px}
+.total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-bottom:6px}
+.total-final-row{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px dashed rgba(0,0,0,.16);margin-top:6px}
+.total-final-label{font-size:18px;font-weight:900}
+.total-final-amt{font-size:30px;font-weight:900;color:#111}
+/* 會員/發票資料 */
+.info-grid-new{display:grid;grid-template-columns:80px 1fr;gap:6px 10px;font-size:15px}
+.info-label-new{color:#555;font-weight:700}
+.info-value-new{color:#111;font-weight:800}
+.social-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.social-icon-new{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:1.5px solid var(--line);background:#fff;text-decoration:none;font-weight:700}
+/* 合約 */
+.contract-open-btn{width:100%;height:48px;border:0;border-radius:14px;background:var(--c-purple);color:#111;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit}
+.contract-done-badge{background:var(--c-green);color:#111;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:900;display:none}
+/* 備註 */
+.note-textarea{width:100%;min-height:96px;border:1.5px solid var(--line);border-radius:14px;padding:12px;font-size:16px;resize:none;background:#fff;font-family:inherit}
+.note-count{text-align:right;font-size:13px;color:var(--muted);margin-top:4px}
+/* 送出按鈕 */
+.submit-btn-new{width:100%;height:56px;border:0;border-radius:18px;background:var(--c-pink);color:#111;font-size:20px;font-weight:900;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.submit-btn-new:disabled{opacity:.45;cursor:not-allowed}
+.submit-btn-new:not(:disabled){box-shadow:0 6px 16px rgba(0,0,0,.12)}
+
+/* ══ 近期場次卡片 ══ */
+/* 手機版：左圖右文單行 */
+.ses-list-card{
+  position:relative;
+  display:grid;
+  grid-template-columns:88px 1fr auto;
+  gap:12px;
+  align-items:center;
+  background:#fff;
+  border-radius:16px;
+  border:1px solid rgba(0,0,0,.08);
+  padding:12px;
+  margin-bottom:10px;
+  box-shadow:0 3px 10px rgba(0,0,0,.04);
+  cursor:pointer;
+}
+.ses-list-img{
+  width:88px;
+  height:78px;
+  border-radius:12px;
+  background:#DDEAD1;
+  flex-shrink:0;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.ses-list-body{flex:1;min-width:0}
+.ses-list-name{font-size:17px;font-weight:900;color:#111;line-height:1.3;margin-bottom:4px}
+.ses-list-meta{font-size:13px;color:#555;line-height:1.5}
+.ses-list-fee{font-size:16px;font-weight:900;color:#111;margin-top:4px}
+.ses-list-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
+.ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
+.ses-list-reg{min-width:88px;height:42px;border-radius:12px;border:none;background:#DCD7ED;color:#111;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0 12px}
+
+/* 電腦版：最大寬度 + 3欄大卡片 */
+@media(min-width:700px){
+  body{max-width:960px;margin:0 auto}
+  #pageHome,#pagePortal,#pageSession,#pageMember,#pageSupport{max-width:960px;margin:0 auto}
+  .bottom-fixed{max-width:960px;left:50%;transform:translateX(-50%)}
+
+  /* 近期場次：3欄大卡片 */
+  #recentSection #eventsList{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+  }
+  .ses-list-card{
+    grid-template-columns:1fr;
+    grid-template-rows:auto 1fr auto;
+    align-items:stretch;
+    padding:0;
+    overflow:hidden;
+    margin-bottom:0;
+    gap:0;
+  }
+  .ses-list-img{
+    width:100%;
+    height:160px;
+    border-radius:0;
+  }
+  .ses-list-body{padding:14px 14px 6px}
+  .ses-list-name{font-size:19px}
+  .ses-list-meta{font-size:14px}
+  .ses-list-fee{font-size:18px;margin-top:6px}
+  .ses-list-actions{
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-end;
+    padding:8px 14px 14px;
+    gap:10px;
+  }
+  .ses-list-reg{min-width:100px;height:44px;font-size:16px}
+  .ses-list-share{width:38px;height:38px;font-size:16px}
+}
+
+
+/* ══════════════════════════════════════
+   HC 套版視覺 CSS（只改視覺，不改功能）
+   ══════════════════════════════════════ */
+
+/* 字體 */
+body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
+
+/* 電腦版置中 */
+@media(min-width:700px){
+  body{ max-width:1600px; margin:0 auto; }
+}
+
 /* ── 封面圖 ── */
-#siteHero{ width:100%; overflow:hidden; border-radius:0 0 24px 24px; background:var(--mk-green); height:210px; }
-#siteHero img{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+#siteHero{ width:100%; overflow:hidden; border-radius:0 0 22px 22px; }
+#siteHero img{ width:100%; display:block; object-fit:cover; object-position:center; max-height:260px; }
 
 /* ── info band ── */
 #siteInfoBand{
   margin:12px 18px 10px;
   padding:10px 14px;
-  background:var(--mk-yellow);
+  background:#FAEEC7;
   border-radius:999px;
-  text-align:center;
   font-size:17px;
   font-weight:900;
-  letter-spacing:.04em;
+  display:flex;
+  align-items:center;
+  gap:8px;
 }
 
-/* ── 四大分類 grid ── */
-.mk-cat-grid{
+/* ── 四大分類 ── */
+.hc-cat-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px;
   padding:8px 18px 16px;
 }
-.mk-cat-card{
-  min-height:108px;
+.hc-cat-card{
+  min-height:110px;
   border-radius:20px;
-  border:1px solid var(--mk-line);
+  border:1px solid rgba(0,0,0,.08);
   padding:12px;
   display:flex;
   align-items:center;
   gap:10px;
-  box-shadow:0 4px 12px rgba(0,0,0,.04);
   cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
 }
-.mk-cat-card.c-green{background:linear-gradient(135deg,#fff,var(--mk-green))}
-.mk-cat-card.c-yellow{background:linear-gradient(135deg,#fff,var(--mk-yellow))}
-.mk-cat-card.c-blue{background:linear-gradient(135deg,#fff,var(--mk-blue))}
-.mk-cat-card.c-pink{background:linear-gradient(135deg,#fff,var(--mk-pink))}
-.mk-cat-card img{ width:56px; height:72px; object-fit:contain; flex:0 0 auto; }
-.mk-cat-title{ font-size:26px; line-height:1; font-weight:900; letter-spacing:.08em; }
-.mk-cat-sub{ margin-top:8px; font-size:16px; font-weight:700; color:#444; }
+.hc-cat-card.c-green{ background:linear-gradient(135deg,#fff,#DDEAD1); }
+.hc-cat-card.c-yellow{ background:linear-gradient(135deg,#fff,#FAEEC7); }
+.hc-cat-card.c-blue{ background:linear-gradient(135deg,#fff,#D9E5EE); }
+.hc-cat-card.c-pink{ background:linear-gradient(135deg,#fff,#FAE1DD); }
+.hc-cat-card img{ width:56px; height:72px; object-fit:contain; flex-shrink:0; }
+.hc-cat-title{ font-size:20px; font-weight:900; line-height:1.2; color:#111; }
+.hc-cat-sub{ font-size:13px; color:#555; margin-top:4px; line-height:1.4; }
 
 /* ── section head ── */
-.mk-section{ padding:0 18px 16px; }
-.mk-section-head{ display:flex; align-items:center; justify-content:space-between; margin:4px 0 10px; }
-.mk-section-title{ font-size:21px; font-weight:900; }
-.mk-section-more{ font-size:15px; font-weight:900; color:var(--mk-accent-dark); cursor:pointer; }
+.hc-section{ padding:0 18px 16px; }
+.hc-section-head{ display:flex; align-items:center; justify-content:space-between; margin:4px 0 12px; }
+.hc-section-title{ font-size:21px; font-weight:900; color:#111; }
+.hc-section-more{ font-size:15px; font-weight:900; color:#5b8b49; cursor:pointer; }
 
-/* ── 精選主題活動：橫向滑動 ── */
-.mk-feature-row{
-  display:flex; gap:10px;
-  overflow-x:auto; overflow-y:hidden;
-  padding-bottom:6px;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
+/* ── 精選主題活動 ── */
+.hc-feature-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
 }
-.mk-feature-row::-webkit-scrollbar{ display:none; }
-.mk-theme-card{
-  width:140px; flex:0 0 140px;
-  border:1px solid var(--mk-line);
-  border-radius:18px; overflow:hidden;
-  background:white;
+@media(max-width:480px){
+  .hc-feature-row{ display:flex; overflow-x:auto; scrollbar-width:none; }
+  .hc-feature-row::-webkit-scrollbar{ display:none; }
+}
+.hc-theme-card{
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:18px;
+  overflow:hidden;
+  background:#fff;
   box-shadow:0 3px 12px rgba(0,0,0,.05);
   cursor:pointer;
 }
-.mk-theme-img{ height:90px; background:var(--mk-green); overflow:hidden; }
-.mk-theme-img img{ width:100%; height:100%; object-fit:cover; }
-.mk-theme-body{ padding:9px; text-align:center; }
-.mk-theme-name{ font-size:15px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.mk-theme-btn{
-  margin-top:8px; height:32px; border-radius:999px;
-  background:var(--mk-accent); color:white;
+.hc-theme-img{ height:100px; background:#DDEAD1; overflow:hidden; }
+.hc-theme-img img{ width:100%; height:100%; object-fit:cover; }
+.hc-theme-body{ padding:10px; text-align:center; }
+.hc-theme-name{ font-size:15px; font-weight:900; line-height:1.3; margin-bottom:8px; color:#111; }
+.hc-theme-desc{ font-size:12px; color:#666; line-height:1.4; margin-bottom:8px; }
+.hc-theme-btn{
+  height:34px; border-radius:999px; background:#91B574; color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-size:14px; font-weight:900; cursor:pointer; border:none;
-  font-family:inherit;
+  font-family:inherit; width:100%;
 }
 
-/* ── 近期場次卡片 ── */
-.mk-session-list{ display:flex; flex-direction:column; gap:10px; }
-.mk-session-card{
+/* ── 近期場次 ── */
+.hc-session-list{ display:flex; flex-direction:column; gap:10px; }
+.hc-session-card{
   display:grid;
-  grid-template-columns:86px 1fr 82px;
-  gap:10px; align-items:center;
-  background:white;
-  border:1px solid var(--mk-line);
-  border-radius:18px; padding:10px;
+  grid-template-columns:90px 1fr 86px;
+  gap:10px;
+  align-items:center;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:18px;
+  padding:12px;
   box-shadow:0 3px 12px rgba(0,0,0,.04);
   cursor:pointer;
 }
-.mk-session-thumb{
-  width:86px; height:72px;
+.hc-session-thumb{
+  width:90px; height:76px;
   border-radius:14px; overflow:hidden;
-  background:var(--mk-green); flex-shrink:0;
+  background:#DDEAD1;
   display:flex; align-items:center; justify-content:center;
 }
-.mk-session-thumb img{ width:100%; height:100%; object-fit:cover; }
-.mk-session-name{ font-size:17px; font-weight:900; line-height:1.25; }
-.mk-session-meta{ margin-top:4px; font-size:12px; color:#555; line-height:1.45; }
-.mk-session-price{ margin-top:4px; font-size:16px; font-weight:900; color:var(--mk-accent-dark); }
-.mk-session-action{ display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
-.mk-share-btn{
-  width:30px; height:30px; border-radius:999px;
-  border:1px solid var(--mk-line); background:white;
+.hc-session-thumb img{ width:100%; height:100%; object-fit:cover; }
+.hc-session-name{ font-size:17px; font-weight:900; line-height:1.25; color:#111; margin-bottom:4px; }
+.hc-session-meta{ font-size:12px; color:#555; line-height:1.5; }
+.hc-session-price{ font-size:16px; font-weight:900; color:#5b8b49; margin-top:4px; }
+.hc-session-actions{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+.hc-share-btn{
+  width:32px; height:32px; border-radius:50%;
+  border:1px solid rgba(0,0,0,.1); background:#fff;
   display:flex; align-items:center; justify-content:center;
-  font-size:15px; cursor:pointer;
+  font-size:14px; cursor:pointer;
 }
-.mk-reg-btn{
-  min-width:78px; height:38px; border-radius:13px;
-  background:var(--mk-accent); color:white;
+.hc-reg-btn{
+  min-width:82px; height:40px; border-radius:13px;
+  background:#91B574; color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-size:15px; font-weight:900; cursor:pointer;
-  border:none; font-family:inherit;
+  border:none; font-family:inherit; white-space:nowrap;
 }
 
-/* ── 底部三顆導覽 ── */
+/* ── 底部三顆按鈕 HC 樣式 ── */
+.bottom-fixed{
+  position:fixed !important;
+  bottom:0; left:0; right:0;
+  background:#fff;
+  border-top:1px solid rgba(0,0,0,.08);
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+  display:grid !important;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  z-index:500 !important;
+  box-shadow:0 -2px 12px rgba(0,0,0,.06);
+  max-width:none !important;
+  transform:none !important;
+}
+.bot-btn{
+  height:54px !important;
+  border-radius:18px;
+  display:flex; align-items:center; justify-content:center;
+  gap:6px; font-size:16px; font-weight:900;
+  border:none; cursor:pointer; font-family:inherit;
+  background:transparent; color:#666;
+}
+.bot-btn .bot-label{ font-size:16px; font-weight:900; }
+.bot-btn.active{ background:var(--btn-color,#DDEAD1); color:#444; }
 
-
-
-
-
-
-
-
-/* ── 報名表頁面 ── */
-#regFormModal/* .page 樣式已在主 CSS 定義 */
-/* 頂部返回列 */
-.mk-reg-topbar{
+/* ── 報名表頁面（top bar）── */
+.hc-reg-topbar{
   display:flex; align-items:center; justify-content:space-between;
-  padding:14px 18px 10px;
-  border-bottom:1px solid var(--mk-line);
+  padding:14px 18px 12px;
+  border-bottom:1px solid rgba(0,0,0,.08);
   position:sticky; top:0; background:#fff; z-index:10;
 }
-.mk-reg-topbar-back{ font-size:22px; cursor:pointer; background:none; border:none; padding:0; }
-.mk-reg-topbar-title{ font-size:20px; font-weight:900; flex:1; text-align:center; }
-.mk-reg-topbar-ip{ width:54px; height:54px; object-fit:contain; }
+.hc-reg-topbar-close{ font-size:22px; cursor:pointer; background:none; border:none; color:#555; }
+.hc-reg-topbar-title{ font-size:20px; font-weight:900; color:#111; }
+.hc-reg-topbar-ip{ width:60px; height:60px; object-fit:contain; }
 
-/* ── 報名表 step-card ── */
-.mk-step-card{
-  border:1px solid var(--mk-line);
+/* ── 報名表 step card ── */
+.hc-step-card{
+  border:1px solid rgba(0,0,0,.08);
   border-radius:20px; padding:14px;
-  margin:0 14px 12px; background:white;
+  margin:0 14px 12px; background:#fff;
 }
-.mk-step-card.c-green{background:linear-gradient(135deg,#fff,var(--mk-green))}
-.mk-step-card.c-yellow{background:linear-gradient(135deg,#fff,var(--mk-yellow))}
-.mk-step-card.c-blue{background:linear-gradient(135deg,#fff,var(--mk-blue))}
-.mk-step-card.c-pink{background:linear-gradient(135deg,#fff,var(--mk-pink))}
-.mk-step-card.c-purple{background:linear-gradient(135deg,#fff,var(--mk-purple))}
-.mk-step-head{
-  display:flex; align-items:center; gap:8px; margin-bottom:10px;
-}
-.mk-step-num{
-  width:28px; height:28px; border-radius:999px;
-  background:var(--mk-accent); color:white;
+.hc-step-card.sc-green{ background:linear-gradient(135deg,#fff,#DDEAD1); }
+.hc-step-card.sc-yellow{ background:linear-gradient(135deg,#fff,#FAEEC7); }
+.hc-step-card.sc-blue{ background:linear-gradient(135deg,#fff,#D9E5EE); }
+.hc-step-card.sc-pink{ background:linear-gradient(135deg,#fff,#FAE1DD); }
+.hc-step-card.sc-purple{ background:linear-gradient(135deg,#fff,#DCD7ED); }
+.hc-step-head{ display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.hc-step-num{
+  width:28px; height:28px; border-radius:50%;
+  background:#91B574; color:#fff;
   display:flex; align-items:center; justify-content:center;
-  font-weight:900; font-size:15px; flex-shrink:0;
+  font-weight:900; font-size:14px; flex-shrink:0;
 }
-.mk-step-name{ font-size:18px; font-weight:900; }
+.hc-step-name{ font-size:18px; font-weight:900; color:#111; }
 
-/* ① 活動資訊 */
-.mk-act-row{ display:grid; grid-template-columns:96px 1fr; gap:12px; align-items:center; }
-.mk-act-img{ width:96px; height:88px; border-radius:14px; object-fit:cover; background:var(--mk-green); }
-.mk-act-name{ font-size:18px; font-weight:900; }
-.mk-act-meta{ margin-top:5px; font-size:14px; line-height:1.55; color:#444; }
-
-/* ② 設備表格 */
-.mk-equip-table{ width:100%; border-collapse:collapse; font-size:14px; }
-.mk-equip-table th{ color:#666; font-size:12px; font-weight:900; text-align:left; padding:6px 4px; }
-.mk-equip-table td{ border-top:1px solid rgba(0,0,0,.08); padding:8px 4px; vertical-align:middle; }
-.mk-equip-table .money{ font-weight:900; text-align:right; white-space:nowrap; }
-.mk-qty{
+/* ── 設備表格 ── */
+.hc-equip-table{ width:100%; border-collapse:collapse; font-size:14px; }
+.hc-equip-table th{
+  color:#888; font-size:12px; font-weight:900;
+  text-align:left; padding:6px 4px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+}
+.hc-equip-table td{ border-top:1px solid rgba(0,0,0,.06); padding:9px 4px; vertical-align:middle; }
+.hc-equip-table .col-money{ font-weight:900; text-align:right; white-space:nowrap; }
+.hc-qty{
   display:inline-flex; align-items:center;
-  border:1px solid var(--mk-line); border-radius:999px;
-  overflow:hidden; background:white; height:32px;
+  border:1px solid rgba(0,0,0,.12); border-radius:999px;
+  overflow:hidden; background:#fff; height:32px;
 }
-.mk-qty-btn{
+.hc-qty-btn{
   display:inline-flex; align-items:center; justify-content:center;
-  min-width:28px; height:32px; font-weight:900; font-size:16px;
-  background:none; border:none; cursor:pointer; font-family:inherit;
+  width:28px; height:32px; font-weight:900; font-size:15px;
+  background:none; border:none; cursor:pointer; font-family:inherit; color:#333;
 }
-.mk-qty-num{
-  min-width:32px; height:32px;
-  border-left:1px solid var(--mk-line); border-right:1px solid var(--mk-line);
+.hc-qty-num{
+  min-width:30px; height:32px;
+  border-left:1px solid rgba(0,0,0,.12); border-right:1px solid rgba(0,0,0,.12);
   display:inline-flex; align-items:center; justify-content:center;
   font-weight:900; font-size:15px;
-  background:white;
 }
 
-/* ③ 費用總計 */
-.mk-total-line{ display:flex; justify-content:space-between; font-size:16px; font-weight:900; margin:8px 0; }
-.mk-total-final{
-  border-top:1px dashed rgba(0,0,0,.18); margin-top:10px; padding-top:12px;
-  font-size:26px; font-weight:900; text-align:right; color:var(--mk-accent-dark);
+/* ── 費用總計 ── */
+.hc-total-row{ display:flex; justify-content:space-between; font-size:16px; font-weight:700; margin:8px 0; }
+.hc-total-final{
+  border-top:1px dashed rgba(0,0,0,.15); margin-top:10px; padding-top:12px;
+  display:flex; justify-content:space-between; align-items:center;
 }
+.hc-total-final-label{ font-size:17px; font-weight:900; }
+.hc-total-final-amount{ font-size:28px; font-weight:900; color:#5b8b49; }
 
-/* ④⑤ 會員/發票 */
-.mk-info-grid{ display:grid; grid-template-columns:90px 1fr; gap:7px 10px; font-size:14px; }
-.mk-info-label{ font-weight:900; color:#555; }
-.mk-edit-btn{
+/* ── 會員/發票資料 ── */
+.hc-info-grid{ display:grid; grid-template-columns:80px 1fr; gap:7px 10px; font-size:15px; }
+.hc-info-label{ color:#666; font-weight:700; }
+.hc-info-value{ color:#111; font-weight:700; }
+.hc-edit-btn{
   margin-left:auto; padding:6px 14px;
-  border:1px solid var(--mk-line); background:white;
+  border:1px solid rgba(0,0,0,.1); background:#fff;
   border-radius:999px; font-size:14px; font-weight:900;
   cursor:pointer; font-family:inherit;
 }
-.mk-social-row{ display:flex; gap:10px; margin-top:8px; }
-.mk-social-icon{
-  width:32px; height:32px; border-radius:999px;
-  background:white; border:1px solid var(--mk-line);
-  display:flex; align-items:center; justify-content:center;
-  font-weight:900; font-size:13px; text-decoration:none; color:#111;
+
+/* ── 合約 ── */
+.hc-contract-box{
+  background:#fff8e6; border:1px solid #f0d48d;
+  border-radius:14px; padding:14px 16px;
+}
+.hc-contract-cta{
+  height:40px; padding:0 16px; border-radius:12px;
+  border:none; background:#91B574; color:#fff;
+  font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;
+}
+.hc-contract-done-badge{
+  display:none; background:#DDEAD1; color:#2a6a10;
+  border-radius:999px; padding:4px 12px;
+  font-size:13px; font-weight:900;
 }
 
-/* ⑥ 合約 */
-.mk-contract-row{ display:flex; align-items:center; gap:12px; }
-.mk-contract-text{ flex:1; font-size:14px; color:#555; line-height:1.5; }
-.mk-contract-cta{
-  height:40px; padding:0 16px; border-radius:13px;
-  background:var(--mk-accent); color:white;
-  font-size:14px; font-weight:900;
-  display:flex; align-items:center; cursor:pointer;
-  border:none; font-family:inherit; white-space:nowrap;
-}
-.mk-contract-done{
-  background:var(--mk-green); color:#2a6a10;
-  border-radius:999px; padding:5px 12px;
-  font-size:13px; font-weight:900; display:none;
-}
-
-/* ⑦ 備註 */
-.mk-note-textarea{
+/* ── 備註 ── */
+.hc-note-textarea{
   width:100%; min-height:82px;
-  border:1px solid var(--mk-line); border-radius:15px;
+  border:1px solid rgba(0,0,0,.1); border-radius:14px;
   padding:12px; font-size:15px; resize:none;
-  background:white; font-family:inherit; color:#111;
+  background:#fff; font-family:inherit; color:#111;
 }
-.mk-note-count{ text-align:right; font-size:12px; color:#aaa; margin-top:4px; }
+.hc-note-count{ text-align:right; font-size:12px; color:#aaa; margin-top:4px; }
 
-/* ⑧ 送出 */
-.mk-submit-btn{
-  width:100%; height:54px; border-radius:18px;
-  background:var(--mk-accent); color:white;
+/* ── 送出按鈕 ── */
+.hc-submit-btn{
+  width:100%; height:56px; border-radius:18px;
+  background:#91B574; color:#fff;
   font-size:20px; font-weight:900;
   border:none; cursor:pointer; font-family:inherit;
   transition:opacity .2s;
 }
-.mk-submit-btn:disabled{ opacity:.4; cursor:not-allowed; }
-.mk-submit-btn:not(:disabled){ box-shadow:0 6px 16px rgba(0,0,0,.14); }
-.mk-reg-footer-ip{ display:flex; justify-content:center; margin-top:10px; }
-.mk-reg-footer-ip img{ width:120px; height:84px; object-fit:contain; }
+.hc-submit-btn:disabled{ opacity:.4; cursor:not-allowed; }
+.hc-submit-btn:not(:disabled){ box-shadow:0 6px 16px rgba(145,181,116,.35); }
+
+/* ── 會員頁 HC ── */
+#pageMember{
+  max-width:430px; margin:0 auto;
+  background:#fff; min-height:100vh;
+  padding-bottom:100px;
+}
+.m-topbar{ display:flex; align-items:center; gap:10px; padding:16px 18px 12px; }
+.m-topbar-back{ border:none; background:transparent; font-size:26px; cursor:pointer; padding:0; color:#333; }
+.m-topbar-title{ font-size:20px; font-weight:900; color:#111; }
+.m-hero{
+  margin:0 16px 14px; border-radius:22px; padding:16px;
+  display:grid; grid-template-columns:92px 1fr auto;
+  gap:14px; align-items:center;
+  position:relative; overflow:hidden;
+}
+.m-hero-record{ background:linear-gradient(160deg,#f9fbf6,#e8f5e0); border:1px solid #c8deb8; }
+.m-hero-profile{ background:linear-gradient(160deg,#faf8fe,#e8e2f8); border:1px solid #cdc5ee; }
+.m-hero-ip{ width:88px; height:110px; flex-shrink:0; }
+.m-hero-ip img{ width:100%; height:100%; object-fit:contain; }
+.m-hero-info h2{ margin:0 0 6px; font-size:22px; font-weight:900; color:#111; }
+.m-hero-mail{ margin:0 0 5px; font-size:16px; color:#555; }
+.m-hero-brand{ margin:0; font-size:16px; font-weight:700; color:#2f6d28; }
+.m-hero-profile .m-hero-brand{ color:#5a42a8; }
+.m-hero-actions{ display:flex; flex-direction:column; gap:10px; flex-shrink:0; }
+.m-btn-edit-green{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #b9d3a5; color:#3f7a2a; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; }
+.m-btn-edit-purple{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #cdbef0; color:#7656c6; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; }
+.m-btn-logout{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #f2b4be; color:#d9485f; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; }
+.m-tabs{ display:grid; grid-template-columns:1fr 1fr; margin:0 16px 16px; border-radius:18px; overflow:hidden; border:1px solid #dfe5d6; }
+.m-tab{ height:54px; border:none; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; background:#fff; color:#888; display:flex; align-items:center; justify-content:center; gap:6px; }
+.m-tab.active-record{ background:#eef6e6; color:#4d7a33; }
+.m-tab.active-profile{ background:#f0ebfb; color:#7357bb; }
+.m-record-list{ padding:0 16px; display:flex; flex-direction:column; gap:14px; }
+.m-record-card{ background:#fff; border:1px solid #e2ecd9; border-radius:22px; padding:14px; cursor:pointer; }
+.m-record-top{ display:grid; grid-template-columns:100px 1fr 32px; gap:12px; align-items:start; margin-bottom:12px; }
+.m-record-thumb{ width:100px; height:86px; border-radius:16px; overflow:hidden; background:#DDEAD1; flex-shrink:0; }
+.m-record-thumb img{ width:100%; height:100%; object-fit:cover; }
+.m-record-name{ font-size:21px; font-weight:900; line-height:1.3; margin-bottom:6px; color:#111; }
+.m-record-meta{ font-size:15px; color:#555; line-height:1.5; }
+.m-record-arrow{ font-size:28px; color:#bbb; line-height:1; text-align:right; margin-top:4px; }
+.m-record-bottom{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.m-status-pill{ display:inline-flex; align-items:center; gap:5px; height:34px; border-radius:999px; padding:0 12px; font-size:14px; font-weight:900; white-space:nowrap; }
+.m-status-note{ font-size:15px; color:#666; flex:1; }
+.m-action-btn{ height:40px; padding:0 16px; border-radius:14px; border:none; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; white-space:nowrap; margin-left:auto; }
+.m-helper-record{ margin:18px 16px 0; border-radius:22px; padding:18px; background:#f3effe; border:1px solid #d8c8f8; display:none; grid-template-columns:100px 1fr; gap:16px; align-items:center; }
+.m-helper-record.show{ display:grid; }
+.m-helper-record-ip{ width:100px; height:120px; object-fit:contain; }
+.m-helper-record-title{ font-size:18px; font-weight:900; margin:0 0 8px; line-height:1.4; color:#111; }
+.m-helper-record-text{ font-size:14px; color:#555; line-height:1.55; margin:0 0 12px; }
+.m-helper-record-btn{ height:42px; padding:0 18px; border:none; border-radius:14px; background:#9c7ce3; color:#fff; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
+.m-profile-section{ padding:0 16px; }
+.m-profile-card{ border-radius:22px; padding:18px; margin-bottom:16px; }
+.m-profile-card-purple{ background:#fcfaff; border:1px solid #d8c8f8; }
+.m-profile-card-blue{ background:#f8fbff; border:1px solid #c4d8f0; }
+.m-profile-card-title-row{ display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.m-profile-card-icon{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.m-profile-card-icon.purple{ background:#ede5fb; }
+.m-profile-card-icon.blue{ background:#dff0fb; }
+.m-profile-card-title{ font-size:20px; font-weight:900; color:#111; flex:1; }
+.m-profile-card-deco{ font-size:22px; }
+.m-profile-grid{ background:#fff; border-radius:16px; padding:14px; border:1px solid #ececec; display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+.m-profile-row{ display:flex; align-items:center; gap:10px; }
+.m-profile-row-icon{ font-size:17px; width:22px; flex-shrink:0; text-align:center; }
+.m-profile-row-label{ font-size:16px; color:#888; font-weight:700; width:80px; flex-shrink:0; }
+.m-profile-row-value{ font-size:17px; font-weight:700; color:#111; flex:1; word-break:break-word; }
+.m-social-row{ display:flex; gap:8px; }
+.m-social-icon{ width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; text-decoration:none; border:1px solid rgba(0,0,0,.1); }
+.m-full-btn{ width:100%; height:46px; border-radius:16px; border:none; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; }
+.m-full-btn-purple{ background:#ece5fb; color:#7357bb; }
+.m-full-btn-blue{ background:#e2f0fb; color:#4e78a5; }
+.m-helper-profile{ margin:0 0 16px; border-radius:22px; padding:16px; background:#fff9e6; border:1px solid #f0d48d; display:grid; grid-template-columns:58px 1fr; gap:14px; align-items:center; }
+.m-helper-profile-icon{ width:58px; height:58px; border-radius:16px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; border:1px solid #f0d48d; }
+.m-helper-profile-title{ font-size:16px; font-weight:900; line-height:1.5; margin:0 0 6px; color:#111; }
+.m-helper-profile-text{ font-size:13px; color:#666; margin:0; line-height:1.5; }
 
-/* ══ 會員專區 HC 樣式 ══ */
-
-
-
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.topbar h1 {
-  font-size: 20px;
-  margin: 0;
-  font-weight: 900;
-}
-
-.back-btn {
-  border: none;
-  background: transparent;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.member-hero {
-  border-radius: 22px;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 92px 1fr auto;
-  gap: 14px;
-  align-items: center;
-  border: 1px solid #dfe7d6;
-}
-
-.hero-record {
-  background: linear-gradient(180deg, #f9fbf6 0%, #eef6e7 100%);
-}
-
-.hero-profile {
-  background: linear-gradient(180deg, #faf8fe 0%, #efebfa 100%);
-  border-color: #d9cfee;
-}
-
-.hero-ip img {
-  width: 88px;
-  height: 110px;
-  object-fit: contain;
-}
-
-.hero-info h2 {
-  margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 900;
-}
-
-.hero-mail,
-.hero-brand {
-  margin: 0 0 6px;
-  font-size: 16px;
-  line-height: 1.4;
-}
-
-.hero-brand {
-  color: #2f6d28;
-  font-weight: 700;
-}
-
-.hero-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn {
-  min-width: 88px;
-  height: 44px;
-  border-radius: 16px;
-  background: #fff;
-  font-size: 16px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.btn-outline-green {
-  border: 1.5px solid #b9d3a5;
-  color: #3f7a2a;
-}
-
-.btn-outline-purple {
-  border: 1.5px solid #cdbef0;
-  color: #7656c6;
-}
-
-.btn-outline-red {
-  border: 1.5px solid #f2b4be;
-  color: #d9485f;
-}
-
-.member-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin: 16px 0 18px;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid #dfe5d6;
-}
-
-.tab-btn {
-  height: 54px;
-  border: none;
-  background: #fff;
-  font-size: 17px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.tab-record {
-  background: #eef6e6;
-  color: #4d7a33;
-}
-
-.tab-profile {
-  background: #f0ebfb;
-  color: #7357bb;
-}
-
-.record-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.record-card {
-  display: grid;
-  grid-template-columns: 100px 1fr 88px;
-  gap: 14px;
-  background: #fff;
-  border: 1px solid #dfe5d6;
-  border-radius: 22px;
-  padding: 14px;
-}
-
-.record-thumb img {
-  width: 100%;
-  height: 86px;
-  object-fit: cover;
-  border-radius: 16px;
-}
-
-.record-main h3 {
-  margin: 0 0 8px;
-  font-size: 20px;
-  font-weight: 900;
-}
-
-.record-main p {
-  margin: 0 0 6px;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.45;
-}
-
-.record-bottom {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 84px;
-  height: 36px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 900;
-  border: 1px solid transparent;
-}
-
-.status-review {
-  background: #eef6e6;
-  color: #4f7d36;
-  border-color: #cfe2bf;
-}
-
-.status-pay {
-  background: #fff6df;
-  color: #be8616;
-  border-color: #edd18e;
-}
-
-.status-done {
-  background: #eef6e6;
-  color: #4f7d36;
-  border-color: #cfe2bf;
-}
-
-.status-note {
-  font-size: 14px;
-  color: #666;
-}
-
-.record-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-
-.record-arrow {
-  border: none;
-  background: transparent;
-  font-size: 34px;
-  line-height: 1;
-  color: #777;
-  cursor: pointer;
-}
-
-.action-btn {
-  width: 100%;
-  height: 44px;
-  border-radius: 16px;
-  border: none;
-  font-size: 16px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.action-btn.green {
-  background: #dfeecf;
-  color: #4f7d36;
-}
-
-.action-btn.yellow {
-  background: #fdebc0;
-  color: #be8616;
-}
-
-.helper-card {
-  margin-top: 18px;
-  border-radius: 22px;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 14px;
-}
-
-.helper-card img {
-  width: 88px;
-  height: 108px;
-  object-fit: contain;
-}
-
-.helper-record {
-  background: #f6f0fd;
-  border: 1px solid #ddd0f6;
-}
-
-.helper-profile {
-  background: #fff7df;
-  border: 1px solid #f2dfaa;
-  grid-template-columns: 58px 1fr;
-  align-items: center;
-}
-
-.helper-icon-box {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-}
-
-.helper-text h4 {
-  margin: 0 0 8px;
-  font-size: 18px;
-  line-height: 1.4;
-  font-weight: 900;
-}
-
-.helper-text p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--c-text-soft);
-  line-height: 1.55;
-}
-
-.helper-btn {
-  margin-top: 12px;
-  height: 42px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.helper-btn-purple {
-  background: #9c7ce3;
-  color: #fff;
-}
-
-.profile-card {
-  border-radius: 22px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.card-purple {
-  background: #fcfbff;
-  border: 1px solid #ddd0f6;
-}
-
-.card-blue {
-  background: #fbfdff;
-  border: 1px solid #d5e3f0;
-}
-
-.section-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.section-title-row h3 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 900;
-}
-
-.section-deco {
-  font-size: 22px;
-  color: #a48ed8;
-}
-
-.profile-box {
-  display: grid;
-  grid-template-columns: 1fr 100px;
-  gap: 14px;
-  align-items: end;
-}
-
-.profile-grid {
-  display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 12px 10px;
-  background: #fff;
-  border-radius: 18px;
-  padding: 14px;
-  border: 1px solid #ececec;
-}
-
-.label {
-  font-size: 15px;
-  color: #666;
-  font-weight: 700;
-}
-
-.value {
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
-  word-break: break-word;
-}
-
-.social-icons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.social-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 14px;
-}
-
-.profile-ip-side {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.profile-ip-side img {
-  width: 88px;
-  height: 108px;
-  object-fit: contain;
-}
-
-.full-btn {
-  width: 100%;
-  height: 46px;
-  border-radius: 16px;
-  border: none;
-  margin-top: 14px;
-  font-size: 17px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.purple-btn {
-  background: #ece5fb;
-  color: #7357bb;
-}
-
-.blue-btn {
-  background: #e6f1fb;
-  color: #4e78a5;
-}
-
-.bottom-nav {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-  padding: 14px 16px 18px;
-  background: #fff;
-  border-top: 1px solid #eee;
-  border-radius: 24px 24px 0 0;
-}
-
-.nav-btn {
-  height: 54px;
-  border-radius: 18px;
-  border: 1px solid transparent;
-  font-size: 18px;
-  font-weight: 900;
-  cursor: pointer;
-  background: #fff;
-}
-
-.nav-green {
-  background: #eef6e6;
-  color: #4f7d36;
-  border-color: #d8e8c8;
-}
-
-.nav-yellow {
-  background: #fff4d7;
-  color: #b88619;
-  border-color: #f0d48d;
-}
-
-.nav-purple {
-  background: #f1ebfb;
-  color: #7357bb;
-  border-color: #d7c9f4;
-}
-
-.nav-pink {
-  background: #fdecef;
-  color: #c66377;
-  border-color: #f4c8d1;
-}
-
-.nav-btn.active {
-  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.04);
-}
-
-
-}
-
-
-  .record-side {
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .profile-box {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-actions {
-    flex-direction: row;
-    grid-column: 1 / -1;
-  }
-
-  .member-hero {
-    grid-template-columns: 80px 1fr;
-  }
-}
-
-/* ── 會員頁頂部 ── */
-#pageMember .hc-topbar{
-  display:flex; align-items:center; gap:10px;
-  padding:16px 18px 12px;
-  font-size:20px; font-weight:900;
-}
-#pageMember .hc-topbar-back{
-  border:none; background:transparent; font-size:26px; cursor:pointer; padding:0;
-}
-/* 我的紀錄模式主色：綠系 */
-#myRegsMode .tab-record{ background:#eef6e6; color:#4d7a33; }
-/* 會員資料模式主色：紫系 */
-#profileMode .tab-profile{ background:#f0ebfb; color:#7357bb; }
-/* 報名紀錄卡片縮圖預設 */
-.record-thumb-default{
-  width:100%; height:86px; border-radius:16px;
-  background:#DDEAD1; display:flex; align-items:center; justify-content:center;
-  font-size:28px;
-}
-
-/* ══ 首頁 HC CSS ══ */
-/* 封面圖 */
-#siteHero{width:100%;overflow:hidden;border-radius:0 0 24px 24px;background:#DDEAD1}
-#siteHero img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;max-height:260px}
-
-/* info band */
-#siteInfoBand{margin:12px 18px 10px;padding:10px 14px;background:#FAEEC7;border-radius:999px;text-align:center;font-size:17px;font-weight:900;letter-spacing:.04em;display:flex;align-items:center;gap:8px;justify-content:space-between}
-#siteInfoBand strong{flex:1}
-#siteInfoBand .band-arrow{font-size:18px;flex-shrink:0;color:#8a6000}
-
-/* 四大分類 */
-.hc-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 18px 16px}
-.hc-cat-card{min-height:108px;border-radius:20px;border:1px solid rgba(17,17,17,.10);padding:12px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 12px rgba(0,0,0,.04);cursor:pointer}
-.hc-cat-card.c-green{background:linear-gradient(135deg,#fff,#DDEAD1)}
-.hc-cat-card.c-yellow{background:linear-gradient(135deg,#fff,#FAEEC7)}
-.hc-cat-card.c-blue{background:linear-gradient(135deg,#fff,#D9E5EE)}
-.hc-cat-card.c-pink{background:linear-gradient(135deg,#fff,#FAE1DD)}
-.hc-cat-card img{width:56px;height:72px;object-fit:contain;flex:0 0 auto}
-.hc-cat-title{font-size:22px;line-height:1;font-weight:900;letter-spacing:.06em}
-.hc-cat-sub{margin-top:6px;font-size:15px;font-weight:700;color:#444}
-
-/* section head */
-.hc-section{padding:0 18px 16px}
-.hc-section-head{display:flex;align-items:center;justify-content:space-between;margin:4px 0 12px}
-.hc-section-title{font-size:21px;font-weight:900}
-.hc-section-more{font-size:15px;font-weight:900;color:#5b8b49;cursor:pointer}
-
-/* 精選主題活動 - 橫向 3 欄並排（設計稿是並排不滑動）*/
-.hc-feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-@media(max-width:480px){.hc-feature-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}}
-.hc-theme-card{border:1px solid rgba(17,17,17,.08);border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.05);cursor:pointer}
-.hc-theme-img{height:100px;background:#DDEAD1;overflow:hidden}
-.hc-theme-img img{width:100%;height:100%;object-fit:cover}
-.hc-theme-body{padding:10px;text-align:center}
-.hc-theme-name{font-size:15px;font-weight:900;line-height:1.3;margin-bottom:8px}
-.hc-theme-desc{font-size:12px;color:#666;line-height:1.4;margin-bottom:8px}
-.hc-theme-btn{height:34px;border-radius:999px;background:#91B574;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;cursor:pointer;border:none;font-family:inherit;width:100%}
-
-/* 近期場次 */
-.hc-session-list{display:flex;flex-direction:column;gap:10px}
-.hc-session-card{display:grid;grid-template-columns:88px 1fr 86px;gap:10px;align-items:center;background:#fff;border:1px solid rgba(17,17,17,.08);border-radius:18px;padding:12px;margin-bottom:0;box-shadow:0 3px 12px rgba(0,0,0,.04);cursor:pointer}
-.hc-session-thumb{width:90px;height:76px;border-radius:14px;overflow:hidden;background:#DDEAD1;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.hc-session-thumb img{width:100%;height:100%;object-fit:cover}
-.hc-session-name{font-size:17px;font-weight:900;line-height:1.25;margin-bottom:4px}
-.hc-session-meta{font-size:12px;color:#555;line-height:1.5}
-.hc-session-price{font-size:16px;font-weight:900;color:#5b8b49;margin-top:4px}
-.hc-session-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
-.hc-share-btn{width:30px;height:30px;border-radius:50%;border:1px solid rgba(17,17,17,.1);background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer}
-.hc-reg-btn{min-width:82px;height:40px;border-radius:13px;background:#91B574;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;cursor:pointer;border:none;font-family:inherit;white-space:nowrap}
-
-/* 底部三顆 HC 樣式 */
-.bottom-fixed{
-  position:fixed;bottom:0;left:0;right:0;
-  background:#fff;border-top:1px solid rgba(17,17,17,.08);
-  padding:10px 14px calc(14px + env(safe-area-inset-bottom));
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:10px;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.06);
-}
-.bot-btn{height:54px;border-radius:20px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:17px;font-weight:900;border:none;cursor:pointer;font-family:inherit;transition:all .15s}
-#botHome{background:#DDEAD1;color:#4d7f39}
-#botMember{background:#fff;color:#888;border:1px solid rgba(17,17,17,.08)}
-#botSupport{background:#fff;color:#888;border:1px solid rgba(17,17,17,.08)}
-#botHome.active{background:#DDEAD1;color:#4d7f39;box-shadow:inset 0 0 0 2px rgba(0,0,0,.05)}
-#botMember.active{background:#FAEEC7;color:#9a6f00}
-#botSupport.active{background:#DCD7ED;color:#5f4ca0}
-
-/* ══ 報名表單 HC CSS ══ */
-/* 頂部列 */
-.hc-reg-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid rgba(17,17,17,.08);position:sticky;top:0;background:#fff;z-index:10}
-.hc-reg-topbar-close{font-size:24px;cursor:pointer;background:none;border:none;padding:0;color:#555;line-height:1}
-.hc-reg-topbar-title{font-size:20px;font-weight:900}
-.hc-reg-topbar-ip{width:68px;height:68px;object-fit:contain}
-
-/* step card */
-.hc-step-card{border:1px solid rgba(17,17,17,.08);border-radius:20px;padding:14px;margin:0 14px 12px;background:#fff}
-.hc-step-card.sc-green{background:linear-gradient(135deg,#fff,#DDEAD1)}
-.hc-step-card.sc-yellow{background:linear-gradient(135deg,#fff,#FAEEC7)}
-.hc-step-card.sc-blue{background:linear-gradient(135deg,#fff,#D9E5EE)}
-.hc-step-card.sc-pink{background:linear-gradient(135deg,#fff,#FAE1DD)}
-.hc-step-card.sc-purple{background:linear-gradient(135deg,#fff,#DCD7ED)}
-.hc-step-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.hc-step-num{width:30px;height:30px;border-radius:50%;background:#91B574;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0}
-.hc-step-name{font-size:18px;font-weight:900}
-
-/* ① 活動資訊 */
-.hc-act-row{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start}
-.hc-act-img{width:96px;height:80px;border-radius:14px;object-fit:cover;background:#DDEAD1}
-.hc-act-name{font-size:18px;font-weight:900;margin-bottom:6px;line-height:1.3}
-.hc-act-meta{font-size:13px;color:#555;line-height:1.6}
-.hc-act-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-.hc-act-tag{background:#DDEAD1;color:#2a6a10;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700}
-
-/* ② 設備表格 */
-.hc-equip-table{width:100%;border-collapse:collapse;font-size:14px}
-.hc-equip-table th{color:#888;font-size:12px;font-weight:900;text-align:left;padding:6px 4px;border-bottom:1px solid rgba(0,0,0,.06)}
-.hc-equip-table td{border-top:1px solid rgba(0,0,0,.06);padding:9px 4px;vertical-align:middle}
-.hc-equip-table .col-money{font-weight:900;text-align:right;white-space:nowrap}
-.hc-qty{display:inline-flex;align-items:center;border:1px solid rgba(17,17,17,.12);border-radius:999px;overflow:hidden;background:#fff;height:32px}
-.hc-qty-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:32px;font-weight:900;font-size:15px;background:none;border:none;cursor:pointer;font-family:inherit;color:#333}
-.hc-qty-num{min-width:30px;height:32px;border-left:1px solid rgba(17,17,17,.12);border-right:1px solid rgba(17,17,17,.12);display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:15px}
-
-/* ③ 總計 */
-.hc-total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:700;margin:8px 0}
-.hc-total-final{border-top:1px dashed rgba(0,0,0,.15);margin-top:10px;padding-top:12px;display:flex;justify-content:space-between;align-items:center}
-.hc-total-final-label{font-size:17px;font-weight:900}
-.hc-total-final-amount{font-size:28px;font-weight:900;color:#5b8b49}
-
-/* ④⑤ 會員/發票資料 */
-.hc-info-grid{display:grid;grid-template-columns:80px 1fr;gap:7px 10px;font-size:15px}
-.hc-info-label{color:#666;font-weight:700}
-.hc-info-value{color:#111;font-weight:700}
-.hc-edit-btn{margin-left:auto;padding:6px 14px;border:1px solid rgba(17,17,17,.1);background:#fff;border-radius:999px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit}
-.hc-social-row{display:flex;gap:8px;margin-top:8px}
-.hc-social-icon{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid rgba(17,17,17,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;text-decoration:none;color:#111}
-
-/* ⑥ 合約 */
-.hc-contract-box{background:#fff8e6;border:1px solid #f0d48d;border-radius:14px;padding:14px 16px}
-.hc-contract-row{display:flex;align-items:center;gap:12px;margin-top:10px}
-.hc-contract-text{flex:1;font-size:14px;color:#555;line-height:1.5}
-.hc-contract-cta{height:40px;padding:0 16px;border-radius:12px;border:none;background:#91B574;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
-.hc-contract-cta.done{background:#DDEAD1;color:#2a6a10}
-.hc-contract-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:#888}
-.hc-contract-done-badge{display:none;background:#DDEAD1;color:#2a6a10;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:900;margin-left:auto}
-
-/* ⑦ 備註 */
-.hc-note-textarea{width:100%;min-height:82px;border:1px solid rgba(17,17,17,.1);border-radius:14px;padding:12px;font-size:15px;resize:none;background:#fff;font-family:inherit;color:#111}
-.hc-note-count{text-align:right;font-size:12px;color:#aaa;margin-top:4px}
-
-/* ⑧ 送出 */
-.hc-submit-hint{font-size:14px;color:#888;text-align:center;margin-bottom:10px;line-height:1.5}
-.hc-submit-btn{width:100%;height:56px;border-radius:18px;background:#91B574;color:#fff;font-size:20px;font-weight:900;border:none;cursor:pointer;font-family:inherit;transition:opacity .2s}
-.hc-submit-btn:disabled{opacity:.4;cursor:not-allowed;background:#ccc}
-.hc-submit-btn:not(:disabled){box-shadow:0 6px 16px rgba(145,181,116,.4)}
-.hc-reg-footer{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-top:14px;padding-bottom:20px}
-.hc-reg-footer img{width:110px;height:80px;object-fit:contain}
-
-/* ══════════════════════════════
-   會員專區 定案樣式
-   照設計稿還原，不自行改動
-   ══════════════════════════════ */
-
-/* 會員頁容器限寬，手機版優先 */
-#pageMember {
-  max-width: 430px;
-  margin: 0 auto;
-  background: #FFFFFF;
-  min-height: 100vh;
-  padding-bottom: 100px;
-  font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-}
-
-/* 返回列 */
-.m-topbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 18px 12px;
-}
-.m-topbar-back {
-  border: none;
-  background: transparent;
-  font-size: 26px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  color: #333;
-}
-.m-topbar-title {
-  font-size: 20px;
-  font-weight: 900;
-  color: #111;
-}
-
-/* 會員資訊卡 */
-.m-hero {
-  margin: 0 16px 14px;
-  border-radius: 22px;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 92px 1fr auto;
-  gap: 14px;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-.m-hero-record {
-  background: linear-gradient(160deg, #f9fbf6 0%, #e8f5e0 100%);
-  border: 1px solid #c8deb8;
-}
-.m-hero-profile {
-  background: linear-gradient(160deg, #faf8fe 0%, #e8e2f8 100%);
-  border: 1px solid #cdc5ee;
-}
-.m-hero-ip {
-  width: 88px;
-  height: 110px;
-  flex-shrink: 0;
-}
-.m-hero-ip img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.m-hero-info h2 {
-  margin: 0 0 6px;
-  font-size: 22px;
-  font-weight: 900;
-  color: #111;
-}
-.m-hero-mail {
-  margin: 0 0 5px;
-  font-size: 16px;
-  color: #555;
-  line-height: 1.4;
-}
-.m-hero-brand {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: #2f6d28;
-}
-.m-hero-profile .m-hero-brand {
-  color: #5a42a8;
-}
-.m-hero-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.m-btn-edit-green {
-  min-width: 72px;
-  height: 42px;
-  border-radius: 14px;
-  background: #fff;
-  border: 1.5px solid #b9d3a5;
-  color: #3f7a2a;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-}
-.m-btn-edit-purple {
-  min-width: 72px;
-  height: 42px;
-  border-radius: 14px;
-  background: #fff;
-  border: 1.5px solid #cdbef0;
-  color: #7656c6;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-}
-.m-btn-logout {
-  min-width: 72px;
-  height: 42px;
-  border-radius: 14px;
-  background: #fff;
-  border: 1.5px solid #f2b4be;
-  color: #d9485f;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-/* 分頁頁籤 */
-.m-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin: 0 16px 16px;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid #dfe5d6;
-}
-.m-tab {
-  height: 54px;
-  border: none;
-  font-size: 17px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-  background: #fff;
-  color: #888;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.m-tab.active-record {
-  background: #eef6e6;
-  color: #4d7a33;
-}
-.m-tab.active-profile {
-  background: #f0ebfb;
-  color: #7357bb;
-}
-
-/* 報名紀錄卡片 */
-.m-record-list {
-  padding: 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.m-record-card {
-  background: #fff;
-  border: 1px solid #e2ecd9;
-  border-radius: 22px;
-  padding: 14px;
-  cursor: pointer;
-}
-.m-record-top {
-  display: grid;
-  grid-template-columns: 100px 1fr 32px;
-  gap: 12px;
-  align-items: start;
-  margin-bottom: 12px;
-}
-.m-record-thumb {
-  width: 100px;
-  height: 86px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #DDEAD1;
-  flex-shrink: 0;
-}
-.m-record-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.m-record-name {
-  font-size: 21px;
-  font-weight: 900;
-  line-height: 1.3;
-  margin-bottom: 6px;
-  color: #111;
-}
-.m-record-meta {
-  font-size: 15px;
-  color: #555;
-  line-height: 1.5;
-}
-.m-record-arrow {
-  font-size: 28px;
-  color: #bbb;
-  line-height: 1;
-  text-align: right;
-  margin-top: 4px;
-}
-.m-record-bottom {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.m-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 34px;
-  border-radius: 999px;
-  padding: 0 12px;
-  font-size: 14px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-.m-status-note {
-  font-size: 15px;
-  color: #666;
-  flex: 1;
-}
-.m-action-btn {
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 14px;
-  border: none;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  margin-left: auto;
-}
-
-/* 找不到紀錄提示卡（紫色）*/
-.m-helper-record {
-  margin: 18px 16px 0;
-  border-radius: 22px;
-  padding: 18px;
-  background: #f3effe;
-  border: 1px solid #d8c8f8;
-  display: none;
-  grid-template-columns: 100px 1fr;
-  gap: 16px;
-  align-items: center;
-}
-.m-helper-record.show {
-  display: grid;
-}
-.m-helper-record-ip {
-  width: 100px;
-  height: 120px;
-  object-fit: contain;
-}
-.m-helper-record-title {
-  font-size: 18px;
-  font-weight: 900;
-  margin: 0 0 8px;
-  line-height: 1.4;
-  color: #111;
-}
-.m-helper-record-text {
-  font-size: 14px;
-  color: #555;
-  line-height: 1.55;
-  margin: 0 0 12px;
-}
-.m-helper-record-btn {
-  height: 42px;
-  padding: 0 18px;
-  border: none;
-  border-radius: 14px;
-  background: #9c7ce3;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* 會員資料頁：個人資料卡（紫系）*/
-.m-profile-section {
-  padding: 0 16px;
-}
-.m-profile-card {
-  border-radius: 22px;
-  padding: 18px;
-  margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
-}
-.m-profile-card-purple {
-  background: #fcfaff;
-  border: 1px solid #d8c8f8;
-}
-.m-profile-card-blue {
-  background: #f8fbff;
-  border: 1px solid #c4d8f0;
-}
-.m-profile-card-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.m-profile-card-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-.m-profile-card-icon.purple { background: #ede5fb; }
-.m-profile-card-icon.blue   { background: #dff0fb; }
-.m-profile-card-title {
-  font-size: 20px;
-  font-weight: 900;
-  color: #111;
-  flex: 1;
-}
-.m-profile-card-deco {
-  font-size: 22px;
-}
-
-/* 資料內容區（左文字 + 右IP圖）*/
-.m-profile-body {
-  display: grid;
-  grid-template-columns: 1fr 96px;
-  gap: 14px;
-  align-items: end;
-  margin-bottom: 14px;
-}
-.m-profile-grid {
-  background: #fff;
-  border-radius: 16px;
-  padding: 14px;
-  border: 1px solid #ececec;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.m-profile-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.m-profile-row-icon {
-  font-size: 17px;
-  width: 22px;
-  flex-shrink: 0;
-  text-align: center;
-}
-.m-profile-row-label {
-  font-size: 16px;
-  color: #888;
-  font-weight: 700;
-  width: 80px;
-  flex-shrink: 0;
-}
-.m-profile-row-value {
-  font-size: 17px;
-  font-weight: 700;
-  color: #111;
-  flex: 1;
-  word-break: break-word;
-}
-.m-profile-ip {
-  width: 96px;
-  height: 116px;
-  object-fit: contain;
-  display: block;
-}
-.m-social-row {
-  display: flex;
-  gap: 8px;
-}
-.m-social-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 900;
-  text-decoration: none;
-  border: 1px solid rgba(0,0,0,.1);
-}
-.m-full-btn {
-  width: 100%;
-  height: 46px;
-  border-radius: 16px;
-  border: none;
-  font-size: 17px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.m-full-btn-purple { background: #ece5fb; color: #7357bb; }
-.m-full-btn-blue   { background: #e2f0fb; color: #4e78a5; }
-
-/* 奶黃提醒卡 */
-.m-helper-profile {
-  margin: 0 0 16px;
-  border-radius: 22px;
-  padding: 16px;
-  background: #fff9e6;
-  border: 1px solid #f0d48d;
-  display: grid;
-  grid-template-columns: 58px 1fr;
-  gap: 14px;
-  align-items: center;
-}
-.m-helper-profile-icon {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  border: 1px solid #f0d48d;
-}
-.m-helper-profile-title {
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 1.5;
-  margin: 0 0 6px;
-  color: #111;
-}
-.m-helper-profile-text {
-  font-size: 13px;
-  color: #666;
-  margin: 0;
-  line-height: 1.5;
-}
-
-
-@media(min-width:700px){
-  body{ max-width:1600px; margin:0 auto; }
-}
-
-@media(min-width:700px){
-  .hc-cat-grid{ gap:14px; padding:10px 24px 20px; }
-  .hc-cat-card{ min-height:120px; padding:16px; gap:14px; }
-  .hc-cat-card img{ width:72px; height:88px; }
-  .hc-cat-title{ font-size:26px; }
-  .hc-cat-sub{ font-size:16px; }
-  .hc-section{ padding:0 24px 20px; }
-  .hc-section-title{ font-size:24px; }
-  .hc-theme-card{ min-width:auto; }
-  .hc-theme-name{ font-size:17px; }
-  .hc-session-card{ grid-template-columns:110px 1fr 96px; padding:14px; }
-  .hc-session-thumb{ width:110px; height:88px; }
-  .hc-session-name{ font-size:19px; }
-  .hc-session-meta{ font-size:14px; }
-  .hc-session-price{ font-size:18px; }
-  .hc-reg-btn{ min-width:96px; height:44px; font-size:16px; }
-  
-  #siteInfoBand{ font-size:18px; }
-  .m-hero-info h2{ font-size:24px; }
-  .m-record-name{ font-size:22px; }
-  .m-profile-card-title{ font-size:22px; }
-  .bot-btn{ height:60px; font-size:18px; }
-}
 </style>
 </head>
 <body>
 
 <!-- ══ 首頁 ══ -->
-<div id="pageHome" class="page active" style="background:#fffaf6;padding-bottom:100px">
+<div id="pageHome" class="page active">
 
   <!-- 封面圖（長按5秒進後台）-->
   <div id="siteHero"
     onmousedown="startLogoHold()" onmouseup="stopLogoHold()"
     onmouseleave="stopLogoHold()" ontouchstart="startLogoHold(event)"
     ontouchend="stopLogoHold()" ontouchcancel="stopLogoHold()"
-    oncontextmenu="return false">
-    <img data-skin-hero src="前台封面.jpg" alt="兔彼樂共創村"
+    oncontextmenu="return false"
+    style="width:100%;padding:0;margin:0">
+    <img class="hero-bg-img" data-skin-hero
+      src="前台封面.jpg"
+      alt="兔彼樂共創村"
+      style="width:100%;display:block;border-radius:0 0 22px 22px;object-fit:cover;object-position:center;max-height:260px"
       onerror="this.style.display='none'">
   </div>
 
-  <!-- 最新消息帶 -->
-  <div id="siteInfoBand">
-    <span style="font-size:18px">📢</span>
-    <strong data-site-info-text>探索活動，找到屬於你的市集旅程</strong>
-    <span class="band-arrow">›</span>
+  <!-- 資訊帶 -->
+  <div id="siteInfoBand" style="background:var(--c2);padding:8px 16px">
+    <strong data-site-info-text style="font-size:14px;color:#6a4a00">探索活動，找到屬於你的市集旅程</strong>
   </div>
 
-  <!-- 探索標題 -->
-  <div style="padding:4px 18px 0;font-size:18px;font-weight:900">🐾 探索你的市集旅程 🐾</div>
+  <!-- 四大分類入口 -->
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px">
 
-  <!-- 四大分類 -->
-  <div class="hc-cat-grid">
-    <div class="hc-cat-card c-green" onclick="filterCat('市集報名',this)">
-      <img src="IP歡迎.png" alt="市集" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
-      <div><div class="hc-cat-title">市集報名</div><div class="hc-cat-sub">各地市集活動<br>報名參加</div></div>
+    <div onclick="filterCat('市集報名',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#DDEAD1;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP歡迎.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">市集</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">市集報名</div>
+      </div>
     </div>
-    <div class="hc-cat-card c-yellow" onclick="filterCat('通路寄賣',this)">
-      <img src="IP指引.png" alt="寄賣" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
-      <div><div class="hc-cat-title">通路寄賣</div><div class="hc-cat-sub">通路寄賣合作<br>商品上架</div></div>
+
+    <div onclick="filterCat('通路寄賣',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAEEC7;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP指引.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">寄賣</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">攤位寄賣</div>
+      </div>
     </div>
-    <div class="hc-cat-card c-blue" onclick="filterCat('體驗活動',this)">
-      <img src="IP資料.png" alt="體驗" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
-      <div><div class="hc-cat-title">體驗活動</div><div class="hc-cat-sub">手作DIY・<br>親子體驗・課程</div></div>
+
+    <div onclick="filterCat('體驗活動',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#D9E5EE;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP資料.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">體驗</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">體驗活動</div>
+      </div>
     </div>
-    <div class="hc-cat-card c-pink" onclick="filterCat('合作洽詢',this)">
-      <img src="IP會員.png" alt="合作" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
-      <div><div class="hc-cat-title">合作洽詢</div><div class="hc-cat-sub">品牌合作・<br>場地合作・共創</div></div>
+
+    <div onclick="filterCat('合作洽詢',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAE1DD;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP會員.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">合作</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">合作洽詢</div>
+      </div>
     </div>
+
   </div>
 
   <!-- 精選主題活動 -->
-  <div class="hc-section">
-    <div class="hc-section-head">
-      <div class="hc-section-title">🌸 精選主題活動</div>
-      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
+  <div style="padding:0 14px 4px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:20px;font-weight:900;color:#111">精選主題活動</div>
+      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
     </div>
-    <div id="featuredEventsList" class="hc-feature-row">
-      <div style="padding:20px;color:#aaa;font-size:14px;grid-column:1/-1">載入中…</div>
+    <div id="featuredEventsList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none">
+      <div style="padding:20px;color:#aaa;font-size:14px">載入中…</div>
     </div>
   </div>
 
   <!-- 近期場次 -->
-  <div class="hc-section" id="recentSection">
-    <div class="hc-section-head">
-      <div class="hc-section-title">🌸 近期場次</div>
-      <div class="hc-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
+  <div id="recentSection" style="padding:8px 14px 100px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:20px;font-weight:900;color:#111">近期場次</div>
+      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
     </div>
-    <div id="eventsList" class="hc-session-list">
+    <div id="eventsList">
       <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
     </div>
   </div>
@@ -1731,55 +844,45 @@ button,a,[onclick]{touch-action:manipulation}
 </div>
 
 <!-- ══ 報名表 Modal ══ -->
-<div class="page" id="regFormModal" style="background:#fffaf6;min-height:100vh">
-
-  <!-- 頂部列 -->
-  <div class="hc-reg-topbar">
-    <button class="hc-reg-topbar-close" onclick="closeRegFormModal()">×</button>
-    <span class="hc-reg-topbar-title">報名表單</span>
-    <img src="IP報名.png" alt="" class="hc-reg-topbar-ip" onerror="this.style.display='none'">
-  </div>
-
-  <!-- formHero（buildFormHero 需要）-->
-  <div id="formHero" style="display:none"></div>
-
-  <!-- 錯誤提示 -->
-  <div id="formError" style="display:none;margin:10px 14px;background:#fff0f0;border:1.5px solid #f87171;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#c0392b"></div>
-
-  <!-- 動態表單 -->
-  <div id="dynForm" style="padding-top:6px"></div>
-
-  <!-- 合約同意區（由 JS 控制）-->
-  <div id="agreementArea" style="display:none;margin:0 14px 12px">
-    <div class="hc-contract-box">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:20px">📋</span>
-        <span style="font-size:15px;color:#555">請先閱讀「活動合作合約條款」並同意後，才能送出報名。</span>
+<div class="page" id="regFormModal" style="background:#fff;min-height:100vh">
+  <div style="width:100%">
+    <!-- 頂部標題列 -->
+    <div style="display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fff;border-radius:22px 22px 0 0;position:sticky;top:0;z-index:10">
+      <button onclick="closeRegFormModal()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;color:var(--md)">←</button>
+      <span id="formBackTitle" style="font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dk)">報名表</span>
+      <button onclick="shareCurrentSession()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;color:var(--md)" title="分享">🔗</button>
+    </div>
+    <!-- 可捲動內容區 -->
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch">
+      <div class="form-hero" id="formHero">
+        <div class="form-hero-placeholder">🎪</div>
       </div>
-      <button type="button" id="agreementViewBtn" onclick="openAgreementModal()"
-        style="height:38px;padding:0 16px;border-radius:12px;border:none;background:#91B574;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">
-        閱讀合約條款
-      </button>
-      <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#666;margin-top:10px;cursor:not-allowed;opacity:.5">
-        <input type="checkbox" id="agreementCheckbox" disabled
-          onchange="onAgreementCheck(this.checked)"
-          style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#91B574">
-        <span>完成閱讀並同意後，請勾選確認你已完成條款</span>
-      </label>
+      <div class="form-wrap">
+        <div id="formError" style="display:none;background:#fff0f0;border:1.5px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:#c0392b"></div>
+        <div id="dynForm"></div>
+      </div>
+      <!-- ── 合約同意區（在 dynForm 之後，送出按鈕之前）── -->
+      <div id="agreementArea" style="display:none;padding:0 16px 12px">
+        <div style="background:#f0faf4;border:1px solid #b7e4c7;border-radius:12px;padding:14px 16px">
+          <button type="button" id="agreementViewBtn"
+            onclick="openAgreementModal()"
+            style="display:block;width:100%;background:none;border:1px solid var(--g);color:var(--g);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">
+            📋 點此查看報名合約／活動規範
+          </button>
+          <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#444;cursor:not-allowed;opacity:.5">
+            <input type="checkbox" id="agreementCheckbox" disabled
+              onchange="onAgreementCheck(this.checked)"
+              style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--g)">
+            <span>我已閱讀並同意本場次報名合約／活動規範</span>
+          </label>
+        </div>
+      </div>
+      <div style="padding:12px 16px 40px">
+        <button class="submit-btn-new" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
+      </div>
     </div>
   </div>
-
-  <!-- 送出按鈕 -->
-  <div style="padding:8px 14px 0">
-    <button class="hc-submit-btn" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
-  </div>
-  <!-- 底部 IP 裝飾 -->
-  <div class="hc-reg-footer">
-    <img src="IP報名.png" alt="" onerror="this.style.display='none'">
-  </div>
-
 </div>
-
 
 <!-- ══ 合約 Modal ══ -->
 <div id="agreementModal" class="overlay" onclick="if(event.target===this)closeAgreementModal()" style="display:none;z-index:9999;position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center">
@@ -1804,136 +907,213 @@ button,a,[onclick]{touch-action:manipulation}
 
 <!-- ══ 會員 / 我的報名 ══ -->
 <div id="pageMember" class="page">
+  <div class="back-bar" onclick="navTo('home')">
+    <span class="arrow">←</span>
+    <span class="title">會員專區</span>
+  </div>
 
-
-  <!-- ── 登入區 ── -->
-  <div id="memberLoginArea" style="padding:20px 16px;max-width:430px;margin:0 auto">
-    <div style="text-align:center;padding:40px 20px">
-      <img src="IP會員.png" style="width:110px;height:130px;object-fit:contain;margin-bottom:16px" onerror="this.style.display='none'">
-      <div style="font-size:20px;font-weight:900;margin-bottom:8px">歡迎來到會員專區</div>
-      <div style="font-size:15px;color:#666;margin-bottom:24px">登入後可查看報名紀錄與會員資料</div>
-      <div id="memberGoogleBtn"></div>
-      <div style="margin-top:14px">
-        <input type="email" id="step1Email" placeholder="輸入 Email 查詢"
-          style="width:100%;padding:12px 16px;border:1.5px solid #d9d9d9;border-radius:14px;font-size:16px;font-family:inherit;margin-bottom:10px;box-sizing:border-box">
-        <div id="step1Err" style="color:#e74c3c;font-size:14px;margin-bottom:8px"></div>
-        <div id="step1Status" style="font-size:14px;color:#5b8b49;margin-bottom:8px"></div>
-        <button onclick="checkMemberStep()"
-          style="width:100%;height:48px;background:#DDEAD1;border:none;border-radius:14px;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;color:#2a6a10">
-          查詢 / 繼續 →
-        </button>
-      </div>
+  <!-- 登入區 -->
+  <div id="memberLoginArea" style="padding:20px 16px">
+    <div class="mcard">
+      <div style="font-size:18px;font-weight:900;margin-bottom:8px">會員登入</div>
+      <div style="font-size:14px;color:var(--md);margin-bottom:20px">使用 Google 帳號登入，資料自動帶入，下次報名更快速</div>
+      <button id="googleMemberLoginBtn" onclick="startMemberGoogleLogin()"
+        style="width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
+               padding:14px 20px;border-radius:12px;border:1.5px solid #dadce0;
+               background:#fff;color:#3c4043;font-size:16px;font-weight:700;
+               font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        使用 Google 帳號登入
+      </button>
+      <div id="memberLoginErr" style="font-size:13px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
   </div>
 
-  <!-- ── 登入後主區塊 ── -->
-  <div id="memberArea" style="display:none">
+  <!-- 已登入區 -->
+  <div id="memberArea" style="display:none;padding:0 0 100px">
 
-    <!-- 返回列 -->
-    <div class="m-topbar">
-      <button class="m-topbar-back" onclick="navToTab('home')">←</button>
-      <span class="m-topbar-title">會員專區</span>
-    </div>
-
-    <!-- 會員資訊卡（JS 切換綠/紫） -->
-    <div id="memberHeroCard" class="m-hero m-hero-record">
-      <div class="m-hero-ip">
-        <img src="IP會員.png" alt="會員" onerror="this.style.display='none'">
+    <!-- 頂部會員卡（登入狀態共用）-->
+    <div style="margin:14px 16px;background:#DDEAD1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:18px;font-weight:900;color:#111" id="memberName"></div>
+        <div style="font-size:15px;color:#444;margin-top:3px" id="memberEmail2"></div>
+        <div style="font-size:15px;font-weight:700;color:#2a6a10;margin-top:3px" id="memberBrandShow"></div>
       </div>
-      <div class="m-hero-info">
-        <h2 id="memberName"></h2>
-        <p class="m-hero-mail" id="memberEmail2"></p>
-        <p class="m-hero-brand" id="memberBrandShow"></p>
-      </div>
-      <div class="m-hero-actions">
-        <button id="memberEditBtn" class="m-btn-edit-green" onclick="openMemberEditModal()">編輯</button>
-        <button class="m-btn-logout" onclick="memberLogout()">登出</button>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button onclick="openMemberEditModal()" style="background:#fff;border:1.5px solid #b8d4a0;color:#2a6a10;padding:10px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">編輯</button>
+        <button onclick="memberLogout()" style="background:#FAE1DD;border:none;color:#8b1c1c;padding:10px 14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">登出</button>
       </div>
     </div>
 
-    <!-- 分頁頁籤 -->
-    <div class="m-tabs">
-      <button id="tabMyRegs" class="m-tab active-record" onclick="switchMemberMode('regs')">
-        📋 我的報名
+    <!-- 模式切換頁籤 -->
+    <div style="display:flex;gap:0;margin:0 16px 16px;border-radius:12px;overflow:hidden;border:1.5px solid #DDEAD1">
+      <button id="tabMyRegs" onclick="switchMemberMode('regs')"
+        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#DDEAD1;color:#2a6a10;font-family:inherit">
+        我的報名
       </button>
-      <button id="tabProfile" class="m-tab" onclick="switchMemberMode('profile')">
+      <button id="tabProfile" onclick="switchMemberMode('profile')"
+        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#fff;color:#666;font-family:inherit">
         會員資料
       </button>
     </div>
 
-    <!-- ── 我的報名 mode ── -->
-    <div id="myRegsMode">
-      <div id="myRegsList" class="m-record-list">
-        <div style="text-align:center;color:#aaa;padding:30px;font-size:15px">報名紀錄載入中…</div>
-      </div>
-
-      <!-- 紫色客服提示卡 -->
-      <div id="noRegsHelper" class="m-helper-record">
-        <img src="IP客服.png" alt="" class="m-helper-record-ip" onerror="this.style.display='none'">
-        <div>
-          <h4 class="m-helper-record-title">找不到報名紀錄嗎？</h4>
-          <p class="m-helper-record-text">我們可以幫你查找遺漏的報名紀錄，或協助解決任何報名問題！</p>
-          <button class="m-helper-record-btn" onclick="navToTab('support')">
-            🎧 聯絡客服小幫手
-          </button>
-        </div>
-      </div>
+    <!-- 我的報名紀錄 -->
+    <div id="myRegsMode" style="padding:0 16px">
+      <div id="myRegsList"></div>
     </div>
 
-    <!-- ── 會員資料 mode ── -->
-    <div id="profileMode" style="display:none">
-      <div class="m-profile-section">
-
-        <!-- 個人基本資料卡（紫系）-->
-        <div class="m-profile-card m-profile-card-purple">
-          <div class="m-profile-card-title-row">
-            <div class="m-profile-card-icon purple">👤</div>
-            <span class="m-profile-card-title">個人基本資料</span>
-            <span class="m-profile-card-deco">🦋</span>
-          </div>
-          <div class="m-profile-body">
-            <div class="m-profile-grid" id="memberProfileContent">
-              <div style="text-align:center;color:#aaa;font-size:14px;padding:12px">載入中…</div>
-            </div>
-            
-          </div>
-          <button class="m-full-btn m-full-btn-purple" onclick="openMemberEditModal()">
-            ✏️ 編輯資料
-          </button>
-        </div>
-
-        <!-- 發票資訊卡（藍系）-->
-        <div class="m-profile-card m-profile-card-blue">
-          <div class="m-profile-card-title-row">
-            <div class="m-profile-card-icon blue">🧾</div>
-            <span class="m-profile-card-title">發票資訊</span>
-            <span class="m-profile-card-deco">☆</span>
-          </div>
-          <div class="m-profile-body">
-            <div class="m-profile-grid" id="invoiceProfileContent">
-              <div style="text-align:center;color:#aaa;font-size:14px;padding:12px">載入中…</div>
-            </div>
-            
-          </div>
-          <button class="m-full-btn m-full-btn-blue" onclick="openMemberEditModal()" style="width:auto;padding:0 20px">
-            ✏️ 修改
-          </button>
-        </div>
-
-        <!-- 奶黃提醒卡 -->
-        <div class="m-helper-profile">
-          <div class="m-helper-profile-icon">🪪</div>
-          <div>
-            <p class="m-helper-profile-title">會員資料只需填寫一次，下次報名將自動帶入，省時又方便！</p>
-            <p class="m-helper-profile-text">資料如有異動，請記得更新哦～</p>
-          </div>
-        </div>
-
+    <!-- 會員個人資料 -->
+    <div id="profileMode" style="display:none;padding:0 16px">
+      <div id="memberProfileContent">
+        <div style="text-align:center;padding:30px;color:#aaa">載入中…</div>
       </div>
     </div>
 
   </div>
 
+  <!-- 會員資料編輯 Modal -->
+  <div class="modal-overlay" id="memberEditModal" onclick="if(event.target===this)closeModal('memberEditModal')" style="align-items:flex-end">
+    <div class="modal-box" style="max-height:88vh;overflow-y:auto;padding:20px 18px 40px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:20px;font-weight:900;color:var(--dk)">編輯會員資料</div>
+        <button onclick="closeModal('memberEditModal')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--md)">×</button>
+      </div>
+      <div style="font-size:14px;color:var(--g);background:var(--gp);border-radius:10px;padding:8px 12px;margin-bottom:14px">
+        💡 填寫後存檔，下次報名自動帶入，不需每場重填好方便
+      </div>
+      <div id="memberEditHint" style="display:none;font-size:15px;color:#c0392b;background:#fdecea;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-weight:800;line-height:1.6"></div>
+
+      <!-- 卡片一：基本聯絡資訊 -->
+      <div style="background:#e8f4fd;border:1px solid #b8d9f0;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">👤 基本聯絡資訊</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div><label style="font-size:14px;color:var(--md)">姓名</label><input type="text" id="editName"></div>
+          <div><label style="font-size:14px;color:var(--md)">手機</label><input type="tel" id="editPhone" inputmode="tel"></div>
+        </div>
+        <label style="font-size:14px;color:var(--md)">LINE ID</label>
+        <input type="text" id="editLineId">
+      </div>
+
+      <!-- 卡片二：品牌資訊 -->
+      <div style="background:#fde8f0;border:1px solid #f0b8d0;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🏷️ 品牌資訊</div>
+        <label style="font-size:14px;color:var(--md)">品牌名稱</label>
+        <input type="text" id="editBrand" style="margin-bottom:8px">
+        <label style="font-size:14px;color:var(--md)">品牌介紹</label>
+        <textarea id="editBrandIntro" placeholder="簡短介紹您的品牌…" style="height:56px;margin-bottom:8px"></textarea>
+        <label style="font-size:14px;color:var(--md)">出攤照（連結）</label>
+        <input type="url" id="editPhoto" placeholder="https://...">
+      </div>
+
+      <!-- 卡片三：社群連結（審核必要）-->
+      <div style="background:#e8fdf0;border:1px solid #b8f0d0;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:4px">🔗 社群連結</div>
+        <div style="font-size:12px;color:#c0392b;margin-bottom:10px">審核必要，至少填一項</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div><label style="font-size:14px;color:var(--md)">FB</label><input type="url" id="editFb" placeholder="https://facebook.com/..."></div>
+          <div><label style="font-size:14px;color:var(--md)">IG</label><input type="url" id="editIg" placeholder="https://instagram.com/..."></div>
+        </div>
+        <label style="font-size:14px;color:var(--md)">官網</label>
+        <input type="url" id="editCollabUrl" placeholder="https://...">
+      </div>
+
+      <!-- 卡片四：常用發票資訊 -->
+      <div style="background:#fdfbe8;border:1px solid #f0e8b8;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🧾 常用發票資訊</div>
+        <label style="font-size:14px;color:var(--md)">手機載具</label>
+        <input type="text" id="editInvoiceCarrier" placeholder="/ABC-1234" style="margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div><label style="font-size:14px;color:var(--md)">統一編號</label><input type="text" id="editTaxId" inputmode="numeric" maxlength="8"></div>
+          <div><label style="font-size:14px;color:var(--md)">公司抬頭</label><input type="text" id="editCompany"></div>
+        </div>
+        <label style="font-size:14px;color:var(--md)">收發票 Email</label>
+        <input type="email" id="editInvoiceEmail" inputmode="email">
+      </div>
+      <button id="saveMemberBtn" class="btn-p" onclick="saveMemberEdit()" style="width:100%;margin-top:16px">儲存資料</button>
+      <div id="saveSuccessMsg" style="display:none;text-align:center;color:var(--g);font-weight:700;padding:8px;font-size:14px">✓ 更新完成！</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modals ══ -->
+<div class="modal-overlay" id="payModal" onclick="if(event.target===this)closeModal('payModal')">
+  <div class="modal-box" style="max-height:88vh;overflow:auto">
+    <div class="modal-title" id="payModalTitle">前往繳費</div>
+    <div id="payModalInfo" style="background:var(--gp);border-radius:10px;padding:12px;margin-bottom:12px;font-size:18px;line-height:1.6"></div>
+    <div id="payFormArea">
+      <label style="font-size:17px;color:var(--md);font-weight:800">付款方式</label>
+      <select id="payMethod" onchange="onPayMethodChange()" style="width:100%;padding:12px;border:1.5px solid #d0e8d8;border-radius:10px;font-size:18px;margin:4px 0 10px;background:#fff">
+        <option value="ATM 轉帳">ATM／銀行轉帳</option>
+        <option value="LINE Pay">LINE Pay</option>
+        <option value="信用卡付款">信用卡</option>
+      </select>
+      <div style="font-size:16px;color:#8a6d3b;background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:900">付款前請先注意：完成付款後，請務必截圖保留付款證明。付款完成後請回到「我的紀錄」按「我已完成付款，回報付款」，並將付款卡片與付款截圖一起傳至官方 LINE。主辦確認入帳後，狀態才會更新為「已繳費」。</div>
+      <div id="bankPayBox" style="background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:12px;margin-bottom:12px;font-size:17px;line-height:1.65;color:#5a3a05">
+        <div style="font-weight:900;font-size:18px;margin-bottom:4px">ATM 轉帳</div>
+        <div id="bankInfoDisplay" style="color:#aaa;font-size:15px">付款資訊載入中…</div>
+      </div>
+      <div id="payLastFiveWrap">
+        <label style="font-size:17px;color:var(--md);font-weight:800">帳號末五碼 *</label>
+        <input type="text" id="payLastFive" placeholder="例如 12345" inputmode="numeric" maxlength="5" style="margin:4px 0 14px;font-size:18px;padding:12px;width:100%;box-sizing:border-box;border:1.5px solid #d0e8d8;border-radius:10px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px">
+        <button type="button" id="immediatePayBtn" onclick="openExternalPay()" class="btn-p" style="width:100%;font-size:18px;padding:13px">立即付款</button>
+        <button type="button" id="reportPaymentBtn" onclick="submitPaymentForm()" style="width:100%;background:#40916c;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">我已完成付款，回報付款</button>
+      </div>
+      <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">取消</button>
+    </div>
+    <div id="paySuccessArea" style="display:none">
+      <div style="font-size:22px;font-weight:900;color:#b45309;margin-bottom:4px">⚠️ 付款回報已送出，尚未完成付款確認</div>
+      <div style="font-size:17px;color:var(--dk);font-weight:900;margin-bottom:12px;line-height:1.55">請不要直接關閉此畫面。請先複製下方付款卡片，並連同付款截圖一起傳至官方 LINE。主辦確認入帳後，狀態才會更新為「已繳費」。</div>
+      <pre id="paymentCopyCard" onclick="copyPaymentCard()" style="white-space:pre-wrap;background:#fff;border:1.5px solid #d0e8d8;border-radius:14px;padding:14px;font-size:17px;line-height:1.55;color:#1a1a18;font-family:inherit;cursor:pointer;margin:0 0 12px"></pre>
+      <div style="font-size:16px;color:var(--md);font-weight:900;margin-bottom:12px">👇 請點一下上方付款卡片框框，即可複製內容。請連同付款截圖一起傳至官方 LINE。</div>
+      <button type="button" onclick="openLine()" style="width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">前往 LINE 客服</button>
+      <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">我已傳 LINE，關閉</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="cancelModal" onclick="if(event.target===this)closeModal('cancelModal')">
+  <div class="modal-box">
+    <div class="modal-title">取消報名確認</div>
+    <div style="font-size:18px;font-weight:700;color:var(--dk);margin-bottom:12px" id="cancelModalSesName"></div>
+    <div id="cancelRefundPolicy" style="background:var(--rdp);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.9;color:var(--dk)">
+      <div style="font-weight:700;margin-bottom:6px;color:var(--rd)">取消報名前請先確認以下退款原則：</div>
+      <div>1. 活動前 7 日以上取消<br><span style="color:var(--md)">酌收行政處理費 NT$500，餘額退還。</span></div>
+      <div style="margin-top:6px">2. 活動前 3～6 日取消<br><span style="color:var(--md)">退還報名費 50%，保證金不退還。</span></div>
+      <div style="margin-top:6px">3. 活動前 3 日內取消或活動當日未出席<br><span style="color:var(--md)">報名費與保證金皆不退還。</span></div>
+      <div style="margin-top:6px">4. 因天災、疫情或其他不可抗力因素導致活動取消<br><span style="color:var(--md)">主辦單位將依實際情況安排延期，或辦理部分退費。</span></div>
+    </div>
+    <div id="cancelDirectPolicy" style="display:none;background:#f8f8f8;border-radius:12px;padding:14px;margin-bottom:14px;font-size:15px;line-height:1.8;color:var(--dk)">尚未完成付款，取消後此報名紀錄將保留，不涉及金流。</div>
+    <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border:1.5px solid #e8b5b5;border-radius:10px;cursor:pointer;font-size:13px;color:var(--dk);margin-bottom:14px">
+      <input type="checkbox" id="cancelConfirmCheck" onchange="onCancelCheckChange()" style="width:18px;height:18px;flex-shrink:0;accent-color:var(--rd);margin-top:1px">
+      <span id="cancelConfirmLabel">我已了解取消與退款規則，仍要送出取消申請</span>
+    </label>
+    <div class="modal-actions">
+      <button class="btn-s2" onclick="closeModal('cancelModal')" style="flex:1;padding:12px;font-size:14px">返回，不取消</button>
+      <button id="cancelSubmitBtn" onclick="doSubmitCancel()" disabled style="flex:1;padding:12px;font-size:14px;font-weight:700;background:var(--rd);color:#fff;border:none;border-radius:10px;cursor:not-allowed;opacity:.5">我已了解，送出取消申請</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="stallPickerModal" onclick="if(event.target===this)closeModal('stallPickerModal')">
+  <div class="modal-box">
+    <div class="modal-title" id="stallPickerTitle">選擇攤位</div>
+    <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">綠色=可選　黃色=預留中　紅色=已選走</div>
+    <div id="stallGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+    <button id="stallConfirmBtn" onclick="submitSelectedStalls()" style="width:100%;margin-top:14px;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;font-size:17px;font-weight:900">確認選位</button>
+    <button class="btn-s2" onclick="closeModal('stallPickerModal')" style="width:100%;margin-top:8px">取消</button>
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
+
+
+
+<!-- ══ 客服頁 ══ -->
 <div id="pageSupport" class="page">
 
   <!-- 客服 IP 區塊 -->
@@ -2049,11 +1229,15 @@ button,a,[onclick]{touch-action:manipulation}
 
 <!-- ══ 底部四顆導覽 ══ -->
 <div class="bottom-fixed" id="bottomNav">
-  <button class="bot-btn active" id="botHome" onclick="navToTab('home')">🏠 報名</button>
-  <button class="bot-btn" id="botMember" onclick="navToTab('member')">
-    <span id="botMemberLabel">📋 我的紀錄</span>
+  <button class="bot-btn active" id="botHome" onclick="navToTab('home')" style="--btn-color:#DDEAD1">
+    <span class="bot-label">🏠 報名</span>
   </button>
-  <button class="bot-btn" id="botSupport" onclick="navToTab('support')">🎧 客服</button>
+  <button class="bot-btn" id="botMember" onclick="navToTab('member')" style="--btn-color:#FAEEC7">
+    <span class="bot-label" id="botMemberLabel">📋 我的紀錄</span>
+  </button>
+  <button class="bot-btn" id="botSupport" onclick="navToTab('support')" style="--btn-color:#DCD7ED">
+    <span class="bot-label">💬 客服</span>
+  </button>
 </div>
 
 <!-- Toast -->
@@ -2326,19 +1510,9 @@ function navToTab(tab){
       memberShowLogin();
     }
   } else if(tab==='support'){
-    // 切換到客服頁
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('pageSupport');
     if(pg) pg.classList.add('active');
-    // 底部 active
-    ['botHome','botMember','botSupport'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el) el.classList.remove('active');
-    });
-    const sb=document.getElementById('botSupport');
-    if(sb) sb.classList.add('active');
-    window.scrollTo(0,0);
-    try{ localStorage.setItem('2bl_current_tab','support'); }catch(e){}
   }
 }
 
@@ -2513,107 +1687,54 @@ function memberShowArea(mode){
   if(loginArea) loginArea.style.display='none';
   if(memberArea) memberArea.style.display='block';
   switchMemberMode(mode||'regs');
+  // 更新底部按鈕 active
   ['botHome','botMember','botSupport'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.classList.remove('active');
   });
-  const btn=$('botMember');
+  const btn=document.getElementById('botMember');
   if(btn) btn.classList.add('active');
 }
 function switchMemberMode(mode){
-  const regsDiv=$('myRegsMode');
-  const profileDiv=$('profileMode');
-  const tabRegs=$('tabMyRegs');
-  const tabProfile=$('tabProfile');
-  const heroCard=$('memberHeroCard');
-  const editBtn=$('memberEditBtn');
-
-  if(mode==='regs'){
-    if(regsDiv) regsDiv.style.display='block';
-    if(profileDiv) profileDiv.style.display='none';
-    // 頁籤
-    if(tabRegs){ tabRegs.className='m-tab active-record'; }
-    if(tabProfile){ tabProfile.className='m-tab'; }
-    // 會員卡換綠系
-    if(heroCard){ heroCard.className='m-hero m-hero-record'; }
-    if(editBtn){ editBtn.className='m-btn-edit-green'; }
-    // 品牌字綠色
-    const brand=$('memberBrandShow');
-    if(brand) brand.style.color='#2f6d28';
+  const regsDiv = $('myRegsMode');
+  const profileDiv = $('profileMode');
+  const tabRegs = $('tabMyRegs');
+  const tabProfile = $('tabProfile');
+  if(mode === 'regs'){
+    if(regsDiv) regsDiv.style.display = 'block';
+    if(profileDiv) profileDiv.style.display = 'none';
+    if(tabRegs){ tabRegs.style.background='#DDEAD1'; tabRegs.style.color='#2a6a10'; }
+    if(tabProfile){ tabProfile.style.background='#fff'; tabProfile.style.color='#666'; }
   } else {
-    if(regsDiv) regsDiv.style.display='none';
-    if(profileDiv) profileDiv.style.display='block';
-    // 頁籤
-    if(tabRegs){ tabRegs.className='m-tab'; }
-    if(tabProfile){ tabProfile.className='m-tab active-profile'; }
-    // 會員卡換紫系
-    if(heroCard){ heroCard.className='m-hero m-hero-profile'; }
-    if(editBtn){ editBtn.className='m-btn-edit-purple'; }
-    // 品牌字紫色
-    const brand=$('memberBrandShow');
-    if(brand) brand.style.color='#5a42a8';
+    if(regsDiv) regsDiv.style.display = 'none';
+    if(profileDiv) profileDiv.style.display = 'block';
+    if(tabRegs){ tabRegs.style.background='#fff'; tabRegs.style.color='#666'; }
+    if(tabProfile){ tabProfile.style.background='#DDEAD1'; tabProfile.style.color='#2a6a10'; }
+    // 填入會員資料
     renderMemberProfile();
   }
 }
 
 function renderMemberProfile(){
-  const m=ST.member||{};
-  const email=ST.memberEmail||m.email||'';
-  const vFb=m.fb||m.fb_url||'';
-  const vIg=m.ig||m.ig_url||'';
-  const vWeb=m.website||m.web||'';
-  const vCarrier=m.invoiceCarrier||m.invoice_carrier||'';
-  const vTaxId=m.taxId||m.tax_id||'';
-  const vCompany=m.company||'';
-  const vInvEmail=m.invoiceEmail||m.invoice_email||'';
-
-  const row=(icon,label,val)=>!val?'':`
-    <div class="m-profile-row">
-      <span class="m-profile-row-icon">${icon}</span>
-      <span class="m-profile-row-label">${label}</span>
-      <span class="m-profile-row-value">${esc(val)}</span>
-    </div>`;
-
-  // 社群 icon（不顯示長網址）
-  const socialRow=(vFb||vIg||vWeb)?`
-    <div class="m-profile-row">
-      <span class="m-profile-row-icon">🌐</span>
-      <span class="m-profile-row-label">社群 / 官網</span>
-      <div class="m-social-row">
-        ${vFb?`<a href="${esc(vFb)}" target="_blank" class="m-social-icon" style="background:#1877F2;color:#fff;border-color:#1877F2">f</a>`:''}
-        ${vIg?`<a href="${esc(vIg)}" target="_blank" class="m-social-icon" style="background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);color:#fff;border-color:transparent;font-size:11px">IG</a>`:''}
-        ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="m-social-icon" style="background:#DDEAD1;color:#2a6a10;border-color:#b9d3a5">🔗</a>`:''}
+  const m = ST.member || {};
+  const el = $('memberProfileContent');
+  if(!el) return;
+  el.innerHTML = `
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #DDEAD1;padding:20px;margin-bottom:12px">
+      <div style="font-size:18px;font-weight:900;margin-bottom:16px;color:#111">個人基本資料</div>
+      <div style="display:grid;gap:12px">
+        ${profileRow('姓名', m.name)}
+        ${profileRow('Email', m.email||ST.memberEmail)}
+        ${profileRow('手機', m.phone)}
+        ${profileRow('品牌名稱', m.brand)}
+        ${profileRow('品牌簡介', m.brandDesc)}
+        ${profileRow('Facebook', m.fb)}
+        ${profileRow('Instagram', m.ig)}
+        ${profileRow('LINE ID', m.lineId)}
       </div>
-    </div>`:'';
-
-  // 個人資料
-  const pEl=$('memberProfileContent');
-  if(pEl){
-    const html=row('👤','姓名',m.name)+row('✉️','Email',email)+row('📱','手機',m.phone)+row('🏷','品牌名稱',m.brand||m.brand_name)+socialRow;
-    pEl.innerHTML=html||'<div style="text-align:center;color:#aaa;padding:12px;font-size:14px">尚未填寫資料</div>';
-  }
-
-  // 發票資訊
-  const iEl=$('invoiceProfileContent');
-  if(iEl){
-    const invType=vTaxId?'公司戶（三聯式）':'個人（二聯式）';
-    iEl.innerHTML=row('🧾','發票類型',invType)+(vTaxId?row('🔢','統一編號',vTaxId):'')+(vCompany?row('🏢','抬頭',vCompany):'')+row('✉️','載具/Email',vCarrier||vInvEmail||email);
-  }
-}
-
-function profileRow(label,val){
-  if(!val) return '';
-  return `<div class="m-profile-row"><span class="m-profile-row-label">${label}</span><span class="m-profile-row-value">${val}</span></div>`;
-}
-
-function profileRow(label, val){
-  if(!val) return '';
-  return `<div class="label">${label}</div><div class="value">${val}</div>`;
-}
-
-function profileRow(label, val){
-  if(!val) return '';
-  return `<div class="label">${label}</div><div class="value">${val}</div>`;
+      <button onclick="openMemberEditModal()" style="margin-top:18px;width:100%;background:#DDEAD1;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:900;color:#2a6a10;cursor:pointer;font-family:inherit">編輯資料</button>
+    </div>
+  `;
 }
 
 function profileRow(label, val){
@@ -3037,19 +2158,27 @@ function renderDynFormFull(s, isNew=false){
   const vTaxId=V.taxId||V.tax_id||'';
   const vCompany=V.company||'';
   const vInvEmail=V.invoiceEmail||V.invoice_email||'';
+  const isCompany=!!vTaxId;
 
   ST.equipQty={};ST.addonQty={};ST.stallCount=1;
   const cover=s.cover||s.coverUrl||'';
   buildFormHero(s,cover);
 
-  const dates=asArr(s.dates);
+  // 取得日期字串
+  const dates=s.dates||[];
   let dateStr='';
-  if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'\uff5e'+fmt(dates[dates.length-1].date);}
-  else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'\uff5e'+d.end:'');}
-  const sType=s.type||'\u5e02\u96c6\u5834\u6b21';
-  const isCollab=sType==='\u5408\u4f5c\u7533\u8acb';
-  const isMkt=sType==='\u5e02\u96c6\u5834\u6b21'||sType==='\u901a\u8def\u5bc4\u8ce3';
-  const stallUnit=isMkt?'\u651e':'\u4efd';
+  if(dates.length>1){
+    const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
+    dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
+  } else if(dates.length===1){
+    const d=dates[0];
+    dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
+  }
+  const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString()+'／攤':'免費';
+  const sType=s.type||'市集場次';
+  const isCollab=sType==='合作申請';
+  const isMkt=sType==='市集場次'||sType==='通路寄賣';
+  const stallUnit=isMkt?'攤':'份';
   const equipDefs=Object.entries(s.equip||{}).filter(([k,v])=>v&&(v.open===true||v.open==='true'));
   const addons=(s.addons||[]).map((a,i)=>({...a,_idx:i})).filter(a=>a.open===true||a.open==='true');
 
@@ -3057,107 +2186,94 @@ function renderDynFormFull(s, isNew=false){
   html+=`<input type="hidden" id="f_email" value="${esc(email)}">`;
 
   // ── ① 活動資訊 ──
-  const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString()+'\uff0f\u651e':'\u514d\u8cbb';
-  const typeTag=s.type?`<span class="hc-act-tag">${esc(s.type)}</span>`:'';
-  html+=`<div class="hc-step-card sc-green">
-    <div class="hc-step-head"><div class="hc-step-num">1</div><div class="hc-step-name">\u6d3b\u52d5\u8cc7\u8a0a</div></div>
-    <div class="hc-act-row">
-      ${cover?`<img class="hc-act-img" src="${esc(cover)}" alt="" onerror="this.src='IP\u6b61\u8fce.png'">`:`<img class="hc-act-img" src="IP\u6b61\u8fce.png" alt="">`}
-      <div>
-        <div class="hc-act-name">${esc(s.name||'')}</div>
-        <div class="hc-act-meta">
-          ${dateStr?`\ud83d\udcc5 ${esc(dateStr)}<br>`:''}
-          ${s.venue?`\ud83d\udccd ${esc(s.venue)}<br>`:''}
-          ${feeStr?`\ud83c\udff7 ${feeStr}`:''}
-        </div>
-        ${typeTag?`<div class="hc-act-tags">${typeTag}</div>`:''}
-      </div>
-    </div>
-    ${s.description?`<div style="font-size:14px;color:#555;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.07)">${esc(s.description)}</div>`:''}
+  html+=`<div class="form-card-new">
+    <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
+    ${cover?`<img class="act-img" src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:
+    `<div style="width:100%;height:140px;border-radius:var(--radius-md);background:var(--c-green);display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:12px">🎪</div>`}
+    <div class="act-name">${esc(s.name||'')}</div>
+    <div class="act-price">${esc(feeStr)}</div>
+    ${dateStr?`<div class="act-meta-row"><span class="act-meta-icon">📅</span><span>${esc(dateStr)}</span></div>`:''}
+    ${s.venue?`<div class="act-meta-row"><span class="act-meta-icon">📍</span><span>${esc(s.venue)+(s.region&&s.region!==s.venue?' · '+s.region:'')}</span></div>`:''}
+    ${s.description?`<div class="act-desc">${esc(s.description)}</div>`:''}
   </div>`;
 
-  // ── 多日選擇 ──
+  // ── 多日選擇（如有）──
   if(dates.length>1){
-    html+=`<div class="hc-step-card">
-      <div class="hc-step-head"><div class="hc-step-num" style="background:#aaa">+</div><div class="hc-step-name">\u9078\u64c7\u53c3\u52a0\u65e5\u671f</div></div>`;
+    html+=`<div class="form-card-new"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">+</span>選擇參加日期</div>`;
     dates.forEach((d,i)=>{
-      html+=`<label style="display:flex;align-items:center;gap:10px;margin:8px 0;cursor:pointer;font-size:16px;font-weight:600">
-        <input type="checkbox" id="dp_${i}" onchange="updateFee()" style="width:22px;height:22px;accent-color:#91B574;flex-shrink:0">
-        <span>${d.date||''} ${d.start||''}${d.end?'\uff5e'+d.end:''} <strong style="color:#5b8b49">${d.fee?'NT$'+d.fee:''}</strong></span>
+      html+=`<label style="display:flex;align-items:center;gap:12px;margin:10px 0;cursor:pointer;font-size:17px;font-weight:600">
+        <input type="checkbox" id="dp_${i}" onchange="updateFee()" style="width:24px;height:24px;accent-color:var(--c-green);flex-shrink:0">
+        <span>${d.date||''} ${d.start||''}${d.end?'～'+d.end:''} <strong style="color:#2a6a10">${d.fee?'NT$'+d.fee:''}</strong></span>
       </label>`;
     });
-    if(s.fee>0){html+=`<div id="fullPkgHint" style="display:none;background:#DDEAD1;border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#2a6a10">\ud83c\udf89 \u5168\u7a0b\u512a\u60e0 NT$${s.fee}\uff0f\u651e</div>`;}
+    if(s.fee>0){
+      html+=`<div id="fullPkgHint" style="display:none;background:var(--c-green);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#111">
+        🎉 全程參加優惠 NT$${s.fee}／攤
+      </div>`;
+    }
     html+=`</div>`;
   }
 
-  // ── ② 攤位與設備選擇（表格式）──
+  // ── ② 設備確認 ──
   if(!isCollab){
-    html+=`<div class="hc-step-card sc-green">
-      <div class="hc-step-head"><div class="hc-step-num">2</div><div class="hc-step-name">\u651e\u4f4d\u8207\u8a2d\u5099\u9078\u64c7</div></div>
-      <table class="hc-equip-table">
-        <thead><tr><th>\u9805\u76ee</th><th>\u55ae\u50f9</th><th>\u6578\u91cf</th><th class="col-money">\u5c0f\u8a08</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>${stallUnit}</td>
-            <td>${Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'\u514d\u8cbb'}</td>
-            <td>
-              <div class="hc-qty">
-                <button class="hc-qty-btn" type="button" onclick="adjStall(-1)">\u2193</button>
-                <span class="hc-qty-num" id="stallDisplay">1</span>
-                <button class="hc-qty-btn" type="button" onclick="adjStall(1)">\u2191</button>
-              </div>
-            </td>
-            <td class="col-money" id="stallTotal">NT$${Number(s.fee)||0}</td>
-          </tr>`;
+    html+=`<div class="form-card-new card-yellow">
+      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-yellow)">2</span>設備確認</div>`;
 
+    // 租幾攤
+    html+=`<div class="qty-row">
+      <div class="qty-name-wrap"><span class="qty-icon">🏪</span><span class="qty-name">租幾${stallUnit}</span></div>
+      <input class="qty-input" type="number" id="stallInput" value="1" min="1" max="${Number(s.maxStalls)>0?s.maxStalls:99}" oninput="adjStallDirect(this.value)" onchange="adjStallDirect(this.value)">
+      <div class="qty-spin">
+        <button type="button" onclick="adjStall(1)">⌃</button>
+        <button type="button" onclick="adjStall(-1)">⌄</button>
+      </div>
+      <div class="qty-total" id="stallTotal">（NT$${Number(s.fee)||0}）</div>
+    </div>`;
+
+    // 設備品項
+    const equipIcons={'桌':'🪑','椅':'🪑','延長線':'🔌','燈':'💡','燈具':'💡','帳篷':'⛺','電':'⚡'};
     equipDefs.forEach(([k,v])=>{
       ST.equipQty[k]=v.incl||0;
-      const inclNote=Number(v.incl)>0?`\uff08\u542b${v.incl}\uff09`:'';
-      const unitPrice=Number(v.price)>0?'NT$'+Number(v.price).toLocaleString():'\u514d\u8cbb';
-      html+=`<tr>
-        <td>${esc(k)}${inclNote}</td>
-        <td>${unitPrice}</td>
-        <td>
-          <div class="hc-qty">
-            <button class="hc-qty-btn" type="button" onclick="adjEquip('${k}',-1)">\u2193</button>
-            <span class="hc-qty-num" id="eq_num_${k}">${v.incl||0}</span>
-            <button class="hc-qty-btn" type="button" onclick="adjEquip('${k}',1)">\u2191</button>
-          </div>
-          <div id="eq_hint_${k.replace(/[^a-zA-Z0-9]/g,'_')}" style="font-size:11px;color:#5b8b49;margin-top:2px"></div>
-        </td>
-        <td class="col-money" id="eqTotal_${k}">NT$0</td>
-      </tr>`;
+      const icon=Object.entries(equipIcons).find(([key])=>k.includes(key))?.[1]||'📦';
+      const inclNote=Number(v.incl)>0?`（含${v.incl}）`:'';
+      const priceTxt=Number(v.price)>0?` NT$${v.price}`:'';
+      html+=`<div class="qty-row">
+        <div class="qty-name-wrap"><span class="qty-icon">${icon}</span><span class="qty-name">${esc(k)}${inclNote}${priceTxt}</span></div>
+        <input class="qty-input" type="number" id="eq_${k}" value="${v.incl||0}" min="0" oninput="adjEquipDirect('${k}',this.value)" onchange="adjEquipDirect('${k}',this.value)">
+        <div class="qty-spin">
+          <button type="button" onclick="adjEquip('${k}',1)">⌃</button>
+          <button type="button" onclick="adjEquip('${k}',-1)">⌄</button>
+        </div>
+        <div class="qty-total" id="eqTotal_${k}">（NT$0）</div>
+      </div>`;
     });
 
-    addons.forEach(a=>{
+    // 加購品項
+    addons.forEach((a)=>{
       ST.addonQty[a._idx]=0;
-      const unitPrice=Number(a.price)>0?'NT$'+a.price:'\u514d\u8cbb';
-      html+=`<tr>
-        <td>${esc(a.name||'')}</td>
-        <td>${unitPrice}</td>
-        <td>
-          <div class="hc-qty">
-            <button class="hc-qty-btn" type="button" onclick="adjAddon(${a._idx},-1)">\u2193</button>
-            <span class="hc-qty-num" id="addon_num_${a._idx}">0</span>
-            <button class="hc-qty-btn" type="button" onclick="adjAddon(${a._idx},1)">\u2191</button>
-          </div>
-        </td>
-        <td class="col-money" id="addonTotal_${a._idx}">NT$0</td>
-      </tr>`;
+      html+=`<div class="qty-row">
+        <div class="qty-name-wrap"><span class="qty-icon">➕</span><span class="qty-name">${esc(a.name||'')}${Number(a.price)>0?' NT$'+a.price:''}</span></div>
+        <input class="qty-input" type="number" id="addon_${a._idx}" value="0" min="0" oninput="adjAddonDirect(${a._idx},this.value)" onchange="adjAddonDirect(${a._idx},this.value)">
+        <div class="qty-spin">
+          <button type="button" onclick="adjAddon(${a._idx},1)">⌃</button>
+          <button type="button" onclick="adjAddon(${a._idx},-1)">⌄</button>
+        </div>
+        <div class="qty-total" id="addonTotal_${a._idx}">（NT$0）</div>
+      </div>`;
     });
 
-    html+=`</tbody></table></div>`;
+    html+=`</div>`;
 
-    // ── ③ 費用總計 ──
-    html+=`<div class="hc-step-card sc-yellow" id="feeBox">
-      <div class="hc-step-head"><div class="hc-step-num">3</div><div class="hc-step-name">\u8cbb\u7528\u7e3d\u8a08</div></div>
-      <div class="hc-total-row" id="feeBaseRow"><span>\u651e\u4f4d\u5c0f\u8a08</span><span id="feeBase">NT$0</span></div>
-      <div class="hc-total-row" id="feeEquipRow" style="display:none"><span>\u8a2d\u5099\u5c0f\u8a08</span><span id="feeEquip">NT$0</span></div>
-      <div class="hc-total-row" id="feeAddonRow" style="display:none"><span>\u52a0\u8cfc\u5c0f\u8a08</span><span id="feeAddon">NT$0</span></div>
-      <div class="hc-total-row" id="feeDepRow"><span>\u4fdd\u8b49\u91d1</span><span id="feeDeposit">NT$${s.deposit||0}</span></div>
-      <div class="hc-total-final">
-        <span class="hc-total-final-label">\u7e3d\u8a08\u91d1\u984d</span>
-        <span class="hc-total-final-amount" id="feeTotal">NT$${Number(s.fee)||0}</span>
+    // ── ③ 總計費用 ──
+    html+=`<div class="total-new" id="feeBox">
+      <div class="form-card-title-new" style="margin-bottom:12px"><span class="form-card-num" style="background:var(--c-yellow)">3</span>總計費用</div>
+      <div class="total-row"><span>攤位小計</span><span id="feeBase">NT$0</span></div>
+      <div class="total-row" id="feeEquipRow" style="display:none"><span>設備小計</span><span id="feeEquip">NT$0</span></div>
+      <div class="total-row" id="feeAddonRow" style="display:none"><span>加購小計</span><span id="feeAddon">NT$0</span></div>
+      <div class="total-row" id="feeDepRow"><span>保證金</span><span id="feeDeposit">NT$${s.deposit||0}</span></div>
+      <div class="total-final-row">
+        <span class="total-final-label">總計費用</span>
+        <span class="total-final-amt" id="feeTotal">NT$${Number(s.fee)||0}</span>
       </div>
     </div>`;
   }
@@ -3165,27 +2281,27 @@ function renderDynFormFull(s, isNew=false){
   const cardNum=isCollab?2:4;
 
   // ── ④ 會員資料 ──
-  const socialHtml=(vFb||vIg||vWeb)?`<div class="hc-social-row">
-    ${vFb?`<a href="${esc(vFb)}" target="_blank" class="hc-social-icon" style="background:#1877F2;color:#fff;border-color:#1877F2">f</a>`:''}
-    ${vIg?`<a href="${esc(vIg)}" target="_blank" class="hc-social-icon" style="background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);color:#fff;border-color:transparent;font-size:11px">IG</a>`:''}
-    ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="hc-social-icon">\ud83d\udd17</a>`:''}
+  const socialHtml=(vFb||vIg||vWeb)?`<div class="social-row">
+    ${vFb?`<a href="${esc(vFb)}" target="_blank" class="social-icon-new" style="background:#1877F2;color:#fff;border-color:#1877F2">f</a>`:''}
+    ${vIg?`<a href="${esc(vIg)}" target="_blank" class="social-icon-new" style="background:#C13584;color:#fff;border-color:#C13584">📷</a>`:''}
+    ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="social-icon-new">🌐</a>`:''}
   </div>`:'';
 
-  html+=`<div class="hc-step-card">
-    <div class="hc-step-head">
-      <div class="hc-step-num">${cardNum}</div>
-      <div class="hc-step-name">\u6703\u54e1\u8cc7\u6599</div>
-      <button class="hc-edit-btn" type="button" onclick="openMemberEditModal()">\u4fee\u6539</button>
+  html+=`<div class="form-card-new card-green">
+    <div class="form-card-head">
+      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-green)">${cardNum}</span>會員資料</div>
+      <button type="button" class="edit-pill-btn" onclick="openMemberEditModal()">✏️ 修改</button>
     </div>
-    <div class="hc-info-grid">
-      <span class="hc-info-label">\u59d3\u540d</span><span class="hc-info-value" id="disp_name">${esc(V.name||'')}</span>
-      <span class="hc-info-label">Email</span><span class="hc-info-value">${esc(email)}</span>
-      <span class="hc-info-label">\u54c1\u724c\u540d\u7a31</span><span class="hc-info-value" id="disp_brand">${esc(V.brand||V.brand_name||'')}</span>
-      <span class="hc-info-label">\u806f\u7d61\u96fb\u8a71</span><span class="hc-info-value" id="disp_phone">${esc(V.phone||'')}</span>
+    <div class="info-grid-new">
+      <span class="info-label-new">攤位名稱</span><span class="info-value-new" id="disp_brand">${esc(V.brand||V.brand_name||'')}</span>
+      <span class="info-label-new">姓名</span><span class="info-value-new" id="disp_name">${esc(V.name||'')}</span>
+      <span class="info-label-new">電話</span><span class="info-value-new" id="disp_phone">${esc(V.phone||'')}</span>
+      <span class="info-label-new">Email</span><span class="info-value-new">${esc(email)}</span>
     </div>
     ${socialHtml}
   </div>`;
 
+  // 隱藏欄位供送出
   html+=`<input type="hidden" id="f_brand" value="${esc(V.brand||V.brand_name||'')}">`;
   html+=`<input type="hidden" id="f_name" value="${esc(V.name||'')}">`;
   html+=`<input type="hidden" id="f_phone" value="${esc(V.phone||'')}">`;
@@ -3193,96 +2309,82 @@ function renderDynFormFull(s, isNew=false){
   html+=`<input type="hidden" id="f_ig" value="${esc(vIg)}">`;
 
   // ── ⑤ 發票資訊 ──
-  const invTypeStr=vTaxId?'\u516c\u53f8\u6236\uff08\u4e09\u806f\u5f0f\uff09':'\u4e8c\u806f\u5f0f\u96fb\u5b50\u767c\u7968';
-  html+=`<div class="hc-step-card sc-blue">
-    <div class="hc-step-head">
-      <div class="hc-step-num">${cardNum+1}</div>
-      <div class="hc-step-name">\u767c\u7968\u8cc7\u8a0a</div>
-      <button class="hc-edit-btn" type="button" onclick="openMemberEditModal()">\u4fee\u6539</button>
+  const invTypeStr=isCompany?'公司戶（三聯式）':'個人（二聯式）';
+  html+=`<div class="form-card-new card-blue">
+    <div class="form-card-head">
+      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">${cardNum+1}</span>發票資訊</div>
+      <button type="button" class="edit-pill-btn" onclick="openInvoiceEditModal()">✏️ 修改</button>
     </div>
-    <div class="hc-info-grid">
-      <span class="hc-info-label">\u767c\u7968\u985e\u578b</span><span class="hc-info-value" id="disp_invType">${invTypeStr}</span>
-      ${vTaxId?`<span class="hc-info-label">\u7d71\u7de8</span><span class="hc-info-value" id="disp_taxId">${esc(vTaxId)}</span>`:''}
-      ${vCompany?`<span class="hc-info-label">\u62ac\u982d</span><span class="hc-info-value" id="disp_company">${esc(vCompany)}</span>`:''}
-      <span class="hc-info-label">Email</span><span class="hc-info-value" id="disp_carrier">${esc(vCarrier||vInvEmail||email)}</span>
+    <div class="info-grid-new">
+      <span class="info-label-new">發票類型</span><span class="info-value-new" id="disp_invType">${invTypeStr}</span>
+      ${vTaxId?`<span class="info-label-new">統編</span><span class="info-value-new" id="disp_taxId">${esc(vTaxId)}</span>`:''}
+      ${vCompany?`<span class="info-label-new">抬頭</span><span class="info-value-new" id="disp_company">${esc(vCompany)}</span>`:''}
+      <span class="info-label-new">載具/Email</span><span class="info-value-new" id="disp_carrier">${esc(vCarrier||vInvEmail||email)}</span>
     </div>
   </div>`;
 
+  // 發票隱藏欄位
   html+=`<input type="hidden" id="f_taxId" value="${esc(vTaxId)}">`;
   html+=`<input type="hidden" id="f_company" value="${esc(vCompany)}">`;
   html+=`<input type="hidden" id="f_invoiceCarrier" value="${esc(vCarrier)}">`;
   html+=`<input type="hidden" id="f_invoiceEmail" value="${esc(vInvEmail)}">`;
 
-  // ── 自訂欄位 ──
+  // ── 自訂欄位（如有）──
   const customFields=(s.customFields||s.modules?.customFields||[]).filter(f=>f&&f.label);
   if(customFields.length){
     customFields.forEach((f,i)=>{
-      html+=`<div class="hc-step-card"><div class="hc-step-name" style="margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:13px">\u5fc5\u586b</span>`:''}</div>`;
+      html+=`<div class="form-card-new">
+        <div class="form-card-title-new" style="font-size:17px;margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:14px">必填</span>`:''}</div>`;
       if(f.type==='select'&&f.options){
-        html+=`<select id="cf_${i}" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.1);border-radius:12px;font-size:15px;font-family:inherit;background:#fff"><option value="">\u8acb\u9078\u64c7</option>${(f.options||[]).map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select>`;
+        html+=`<select id="cf_${i}" style="width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:inherit;background:#fff">
+          <option value="">請選擇</option>
+          ${(f.options||[]).map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}
+        </select>`;
       } else if(f.type==='textarea'){
-        html+=`<textarea id="cf_${i}" rows="3" placeholder="${esc(f.placeholder||'')}" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.1);border-radius:12px;font-size:15px;font-family:inherit;resize:none"></textarea>`;
+        html+=`<textarea id="cf_${i}" rows="3" placeholder="${esc(f.placeholder||'')}" style="width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:inherit;resize:none"></textarea>`;
       } else {
-        html+=`<input type="${f.type==='number'?'number':'text'}" id="cf_${i}" placeholder="${esc(f.placeholder||f.label||'')}" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.1);border-radius:12px;font-size:15px;font-family:inherit">`;
+        html+=`<input type="${f.type==='number'?'number':'text'}" id="cf_${i}" placeholder="${esc(f.placeholder||f.label||'')}" style="width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:inherit">`;
       }
       html+=`</div>`;
     });
   }
 
-  // ── ⑥ 合約條款 ──
-  html+=`<div class="hc-step-card sc-yellow" id="contractCard">
-    <div class="hc-step-head">
-      <div class="hc-step-num">${cardNum+2}</div>
-      <div class="hc-step-name">\u5408\u7d04\u6761\u6b3e</div>
-      <span class="hc-contract-done-badge" id="contractDoneBadge">\u2705 \u5df2\u540c\u610f</span>
+  // ── ⑥ 合約 ──
+  html+=`<div class="form-card-new card-purple" id="contractCard">
+    <div class="form-card-head">
+      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-purple)">${cardNum+2}</span>合約</div>
+      <span class="contract-done-badge" id="contractDoneBadge">✅ 已完成合約同意</span>
     </div>
-    <div class="hc-contract-box">
-      <div style="font-size:14px;color:#555;line-height:1.5;margin-bottom:10px">
-        \ud83d\udccb \u8acb\u5148\u95b1\u8b80\u300c\u6d3b\u52d5\u5408\u4f5c\u5408\u7d04\u6761\u6b3e\u300d\u4e26\u540c\u610f\u5f8c\uff0c\u624d\u80fd\u9001\u51fa\u5831\u540d\u3002
-      </div>
-      <div class="hc-contract-row">
-        <div class="hc-contract-text">\u5b8c\u6210\u95b1\u8b80\u5f8c\u8acb\u9ede\u64ca\u6309\u9215\u9032\u884c\u5ba1\u95b1</div>
-        <button type="button" class="hc-contract-cta" onclick="openAgreementModal()">\u95b1\u8b80\u5408\u7d04\u689d\u6b3e</button>
-      </div>
-      <div class="hc-contract-status">
-        <span id="contractStatusText">\ud83d\udd12 \u5c9a\u672a\u5b8c\u6210</span>
-      </div>
-    </div>
+    <p style="font-size:15px;color:#555;margin-bottom:12px">請先查看合約內容，完成同意後才能送出報名。</p>
+    <button type="button" class="contract-open-btn" onclick="openAgreementModal()">查看合約內容 ›</button>
   </div>`;
 
   // ── ⑦ 備註留言 ──
-  html+=`<div class="hc-step-card sc-pink">
-    <div class="hc-step-head">
-      <div class="hc-step-num">${cardNum+3}</div>
-      <div class="hc-step-name">\u5099\u8a3b\u7559\u8a00 <span style="font-size:14px;font-weight:500;color:#888">\uff08\u9078\u586b\uff09</span></div>
+  html+=`<div class="form-card-new card-pink">
+    <div class="form-card-title-new" style="margin-bottom:10px">
+      <span class="form-card-num" style="background:var(--c-pink)">${cardNum+3}</span>
+      備註留言 <span style="font-size:14px;font-weight:500;color:var(--muted)">選填</span>
     </div>
-    <textarea id="f_note" class="hc-note-textarea" maxlength="200"
-      placeholder="\u6709\u4efb\u4f55\u9700\u6c42\u6216\u60f3\u544a\u8a34\u6211\u5011\u7684\uff0c\u6b61\u8fce\u7559\u8a00\u2026"
-      oninput="$('noteCount').textContent=this.value.length+' / 200'"></textarea>
-    <div class="hc-note-count" id="noteCount">0 / 200</div>
-  </div>`;
-
-  // ── ⑧ 送出說明 ──
-  html+=`<div class="hc-step-card">
-    <div class="hc-step-head">
-      <div class="hc-step-num">${cardNum+4}</div>
-      <div class="hc-step-name">\u9001\u51fa\u5831\u540d</div>
-    </div>
-    <div class="hc-submit-hint">\u8acb\u5148\u5b8c\u6210\u5408\u7d04\u7684\u95b1\u8b80\u4e26\u540c\u610f\uff0c\u624d\u80fd\u9001\u51fa\u5831\u540d\u55a6\uff01</div>
+    <textarea id="f_note" class="note-textarea" maxlength="200" placeholder="如有特殊需求或想跟主辦說的話，請在這裡留言…" oninput="document.getElementById('noteCount').textContent=this.value.length+' / 200'"></textarea>
+    <div class="note-count" id="noteCount">0 / 200</div>
   </div>`;
 
   const dynEl=$('dynForm');
   if(dynEl) dynEl.innerHTML=html;
 
+  // 合約區塊控制
   const agArea=$('agreementArea');
-  if(agArea) agArea.style.display='none';
+  if(agArea) agArea.style.display='none'; // 用新版合約卡片取代
+
+  // 送出按鈕初始 disabled
   const subBtn=$('submitBtn');
-  if(subBtn){ subBtn.style.display='block'; subBtn.disabled=true; }
+  if(subBtn){ subBtn.style.display='block'; subBtn.disabled=true; subBtn.classList.add('submit-btn-new'); subBtn.textContent='送出報名'; }
 
   updateFee();
   setTimeout(()=>{ preFillMemberFields(); }, 100);
 }
 
+// 直接輸入攤數
 function adjStallDirect(val){
   const s=ST.currentSession||{};
   const sType=s.type||'市集場次';
@@ -3593,7 +2695,7 @@ window.addEventListener('popstate', function(e){
   if(regDM){ regDM.remove(); return; }
   // Layer 2：報名表 Modal 開著 → 關閉 Modal
   const modal=$('regFormModal');
-  if(modal && modal.classList.contains('active')){
+  if(modal && modal.classList.contains('show')){
     closeRegFormModal();
     return;
   }
@@ -3651,7 +2753,7 @@ async function openSession(sessionId){
     const titleEl=$('formBackTitle');
     if(titleEl) titleEl.textContent=s.name||'報名表';
     const modal=$('regFormModal');
-    if(!modal || !modal.classList.contains('active')) openRegFormModal();
+    if(!modal || !modal.classList.contains('show')) openRegFormModal();
     if(ST.member && ST.memberEmail){
       try{
         const myRegs=await api({action:'getMyRegs',email:ST.memberEmail,_t:Date.now()});
@@ -3947,26 +3049,6 @@ function updateFee(){
   // feeBox 在卡片內時永遠顯示（不需要切換）
   const feeBoxEl=$('feeBox');
   if(feeBoxEl && !feeBoxEl.closest('#dynForm')) feeBoxEl.style.display=total>0?'block':'none';
-
-  // ── 表格式 UI 同步（stallTotal/eqTotal/addonTotal）──
-  const _s=ST.currentSession||{};
-  const stEl=$('stallTotal'); if(stEl) stEl.textContent='NT$'+fee;
-  Object.entries(_s.equip||{}).forEach(([k,v])=>{
-    if(v&&v.open){
-      const _stalls=ST.stallCount||1;
-      const _incl=frontEffectiveEquipIncl(k,v,_s.basicEquip||_s.basic_equip||'')*_stalls;
-      const _want=ST.equipQty[k]||0;
-      const _extra=Math.max(0,_want-_incl);
-      const _sub=(v.price||0)*_extra;
-      const _el=$('eqTotal_'+k); if(_el) _el.textContent='NT$'+_sub;
-    }
-  });
-  (_s.addons||[]).forEach((a,i)=>{
-    if(a&&a.open===true){
-      const _sub3=(Number(a.price)||0)*(ST.addonQty&&ST.addonQty[i]||0);
-      const _el3=$('addonTotal_'+i); if(_el3) _el3.textContent='NT$'+_sub3;
-    }
-  });
 }
 
 
@@ -4081,19 +3163,12 @@ function onAgreementRead() {
 function onAgreementCheck(checked) {
   ST._agreementAccepted = !!checked;
   const submitBtn = $('submitBtn');
-  const badge = $('contractDoneBadge');
-  const statusText = $('contractStatusText');
-  const ctaBtn = document.querySelector('.hc-contract-cta');
+  if (!submitBtn) return;
   if (checked) {
-    if(submitBtn){ submitBtn.disabled = false; submitBtn.style.display = 'block'; }
-    if(badge){ badge.style.display = 'inline-block'; }
-    if(statusText){ statusText.textContent = '✅ 已完成合約同意'; statusText.style.color = '#5b8b49'; }
-    if(ctaBtn){ ctaBtn.textContent = '重新查看合約'; ctaBtn.classList.add('done'); }
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = false;
   } else {
-    if(submitBtn){ submitBtn.disabled = true; }
-    if(badge){ badge.style.display = 'none'; }
-    if(statusText){ statusText.textContent = '🔒 尚未完成'; statusText.style.color = '#888'; }
-    if(ctaBtn){ ctaBtn.textContent = '閱讀合約條款'; ctaBtn.classList.remove('done'); }
+    submitBtn.style.display = 'none';
   }
 }
 
@@ -4277,72 +3352,67 @@ function payBadge(reg){
 function escHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function renderMyRegs(regs){
-  ST.regs=Array.isArray(regs)?regs:[];
+  ST.regs = Array.isArray(regs) ? regs : [];
   const el=$('myRegsList');
   if(!el) return;
-  const helper=$('noRegsHelper');
-
   if(!ST.regs.length){
-    el.innerHTML='';
-    if(helper) helper.classList.add('show');
+    el.innerHTML='<div style="color:#aaa;font-size:16px;text-align:center;padding:20px">目前無報名紀錄</div>';
     handlePendingPayLink(ST.regs);
     return;
   }
-  if(helper) helper.classList.remove('show');
-
-  // 狀態設定
-  const SC={
-    '\u5f85\u5be9\u6838':{ bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\ud83d\udd50',label:'\u5be9\u6838\u4e2d', note:'\u4e3b\u8fa6\u55ae\u4f4d\u5be9\u6838\u4e2d\uff0c\u8acb\u8010\u5fc3\u7b49\u5019' },
-    '\u5df2\u9304\u53d6':{ bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\u2705',label:'\u5df2\u9304\u53d6', note:'\u8acb\u524d\u5f80\u7e73\u8cbb\u5b8c\u6210\u5831\u540d' },
-    '\u5099\u53d6':   { bg:'#fff6df',color:'#be8616',border:'#edd18e',icon:'\u23f3',label:'\u5099\u53d6\u4e2d', note:'\u60a8\u76ee\u524d\u70ba\u5099\u53d6\u540d\u55ae' },
-    '\u5f85\u78ba\u8a8d':{ bg:'#fff6df',color:'#be8616',border:'#edd18e',icon:'\ud83d\udcb3',label:'\u78ba\u8a8d\u4e2d', note:'\u4ed8\u6b3e\u78ba\u8a8d\u4e2d\uff0c\u8acb\u7a0d\u5019' },
-    '\u5df2\u7e73\u8cbb':{ bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\u2705',label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
-    '\u514d\u8cbb':   { bg:'#eef6e6',color:'#4f7d36',border:'#cfe2bf',icon:'\u2705',label:'\u5df2\u5b8c\u6210', note:'\u611f\u8b1d\u53c3\u8207\uff0c\u671f\u5f85\u4e0b\u6b21\u898b\u9762\uff01' },
-    '\u7533\u8acb\u9000\u8cbb':{ bg:'#fff6df',color:'#be8616',border:'#edd18e',icon:'\ud83d\udcb0',label:'\u9000\u8cbb\u4e2d', note:'\u9000\u8cbb\u7533\u8acb\u8655\u7406\u4e2d' },
-    '\u5df2\u9000\u8cbb':{ bg:'#f5f5f5',color:'#888',border:'#ddd',icon:'\ud83d\udcb8',label:'\u5df2\u9000\u8cbb', note:'\u9000\u8cbb\u5df2\u5b8c\u6210' },
-    '\u5df2\u53d6\u6d88':{ bg:'#f5f5f5',color:'#888',border:'#ddd',icon:'\u274c',label:'\u5df2\u53d6\u6d88', note:'\u6b64\u5831\u540d\u5df2\u53d6\u6d88' },
-    '\u4e0d\u9304\u53d6':{ bg:'#fff0f0',color:'#c0392b',border:'#f4b8b8',icon:'\ud83d\ude22',label:'\u672a\u9304\u53d6', note:'\u5f88\u62b1\u6b49\u6b64\u6b21\u672a\u80fd\u9304\u53d6' },
-  };
-  const BC={
-    '\u5df2\u9304\u53d6':{ label:'\u524d\u5f80\u7e73\u8cbb',bg:'#fdebc0',color:'#be8616' },
-    '\u5f85\u78ba\u8a8d':{ label:'\u67e5\u770b\u8a73\u60c5',bg:'#dfeecf',color:'#4f7d36' },
-    '\u7533\u8acb\u9000\u8cbb':{ label:'\u67e5\u770b\u72c0\u614b',bg:'#dfeecf',color:'#4f7d36' },
-  };
-  const defBC={ label:'\u67e5\u770b\u8a73\u60c5',bg:'#dfeecf',color:'#4f7d36' };
-
+  const statusColor={'待審核':'#f5a623','已錄取':'#2d6a4f','不錄取':'#d94f4f','已取消':'#aaa','已報到':'#1a7f5a'};
   el.innerHTML=ST.regs.map(r=>{
-    const sk=r.payStatus==='\u5df2\u7e73\u8cbb'?'\u5df2\u7e73\u8cbb':r.payStatus==='\u514d\u8cbb'?'\u514d\u8cbb':r.payStatus==='\u5f85\u78ba\u8a8d'?'\u5f85\u78ba\u8a8d':r.status==='\u5df2\u9304\u53d6'&&r.payStatus==='\u672a\u7e73\u8cbb'?'\u5df2\u9304\u53d6':r.status||'\u5f85\u5be9\u6838';
-    const sc=SC[sk]||{bg:'#f5f5f5',color:'#888',border:'#ddd',icon:'\ud83d\udccb',label:sk,note:''};
-    const bc=BC[sk]||defBC;
-    const cover=r.cover||r.sessionCover||r.eventCover||'';
-    const thumbHtml=cover
-      ?`<img src="${esc(cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='#DDEAD1'">`
-      :`<div style="width:100%;height:100%;background:#DDEAD1;display:flex;align-items:center;justify-content:center;font-size:28px">\ud83c\udfaa</div>`;
-    const dates=Array.isArray(r.dates)?r.dates:[];
-    let dateStr=r.date||'';
-    if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'\uff5e'+fmt(dates[dates.length-1].date);}
-    else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'\uff5e'+d.end:'');}
+    const color=statusColor[r.status]||'#888';
+    const pb=payBadge(r);
+    const cancelled=isCancelledReg(r);
+    const payBtn=canPayReg(r)?`<button onclick="event.stopPropagation();showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${escHtml(r.sessionName||r.sesName||'場次')}" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;margin-top:10px;font-size:18px;font-weight:900">前往繳費</button>`:'';
+    const waitMsg=(!cancelled && isPendingPayText(r.payStatus))?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:17px;font-weight:800">已回報，等待主辦確認</div>`:'';
+    const cancelMsg=cancelled?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:17px;font-weight:800">已取消，報名紀錄保留</div>`:'';
+    const refundBtn=canRefundReg(r)?`<button onclick="event.stopPropagation();cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${escHtml(r.sessionName||r.sesName||'')}" style="width:100%;background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd);border-radius:10px;padding:11px;margin-top:9px;font-size:17px;font-weight:900">申請取消／退款</button>`:'';
+    const transfer=(!cancelled && r.transferStatus)?`<div style="font-size:16px;color:#b45309;font-weight:800;margin-top:6px">退款狀態：${escHtml(r.transferStatus)}</div>`:'';
+    const stallHtml=stallSelectionHtml(r);
 
-    return `<div class="m-record-card" onclick="openRegDetail('${esc(r.id)}')">
-      <div class="m-record-top">
-        <div class="m-record-thumb">${thumbHtml}</div>
-        <div>
-          <div class="m-record-name">${esc(r.sessionName||r.name||'')}</div>
-          <div class="m-record-meta">
-            ${dateStr?`\ud83d\udcc5 ${esc(dateStr)}<br>`:''}
-            ${r.venue?`\ud83d\udccd ${esc(r.venue)}`:''}
-          </div>
+    // ── 不可抗力狀態顯示（後端 API 回傳，前台只顯示）──
+    const fs = String(r.forceStatus||'');
+    let forceBanner = '';
+    if (fs === 'pending_force_choice') {
+      const dlText = r.forceChoiceDeadline ? new Date(r.forceChoiceDeadline).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false}) : '';
+      const hasTransfer = r.forceMode === 'transfer_or_refund';
+      forceBanner = `<div style="background:#fff1f2;border:1.5px solid #fda4af;border-radius:10px;padding:12px;margin-top:10px">
+        <div style="font-size:15px;font-weight:900;color:#be123c;margin-bottom:6px">🚨 選擇處理方式</div>
+        <div style="font-size:12px;color:#9f1239;margin-bottom:8px">此場次因不可抗力取消。${dlText?'請於 '+dlText+' 前選擇':''}</div>
+        <div style="display:flex;gap:8px">
+          ${hasTransfer?`<button onclick="event.stopPropagation();agreeForceTransferFn('${r.id}',this)" style="flex:1;background:#2d6a4f;color:#fff;border:none;border-radius:9px;padding:11px;font-size:16px;font-weight:900">同意延期</button>`:''}
+          <button onclick="event.stopPropagation();applyForceRefundFn('${r.id}',this)" style="flex:1;background:#be123c;color:#fff;border:none;border-radius:9px;padding:11px;font-size:16px;font-weight:900">申請退費</button>
         </div>
-        <div class="m-record-arrow">\u203a</div>
+      </div>`;
+    } else if (fs === 'transferred') {
+      forceBanner = `<div style="background:#f0fdf4;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#2d6a4f">✅ 已同意延期至新場次</div>`;
+    } else if (fs === 'refund_requested') {
+      forceBanner = `<div style="background:#fff8ed;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#92400e">📋 已申請退費，等待主辦退款</div>`;
+    } else if (fs === 'auto_refund_requested') {
+      forceBanner = `<div style="background:#f3f4f6;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#374151">⏰ 逾期未選擇，系統已自動申請退費</div>`;
+    } else if (fs === 'refunded') {
+      forceBanner = `<div style="background:#f0fdf4;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#2d6a4f">✅ 已退費完成</div>`;
+    } else if (fs === 'cancel_notice_only') {
+      const cancelNoticeMsg = r.status==='待審核' ?
+        '此場次因不可抗力取消，審核流程已中止。' : '此場次因不可抗力取消，繳費流程已停止。';
+      forceBanner = `<div style="background:#f3f4f6;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#374151">📌 ${cancelNoticeMsg}</div>`;
+    } else if (fs === 'refund_only_auto') {
+      forceBanner = `<div style="background:#fff8ed;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#92400e">📋 此場次因不可抗力取消，已進入退費流程，等待主辦退款</div>`;
+    }
+
+    return `<div onclick="openRegDetail('${r.id}')" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:15px;margin-bottom:12px;cursor:pointer;border-left:4px solid ${color}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
+        <div style="font-size:20px;font-weight:900;color:var(--dk);flex:1;line-height:1.35">${escHtml(r.sessionName||r.sesName||'場次')}</div>
+        <span style="background:${pb.bg};color:${pb.c};padding:5px 10px;border-radius:20px;font-size:17px;font-weight:900;white-space:nowrap">${pb.t}</span>
       </div>
-      <div class="m-record-bottom">
-        <span class="m-status-pill" style="background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">
-          ${sc.icon} ${sc.label}
-        </span>
-        <span class="m-status-note">${sc.note}</span>
-        <button class="m-action-btn" style="background:${bc.bg};color:${bc.color}"
-          onclick="event.stopPropagation();openRegDetail('${esc(r.id)}')">${bc.label}</button>
-      </div>
+      <div style="font-size:17px;color:var(--md);font-weight:700">審核：${escHtml(r.status||'')}　攤位數：${r.stallCount||1} 攤</div>
+      <div style="font-size:18px;color:var(--g);font-weight:900;margin-top:3px">${r.total>0?'NT$ '+Number(r.total||0).toLocaleString():r.payStatus==='免費'?'免費':''}</div>
+      ${r.equipmentText?`<div style="font-size:16px;color:var(--md);margin-top:3px">設備：${escHtml(r.equipmentText)}</div>`:''}
+      ${participantTextFromData(r.participants)?`<div style="font-size:16px;color:var(--md);margin-top:3px">參加者：${escHtml(participantTextFromData(r.participants))}</div>`:''}
+      ${r.agreementAccepted?`<div style="font-size:12px;color:#2d6a4f;margin-top:5px">✅ 已同意報名合約${r.agreementVersion?' ('+r.agreementVersion+')':''}</div>`:''}
+      ${forceBanner||cancelMsg}${!forceBanner?waitMsg:''}${stallHtml}${!fs?refundBtn:''}${!fs?transfer:''}${!fs?payBtn:''}
     </div>`;
   }).join('');
   handlePendingPayLink(ST.regs);
@@ -4742,60 +3812,66 @@ if(document.readyState==='loading'){
     }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; renderEvents(); }
   };
   window.renderEvents = function(){
-    // ── 精選主題活動（3欄並排，只顯示圖+名稱+說明+查看場次）──
+    // ── 精選主題活動（ST.events 活動層）──
     const fl=$('featuredEventsList');
     if(fl){
       const events=asArr(ST.events);
       if(events.length){
         fl.innerHTML=events.map(e=>{
-          const hasCover=!!(e.cover||e.coverUrl);
-          const imgHtml=hasCover
-            ?`<img src="${esc(e.cover||e.coverUrl)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<img src=IP歡迎.png style=width:52px;height:52px;object-fit:contain;margin:auto;display:block;padding-top:18px>'">`
-            :`<div style="width:100%;height:100%;background:#DDEAD1;display:flex;align-items:center;justify-content:center;font-size:32px">🎪</div>`;
-          return `<div class="hc-theme-card" onclick="openEvent('${esc(e.id)}')">
-            <div class="hc-theme-img">${imgHtml}</div>
-            <div class="hc-theme-body">
-              <div class="hc-theme-name">${esc(e.title||'')}</div>
-              ${e.desc||e.description?`<div class="hc-theme-desc">${esc(String(e.desc||e.description||'').slice(0,30))}</div>`:''}
-              <button class="hc-theme-btn" onclick="event.stopPropagation();openEvent('${esc(e.id)}')">查看場次</button>
+          const feeStr=Number(e.fee)>0?'NT$'+Number(e.fee).toLocaleString():'免費';
+          const coverHtml=e.cover
+            ?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:104px;object-fit:cover;background:#DDEAD1;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            :``;
+          const placeholderHtml=`<div style="display:${e.cover?'none':'flex'};width:100%;height:104px;background:#DDEAD1;align-items:center;justify-content:center">
+            <img src="IP歡迎.png" style="width:56px;height:56px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:32px>🎪</span>'">
+          </div>`;
+          return `<div style="position:relative;min-width:155px;max-width:165px;background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;flex-shrink:0" onclick="openActivityFromHome('${esc(e.id)}')">
+            ${coverHtml}${placeholderHtml}
+            <button onclick="event.stopPropagation();shareSession('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔗</button>
+            <div style="padding:10px">
+              <div style="font-size:15px;font-weight:900;color:#111;line-height:1.3;min-height:38px">${esc(e.title||'')}</div>
+              ${e.location?`<div style="font-size:12px;color:#555;margin-top:3px">📍 ${esc(e.location)}</div>`:''}
+              <div style="font-size:15px;font-weight:900;color:#111;margin-top:5px">${feeStr}</div>
+              <button onclick="event.stopPropagation();registerFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:#DCD7ED;color:#111;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">立即報名</button>
             </div>
           </div>`;
         }).join('');
       } else {
-        fl.innerHTML='<div style="padding:16px;color:#aaa;font-size:14px;grid-column:1/-1">目前無主題活動</div>';
+        fl.innerHTML='<div style="padding:20px;color:#aaa;font-size:14px">目前無主題活動</div>';
       }
     }
 
-    // ── 近期場次（左圖+中間資訊+右邊分享+立即報名）──
+    // ── 近期場次（ST.allSessionsData 場次層）──
     const el=$('eventsList');
     if(el){
       const sessions=uniqueSessions(ST.allSessionsData).filter(openSess);
       if(sessions.length){
-        el.innerHTML=sessions.slice(0,15).map(s=>{
+        el.innerHTML=sessions.slice(0,12).map(s=>{
           const dates=asArr(s.dates);
           let dateStr='';
           if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);}
           else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');}
           const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'免費';
+          // 封面圖：有圖用圖，無圖用 IP 插圖（不用大字）
           const hasCover=!!(s.coverUrl||s.cover);
-          const thumbHtml=hasCover
-            ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`
-            :`<img src="IP指引.png" alt="" style="width:48px;height:48px;object-fit:contain">`;
-          return `<div class="hc-session-card" onclick="openSession('${esc(s.id)}')">
-            <div class="hc-session-thumb">${thumbHtml}</div>
-            <div style="min-width:0">
-              <div class="hc-session-name">${esc(s.name||'')}</div>
-              <div class="hc-session-meta">${dateStr?'📅 '+esc(dateStr)+'<br>':''}${s.venue?'📍 '+esc(s.venue):''}</div>
-              <div class="hc-session-price">${feeStr}</div>
+          const coverEl=hasCover
+            ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
+            :`<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
+          return `<div class="ses-list-card" onclick="openActivityFromHome(null,'${esc(s.id)}')">
+            <div class="ses-list-img">${coverEl}</div>
+            <div class="ses-list-body">
+              <div class="ses-list-name">${esc(s.name||'')}</div>
+              <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${s.venue?'<br>📍 '+esc(s.venue):''}</div>
+              <div class="ses-list-fee">${feeStr}</div>
             </div>
-            <div class="hc-session-actions">
-              <button class="hc-share-btn" onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')">🔗</button>
-              <button class="hc-reg-btn" onclick="event.stopPropagation();openSession('${esc(s.id)}')">立即報名</button>
+            <div class="ses-list-actions">
+              <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
+              <button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>
             </div>
           </div>`;
         }).join('');
       } else {
-        el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:15px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#5b8b49;font-weight:800;cursor:pointer">重新載入</span></div>';
+        el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:15px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#2a6a10;font-weight:800;cursor:pointer">重新載入</span></div>';
       }
     }
     setTimeout(enableDragScroll,100);
@@ -4807,17 +3883,18 @@ if(document.readyState==='loading'){
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
   await handleMemberOAuthCallback();
-  // 恢復登入狀態
+  // 從 localStorage 恢復登入狀態
   const savedToken = localStorage.getItem('2bl_member_token');
   const savedEmail = readEmail();
   if (savedToken && savedEmail) {
     ST.memberEmail = savedEmail;
     ST.memberToken = savedToken;
   }
-  // 還原上次所在頁面
+  // 還原上次所在頁面（只支援三顆：home / member / support）
   const rawTab = localStorage.getItem('2bl_current_tab') || 'home';
+  // 舊版 myregs 對應到 member
   const lastTab = (rawTab === 'myregs') ? 'member' : rawTab;
-  // OAuth 回來停首頁
+  // OAuth 回來後不強制跳會員頁，停在首頁讓使用者自己點
   const isOAuthReturn = !!(new URLSearchParams(location.search).get('member_token') ||
     sessionStorage.getItem('2bl_member_token_pending'));
   if(isOAuthReturn){
@@ -4825,11 +3902,10 @@ if(document.readyState==='loading'){
     navToTab('home');
     return;
   }
-  if(lastTab === 'member' && savedEmail){
+  if (lastTab === 'member' && savedEmail) {
     await loadHome();
-    // 還原會員頁：需呼叫 safeLoadMemberPage 才能載入報名紀錄
-    setTimeout(()=>{ safeLoadMemberPage(savedEmail); }, 200);
-  } else if(lastTab === 'support'){
+    setTimeout(()=>{ navToTab('member'); }, 200);
+  } else if (lastTab === 'support') {
     await loadHome();
     setTimeout(()=>{ navToTab('support'); }, 200);
   } else {
