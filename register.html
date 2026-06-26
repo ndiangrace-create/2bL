@@ -383,91 +383,373 @@ button,a,[onclick]{touch-action:manipulation}
   .ses-list-reg{min-width:100px;height:44px;font-size:16px}
   .ses-list-share{width:38px;height:38px;font-size:16px}
 }
+
+/* ══════════════════════════════════════
+   MOCKUP 套版 CSS  (front_mockup.css)
+   只改視覺，不改 JS 邏輯
+   ══════════════════════════════════════ */
+:root{
+  --mk-green:#DDEAD1;
+  --mk-yellow:#FAEEC7;
+  --mk-blue:#D9E5EE;
+  --mk-pink:#FAE1DD;
+  --mk-purple:#DCD7ED;
+  --mk-white:#FFFFFF;
+  --mk-black:#111111;
+  --mk-muted:#5f5f5f;
+  --mk-line:rgba(17,17,17,.10);
+  --mk-shadow:0 8px 24px rgba(0,0,0,.07);
+  --mk-accent:#91B574;
+  --mk-accent-dark:#5b8b49;
+  --r-lg:24px;
+  --r-md:18px;
+  --r-sm:14px;
+}
+
+/* ── 全域字體 ── */
+body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif; background:#fffaf6; }
+
+/* ── 電腦版置中限寬 ── */
+#pageHome, #pagePortal, #pageSession, #regFormModal, #pageMember, #pageSupport {
+  max-width:480px; margin:0 auto;
+}
+@media(min-width:700px){
+  body{ background:#f0ede8; }
+  #pageHome, #pagePortal, #pageSession, #regFormModal, #pageMember, #pageSupport {
+    max-width:480px;
+    box-shadow:var(--mk-shadow);
+    border:1px solid var(--mk-line);
+    border-radius:32px;
+    overflow:hidden;
+    margin-top:20px;
+  }
+  .bottom-fixed{ max-width:480px; left:50%; transform:translateX(-50%); border-radius:0 0 32px 32px; }
+}
+
+/* ── 封面圖 ── */
+#siteHero{ width:100%; overflow:hidden; border-radius:0 0 24px 24px; background:var(--mk-green); height:210px; }
+#siteHero img{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+
+/* ── info band ── */
+#siteInfoBand{
+  margin:12px 18px 10px;
+  padding:10px 14px;
+  background:var(--mk-yellow);
+  border-radius:999px;
+  text-align:center;
+  font-size:17px;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+
+/* ── 四大分類 grid ── */
+.mk-cat-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:8px 18px 16px;
+}
+.mk-cat-card{
+  min-height:108px;
+  border-radius:20px;
+  border:1px solid var(--mk-line);
+  padding:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+  cursor:pointer;
+}
+.mk-cat-card.c-green{background:linear-gradient(135deg,#fff,var(--mk-green))}
+.mk-cat-card.c-yellow{background:linear-gradient(135deg,#fff,var(--mk-yellow))}
+.mk-cat-card.c-blue{background:linear-gradient(135deg,#fff,var(--mk-blue))}
+.mk-cat-card.c-pink{background:linear-gradient(135deg,#fff,var(--mk-pink))}
+.mk-cat-card img{ width:56px; height:72px; object-fit:contain; flex:0 0 auto; }
+.mk-cat-title{ font-size:26px; line-height:1; font-weight:900; letter-spacing:.08em; }
+.mk-cat-sub{ margin-top:8px; font-size:16px; font-weight:700; color:#444; }
+
+/* ── section head ── */
+.mk-section{ padding:0 18px 16px; }
+.mk-section-head{ display:flex; align-items:center; justify-content:space-between; margin:4px 0 10px; }
+.mk-section-title{ font-size:21px; font-weight:900; }
+.mk-section-more{ font-size:15px; font-weight:900; color:var(--mk-accent-dark); cursor:pointer; }
+
+/* ── 精選主題活動：橫向滑動 ── */
+.mk-feature-row{
+  display:flex; gap:10px;
+  overflow-x:auto; overflow-y:hidden;
+  padding-bottom:6px;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.mk-feature-row::-webkit-scrollbar{ display:none; }
+.mk-theme-card{
+  width:140px; flex:0 0 140px;
+  border:1px solid var(--mk-line);
+  border-radius:18px; overflow:hidden;
+  background:white;
+  box-shadow:0 3px 12px rgba(0,0,0,.05);
+  cursor:pointer;
+}
+.mk-theme-img{ height:90px; background:var(--mk-green); overflow:hidden; }
+.mk-theme-img img{ width:100%; height:100%; object-fit:cover; }
+.mk-theme-body{ padding:9px; text-align:center; }
+.mk-theme-name{ font-size:15px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mk-theme-btn{
+  margin-top:8px; height:32px; border-radius:999px;
+  background:var(--mk-accent); color:white;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:900; cursor:pointer; border:none;
+  font-family:inherit;
+}
+
+/* ── 近期場次卡片 ── */
+.mk-session-list{ display:flex; flex-direction:column; gap:10px; }
+.mk-session-card{
+  display:grid;
+  grid-template-columns:86px 1fr 82px;
+  gap:10px; align-items:center;
+  background:white;
+  border:1px solid var(--mk-line);
+  border-radius:18px; padding:10px;
+  box-shadow:0 3px 12px rgba(0,0,0,.04);
+  cursor:pointer;
+}
+.mk-session-thumb{
+  width:86px; height:72px;
+  border-radius:14px; overflow:hidden;
+  background:var(--mk-green); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.mk-session-thumb img{ width:100%; height:100%; object-fit:cover; }
+.mk-session-name{ font-size:17px; font-weight:900; line-height:1.25; }
+.mk-session-meta{ margin-top:4px; font-size:12px; color:#555; line-height:1.45; }
+.mk-session-price{ margin-top:4px; font-size:16px; font-weight:900; color:var(--mk-accent-dark); }
+.mk-session-action{ display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+.mk-share-btn{
+  width:30px; height:30px; border-radius:999px;
+  border:1px solid var(--mk-line); background:white;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; cursor:pointer;
+}
+.mk-reg-btn{
+  min-width:78px; height:38px; border-radius:13px;
+  background:var(--mk-accent); color:white;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:900; cursor:pointer;
+  border:none; font-family:inherit;
+}
+
+/* ── 底部三顆導覽 ── */
+.bottom-fixed{
+  position:fixed; bottom:0; left:0; right:0;
+  background:white; border-top:1px solid var(--mk-line);
+  padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; z-index:100;
+  box-shadow:0 -2px 12px rgba(0,0,0,.06);
+}
+.bot-btn{
+  height:54px; border-radius:20px;
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; font-size:18px; font-weight:900;
+  border:none; cursor:pointer; font-family:inherit;
+  background:transparent; color:#555;
+  transition:all .15s;
+}
+.bot-btn.active, #botHome.active{ background:var(--mk-green); color:#4d7f39; }
+#botMember.active{ background:var(--mk-yellow); color:#9a6f00; }
+#botSupport.active{ background:var(--mk-purple); color:#5f4ca0; }
+
+/* ── 報名表頁面 ── */
+#regFormModal.page{
+  background:#fff;
+  padding-bottom:80px;
+  min-height:100vh;
+}
+/* 頂部返回列 */
+.mk-reg-topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px 10px;
+  border-bottom:1px solid var(--mk-line);
+  position:sticky; top:0; background:#fff; z-index:10;
+}
+.mk-reg-topbar-back{ font-size:22px; cursor:pointer; background:none; border:none; padding:0; }
+.mk-reg-topbar-title{ font-size:20px; font-weight:900; flex:1; text-align:center; }
+.mk-reg-topbar-ip{ width:54px; height:54px; object-fit:contain; }
+
+/* ── 報名表 step-card ── */
+.mk-step-card{
+  border:1px solid var(--mk-line);
+  border-radius:20px; padding:14px;
+  margin:0 14px 12px; background:white;
+}
+.mk-step-card.c-green{background:linear-gradient(135deg,#fff,var(--mk-green))}
+.mk-step-card.c-yellow{background:linear-gradient(135deg,#fff,var(--mk-yellow))}
+.mk-step-card.c-blue{background:linear-gradient(135deg,#fff,var(--mk-blue))}
+.mk-step-card.c-pink{background:linear-gradient(135deg,#fff,var(--mk-pink))}
+.mk-step-card.c-purple{background:linear-gradient(135deg,#fff,var(--mk-purple))}
+.mk-step-head{
+  display:flex; align-items:center; gap:8px; margin-bottom:10px;
+}
+.mk-step-num{
+  width:28px; height:28px; border-radius:999px;
+  background:var(--mk-accent); color:white;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:15px; flex-shrink:0;
+}
+.mk-step-name{ font-size:18px; font-weight:900; }
+
+/* ① 活動資訊 */
+.mk-act-row{ display:grid; grid-template-columns:96px 1fr; gap:12px; align-items:center; }
+.mk-act-img{ width:96px; height:88px; border-radius:14px; object-fit:cover; background:var(--mk-green); }
+.mk-act-name{ font-size:18px; font-weight:900; }
+.mk-act-meta{ margin-top:5px; font-size:14px; line-height:1.55; color:#444; }
+
+/* ② 設備表格 */
+.mk-equip-table{ width:100%; border-collapse:collapse; font-size:14px; }
+.mk-equip-table th{ color:#666; font-size:12px; font-weight:900; text-align:left; padding:6px 4px; }
+.mk-equip-table td{ border-top:1px solid rgba(0,0,0,.08); padding:8px 4px; vertical-align:middle; }
+.mk-equip-table .money{ font-weight:900; text-align:right; white-space:nowrap; }
+.mk-qty{
+  display:inline-flex; align-items:center;
+  border:1px solid var(--mk-line); border-radius:999px;
+  overflow:hidden; background:white; height:32px;
+}
+.mk-qty-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:28px; height:32px; font-weight:900; font-size:16px;
+  background:none; border:none; cursor:pointer; font-family:inherit;
+}
+.mk-qty-num{
+  min-width:32px; height:32px;
+  border-left:1px solid var(--mk-line); border-right:1px solid var(--mk-line);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:15px;
+  background:white;
+}
+
+/* ③ 費用總計 */
+.mk-total-line{ display:flex; justify-content:space-between; font-size:16px; font-weight:900; margin:8px 0; }
+.mk-total-final{
+  border-top:1px dashed rgba(0,0,0,.18); margin-top:10px; padding-top:12px;
+  font-size:26px; font-weight:900; text-align:right; color:var(--mk-accent-dark);
+}
+
+/* ④⑤ 會員/發票 */
+.mk-info-grid{ display:grid; grid-template-columns:90px 1fr; gap:7px 10px; font-size:14px; }
+.mk-info-label{ font-weight:900; color:#555; }
+.mk-edit-btn{
+  margin-left:auto; padding:6px 14px;
+  border:1px solid var(--mk-line); background:white;
+  border-radius:999px; font-size:14px; font-weight:900;
+  cursor:pointer; font-family:inherit;
+}
+.mk-social-row{ display:flex; gap:10px; margin-top:8px; }
+.mk-social-icon{
+  width:32px; height:32px; border-radius:999px;
+  background:white; border:1px solid var(--mk-line);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:13px; text-decoration:none; color:#111;
+}
+
+/* ⑥ 合約 */
+.mk-contract-row{ display:flex; align-items:center; gap:12px; }
+.mk-contract-text{ flex:1; font-size:14px; color:#555; line-height:1.5; }
+.mk-contract-cta{
+  height:40px; padding:0 16px; border-radius:13px;
+  background:var(--mk-accent); color:white;
+  font-size:14px; font-weight:900;
+  display:flex; align-items:center; cursor:pointer;
+  border:none; font-family:inherit; white-space:nowrap;
+}
+.mk-contract-done{
+  background:var(--mk-green); color:#2a6a10;
+  border-radius:999px; padding:5px 12px;
+  font-size:13px; font-weight:900; display:none;
+}
+
+/* ⑦ 備註 */
+.mk-note-textarea{
+  width:100%; min-height:82px;
+  border:1px solid var(--mk-line); border-radius:15px;
+  padding:12px; font-size:15px; resize:none;
+  background:white; font-family:inherit; color:#111;
+}
+.mk-note-count{ text-align:right; font-size:12px; color:#aaa; margin-top:4px; }
+
+/* ⑧ 送出 */
+.mk-submit-btn{
+  width:100%; height:54px; border-radius:18px;
+  background:var(--mk-accent); color:white;
+  font-size:20px; font-weight:900;
+  border:none; cursor:pointer; font-family:inherit;
+  transition:opacity .2s;
+}
+.mk-submit-btn:disabled{ opacity:.4; cursor:not-allowed; }
+.mk-submit-btn:not(:disabled){ box-shadow:0 6px 16px rgba(0,0,0,.14); }
+.mk-reg-footer-ip{ display:flex; justify-content:center; margin-top:10px; }
+.mk-reg-footer-ip img{ width:120px; height:84px; object-fit:contain; }
 </style>
 </head>
 <body>
 
 <!-- ══ 首頁 ══ -->
-<div id="pageHome" class="page active">
+<div id="pageHome" class="page active" style="padding-bottom:100px">
 
   <!-- 封面圖（長按5秒進後台）-->
   <div id="siteHero"
     onmousedown="startLogoHold()" onmouseup="stopLogoHold()"
     onmouseleave="stopLogoHold()" ontouchstart="startLogoHold(event)"
     ontouchend="stopLogoHold()" ontouchcancel="stopLogoHold()"
-    oncontextmenu="return false"
-    style="width:100%;padding:0;margin:0">
-    <img class="hero-bg-img" data-skin-hero
-      src="前台封面.jpg"
-      alt="兔彼樂共創村"
-      style="width:100%;display:block;border-radius:0 0 22px 22px;object-fit:cover;object-position:center;max-height:260px"
+    oncontextmenu="return false">
+    <img data-skin-hero src="前台封面.jpg" alt="兔彼樂共創村"
       onerror="this.style.display='none'">
   </div>
 
-  <!-- 資訊帶 -->
-  <div id="siteInfoBand" style="background:var(--c2);padding:8px 16px">
-    <strong data-site-info-text style="font-size:14px;color:#6a4a00">探索活動，找到屬於你的市集旅程</strong>
+  <!-- info band -->
+  <div id="siteInfoBand">
+    <strong data-site-info-text>🌼 探索活動，找到屬於你的市集旅程 🌼</strong>
   </div>
 
-  <!-- 四大分類入口 -->
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px">
-
-    <div onclick="filterCat('市集報名',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#DDEAD1;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP歡迎.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">市集</div>
-        <div style="font-size:13px;color:#555;margin-top:3px">市集報名</div>
-      </div>
+  <!-- 四大分類 -->
+  <div class="mk-cat-grid">
+    <div class="mk-cat-card c-green" onclick="filterCat('市集報名',this)">
+      <img src="IP歡迎.png" alt="市集" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
+      <div><div class="mk-cat-title">市集</div><div class="mk-cat-sub">市集報名</div></div>
     </div>
-
-    <div onclick="filterCat('通路寄賣',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAEEC7;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP指引.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">寄賣</div>
-        <div style="font-size:13px;color:#555;margin-top:3px">攤位寄賣</div>
-      </div>
+    <div class="mk-cat-card c-yellow" onclick="filterCat('通路寄賣',this)">
+      <img src="IP指引.png" alt="寄賣" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
+      <div><div class="mk-cat-title">寄賣</div><div class="mk-cat-sub">攤位寄賣</div></div>
     </div>
-
-    <div onclick="filterCat('體驗活動',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#D9E5EE;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP資料.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">體驗</div>
-        <div style="font-size:13px;color:#555;margin-top:3px">體驗活動</div>
-      </div>
+    <div class="mk-cat-card c-blue" onclick="filterCat('體驗活動',this)">
+      <img src="IP資料.png" alt="體驗" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
+      <div><div class="mk-cat-title">體驗</div><div class="mk-cat-sub">體驗活動</div></div>
     </div>
-
-    <div onclick="filterCat('合作洽詢',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAE1DD;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP會員.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">合作</div>
-        <div style="font-size:13px;color:#555;margin-top:3px">合作洽詢</div>
-      </div>
+    <div class="mk-cat-card c-pink" onclick="filterCat('合作洽詢',this)">
+      <img src="IP會員.png" alt="合作" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
+      <div><div class="mk-cat-title">合作</div><div class="mk-cat-sub">合作洽詢</div></div>
     </div>
-
   </div>
 
-  <!-- 精選主題活動 -->
-  <div style="padding:0 14px 4px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-size:20px;font-weight:900;color:#111">精選主題活動</div>
-      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
+  <!-- 精選主題活動（查看場次，不直接報名）-->
+  <div class="mk-section">
+    <div class="mk-section-head">
+      <div class="mk-section-title">🌸 精選主題活動</div>
+      <div class="mk-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
     </div>
-    <div id="featuredEventsList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none">
+    <div id="featuredEventsList" class="mk-feature-row">
       <div style="padding:20px;color:#aaa;font-size:14px">載入中…</div>
     </div>
   </div>
 
   <!-- 近期場次 -->
-  <div id="recentSection" style="padding:8px 14px 100px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-size:20px;font-weight:900;color:#111">近期場次</div>
-      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
+  <div class="mk-section" id="recentSection">
+    <div class="mk-section-head">
+      <div class="mk-section-title">🌸 近期場次</div>
+      <div class="mk-section-more" onclick="filterCat('市集報名',null)">查看全部 ›</div>
     </div>
-    <div id="eventsList">
+    <div id="eventsList" class="mk-session-list">
       <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
     </div>
   </div>
@@ -499,48 +781,49 @@ button,a,[onclick]{touch-action:manipulation}
 </div>
 
 <!-- ══ 報名表 Modal ══ -->
-<div class="modal-overlay" id="regFormModal" onclick="if(event.target===this)closeRegFormModal()">
-  <div class="modal-box" style="border-radius:22px 22px 0 0;padding:0;display:flex;flex-direction:column;max-height:92vh">
-    <!-- 頂部標題列 -->
-    <div style="display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fff;border-radius:22px 22px 0 0;position:sticky;top:0;z-index:10">
-      <button onclick="closeRegFormModal()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;color:var(--md)">←</button>
-      <span id="formBackTitle" style="font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dk)">報名表</span>
-      <button onclick="shareCurrentSession()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;color:var(--md)" title="分享">🔗</button>
+<div class="page" id="regFormModal" style="background:#fff;min-height:100vh">
+
+  <!-- 頂部返回列 -->
+  <div class="mk-reg-topbar">
+    <button class="mk-reg-topbar-back" onclick="closeRegFormModal()">←</button>
+    <span id="formBackTitle" class="mk-reg-topbar-title">報名表單</span>
+    <img src="IP報名.png" alt="" class="mk-reg-topbar-ip" onerror="this.style.display='none'">
+  </div>
+
+  <!-- 錯誤提示 -->
+  <div id="formError" style="display:none;margin:10px 14px;background:#fff0f0;border:1.5px solid #f87171;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:#c0392b"></div>
+
+  <!-- 動態表單（八個區塊由 JS 產生）-->
+  <div id="dynForm" style="padding-top:8px"></div>
+
+  <!-- 合約同意區（agreementArea，JS 控制顯示）-->
+  <div id="agreementArea" style="display:none;margin:0 14px 12px">
+    <div style="background:#f0faf4;border:1px solid #b7e4c7;border-radius:14px;padding:14px 16px">
+      <button type="button" id="agreementViewBtn" onclick="openAgreementModal()"
+        style="display:block;width:100%;background:none;border:1px solid #5b8b49;color:#5b8b49;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:10px;font-family:inherit">
+        📋 點此查看報名合約／活動規範
+      </button>
+      <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:#444;cursor:not-allowed;opacity:.5">
+        <input type="checkbox" id="agreementCheckbox" disabled
+          onchange="onAgreementCheck(this.checked)"
+          style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:#5b8b49">
+        <span>我已閱讀並同意本場次報名合約／活動規範</span>
+      </label>
     </div>
-    <!-- 可捲動內容區 -->
-    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch">
-      <div class="form-hero" id="formHero">
-        <div class="form-hero-placeholder">🎪</div>
-      </div>
-      <div class="form-wrap">
-        <div id="formError" style="display:none;background:#fff0f0;border:1.5px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:#c0392b"></div>
-        <div id="dynForm"></div>
-      </div>
-      <!-- ── 合約同意區（在 dynForm 之後，送出按鈕之前）── -->
-      <div id="agreementArea" style="display:none;padding:0 16px 12px">
-        <div style="background:#f0faf4;border:1px solid #b7e4c7;border-radius:12px;padding:14px 16px">
-          <button type="button" id="agreementViewBtn"
-            onclick="openAgreementModal()"
-            style="display:block;width:100%;background:none;border:1px solid var(--g);color:var(--g);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">
-            📋 點此查看報名合約／活動規範
-          </button>
-          <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#444;cursor:not-allowed;opacity:.5">
-            <input type="checkbox" id="agreementCheckbox" disabled
-              onchange="onAgreementCheck(this.checked)"
-              style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--g)">
-            <span>我已閱讀並同意本場次報名合約／活動規範</span>
-          </label>
-        </div>
-      </div>
-      <div style="padding:12px 16px 40px">
-        <button class="submit-btn-new" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
-      </div>
+  </div>
+
+  <!-- 送出按鈕 -->
+  <div style="padding:8px 14px 80px">
+    <button class="mk-submit-btn" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
+    <div class="mk-reg-footer-ip">
+      <img src="IP報名.png" alt="" onerror="this.style.display='none'">
     </div>
   </div>
 </div>
 
+
 <!-- ══ 合約 Modal ══ -->
-<div id="agreementModal" class="overlay" onclick="if(event.target===this)closeAgreementModal()" style="display:none;z-index:2000">
+<div id="agreementModal" class="overlay" onclick="if(event.target===this)closeAgreementModal()" style="display:none;z-index:9999;position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center">
   <div class="modal-box" style="max-width:680px;width:94%;max-height:88vh;display:flex;flex-direction:column;border-radius:18px;overflow:hidden">
     <div style="padding:16px 20px 10px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div id="agreementModalTitle" style="font-size:16px;font-weight:800;color:#1b4332">📋 報名合約</div>
@@ -884,15 +1167,11 @@ button,a,[onclick]{touch-action:manipulation}
 
 <!-- ══ 底部四顆導覽 ══ -->
 <div class="bottom-fixed" id="bottomNav">
-  <button class="bot-btn active" id="botHome" onclick="navToTab('home')" style="--btn-color:#DDEAD1">
-    <span class="bot-label">🏠 報名</span>
+  <button class="bot-btn active" id="botHome" onclick="navToTab('home')">🏠 報名</button>
+  <button class="bot-btn" id="botMember" onclick="navToTab('member')">
+    <span id="botMemberLabel">📋 我的紀錄</span>
   </button>
-  <button class="bot-btn" id="botMember" onclick="navToTab('member')" style="--btn-color:#FAEEC7">
-    <span class="bot-label" id="botMemberLabel">📋 我的紀錄</span>
-  </button>
-  <button class="bot-btn" id="botSupport" onclick="navToTab('support')" style="--btn-color:#DCD7ED">
-    <span class="bot-label">💬 客服</span>
-  </button>
+  <button class="bot-btn" id="botSupport" onclick="navToTab('support')">🎧 客服</button>
 </div>
 
 <!-- Toast -->
@@ -1819,16 +2098,10 @@ function renderDynFormFull(s, isNew=false){
   const cover=s.cover||s.coverUrl||'';
   buildFormHero(s,cover);
 
-  // 取得日期字串
-  const dates=s.dates||[];
+  const dates=asArr(s.dates);
   let dateStr='';
-  if(dates.length>1){
-    const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
-    dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
-  } else if(dates.length===1){
-    const d=dates[0];
-    dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
-  }
+  if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);}
+  else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');}
   const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString()+'／攤':'免費';
   const sType=s.type||'市集場次';
   const isCollab=sType==='合作申請';
@@ -1841,122 +2114,134 @@ function renderDynFormFull(s, isNew=false){
   html+=`<input type="hidden" id="f_email" value="${esc(email)}">`;
 
   // ── ① 活動資訊 ──
-  html+=`<div class="form-card-new">
-    <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
-    ${cover?`<img class="act-img" src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:
-    `<div style="width:100%;height:140px;border-radius:var(--radius-md);background:var(--c-green);display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:12px">🎪</div>`}
-    <div class="act-name">${esc(s.name||'')}</div>
-    <div class="act-price">${esc(feeStr)}</div>
-    ${dateStr?`<div class="act-meta-row"><span class="act-meta-icon">📅</span><span>${esc(dateStr)}</span></div>`:''}
-    ${s.venue?`<div class="act-meta-row"><span class="act-meta-icon">📍</span><span>${esc(s.venue)+(s.region&&s.region!==s.venue?' · '+s.region:'')}</span></div>`:''}
-    ${s.description?`<div class="act-desc">${esc(s.description)}</div>`:''}
+  html+=`<div class="mk-step-card c-green">
+    <div class="mk-step-head"><div class="mk-step-num">1</div><div class="mk-step-name">活動資訊</div></div>
+    <div class="mk-act-row">
+      ${cover
+        ?`<img class="mk-act-img" src="${esc(cover)}" alt="" onerror="this.src='IP歡迎.png'">`
+        :`<img class="mk-act-img" src="IP歡迎.png" alt="">`}
+      <div>
+        <div class="mk-act-name">${esc(s.name||'')}</div>
+        <div class="mk-act-meta">
+          ${dateStr?`📅 ${esc(dateStr)}<br>`:''}
+          ${s.venue?`📍 ${esc(s.venue)}<br>`:''}
+          ${feeStr?`🏷 ${feeStr}`:''}
+        </div>
+      </div>
+    </div>
+    ${s.description?`<div style="font-size:14px;color:#555;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.07)">${esc(s.description)}</div>`:''}
   </div>`;
 
   // ── 多日選擇（如有）──
   if(dates.length>1){
-    html+=`<div class="form-card-new"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">+</span>選擇參加日期</div>`;
+    html+=`<div class="mk-step-card">
+      <div class="mk-step-head"><div class="mk-step-num" style="background:#aaa">＋</div><div class="mk-step-name">選擇參加日期</div></div>`;
     dates.forEach((d,i)=>{
-      html+=`<label style="display:flex;align-items:center;gap:12px;margin:10px 0;cursor:pointer;font-size:17px;font-weight:600">
-        <input type="checkbox" id="dp_${i}" onchange="updateFee()" style="width:24px;height:24px;accent-color:var(--c-green);flex-shrink:0">
-        <span>${d.date||''} ${d.start||''}${d.end?'～'+d.end:''} <strong style="color:#2a6a10">${d.fee?'NT$'+d.fee:''}</strong></span>
+      html+=`<label style="display:flex;align-items:center;gap:10px;margin:8px 0;cursor:pointer;font-size:16px;font-weight:600">
+        <input type="checkbox" id="dp_${i}" onchange="updateFee()" style="width:22px;height:22px;accent-color:#91B574;flex-shrink:0">
+        <span>${d.date||''} ${d.start||''}${d.end?'～'+d.end:''} <strong style="color:#5b8b49">${d.fee?'NT$'+d.fee:''}</strong></span>
       </label>`;
     });
     if(s.fee>0){
-      html+=`<div id="fullPkgHint" style="display:none;background:var(--c-green);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#111">
-        🎉 全程參加優惠 NT$${s.fee}／攤
+      html+=`<div id="fullPkgHint" style="display:none;background:#DDEAD1;border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#2a6a10">
+        🎉 全程優惠 NT$${s.fee}／攤
       </div>`;
     }
     html+=`</div>`;
   }
 
-  // ── ② 設備確認 ──
+  // ── ② 攤位與設備（表格式：項目｜單價｜-數字+｜小計）──
   if(!isCollab){
-    html+=`<div class="form-card-new card-yellow">
-      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-yellow)">2</span>設備確認</div>`;
+    html+=`<div class="mk-step-card c-green">
+      <div class="mk-step-head"><div class="mk-step-num">2</div><div class="mk-step-name">攤位與設備選擇</div></div>
+      <table class="mk-equip-table">
+        <thead><tr><th>項目</th><th>單價</th><th>數量</th><th class="money">小計</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>${stallUnit}</td>
+            <td>${Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'免費'}</td>
+            <td>
+              <div class="mk-qty">
+                <button class="mk-qty-btn" type="button" onclick="adjStall(-1)">－</button>
+                <span class="mk-qty-num" id="stallDisplay">1</span>
+                <button class="mk-qty-btn" type="button" onclick="adjStall(1)">＋</button>
+              </div>
+            </td>
+            <td class="money" id="stallTotal">NT$${Number(s.fee)||0}</td>
+          </tr>`;
 
-    // 租幾攤
-    html+=`<div class="qty-row">
-      <div class="qty-name-wrap"><span class="qty-icon">🏪</span><span class="qty-name">租幾${stallUnit}</span></div>
-      <input class="qty-input" type="number" id="stallInput" value="1" min="1" max="${Number(s.maxStalls)>0?s.maxStalls:99}" oninput="adjStallDirect(this.value)" onchange="adjStallDirect(this.value)">
-      <div class="qty-spin">
-        <button type="button" onclick="adjStall(1)">⌃</button>
-        <button type="button" onclick="adjStall(-1)">⌄</button>
-      </div>
-      <div class="qty-total" id="stallTotal">（NT$${Number(s.fee)||0}）</div>
-    </div>`;
-
-    // 設備品項
-    const equipIcons={'桌':'🪑','椅':'🪑','延長線':'🔌','燈':'💡','燈具':'💡','帳篷':'⛺','電':'⚡'};
     equipDefs.forEach(([k,v])=>{
       ST.equipQty[k]=v.incl||0;
-      const icon=Object.entries(equipIcons).find(([key])=>k.includes(key))?.[1]||'📦';
       const inclNote=Number(v.incl)>0?`（含${v.incl}）`:'';
-      const priceTxt=Number(v.price)>0?` NT$${v.price}`:'';
-      html+=`<div class="qty-row">
-        <div class="qty-name-wrap"><span class="qty-icon">${icon}</span><span class="qty-name">${esc(k)}${inclNote}${priceTxt}</span></div>
-        <input class="qty-input" type="number" id="eq_${k}" value="${v.incl||0}" min="0" oninput="adjEquipDirect('${k}',this.value)" onchange="adjEquipDirect('${k}',this.value)">
-        <div class="qty-spin">
-          <button type="button" onclick="adjEquip('${k}',1)">⌃</button>
-          <button type="button" onclick="adjEquip('${k}',-1)">⌄</button>
-        </div>
-        <div class="qty-total" id="eqTotal_${k}">（NT$0）</div>
-      </div>`;
+      const unitPrice=Number(v.price)>0?'NT$'+v.price:'免費';
+      html+=`<tr>
+        <td>${esc(k)}${inclNote}</td>
+        <td>${unitPrice}</td>
+        <td>
+          <div class="mk-qty">
+            <button class="mk-qty-btn" type="button" onclick="adjEquip('${k}',-1)">－</button>
+            <span class="mk-qty-num" id="eq_num_${k}">${v.incl||0}</span>
+            <button class="mk-qty-btn" type="button" onclick="adjEquip('${k}',1)">＋</button>
+          </div>
+          <div id="eq_hint_${k.replace(/[^a-zA-Z0-9]/g,'_')}" style="font-size:11px;color:#5b8b49;margin-top:3px"></div>
+        </td>
+        <td class="money" id="eqTotal_${k}">NT$0</td>
+      </tr>`;
     });
 
-    // 加購品項
-    addons.forEach((a)=>{
+    addons.forEach(a=>{
       ST.addonQty[a._idx]=0;
-      html+=`<div class="qty-row">
-        <div class="qty-name-wrap"><span class="qty-icon">➕</span><span class="qty-name">${esc(a.name||'')}${Number(a.price)>0?' NT$'+a.price:''}</span></div>
-        <input class="qty-input" type="number" id="addon_${a._idx}" value="0" min="0" oninput="adjAddonDirect(${a._idx},this.value)" onchange="adjAddonDirect(${a._idx},this.value)">
-        <div class="qty-spin">
-          <button type="button" onclick="adjAddon(${a._idx},1)">⌃</button>
-          <button type="button" onclick="adjAddon(${a._idx},-1)">⌄</button>
-        </div>
-        <div class="qty-total" id="addonTotal_${a._idx}">（NT$0）</div>
-      </div>`;
+      const unitPrice=Number(a.price)>0?'NT$'+a.price:'免費';
+      html+=`<tr>
+        <td>${esc(a.name||'')}</td>
+        <td>${unitPrice}</td>
+        <td>
+          <div class="mk-qty">
+            <button class="mk-qty-btn" type="button" onclick="adjAddon(${a._idx},-1)">－</button>
+            <span class="mk-qty-num" id="addon_num_${a._idx}">0</span>
+            <button class="mk-qty-btn" type="button" onclick="adjAddon(${a._idx},1)">＋</button>
+          </div>
+        </td>
+        <td class="money" id="addonTotal_${a._idx}">NT$0</td>
+      </tr>`;
     });
 
-    html+=`</div>`;
+    html+=`</tbody></table></div>`;
 
-    // ── ③ 總計費用 ──
-    html+=`<div class="total-new" id="feeBox">
-      <div class="form-card-title-new" style="margin-bottom:12px"><span class="form-card-num" style="background:var(--c-yellow)">3</span>總計費用</div>
-      <div class="total-row"><span>攤位小計</span><span id="feeBase">NT$0</span></div>
-      <div class="total-row" id="feeEquipRow" style="display:none"><span>設備小計</span><span id="feeEquip">NT$0</span></div>
-      <div class="total-row" id="feeAddonRow" style="display:none"><span>加購小計</span><span id="feeAddon">NT$0</span></div>
-      <div class="total-row" id="feeDepRow"><span>保證金</span><span id="feeDeposit">NT$${s.deposit||0}</span></div>
-      <div class="total-final-row">
-        <span class="total-final-label">總計費用</span>
-        <span class="total-final-amt" id="feeTotal">NT$${Number(s.fee)||0}</span>
-      </div>
+    // ── ③ 費用總計 ──
+    html+=`<div class="mk-step-card c-yellow" id="feeBox">
+      <div class="mk-step-head"><div class="mk-step-num">3</div><div class="mk-step-name">費用總計</div></div>
+      <div class="mk-total-line" id="feeBaseRow"><span>攤位小計</span><span id="feeBase">NT$0</span></div>
+      <div class="mk-total-line" id="feeEquipRow" style="display:none"><span>設備小計</span><span id="feeEquip">NT$0</span></div>
+      <div class="mk-total-line" id="feeAddonRow" style="display:none"><span>加購小計</span><span id="feeAddon">NT$0</span></div>
+      <div class="mk-total-line" id="feeDepRow"><span>保證金</span><span id="feeDeposit">NT$${s.deposit||0}</span></div>
+      <div class="mk-total-final" id="feeTotal">NT$${Number(s.fee)||0}</div>
     </div>`;
   }
 
   const cardNum=isCollab?2:4;
 
   // ── ④ 會員資料 ──
-  const socialHtml=(vFb||vIg||vWeb)?`<div class="social-row">
-    ${vFb?`<a href="${esc(vFb)}" target="_blank" class="social-icon-new" style="background:#1877F2;color:#fff;border-color:#1877F2">f</a>`:''}
-    ${vIg?`<a href="${esc(vIg)}" target="_blank" class="social-icon-new" style="background:#C13584;color:#fff;border-color:#C13584">📷</a>`:''}
-    ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="social-icon-new">🌐</a>`:''}
+  const socialHtml=(vFb||vIg||vWeb)?`<div class="mk-social-row">
+    ${vFb?`<a href="${esc(vFb)}" target="_blank" class="mk-social-icon" style="background:#1877F2;color:#fff;border-color:#1877F2">FB</a>`:''}
+    ${vIg?`<a href="${esc(vIg)}" target="_blank" class="mk-social-icon" style="background:#C13584;color:#fff;border-color:#C13584">IG</a>`:''}
+    ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="mk-social-icon">🌐</a>`:''}
   </div>`:'';
 
-  html+=`<div class="form-card-new card-green">
-    <div class="form-card-head">
-      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-green)">${cardNum}</span>會員資料</div>
-      <button type="button" class="edit-pill-btn" onclick="openMemberEditModal()">✏️ 修改</button>
+  html+=`<div class="mk-step-card">
+    <div class="mk-step-head">
+      <div class="mk-step-num">${cardNum}</div>
+      <div class="mk-step-name">會員資料</div>
+      <button class="mk-edit-btn" type="button" onclick="openMemberEditModal()">修改</button>
     </div>
-    <div class="info-grid-new">
-      <span class="info-label-new">攤位名稱</span><span class="info-value-new" id="disp_brand">${esc(V.brand||V.brand_name||'')}</span>
-      <span class="info-label-new">姓名</span><span class="info-value-new" id="disp_name">${esc(V.name||'')}</span>
-      <span class="info-label-new">電話</span><span class="info-value-new" id="disp_phone">${esc(V.phone||'')}</span>
-      <span class="info-label-new">Email</span><span class="info-value-new">${esc(email)}</span>
+    <div class="mk-info-grid">
+      <div class="mk-info-label">姓名</div><div id="disp_name">${esc(V.name||'')}</div>
+      <div class="mk-info-label">Email</div><div>${esc(email)}</div>
+      <div class="mk-info-label">攤位名稱</div><div id="disp_brand">${esc(V.brand||V.brand_name||'')}</div>
+      <div class="mk-info-label">聯絡電話</div><div id="disp_phone">${esc(V.phone||'')}</div>
     </div>
     ${socialHtml}
   </div>`;
-
-  // 隱藏欄位供送出
   html+=`<input type="hidden" id="f_brand" value="${esc(V.brand||V.brand_name||'')}">`;
   html+=`<input type="hidden" id="f_name" value="${esc(V.name||'')}">`;
   html+=`<input type="hidden" id="f_phone" value="${esc(V.phone||'')}">`;
@@ -1965,85 +2250,93 @@ function renderDynFormFull(s, isNew=false){
 
   // ── ⑤ 發票資訊 ──
   const invTypeStr=isCompany?'公司戶（三聯式）':'個人（二聯式）';
-  html+=`<div class="form-card-new card-blue">
-    <div class="form-card-head">
-      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">${cardNum+1}</span>發票資訊</div>
-      <button type="button" class="edit-pill-btn" onclick="openInvoiceEditModal()">✏️ 修改</button>
+  html+=`<div class="mk-step-card c-blue">
+    <div class="mk-step-head">
+      <div class="mk-step-num">${cardNum+1}</div>
+      <div class="mk-step-name">發票資訊</div>
+      <button class="mk-edit-btn" type="button" onclick="openMemberEditModal()">修改</button>
     </div>
-    <div class="info-grid-new">
-      <span class="info-label-new">發票類型</span><span class="info-value-new" id="disp_invType">${invTypeStr}</span>
-      ${vTaxId?`<span class="info-label-new">統編</span><span class="info-value-new" id="disp_taxId">${esc(vTaxId)}</span>`:''}
-      ${vCompany?`<span class="info-label-new">抬頭</span><span class="info-value-new" id="disp_company">${esc(vCompany)}</span>`:''}
-      <span class="info-label-new">載具/Email</span><span class="info-value-new" id="disp_carrier">${esc(vCarrier||vInvEmail||email)}</span>
+    <div class="mk-info-grid">
+      <div class="mk-info-label">發票類型</div><div id="disp_invType">${invTypeStr}</div>
+      ${vTaxId?`<div class="mk-info-label">統一編號</div><div id="disp_taxId">${esc(vTaxId)}</div>`:''}
+      ${vCompany?`<div class="mk-info-label">抬頭</div><div id="disp_company">${esc(vCompany)}</div>`:''}
+      <div class="mk-info-label">載具/Email</div><div id="disp_carrier">${esc(vCarrier||vInvEmail||email)}</div>
     </div>
   </div>`;
-
-  // 發票隱藏欄位
   html+=`<input type="hidden" id="f_taxId" value="${esc(vTaxId)}">`;
   html+=`<input type="hidden" id="f_company" value="${esc(vCompany)}">`;
   html+=`<input type="hidden" id="f_invoiceCarrier" value="${esc(vCarrier)}">`;
   html+=`<input type="hidden" id="f_invoiceEmail" value="${esc(vInvEmail)}">`;
 
-  // ── 自訂欄位（如有）──
+  // ── 自訂欄位 ──
   const customFields=(s.customFields||s.modules?.customFields||[]).filter(f=>f&&f.label);
   if(customFields.length){
     customFields.forEach((f,i)=>{
-      html+=`<div class="form-card-new">
-        <div class="form-card-title-new" style="font-size:17px;margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:14px">必填</span>`:''}</div>`;
+      html+=`<div class="mk-step-card">
+        <div class="mk-step-name" style="margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:13px">必填</span>`:''}</div>`;
       if(f.type==='select'&&f.options){
-        html+=`<select id="cf_${i}" style="width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:inherit;background:#fff">
+        html+=`<select id="cf_${i}" style="width:100%;padding:10px 12px;border:1px solid var(--mk-line);border-radius:12px;font-size:15px;font-family:inherit;background:#fff">
           <option value="">請選擇</option>
           ${(f.options||[]).map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}
         </select>`;
       } else if(f.type==='textarea'){
-        html+=`<textarea id="cf_${i}" rows="3" placeholder="${esc(f.placeholder||'')}" style="width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:inherit;resize:none"></textarea>`;
+        html+=`<textarea id="cf_${i}" rows="3" placeholder="${esc(f.placeholder||'')}" style="width:100%;padding:10px 12px;border:1px solid var(--mk-line);border-radius:12px;font-size:15px;font-family:inherit;resize:none"></textarea>`;
       } else {
-        html+=`<input type="${f.type==='number'?'number':'text'}" id="cf_${i}" placeholder="${esc(f.placeholder||f.label||'')}" style="width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:inherit">`;
+        html+=`<input type="${f.type==='number'?'number':'text'}" id="cf_${i}" placeholder="${esc(f.placeholder||f.label||'')}" style="width:100%;padding:10px 12px;border:1px solid var(--mk-line);border-radius:12px;font-size:15px;font-family:inherit">`;
       }
       html+=`</div>`;
     });
   }
 
-  // ── ⑥ 合約 ──
-  html+=`<div class="form-card-new card-purple" id="contractCard">
-    <div class="form-card-head">
-      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-purple)">${cardNum+2}</span>合約</div>
-      <span class="contract-done-badge" id="contractDoneBadge">✅ 已完成合約同意</span>
+  // ── ⑥ 合約（外頁只有按鈕，不可直接勾選）──
+  html+=`<div class="mk-step-card c-yellow" id="contractCard">
+    <div class="mk-step-head">
+      <div class="mk-step-num">${cardNum+2}</div>
+      <div class="mk-step-name">合約條款</div>
+      <span class="mk-contract-done" id="contractDoneBadge">✅ 已同意</span>
     </div>
-    <p style="font-size:15px;color:#555;margin-bottom:12px">請先查看合約內容，完成同意後才能送出報名。</p>
-    <button type="button" class="contract-open-btn" onclick="openAgreementModal()">查看合約內容 ›</button>
+    <div class="mk-contract-row">
+      <div class="mk-contract-text">請先閱讀活動合約，同意後才能送出報名。</div>
+      <button class="mk-contract-cta" type="button" onclick="openAgreementModal()">閱讀合約 ›</button>
+    </div>
   </div>`;
 
   // ── ⑦ 備註留言 ──
-  html+=`<div class="form-card-new card-pink">
-    <div class="form-card-title-new" style="margin-bottom:10px">
-      <span class="form-card-num" style="background:var(--c-pink)">${cardNum+3}</span>
-      備註留言 <span style="font-size:14px;font-weight:500;color:var(--muted)">選填</span>
+  html+=`<div class="mk-step-card c-pink">
+    <div class="mk-step-head">
+      <div class="mk-step-num">${cardNum+3}</div>
+      <div class="mk-step-name">備註留言 <span style="font-size:13px;font-weight:500;color:#888">選填</span></div>
     </div>
-    <textarea id="f_note" class="note-textarea" maxlength="200" placeholder="如有特殊需求或想跟主辦說的話，請在這裡留言…" oninput="document.getElementById('noteCount').textContent=this.value.length+' / 200'"></textarea>
-    <div class="note-count" id="noteCount">0 / 200</div>
+    <textarea id="f_note" class="mk-note-textarea" maxlength="200"
+      placeholder="有任何需求或想告訴我們的話，歡迎留言…"
+      oninput="$('noteCount').textContent=this.value.length+' / 200'"></textarea>
+    <div class="mk-note-count" id="noteCount">0 / 200</div>
   </div>`;
 
   const dynEl=$('dynForm');
   if(dynEl) dynEl.innerHTML=html;
 
-  // 合約區塊控制
+  // 合約區隱藏（用新版 contractCard 取代 agreementArea）
   const agArea=$('agreementArea');
-  if(agArea) agArea.style.display='none'; // 用新版合約卡片取代
+  if(agArea) agArea.style.display='none';
 
   // 送出按鈕初始 disabled
   const subBtn=$('submitBtn');
-  if(subBtn){ subBtn.style.display='block'; subBtn.disabled=true; subBtn.classList.add('submit-btn-new'); subBtn.textContent='送出報名'; }
+  if(subBtn){ subBtn.style.display='block'; subBtn.disabled=true; }
 
   updateFee();
   setTimeout(()=>{ preFillMemberFields(); }, 100);
 }
 
-// 直接輸入攤數
 function adjStallDirect(val){
   const s=ST.currentSession||{};
+  const sType=s.type||'市集場次';
+  const isMkt=sType==='市集場次'||sType==='通路寄賣';
   const maxN=Number(s.maxStalls)>0?Number(s.maxStalls):99;
   ST.stallCount=Math.max(1,Math.min(maxN,parseInt(val)||1));
+  const stallUnit=isMkt?'攤':'份';
+  const el=$('stallDisplay');
+  if(el) el.textContent=ST.stallCount+' '+stallUnit;
   const inp=$('stallInput');
   if(inp) inp.value=ST.stallCount;
   updateFee();
@@ -2051,9 +2344,28 @@ function adjStallDirect(val){
 
 // 直接輸入設備數
 function adjEquipDirect(k,val){
-  ST.equipQty[k]=Math.max(0,parseInt(val)||0);
+  const s=ST.currentSession;
+  const equipDef=s?.equip?.[k]||{};
+  const stalls=ST.stallCount||1;
+  const maxPerStall=equipDef.maxPerStall||0;
+  const maxTotal=maxPerStall>0?maxPerStall*stalls:50;
+  const next=Math.max(0,Math.min(maxTotal,parseInt(val)||0));
+  ST.equipQty[k]=next;
+  const inp=document.getElementById('eq_'+k);
+  if(inp) inp.value=next;
+  // 更新提示
+  const _ed=(s?.equip||{})[k]||{};
+  const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
+  const inclFree=inclPerStall*stalls;
+  const extra=Math.max(0,next-inclFree);
+  const price=Number(_ed.price)||0;
+  const hintId='eq_hint_'+k.replace(/[^a-zA-Z0-9]/g,'_');
+  const hintEl=document.getElementById(hintId);
+  if(hintEl && inclFree>0){
+    if(next<=inclFree) hintEl.textContent=`✓ 目前含 ${inclFree} 件免費，已含足夠`;
+    else hintEl.textContent=`✓ 含 ${inclFree} 件免費 ＋ 額外 ${extra} 件 = NT$${extra*price}`;
+  }
   updateFee();
-  updateEquipRowTotal(k);
 }
 
 // 直接輸入加購數
@@ -2090,14 +2402,15 @@ function openInvoiceEditModal(){
 
 function adjStall(delta){
   const s=ST.currentSession||{};
+  const sType=s.type||'市集場次';
+  const isMkt=sType==='市集場次'||sType==='通路寄賣';
+  // 上限從後台場次設定讀取，不硬編碼
   const maxN=Number(s.maxStalls)>0?Number(s.maxStalls):99;
   ST.stallCount=Math.max(1,Math.min(maxN,(ST.stallCount||1)+delta));
-  const inp=$('stallInput');
-  if(inp) inp.value=ST.stallCount;
+  const stallUnit=isMkt?'攤':sType==='活動報名'?'份':'份';
+  const el=$('stallDisplay');
+  if(el) el.textContent=ST.stallCount+' '+stallUnit;
   updateFee();
-  // 更新攤位列小計
-  const stTotal=$('stallTotal');
-  if(stTotal) stTotal.textContent='（NT$'+(Number(s.fee||0)*ST.stallCount)+'）';
 }
 
 function buildFormHero(s, cover){
@@ -2157,10 +2470,7 @@ function resetRegFormState(options={}){
 }
 
 function openRegFormModal(){
-  const modal=$('regFormModal');
-  if(!modal) return;
   resetRegFormState({keepContent:false});
-  // 生成表單內容
   if(ST.currentSession){
     if(ST.member && ST.memberEmail){
       renderDynFormFull(ST.currentSession, false);
@@ -2168,13 +2478,17 @@ function openRegFormModal(){
       showEmailStep(ST.currentSession);
     }
   }
-  modal.classList.add('show');
-  // 推入 history，讓返回鍵可以關閉 modal
-  history.pushState({regFormOpen:true}, '', location.href);
-  // 捲動到頂部
-  const inner=modal.querySelector('[style*="overflow-y:auto"]');
-  if(inner) inner.scrollTop=0;
+  // 切換到報名表頁面
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page=$('regFormModal');
+  if(page) page.classList.add('active');
   window.scrollTo(0,0);
+  history.pushState({regFormOpen:true}, '', location.href);
+  // 底部無 active
+  ['botHome','botMember','botSupport'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
 }
 
 
@@ -2296,11 +2610,25 @@ async function saveMemberEdit(){
 }
 
 function closeRegFormModal(){
-  const modal=$('regFormModal');
-  if(!modal) return;
-  modal.classList.remove('show');
+  const page=$('regFormModal');
+  if(page) page.classList.remove('active');
   ST.currentSession=null;
   resetRegFormState({keepContent:false});
+  // 回到上一頁（首頁或場次列表）
+  const lastTab=localStorage.getItem('2bl_current_tab')||'home';
+  if(lastTab==='support'){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const pg=$('pageSupport'); if(pg) pg.classList.add('active');
+    const btn=$('botSupport'); if(btn) btn.classList.add('active');
+  } else if(lastTab==='member'){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const pg=$('pageMember'); if(pg) pg.classList.add('active');
+    const btn=$('botMember'); if(btn) btn.classList.add('active');
+  } else {
+    navTo('home');
+    const btn=$('botHome'); if(btn){ ['botHome','botMember','botSupport'].forEach(id=>{const e=$(''+id);if(e)e.classList.remove('active');}); btn.classList.add('active'); }
+  }
+  window.scrollTo(0,0);
 }
 
 // 返回鍵攔截：如果報名 modal 是開著的，關掉它；否則讓瀏覽器正常返回
@@ -2555,11 +2883,13 @@ function toggleDate(i){
   if(chk) chk.checked=!chk.checked;
   updateFee();
 }
-function adjAddon(idx,delta){
-  if(!ST.addonQty) ST.addonQty={};
-  ST.addonQty[idx]=Math.max(0,(ST.addonQty[idx]||0)+delta);
-  const inp=$('addon_'+idx);
-  if(inp) inp.value=ST.addonQty[idx];
+function adjAddon(i,delta){
+  if(!ST.addonQty)ST.addonQty={};
+  const cur=ST.addonQty[i]||0;
+  const next=Math.max(0,cur+delta);
+  ST.addonQty[i]=next;
+  const el=document.getElementById('addon_num_'+i);
+  if(el)el.textContent=next;
   updateFee();
 }
 
@@ -2573,12 +2903,36 @@ function frontEffectiveEquipIncl(name, def, basicEquipText){
   return n;
 }
 function adjEquip(k,delta){
-  if(!ST.equipQty) ST.equipQty={};
-  ST.equipQty[k]=Math.max(0,(ST.equipQty[k]||0)+delta);
-  const inp=$('eq_'+k);
-  if(inp) inp.value=ST.equipQty[k];
+  const cur=ST.equipQty[k]||0;
+  const s=ST.currentSession;
+  const equipDef=s?.equip?.[k]||{};
+  const stalls=ST.stallCount||1;
+  // 每攤上限（0=不限）
+  const maxPerStall=equipDef.maxPerStall||0;
+  const maxTotal=maxPerStall>0?maxPerStall*stalls:50;
+  const next=Math.max(0,Math.min(maxTotal,cur+delta));
+  if(next===cur && delta>0 && maxPerStall>0){
+    toast('每攤最多加購 '+maxPerStall+' 件，超出請租多攤！');
+    return;
+  }
+  ST.equipQty[k]=next;
+  const el=document.getElementById('eq_num_'+k);
+  if(el)el.textContent=next;
+  // 動態更新說明：已含幾件、額外幾件
+  const _ed=(s?.equip||{})[k]||{};
+  const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
+  const inclFree=inclPerStall*(ST.stallCount||1);
+  const extra=Math.max(0,next-inclFree);
+  const price=Number(_ed.price)||0;
+  const hintId='eq_hint_'+k.replace(/[^a-zA-Z0-9]/g,'_');
+  const hintEl=document.getElementById(hintId);
+  if(hintEl){
+    if(inclFree>0){
+      if(next<=inclFree) hintEl.textContent=`✓ 目前含 ${inclFree} 件免費，已含足夠`;
+      else hintEl.textContent=`✓ 含 ${inclFree} 件免費 ＋ 額外 ${extra} 件 = NT$${extra*price}`;
+    }
+  }
   updateFee();
-  updateEquipRowTotal(k);
 }
 
 function updateFee(){
@@ -2638,6 +2992,26 @@ function updateFee(){
   // feeBox 在卡片內時永遠顯示（不需要切換）
   const feeBoxEl=$('feeBox');
   if(feeBoxEl && !feeBoxEl.closest('#dynForm')) feeBoxEl.style.display=total>0?'block':'none';
+
+  // ── 表格式 UI 同步（stallTotal/eqTotal/addonTotal）──
+  const _s=ST.currentSession||{};
+  const stEl=$('stallTotal'); if(stEl) stEl.textContent='NT$'+fee;
+  Object.entries(_s.equip||{}).forEach(([k,v])=>{
+    if(v&&v.open){
+      const _stalls=ST.stallCount||1;
+      const _incl=frontEffectiveEquipIncl(k,v,_s.basicEquip||_s.basic_equip||'')*_stalls;
+      const _want=ST.equipQty[k]||0;
+      const _extra=Math.max(0,_want-_incl);
+      const _sub=(v.price||0)*_extra;
+      const _el=$('eqTotal_'+k); if(_el) _el.textContent='NT$'+_sub;
+    }
+  });
+  (_s.addons||[]).forEach((a,i)=>{
+    if(a&&a.open===true){
+      const _sub3=(Number(a.price)||0)*(ST.addonQty&&ST.addonQty[i]||0);
+      const _el3=$('addonTotal_'+i); if(_el3) _el3.textContent='NT$'+_sub3;
+    }
+  });
 }
 
 
@@ -2752,16 +3126,12 @@ function onAgreementRead() {
 function onAgreementCheck(checked) {
   ST._agreementAccepted = !!checked;
   const submitBtn = $('submitBtn');
-  const badge = $('contractDoneBadge');
-  const openBtn = document.querySelector('.contract-open-btn');
+  if (!submitBtn) return;
   if (checked) {
-    if(submitBtn){ submitBtn.disabled = false; submitBtn.style.display = 'block'; }
-    if(badge) badge.style.display = 'inline-block';
-    if(openBtn) openBtn.textContent = '重新查看合約 ›';
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = false;
   } else {
-    if(submitBtn){ submitBtn.disabled = true; }
-    if(badge) badge.style.display = 'none';
-    if(openBtn) openBtn.textContent = '查看合約內容 ›';
+    submitBtn.style.display = 'none';
   }
 }
 
@@ -3405,66 +3775,59 @@ if(document.readyState==='loading'){
     }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; renderEvents(); }
   };
   window.renderEvents = function(){
-    // ── 精選主題活動（ST.events 活動層）──
+    // ── 精選主題活動（只顯示活動圖+名稱+查看場次，不顯示價格不直接報名）──
     const fl=$('featuredEventsList');
     if(fl){
       const events=asArr(ST.events);
       if(events.length){
         fl.innerHTML=events.map(e=>{
-          const feeStr=Number(e.fee)>0?'NT$'+Number(e.fee).toLocaleString():'免費';
-          const coverHtml=e.cover
-            ?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:104px;object-fit:cover;background:#DDEAD1;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-            :``;
-          const placeholderHtml=`<div style="display:${e.cover?'none':'flex'};width:100%;height:104px;background:#DDEAD1;align-items:center;justify-content:center">
-            <img src="IP歡迎.png" style="width:56px;height:56px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:32px>🎪</span>'">
-          </div>`;
-          return `<div style="position:relative;min-width:155px;max-width:165px;background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;flex-shrink:0" onclick="openActivityFromHome('${esc(e.id)}')">
-            ${coverHtml}${placeholderHtml}
-            <button onclick="event.stopPropagation();shareSession('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔗</button>
-            <div style="padding:10px">
-              <div style="font-size:15px;font-weight:900;color:#111;line-height:1.3;min-height:38px">${esc(e.title||'')}</div>
-              ${e.location?`<div style="font-size:12px;color:#555;margin-top:3px">📍 ${esc(e.location)}</div>`:''}
-              <div style="font-size:15px;font-weight:900;color:#111;margin-top:5px">${feeStr}</div>
-              <button onclick="event.stopPropagation();registerFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:#DCD7ED;color:#111;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">立即報名</button>
+          const hasCover=!!(e.cover||e.coverUrl);
+          const coverEl=hasCover
+            ?`<img src="${esc(e.cover||e.coverUrl)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<img src=IP歡迎.png style=width:56px;height:56px;object-fit:contain;margin:auto;display:block;padding-top:10px>';">`
+            :`<img src="IP歡迎.png" alt="" style="width:56px;height:56px;object-fit:contain;margin:auto;display:block;padding-top:10px;">`;
+          return `<div class="mk-theme-card" onclick="openEvent('${esc(e.id)}')">
+            <div class="mk-theme-img">${coverEl}</div>
+            <div class="mk-theme-body">
+              <div class="mk-theme-name">${esc(e.title||'')}</div>
+              <button class="mk-theme-btn" onclick="event.stopPropagation();openEvent('${esc(e.id)}')">查看場次</button>
             </div>
           </div>`;
         }).join('');
       } else {
-        fl.innerHTML='<div style="padding:20px;color:#aaa;font-size:14px">目前無主題活動</div>';
+        fl.innerHTML='<div style="padding:16px;color:#aaa;font-size:14px">目前無主題活動</div>';
       }
     }
 
-    // ── 近期場次（ST.allSessionsData 場次層）──
+    // ── 近期場次（有縮圖、日期、地點、價格、分享、立即報名）──
     const el=$('eventsList');
     if(el){
       const sessions=uniqueSessions(ST.allSessionsData).filter(openSess);
       if(sessions.length){
-        el.innerHTML=sessions.slice(0,12).map(s=>{
+        el.innerHTML=sessions.slice(0,15).map(s=>{
           const dates=asArr(s.dates);
           let dateStr='';
           if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);}
           else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');}
           const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'免費';
-          // 封面圖：有圖用圖，無圖用 IP 插圖（不用大字）
           const hasCover=!!(s.coverUrl||s.cover);
           const coverEl=hasCover
-            ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
-            :`<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
-          return `<div class="ses-list-card" onclick="openActivityFromHome(null,'${esc(s.id)}')">
-            <div class="ses-list-img">${coverEl}</div>
-            <div class="ses-list-body">
-              <div class="ses-list-name">${esc(s.name||'')}</div>
-              <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${s.venue?'<br>📍 '+esc(s.venue):''}</div>
-              <div class="ses-list-fee">${feeStr}</div>
+            ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:48px;height:48px;object-fit:contain>';">`
+            :`<img src="IP指引.png" alt="" style="width:48px;height:48px;object-fit:contain;">`;
+          return `<div class="mk-session-card" onclick="openSession('${esc(s.id)}')">
+            <div class="mk-session-thumb">${coverEl}</div>
+            <div>
+              <div class="mk-session-name">${esc(s.name||'')}</div>
+              <div class="mk-session-meta">${dateStr?'📅 '+esc(dateStr):''}${s.venue?'<br>📍 '+esc(s.venue):''}</div>
+              <div class="mk-session-price">${feeStr}</div>
             </div>
-            <div class="ses-list-actions">
-              <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
-              <button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>
+            <div class="mk-session-action">
+              <button class="mk-share-btn" onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')">🔗</button>
+              <button class="mk-reg-btn" onclick="event.stopPropagation();openSession('${esc(s.id)}')">立即報名</button>
             </div>
           </div>`;
         }).join('');
       } else {
-        el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:15px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#2a6a10;font-weight:800;cursor:pointer">重新載入</span></div>';
+        el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:15px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#5b8b49;font-weight:800;cursor:pointer">重新載入</span></div>';
       }
     }
     setTimeout(enableDragScroll,100);
