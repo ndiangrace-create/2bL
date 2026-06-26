@@ -22,7 +22,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--wh);color:var(--txt);font-size:15px;padding-bottom:72px}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--wh);color:var(--txt);font-size:16px;padding-bottom:72px}
 img{display:block;max-width:100%}
 button,a,[onclick]{touch-action:manipulation}
 
@@ -43,7 +43,7 @@ button,a,[onclick]{touch-action:manipulation}
 .header-login-btn{background:var(--c1);border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--s-ok);cursor:pointer;font-family:inherit}
 
 /* ── Hero ── */
-.hero{position:relative;width:100%;overflow:hidden;background:var(--c1);cursor:pointer;aspect-ratio:1672/941}
+.hero{position:relative;width:100%;overflow:hidden;background:var(--c1);cursor:pointer;aspect-ratio:1600/550}
 .hero-bg-img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
 .hero-mascot{display:none}
 .hero-info-band{background:var(--c2);padding:8px 16px;display:flex;align-items:center;gap:8px}
@@ -194,24 +194,27 @@ button,a,[onclick]{touch-action:manipulation}
   .ec-info{padding:12px}
 }
 
-/* ── 場次卡片（左圖右文）── */
-.ses-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);display:flex;gap:0;overflow:hidden;cursor:pointer;transition:border-color .15s}
+/* ── 場次卡片（左圖、中資訊、右按鈕）── */
+.ses-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);display:flex;overflow:hidden;cursor:pointer;transition:border-color .15s;min-height:120px}
 .ses-card:hover{border-color:var(--c1)}
 .ses-card-closed{opacity:.7}
-.ses-card-img{width:110px;min-width:110px;height:110px;background:var(--c1);position:relative;overflow:hidden;flex-shrink:0}
+.ses-card-img{width:100px;min-width:100px;background:var(--c1);position:relative;overflow:hidden;flex-shrink:0}
 .ses-card-img img{width:100%;height:100%;object-fit:cover}
-.ses-card-initial{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:var(--s-ok);background:var(--c1)}
-.ses-card-body{flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.ses-card-initial{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:var(--s-ok);background:var(--c1)}
+.ses-card-body{flex:1;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
 .ses-card-top{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-.ses-card-name{font-size:15px;font-weight:900;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ses-card-meta{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ses-card-fee{font-size:14px;font-weight:700;color:var(--s-ok);margin-top:2px}
-.ses-card-actions{display:flex;align-items:center;gap:8px;margin-top:6px}
-.ses-share-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;font-family:inherit}
+.ses-card-name{font-size:17px;font-weight:900;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ses-card-meta{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ses-card-fee{font-size:16px;font-weight:900;color:var(--s-ok);margin-top:2px}
+.ses-card-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px 12px;flex-shrink:0;border-left:1px solid var(--border)}
+.ses-reg-btn{background:var(--c1);border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:900;color:var(--s-ok);cursor:pointer;font-family:inherit;white-space:nowrap;width:80px;text-align:center}
+.ses-reg-btn:hover{background:var(--gl)}
+.ses-share-btn{background:none;border:1px solid var(--border);border-radius:10px;padding:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-family:inherit;width:80px}
 .ses-share-btn:hover{border-color:var(--c1);color:var(--s-ok)}
 @media(min-width:600px){
-  .ses-card-img{width:130px;min-width:130px;height:120px}
-  .ses-card-name{font-size:16px}
+  .ses-card-img{width:120px;min-width:120px}
+  .ses-card-name{font-size:18px}
+  .ses-card-meta{font-size:14px}
 }
 </style>
 </head>
@@ -3158,7 +3161,7 @@ if(document.readyState==='loading'){
     // 報名按鈕
     const regBtn = closed
       ? `<span class="tag tag-grey" style="padding:7px 14px">${full?'名額已滿':'已截止'}</span>`
-      : `<button onclick="event.stopPropagation();openSessionFromCard(event,'${esc(s.id)}')" style="background:var(--c1);border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;color:var(--s-ok);cursor:pointer;font-family:inherit">立即報名</button>`;
+      : `<button onclick="event.stopPropagation();openSessionFromCard(event,'${esc(s.id)}')" class="ses-reg-btn">立即報名</button>`;
 
     return `<div class="ses-card${closed?' ses-card-closed':''}" onclick="openSessionFromCard(event,'${esc(s.id)}')" role="button" tabindex="0">
       <div class="ses-card-img">${coverHtml}</div>
@@ -3172,13 +3175,13 @@ if(document.readyState==='loading'){
         ${s.venue?`<div class="ses-card-meta">📍 ${esc(s.venue)}</div>`:''}
         ${s.region&&s.region!==s.venue?`<div class="ses-card-meta">🗺 ${esc(s.region)}</div>`:''}
         <div class="ses-card-fee">${esc(feeStr)}</div>
-        <div class="ses-card-actions">
-          ${regBtn}
-          <button onclick="event.stopPropagation();${shareJs}" class="ses-share-btn" title="分享">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            分享
-          </button>
-        </div>
+      </div>
+      <div class="ses-card-actions">
+        <button onclick="event.stopPropagation();${shareJs}" class="ses-share-btn" title="分享">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          分享
+        </button>
+        ${regBtn}
       </div>
     </div>`;
   };
