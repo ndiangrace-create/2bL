@@ -276,15 +276,21 @@ button,a,[onclick]{touch-action:manipulation}
 .act-meta-icon{font-size:16px;flex-shrink:0;margin-top:1px}
 .act-desc{font-size:15px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
 /* 設備確認 */
-.qty-row{display:grid;grid-template-columns:1fr 60px 28px auto;align-items:center;gap:8px;min-height:50px;border-bottom:1px solid rgba(0,0,0,.06)}
+/* 操作者閉環保護：設備確認列固定為「單價｜- 數字 +｜小計」，避免下次改版又回到上下箭頭 */
+.qty-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(86px,auto);align-items:center;gap:10px;min-height:58px;border-bottom:1px solid rgba(0,0,0,.06);padding:8px 0}
 .qty-row:last-child{border-bottom:0}
-.qty-icon{font-size:22px;margin-right:2px}
-.qty-name-wrap{display:flex;align-items:center;gap:6px}
-.qty-name{font-size:16px;font-weight:800;color:#111}
-.qty-input{width:60px;height:40px;border:1.5px solid var(--line);border-radius:10px;text-align:center;font-size:18px;font-weight:900;background:#fff;font-family:inherit}
-.qty-spin{display:flex;flex-direction:column;gap:2px}
-.qty-spin button{width:28px;height:18px;border:0;border-radius:6px;background:var(--c-purple);color:#111;font-size:13px;font-weight:900;line-height:1;cursor:pointer;font-family:inherit}
-.qty-total{font-size:14px;font-weight:800;color:#111;white-space:nowrap;text-align:right}
+.qty-icon{font-size:24px;margin-right:2px;flex-shrink:0}
+.qty-name-wrap{display:flex;align-items:center;gap:8px;min-width:0}
+.qty-name-text{min-width:0}
+.qty-name{font-size:17px;font-weight:900;color:#111;line-height:1.25;word-break:break-word}
+.qty-unit{font-size:13px;font-weight:800;color:#666;margin-top:3px;line-height:1.25}
+.qty-input{width:44px;height:38px;border:0;border-left:1px solid rgba(0,0,0,.12);border-right:1px solid rgba(0,0,0,.12);text-align:center;font-size:18px;font-weight:900;background:#fff;font-family:inherit;color:#111;-moz-appearance:textfield}
+.qty-input::-webkit-outer-spin-button,.qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty-stepper{display:inline-flex;align-items:center;height:40px;border:1.5px solid rgba(0,0,0,.12);border-radius:999px;background:#fff;overflow:hidden;flex-shrink:0}
+.qty-stepper button{width:34px;height:40px;border:0;background:#fff;color:#111;font-size:20px;font-weight:900;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
+.qty-stepper button:active{background:var(--c-purple)}
+.qty-total{font-size:17px;font-weight:900;color:#111;white-space:nowrap;text-align:right;min-width:86px}
+@media(max-width:390px){.qty-row{grid-template-columns:1fr auto;gap:8px}.qty-total{grid-column:2;text-align:center;font-size:15px;min-width:74px}.qty-name{font-size:16px}.qty-unit{font-size:12px}.qty-stepper button{width:30px}.qty-input{width:38px}}
 /* 總計費用 */
 .total-new{background:linear-gradient(135deg,#fff,var(--c-yellow));border:1.5px solid var(--c-yellow);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px}
 .total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-bottom:6px}
@@ -1469,17 +1475,18 @@ function startMemberGoogleLogin() {
 
 // OAuth callback 後，URL 帶 member_token 回來
 async function handleMemberOAuthCallback() {
-  // member_token 已由 IIFE 存入 sessionStorage（因為 IIFE 會先清除網址）
-  const memberToken = localStorage.getItem('2bl_member_token_pending') || localStorage.getItem('2bl_member_token');
+  // 只處理「這次 Google OAuth 回來」的 pending token。
+  // 已登入的舊 token 只用來恢復登入狀態，不能每次刷新都導到我的紀錄。
+  const pendingToken = localStorage.getItem('2bl_member_token_pending') || '';
   const displayName = localStorage.getItem('2bl_display_name_pending') || '';
   const loginError = new URLSearchParams(window.location.search).get('login_error');
 
   if (loginError) {
     const errEl = document.getElementById('memberLoginErr');
     if (errEl) { errEl.textContent = '登入失敗：' + loginError; errEl.style.display = 'block'; }
-    return;
+    return false;
   }
-  if (!memberToken) return;
+  if (!pendingToken) return false;
 
   // 清除暫存的 pending token
   localStorage.removeItem('2bl_member_token_pending');
@@ -1487,20 +1494,23 @@ async function handleMemberOAuthCallback() {
 
   // 解析 JWT payload 取 email
   try {
+    const memberToken = pendingToken;
     let _b64 = memberToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
     let _raw = atob(_b64);
     let _str; try { _str = decodeURIComponent(escape(_raw)); } catch(e) { _str = _raw; }
     const payload = JSON.parse(_str);
     const email = (payload.email || '').toLowerCase().trim();
-    if (!email) return;
+    if (!email) return false;
     ST.memberEmail = email;
     ST.memberToken = memberToken;
     memberSaveEmail(email);  // 存入 localStorage 供後續使用
     localStorage.setItem('2bl_member_token', memberToken);
-    // 載入會員資料
-    await safeLoadMemberPage(email);
+    // OAuth 登入完成時才進會員頁；一般刷新不會走到這裡。
+    await safeLoadMemberPage(email,{navOptions:{noPush:true}});
+    return true;
   } catch(e) {
     console.error('member token parse failed', e);
+    return false;
   }
 }
 const _urlParams = new URLSearchParams(window.location.search);
@@ -2334,13 +2344,13 @@ function renderDynFormFull(s, isNew=false){
 
     // 租幾攤
     html+=`<div class="qty-row">
-      <div class="qty-name-wrap"><span class="qty-icon">🏪</span><span class="qty-name">租幾${stallUnit}</span></div>
-      <input class="qty-input" type="number" id="stallInput" value="1" min="1" max="${Number(s.maxStalls)>0?s.maxStalls:99}" oninput="adjStallDirect(this.value)" onchange="adjStallDirect(this.value)">
-      <div class="qty-spin">
-        <button type="button" onclick="adjStall(1)">⌃</button>
-        <button type="button" onclick="adjStall(-1)">⌄</button>
+      <div class="qty-name-wrap"><span class="qty-icon">🏪</span><div class="qty-name-text"><div class="qty-name">租幾${stallUnit}</div><div class="qty-unit">單價 NT$${Number(s.fee)||0}</div></div></div>
+      <div class="qty-stepper" aria-label="租幾${stallUnit}">
+        <button type="button" onclick="adjStall(-1)" aria-label="減少">−</button>
+        <input class="qty-input" type="number" id="stallInput" value="1" min="1" max="${Number(s.maxStalls)>0?s.maxStalls:99}" oninput="adjStallDirect(this.value)" onchange="adjStallDirect(this.value)">
+        <button type="button" onclick="adjStall(1)" aria-label="增加">+</button>
       </div>
-      <div class="qty-total" id="stallTotal">（NT$${Number(s.fee)||0}）</div>
+      <div class="qty-total" id="stallTotal">NT$${Number(s.fee)||0}</div>
     </div>`;
 
     // 設備品項
@@ -2351,13 +2361,13 @@ function renderDynFormFull(s, isNew=false){
       const inclNote=Number(v.incl)>0?`（含${v.incl}）`:'';
       const priceTxt=Number(v.price)>0?` NT$${v.price}`:'';
       html+=`<div class="qty-row">
-        <div class="qty-name-wrap"><span class="qty-icon">${icon}</span><span class="qty-name">${esc(k)}${inclNote}${priceTxt}</span></div>
-        <input class="qty-input" type="number" id="eq_${k}" value="${v.incl||0}" min="0" oninput="adjEquipDirect('${k}',this.value)" onchange="adjEquipDirect('${k}',this.value)">
-        <div class="qty-spin">
-          <button type="button" onclick="adjEquip('${k}',1)">⌃</button>
-          <button type="button" onclick="adjEquip('${k}',-1)">⌄</button>
+        <div class="qty-name-wrap"><span class="qty-icon">${icon}</span><div class="qty-name-text"><div class="qty-name">${esc(k)}${inclNote}</div><div class="qty-unit">單價 NT$${Number(v.price)||0}</div></div></div>
+        <div class="qty-stepper" aria-label="${esc(k)}數量">
+          <button type="button" onclick="adjEquip('${k}',-1)" aria-label="減少">−</button>
+          <input class="qty-input" type="number" id="eq_${k}" value="${v.incl||0}" min="0" oninput="adjEquipDirect('${k}',this.value)" onchange="adjEquipDirect('${k}',this.value)">
+          <button type="button" onclick="adjEquip('${k}',1)" aria-label="增加">+</button>
         </div>
-        <div class="qty-total" id="eqTotal_${k}">（NT$0）</div>
+        <div class="qty-total" id="eqTotal_${k}">NT$0</div>
       </div>`;
     });
 
@@ -2365,13 +2375,13 @@ function renderDynFormFull(s, isNew=false){
     addons.forEach((a)=>{
       ST.addonQty[a._idx]=0;
       html+=`<div class="qty-row">
-        <div class="qty-name-wrap"><span class="qty-icon">➕</span><span class="qty-name">${esc(a.name||'')}${Number(a.price)>0?' NT$'+a.price:''}</span></div>
-        <input class="qty-input" type="number" id="addon_${a._idx}" value="0" min="0" oninput="adjAddonDirect(${a._idx},this.value)" onchange="adjAddonDirect(${a._idx},this.value)">
-        <div class="qty-spin">
-          <button type="button" onclick="adjAddon(${a._idx},1)">⌃</button>
-          <button type="button" onclick="adjAddon(${a._idx},-1)">⌄</button>
+        <div class="qty-name-wrap"><span class="qty-icon">➕</span><div class="qty-name-text"><div class="qty-name">${esc(a.name||'')}</div><div class="qty-unit">單價 NT$${Number(a.price)||0}</div></div></div>
+        <div class="qty-stepper" aria-label="${esc(a.name||'加購')}數量">
+          <button type="button" onclick="adjAddon(${a._idx},-1)" aria-label="減少">−</button>
+          <input class="qty-input" type="number" id="addon_${a._idx}" value="0" min="0" oninput="adjAddonDirect(${a._idx},this.value)" onchange="adjAddonDirect(${a._idx},this.value)">
+          <button type="button" onclick="adjAddon(${a._idx},1)" aria-label="增加">+</button>
         </div>
-        <div class="qty-total" id="addonTotal_${a._idx}">（NT$0）</div>
+        <div class="qty-total" id="addonTotal_${a._idx}">NT$0</div>
       </div>`;
     });
 
@@ -2596,6 +2606,8 @@ function adjStall(delta){
   const stallUnit=isMkt?'攤':sType==='活動報名'?'份':'份';
   const el=$('stallDisplay');
   if(el) el.textContent=ST.stallCount+' '+stallUnit;
+  const inp=$('stallInput');
+  if(inp) inp.value=ST.stallCount;
   updateFee();
 }
 
@@ -3080,8 +3092,8 @@ function adjAddon(i,delta){
   const cur=ST.addonQty[i]||0;
   const next=Math.max(0,cur+delta);
   ST.addonQty[i]=next;
-  const el=document.getElementById('addon_num_'+i);
-  if(el)el.textContent=next;
+  const el=document.getElementById('addon_'+i);
+  if(el) el.value=next;
   updateFee();
 }
 
@@ -3108,8 +3120,8 @@ function adjEquip(k,delta){
     return;
   }
   ST.equipQty[k]=next;
-  const el=document.getElementById('eq_num_'+k);
-  if(el)el.textContent=next;
+  const el=document.getElementById('eq_'+k);
+  if(el) el.value=next;
   // 動態更新說明：已含幾件、額外幾件
   const _ed=(s?.equip||{})[k]||{};
   const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
@@ -4112,8 +4124,13 @@ if(document.readyState==='loading'){
   async function bootDbFront(){
   if(window.__tbBootDbFrontStarted) return;
   window.__tbBootDbFrontStarted = true;
-  await handleMemberOAuthCallback();
-  // 從 localStorage 恢復登入狀態
+  const didOAuthLogin = await handleMemberOAuthCallback();
+  if(didOAuthLogin){
+    // 登入 callback 已完成會員頁導向；補載首頁資料但不覆蓋目前所在頁。
+    try{ await loadHome(); }catch(e){ console.warn('[loadHome after OAuth failed]', e); }
+    return;
+  }
+  // 從 localStorage 恢復登入狀態；只設定登入資料，不主動切頁。
   const savedToken = localStorage.getItem('2bl_member_token');
   const savedEmail = readEmail();
   if (savedToken && savedEmail) {
