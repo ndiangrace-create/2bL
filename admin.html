@@ -1414,6 +1414,15 @@ function thumbHtml(url, size=36, radius=6){
   if(!u) return `<span style="${box}">🎪</span>`;
   return `<span style="${box};position:relative"><img src="${escAttr(u)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:100%;height:100%;object-fit:cover;display:block"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#f0f0f0">🎪</span></span>`;
 }
+function fmtDateShort(iso){
+  if(!iso) return '';
+  try{
+    const d=new Date(iso);
+    if(isNaN(d.getTime())) return iso;
+    const pad=n=>String(n).padStart(2,'0');
+    return (d.getMonth()+1)+'/'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+  }catch(e){ return iso; }
+}
 function escAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function safeNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 
@@ -3896,6 +3905,8 @@ function renderRegs(){
         <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
           <span style="background:${statusBg};color:${statusColor};padding:3px 8px;border-radius:20px;font-size:12px;font-weight:800">${escAttr(r.status||'待審核')}</span>
           <span style="background:${paidOk?'#e6f9f0':'#fff3cd'};color:${paidOk?'#1D9E75':'#856404'};padding:3px 8px;border-radius:20px;font-size:12px;font-weight:800">${escAttr(pay)}</span>
+          ${r.payment_report_at?`<span style="font-size:11px;color:#888;margin-left:4px">回報：${fmtDateShort(r.payment_report_at)}</span>`:''}
+          ${r.paid_at?`<span style="font-size:11px;color:#1D9E75;margin-left:4px;font-weight:800">✅ 確認：${fmtDateShort(r.paid_at)}</span>`:''}
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,minmax(90px,1fr));gap:8px;margin-bottom:10px">
