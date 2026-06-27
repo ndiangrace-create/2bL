@@ -693,6 +693,143 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-helper-profile-title{ font-size:16px; font-weight:900; line-height:1.5; margin:0 0 6px; color:#111; }
 .m-helper-profile-text{ font-size:13px; color:#666; margin:0; line-height:1.5; }
 
+
+/* ══════════════════════════════════════
+   FIX 20260627：會員資料編輯閉環修復
+   目的：只修 register.html，不改 Worker / DB
+   - 讓會員編輯彈窗高於底部三顆固定按鈕
+   - 讓欄位在手機一欄顯示，不再擠在同一行或超出版面
+   - 讓儲存資料按鈕固定可見，可完成操作
+   ══════════════════════════════════════ */
+:root{
+  --dk:#111111;
+  --md:#666666;
+}
+#memberEditModal{
+  z-index:1600 !important;
+  align-items:flex-end !important;
+  justify-content:center !important;
+}
+#memberEditModal.show,
+#memberEditModal.open{
+  display:flex !important;
+}
+#memberEditModal .modal-box{
+  width:100% !important;
+  max-width:560px !important;
+  max-height:calc(100dvh - 36px) !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  border-radius:24px 24px 0 0 !important;
+  padding:20px 18px calc(24px + env(safe-area-inset-bottom)) !important;
+  background:#fff !important;
+}
+#memberEditModal label{
+  display:block !important;
+  width:100% !important;
+  margin:0 0 6px !important;
+  font-size:15px !important;
+  font-weight:800 !important;
+  line-height:1.35 !important;
+  color:#333 !important;
+}
+#memberEditModal input,
+#memberEditModal textarea{
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:46px !important;
+  padding:11px 12px !important;
+  border:1.5px solid rgba(0,0,0,.16) !important;
+  border-radius:12px !important;
+  background:#fff !important;
+  color:#111 !important;
+  font-size:16px !important;
+  font-family:inherit !important;
+  line-height:1.45 !important;
+  outline:none !important;
+}
+#memberEditModal textarea{
+  min-height:96px !important;
+  resize:vertical !important;
+}
+#memberEditModal input:focus,
+#memberEditModal textarea:focus{
+  border-color:#91B574 !important;
+  box-shadow:0 0 0 3px rgba(145,181,116,.18) !important;
+}
+#memberEditModal .member-edit-grid-2{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  margin-bottom:10px !important;
+}
+#memberEditModal .member-edit-field{
+  min-width:0 !important;
+  width:100% !important;
+}
+#memberEditModal .member-edit-card{
+  border-radius:18px !important;
+  padding:16px !important;
+  margin-bottom:14px !important;
+  overflow:hidden !important;
+}
+#memberEditModal #saveMemberBtn,
+#memberEditModal .btn-p{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  min-height:54px !important;
+  border:none !important;
+  border-radius:16px !important;
+  background:#91B574 !important;
+  color:#fff !important;
+  font-size:18px !important;
+  font-weight:900 !important;
+  font-family:inherit !important;
+  cursor:pointer !important;
+  box-shadow:0 6px 16px rgba(145,181,116,.28) !important;
+}
+#memberEditModal #saveMemberBtn{
+  position:sticky !important;
+  bottom:0 !important;
+  z-index:5 !important;
+  margin-top:16px !important;
+  margin-bottom:0 !important;
+}
+#memberEditModal #saveMemberBtn:disabled{
+  opacity:.65 !important;
+  cursor:wait !important;
+}
+#memberEditModal #saveSuccessMsg{
+  margin-top:8px !important;
+}
+@media(max-width:599px){
+  #memberEditModal .modal-box{
+    max-width:none !important;
+    max-height:calc(100dvh - 24px) !important;
+  }
+  #memberEditModal .member-edit-grid-2,
+  #memberEditModal div[style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr !important;
+  }
+  #memberEditModal input,
+  #memberEditModal textarea{
+    font-size:16px !important;
+  }
+}
+@media(min-width:600px){
+  #memberEditModal{
+    align-items:center !important;
+  }
+  #memberEditModal .modal-box{
+    border-radius:24px !important;
+    margin:16px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -954,18 +1091,18 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div id="memberEditHint" style="display:none;font-size:15px;color:#c0392b;background:#fdecea;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-weight:800;line-height:1.6"></div>
 
       <!-- 卡片一：基本聯絡資訊 -->
-      <div style="background:#e8f4fd;border:1px solid #b8d9f0;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div class="member-edit-card" style="background:#e8f4fd;border:1px solid #b8d9f0">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">👤 基本聯絡資訊</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">姓名</label><input type="text" id="editName"></div>
-          <div><label style="font-size:14px;color:var(--md)">手機</label><input type="tel" id="editPhone" inputmode="tel"></div>
+        <div class="member-edit-grid-2">
+          <div class="member-edit-field"><label>姓名</label><input type="text" id="editName"></div>
+          <div class="member-edit-field"><label>手機</label><input type="tel" id="editPhone" inputmode="tel"></div>
         </div>
         <label style="font-size:14px;color:var(--md)">LINE ID</label>
         <input type="text" id="editLineId">
       </div>
 
       <!-- 卡片二：品牌資訊 -->
-      <div style="background:#fde8f0;border:1px solid #f0b8d0;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div class="member-edit-card" style="background:#fde8f0;border:1px solid #f0b8d0">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🏷️ 品牌資訊</div>
         <label style="font-size:14px;color:var(--md)">品牌名稱</label>
         <input type="text" id="editBrand" style="margin-bottom:8px">
@@ -976,25 +1113,25 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       </div>
 
       <!-- 卡片三：社群連結（審核必要）-->
-      <div style="background:#e8fdf0;border:1px solid #b8f0d0;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div class="member-edit-card" style="background:#e8fdf0;border:1px solid #b8f0d0">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:4px">🔗 社群連結</div>
         <div style="font-size:12px;color:#c0392b;margin-bottom:10px">審核必要，至少填一項</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">FB</label><input type="url" id="editFb" placeholder="https://facebook.com/..."></div>
-          <div><label style="font-size:14px;color:var(--md)">IG</label><input type="url" id="editIg" placeholder="https://instagram.com/..."></div>
+        <div class="member-edit-grid-2">
+          <div class="member-edit-field"><label>FB</label><input type="url" id="editFb" placeholder="https://facebook.com/..."></div>
+          <div class="member-edit-field"><label>IG</label><input type="url" id="editIg" placeholder="https://instagram.com/..."></div>
         </div>
         <label style="font-size:14px;color:var(--md)">官網</label>
         <input type="url" id="editCollabUrl" placeholder="https://...">
       </div>
 
       <!-- 卡片四：常用發票資訊 -->
-      <div style="background:#fdfbe8;border:1px solid #f0e8b8;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div class="member-edit-card" style="background:#fdfbe8;border:1px solid #f0e8b8">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🧾 常用發票資訊</div>
         <label style="font-size:14px;color:var(--md)">手機載具</label>
         <input type="text" id="editInvoiceCarrier" placeholder="/ABC-1234" style="margin-bottom:8px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">統一編號</label><input type="text" id="editTaxId" inputmode="numeric" maxlength="8"></div>
-          <div><label style="font-size:14px;color:var(--md)">公司抬頭</label><input type="text" id="editCompany"></div>
+        <div class="member-edit-grid-2">
+          <div class="member-edit-field"><label>統一編號</label><input type="text" id="editTaxId" inputmode="numeric" maxlength="8"></div>
+          <div class="member-edit-field"><label>公司抬頭</label><input type="text" id="editCompany"></div>
         </div>
         <label style="font-size:14px;color:var(--md)">收發票 Email</label>
         <input type="email" id="editInvoiceEmail" inputmode="email">
