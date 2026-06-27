@@ -1547,21 +1547,109 @@ async function testSendEmail(){
 }
 
 // ── Google OAuth 登入流程 ──────────────────────────────────────────
+// auth-loop-fix-20260627：後台登入只由「明確的 OAuth callback」或「已保存的有效 session」進後台。
+// 下次修檔請勿把這段改回單純只讀 window.location.search，否則 hash token / 巢狀 admin/me 回應會再次造成登入循環。
+function adminAuthParams(){
+  const out = new URLSearchParams();
+  try{
+    const q = new URLSearchParams(window.location.search || '');
+    q.forEach((v,k)=>out.set(k,v));
+  }catch(e){}
+  try{
+    let h = String(window.location.hash || '').replace(/^#/, '');
+    if(h.startsWith('?')) h = h.slice(1);
+    // 支援 #admin_token=...、#/admin?admin_token=...、#/?admin_token=...
+    const qi = h.indexOf('?');
+    if(qi >= 0) h = h.slice(qi + 1);
+    if(h && h.includes('=')){
+      const hp = new URLSearchParams(h);
+      hp.forEach((v,k)=>{ if(!out.has(k)) out.set(k,v); });
+    }
+  }catch(e){}
+  return out;
+}
+function adminCleanAuthUrl(){
+  try{
+    const url = new URL(window.location.href);
+    ['admin_token','token','adminToken','login_error','error','code','state','scope','authuser','prompt'].forEach(k=>url.searchParams.delete(k));
+    // OAuth hash 通常只用來帶 token，處理完就清掉，避免刷新又重新跑 callback。
+    if(/(admin_token|adminToken|login_error|error|code|state|token)=/.test(String(url.hash||''))) url.hash='';
+    const clean = url.pathname + (url.search ? url.search : '') + (url.hash || '');
+    window.history.replaceState({}, '', clean);
+  }catch(e){
+    try{ window.history.replaceState({}, '', window.location.pathname); }catch(_e){}
+  }
+}
+function adminStorageGet(key){
+  try{ const v = localStorage.getItem(key); if(v) return v; }catch(e){}
+  try{ return sessionStorage.getItem(key); }catch(e){ return null; }
+}
+function adminStorageSet(key, value){
+  try{ localStorage.setItem(key, value); }catch(e){}
+  try{ sessionStorage.setItem(key, value); }catch(e){}
+}
+function adminStorageRemove(key){
+  try{ localStorage.removeItem(key); }catch(e){}
+  try{ sessionStorage.removeItem(key); }catch(e){}
+}
+function adminReadSession(){
+  try{ return JSON.parse(adminStorageGet('tb_v3') || 'null'); }catch(e){ return null; }
+}
+function adminSaveSession(session){
+  adminStorageSet('tb_v3', JSON.stringify(session || {}));
+}
+function adminClearSession(){
+  adminStorageRemove('tb_v3');
+  adminStorageRemove('2bl_admin_token_pending');
+}
+function adminDecodeJwt(token){
+  try{
+    const part = String(token||'').split('.')[1];
+    if(!part) return {};
+    const b64 = part.replace(/-/g,'+').replace(/_/g,'/');
+    const raw = atob(b64.padEnd(Math.ceil(b64.length/4)*4, '='));
+    let str = raw;
+    try{ str = decodeURIComponent(escape(raw)); }catch(e){}
+    return JSON.parse(str) || {};
+  }catch(e){ return {}; }
+}
+function normalizeAdminMeResponse(res, token){
+  if(!res || typeof res !== 'object') return {error:'admin/me 回應格式錯誤'};
+  if(res.error || res.message === 'Unauthorized' || res.ok === false){
+    return {error: res.error || res.message || '登入驗證失敗'};
+  }
+  const jwt = adminDecodeJwt(token);
+  const data = res.staff || res.admin || res.user ||
+    (res.data && (res.data.staff || res.data.admin || res.data.user || res.data)) || res;
+  const tenantObj = res.tenant || (res.data && res.data.tenant) || {};
+  const email = String(data.email || data.admin_email || res.email || jwt.email || '').trim().toLowerCase();
+  const role = data.role || data.admin_role || data.permission_role || res.role || jwt.role || 'organizer_admin';
+  const name = data.display_name || data.displayName || data.name || res.display_name || res.name || jwt.name || email;
+  const tenantId = data.tenant_id || data.tenantId || res.tenant_id || res.tenantId || tenantObj.id || tenantObj.tenant_id || TENANT_ID;
+  const tenantName = data.tenant_name || data.tenantName || res.tenant_name || res.tenantName || tenantObj.name || '';
+  if(!email) return {error:'admin/me 未回傳管理員 Email'};
+  return {email, role, name, tenantId, tenantName};
+}
+function showAdminLoginError(message){
+  const errEl=$('loginErr');
+  if(errEl){ errEl.textContent=message || '登入失敗，請重新登入'; errEl.style.display='block'; }
+}
 function startGoogleLogin(){
   const btn=$('googleLoginBtn');
   if(btn){ btn.disabled=true; btn.textContent='正在跳轉至 Google 登入…'; }
+  adminClearSession();
   // 跳轉至 Worker /auth/google/start
   const workerBase = API.replace(/\/+$/, '');
   window.location.href = `${workerBase}/auth/google/start?tenant=${encodeURIComponent(TENANT_ID)}`;
 }
 
-// OAuth callback 後，URL 帶 admin_token 回來
+// OAuth callback 後，URL 可能帶 admin_token / token，也可能在 hash 裡。
 async function handleOAuthCallback(){
-  const params = new URLSearchParams(window.location.search);
-  const adminToken = params.get('admin_token') || params.get('token');
+  const params = adminAuthParams();
+  const adminToken = params.get('admin_token') || params.get('token') || params.get('adminToken') || adminStorageGet('2bl_admin_token_pending');
   const tenant = params.get('tenant') || params.get('tenantId') || sessionStorage.getItem('2bl_tenant') || TENANT_ID;
   const loginError = params.get('login_error') || params.get('error');
-  const isOAuthCallback = !!adminToken || !!loginError || params.has('code') || params.has('state');
+  const hasOAuthSignal = !!adminToken || !!loginError || params.has('code') || params.has('state');
 
   if(loginError){
     const errMap = {
@@ -1573,52 +1661,69 @@ async function handleOAuthCallback(){
       oauth_not_configured:'Google 登入尚未完成 Worker 環境設定，請檢查 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / ADMIN_REDIRECT_URI',
       redirect_uri_mismatch:'Google OAuth 回呼網址不一致，請檢查 Google Cloud Console 的 Authorized redirect URI',
     };
-    const errEl=$('loginErr');
-    if(errEl){ errEl.textContent=errMap[loginError]||`登入失敗：${loginError}`; errEl.style.display='block'; }
-    // 清除 URL 參數
-    window.history.replaceState({}, '', window.location.pathname);
+    adminClearSession();
+    showAdminLoginError(errMap[loginError] || `登入失敗：${loginError}`);
+    adminCleanAuthUrl();
     return true;
   }
 
-  if(!adminToken) return false; // 不是已完成的 callback，正常初始化
+  if(!adminToken){
+    // 有 code/state 卻沒有 Worker 換好的 admin_token，代表回呼沒有完成；停在登入頁並顯示原因，避免無限跳轉。
+    if(hasOAuthSignal){
+      adminClearSession();
+      showAdminLoginError('Google 已回到後台，但沒有取得管理員登入憑證。請確認 Worker OAuth 回呼設定會回傳 admin_token。');
+      adminCleanAuthUrl();
+      return true;
+    }
+    return false;
+  }
 
-  // 用 /admin/me 驗證 token 並取得角色資料
-  try {
+  try{
+    adminStorageSet('2bl_admin_token_pending', adminToken);
     if(tenant){
       TENANT_ID = tenant;
-      sessionStorage.setItem('2bl_tenant', tenant);
+      ST.tenantId = tenant;
+      try{ sessionStorage.setItem('2bl_tenant', tenant); }catch(e){}
     }
     const workerBase = API.replace(/\/+$/, '');
-    const res = await fetch(`${workerBase}/admin/me?email=_&token=${encodeURIComponent(adminToken)}&tenant=${encodeURIComponent(TENANT_ID)}&_t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
+    const url = `${workerBase}/admin/me?token=${encodeURIComponent(adminToken)}&tenant=${encodeURIComponent(TENANT_ID)}&_t=${Date.now()}`;
+    const resp = await fetch(url, {cache:'no-store'});
+    let res = null;
+    try{ res = await resp.json(); }catch(e){ res = {error:'admin/me 回應不是 JSON'}; }
+    if(!resp.ok && !res.error) res.error = '登入驗證失敗 HTTP '+resp.status;
 
-    if(res.error || !res.email){
-      const errEl=$('loginErr');
-      if(errEl){ errEl.textContent=res.error ? `登入驗證失敗：${res.error}` : '無權限登入後台，請聯繫系統管理員'; errEl.style.display='block'; }
-      // 清 URL
-      window.history.replaceState({}, '', window.location.pathname);
+    const session = normalizeAdminMeResponse(res, adminToken);
+    if(session.error){
+      adminClearSession();
+      showAdminLoginError(`登入驗證失敗：${session.error}`);
+      adminCleanAuthUrl();
       return true;
     }
 
-    // 登入成功
-    const tenantId = res.tenant_id || res.tenantId || TENANT_ID;
-    TENANT_ID = tenantId;
-    sessionStorage.setItem('2bl_tenant', tenantId);
-    ST.email = res.email;
+    TENANT_ID = session.tenantId || TENANT_ID;
+    ST.email = session.email;
     ST.token = adminToken;
-    ST.role = res.role;
-    ST.tenantName = res.tenant_name || res.tenantName || '';
-    localStorage.setItem('tb_v3', JSON.stringify({
-      email: res.email, token: adminToken, role: res.role,
-      name: res.display_name||res.name||res.email, tenantId, tenantName: ST.tenantName,
-    }));
-    // 清 URL，避免 token 留在網址列
-    window.history.replaceState({}, '', window.location.pathname);
-    initAdmin(res.display_name||res.name||res.email, res.role);
+    ST.role = session.role;
+    ST.tenantId = TENANT_ID;
+    ST.tenantName = session.tenantName || '';
+    try{ sessionStorage.setItem('2bl_tenant', TENANT_ID); }catch(e){}
+    adminSaveSession({
+      email: session.email,
+      token: adminToken,
+      role: session.role,
+      name: session.name || session.email,
+      tenantId: TENANT_ID,
+      tenantName: ST.tenantName,
+      loginAt: Date.now()
+    });
+    adminStorageRemove('2bl_admin_token_pending');
+    adminCleanAuthUrl();
+    initAdmin(session.name || session.email, session.role);
     return true;
-  } catch(e) {
-    const errEl=$('loginErr');
-    if(errEl){ errEl.textContent='登入驗證失敗，請重試：'+(e&&e.message?e.message:''); errEl.style.display='block'; }
-    window.history.replaceState({}, '', window.location.pathname);
+  }catch(e){
+    adminClearSession();
+    showAdminLoginError('登入驗證失敗，請重試：'+(e&&e.message?e.message:''));
+    adminCleanAuthUrl();
     return true;
   }
 }
@@ -1637,24 +1742,30 @@ function logout(){
       body: JSON.stringify({action:'adminLogout', email:ST.email, token:ST.token, tenant:TENANT_ID})
     }).catch(()=>{});
   }
-  localStorage.removeItem('tb_v3');
+  adminClearSession();
   ST.email=''; ST.token=''; ST.role=''; ST.tenantName='';
   location.reload();
 }
 
 // 頁面載入時：先檢查 OAuth callback，再檢查已存 session
 (async function(){
-  // 先處理 OAuth callback；若已處理完成，不再用舊 localStorage session 覆蓋。
+  // 先處理 OAuth callback；若已處理完成，不再用舊 session 覆蓋，也不重複跳登入。
   const oauthHandled = await handleOAuthCallback();
   if(oauthHandled) return;
-  // 若已有有效 session
-  let s=null;
-  try{s=JSON.parse(localStorage.getItem('tb_v3')||'null');}catch(e){s=null;}
-  if(s&&s.token&&s.email){
+
+  // 若已有有效 session，直接進後台；localStorage 不可用時也可從 sessionStorage 還原。
+  const s = adminReadSession();
+  if(s && s.token && s.email){
     ST.email=s.email;ST.token=s.token;ST.role=s.role;ST.tenantName=s.tenantName||'';
-    if(s.tenantId){TENANT_ID=s.tenantId;ST.tenantId=s.tenantId;sessionStorage.setItem('2bl_tenant',s.tenantId);}
+    if(s.tenantId){TENANT_ID=s.tenantId;ST.tenantId=s.tenantId;try{sessionStorage.setItem('2bl_tenant',s.tenantId);}catch(e){}}
     initAdmin(s.name||s.email,s.role);
+    return;
   }
+
+  // 沒有 callback、沒有 session，才留在登入頁。
+  const lp=$('loginPage'), ap=$('adminPage');
+  if(lp) lp.style.display='flex';
+  if(ap) ap.style.display='none';
 })();
 
 function normalizeAdminRole(role){
