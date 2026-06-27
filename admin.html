@@ -1377,14 +1377,23 @@ const API = 'https://2bl-v7.ndiangrace.workers.dev';
 // V5 SaaS: 後台登入後從 adminLogin 回傳的 tenantId 決定租戶
 // 初始值從 URL ?tenant= 讀取（方便直接連結特定租戶後台）
 const _adminUrlParams = new URLSearchParams(window.location.search);
-// 租戶解析：優先從 URL 讀取，存入 sessionStorage 後清除網址列參數
+// 租戶解析：優先從 URL 讀取，存入 sessionStorage。
+// 重要：Google OAuth callback 會帶 admin_token/login_error，不能在這裡先清網址，
+// 否則 handleOAuthCallback() 會讀不到 token，造成登入後又回到登入頁。
 (function(){
   const urlTenant = _adminUrlParams.get('tenant') || _adminUrlParams.get('tenantId');
+  const isOAuthCallback = _adminUrlParams.has('admin_token') || _adminUrlParams.has('token') ||
+    _adminUrlParams.has('login_error') || _adminUrlParams.has('error') ||
+    _adminUrlParams.has('code') || _adminUrlParams.has('state');
   if (urlTenant) {
     sessionStorage.setItem('2bl_tenant', urlTenant);
-    // 清除網址列的 tenant 參數，保持網址乾淨
-    const cleanUrl = window.location.pathname;
-    window.history.replaceState({}, '', cleanUrl);
+    // 只有一般 tenant 連結才清掉網址；OAuth callback 交給 handleOAuthCallback() 處理。
+    if (!isOAuthCallback) {
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('tenant');
+      cleanUrl.searchParams.delete('tenantId');
+      window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+    }
   }
 })();
 let TENANT_ID = sessionStorage.getItem('2bl_tenant') || _adminUrlParams.get('tenant') || _adminUrlParams.get('tenantId') || 'tuibile';
@@ -1549,9 +1558,10 @@ function startGoogleLogin(){
 // OAuth callback 後，URL 帶 admin_token 回來
 async function handleOAuthCallback(){
   const params = new URLSearchParams(window.location.search);
-  const adminToken = params.get('admin_token');
-  const tenant = params.get('tenant');
-  const loginError = params.get('login_error');
+  const adminToken = params.get('admin_token') || params.get('token');
+  const tenant = params.get('tenant') || params.get('tenantId') || sessionStorage.getItem('2bl_tenant') || TENANT_ID;
+  const loginError = params.get('login_error') || params.get('error');
+  const isOAuthCallback = !!adminToken || !!loginError || params.has('code') || params.has('state');
 
   if(loginError){
     const errMap = {
@@ -1560,48 +1570,56 @@ async function handleOAuthCallback(){
       id_token_verify_failed:'Google 身份驗證失敗，請重試',
       google_cancelled:'Google 登入已取消',
       token_exchange_failed:'Google 登入流程錯誤，請重試',
+      oauth_not_configured:'Google 登入尚未完成 Worker 環境設定，請檢查 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / ADMIN_REDIRECT_URI',
+      redirect_uri_mismatch:'Google OAuth 回呼網址不一致，請檢查 Google Cloud Console 的 Authorized redirect URI',
     };
     const errEl=$('loginErr');
     if(errEl){ errEl.textContent=errMap[loginError]||`登入失敗：${loginError}`; errEl.style.display='block'; }
     // 清除 URL 參數
     window.history.replaceState({}, '', window.location.pathname);
-    return;
+    return true;
   }
 
-  if(!adminToken) return; // 不是 callback，正常初始化
+  if(!adminToken) return false; // 不是已完成的 callback，正常初始化
 
   // 用 /admin/me 驗證 token 並取得角色資料
   try {
-    if(tenant) TENANT_ID = tenant;
+    if(tenant){
+      TENANT_ID = tenant;
+      sessionStorage.setItem('2bl_tenant', tenant);
+    }
     const workerBase = API.replace(/\/+$/, '');
-    const res = await fetch(`${workerBase}/admin/me?email=_&token=${encodeURIComponent(adminToken)}&_t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
+    const res = await fetch(`${workerBase}/admin/me?email=_&token=${encodeURIComponent(adminToken)}&tenant=${encodeURIComponent(TENANT_ID)}&_t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
 
     if(res.error || !res.email){
       const errEl=$('loginErr');
-      if(errEl){ errEl.textContent='無權限登入後台，請聯繫系統管理員'; errEl.style.display='block'; }
+      if(errEl){ errEl.textContent=res.error ? `登入驗證失敗：${res.error}` : '無權限登入後台，請聯繫系統管理員'; errEl.style.display='block'; }
       // 清 URL
       window.history.replaceState({}, '', window.location.pathname);
-      return;
+      return true;
     }
 
     // 登入成功
-    const tenantId = res.tenant_id || TENANT_ID;
+    const tenantId = res.tenant_id || res.tenantId || TENANT_ID;
     TENANT_ID = tenantId;
+    sessionStorage.setItem('2bl_tenant', tenantId);
     ST.email = res.email;
     ST.token = adminToken;
     ST.role = res.role;
-    ST.tenantName = '';
+    ST.tenantName = res.tenant_name || res.tenantName || '';
     localStorage.setItem('tb_v3', JSON.stringify({
       email: res.email, token: adminToken, role: res.role,
-      name: res.display_name||res.email, tenantId, tenantName: '',
+      name: res.display_name||res.name||res.email, tenantId, tenantName: ST.tenantName,
     }));
     // 清 URL，避免 token 留在網址列
-    window.history.replaceState({}, '', window.location.pathname + (tenantId?`?tenant=${tenantId}`:''));
-    initAdmin(res.display_name||res.email, res.role);
+    window.history.replaceState({}, '', window.location.pathname);
+    initAdmin(res.display_name||res.name||res.email, res.role);
+    return true;
   } catch(e) {
     const errEl=$('loginErr');
-    if(errEl){ errEl.textContent='登入驗證失敗，請重試'; errEl.style.display='block'; }
+    if(errEl){ errEl.textContent='登入驗證失敗，請重試：'+(e&&e.message?e.message:''); errEl.style.display='block'; }
     window.history.replaceState({}, '', window.location.pathname);
+    return true;
   }
 }
 
@@ -1625,14 +1643,16 @@ function logout(){
 }
 
 // 頁面載入時：先檢查 OAuth callback，再檢查已存 session
-(function(){
-  // 先處理 OAuth callback
-  handleOAuthCallback();
+(async function(){
+  // 先處理 OAuth callback；若已處理完成，不再用舊 localStorage session 覆蓋。
+  const oauthHandled = await handleOAuthCallback();
+  if(oauthHandled) return;
   // 若已有有效 session
-  const s=JSON.parse(localStorage.getItem('tb_v3')||'null');
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem('tb_v3')||'null');}catch(e){s=null;}
   if(s&&s.token&&s.email){
     ST.email=s.email;ST.token=s.token;ST.role=s.role;ST.tenantName=s.tenantName||'';
-    if(s.tenantId){TENANT_ID=s.tenantId;ST.tenantId=s.tenantId;}
+    if(s.tenantId){TENANT_ID=s.tenantId;ST.tenantId=s.tenantId;sessionStorage.setItem('2bl_tenant',s.tenantId);}
     initAdmin(s.name||s.email,s.role);
   }
 })();
