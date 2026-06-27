@@ -1613,13 +1613,28 @@ function navToTab(tab){
   if(tab==='home'){
     navTo('home');
   } else if(tab==='member'){
-    // 我的紀錄 → 進會員頁，預設顯示「我的報名」頁籤
+    // 我的紀錄 → 進會員頁，預設顯示「我的報名」頁籤。
+    // PROTECTED-MEMBER-RECORDS-FLOW-20260627:
+    // 不能只顯示 memberArea，必須同步呼叫 safeLoadMemberPage() 重新載入會員資料與報名紀錄。
+    // 否則刷新或切回「我的紀錄」會出現空白頁。
     const email=ST.memberEmail||memberSafeEmail();
     if(email){
+      navTo('member',{noPush:true});
       memberShowArea('regs');
-      navTo('member');
+      const listEl=$('myRegsList');
+      if(listEl && !String(listEl.textContent||'').trim()){
+        listEl.innerHTML='<div style="color:#999;font-size:16px;text-align:center;padding:20px">報名紀錄載入中…</div>';
+      }
+      clearTimeout(ST.__memberNavLoadTimer);
+      ST.__memberNavLoadTimer=setTimeout(()=>{
+        safeLoadMemberPage(email,{navOptions:{noPush:true}}).catch(e=>{
+          console.warn('[member nav load failed]', e);
+          const el=$('myRegsList');
+          if(el) el.innerHTML='<div style="color:#c0392b;font-size:16px;text-align:center;padding:20px;line-height:1.7">報名紀錄暫時載入失敗，請稍後再試。<br>資料沒有消失，請截圖給官方 LINE。</div>';
+        });
+      },30);
     } else {
-      navTo('member');
+      navTo('member',{noPush:true});
       memberShowLogin();
     }
   } else if(tab==='support'){
@@ -4151,7 +4166,10 @@ if(document.readyState==='loading'){
   }
   if (lastTab === 'member' && savedEmail) {
     await loadHome();
-    setTimeout(()=>{ navToTab('member'); }, 200);
+    // PROTECTED-MEMBER-REFRESH-FLOW-20260627:
+    // 刷新停在會員頁時，不可只 navToTab('member')，因為那只會切畫面；
+    // 必須走 safeLoadMemberPage()，才會把會員資料與我的報名重新載入。
+    await safeLoadMemberPage(savedEmail,{navOptions:{noPush:true}});
   } else if (lastTab === 'support') {
     await loadHome();
     setTimeout(()=>{ navToTab('support'); }, 200);
