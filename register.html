@@ -1335,8 +1335,8 @@ function startMemberGoogleLogin() {
 
 // OAuth callback 後，URL 帶 member_token 回來
 async function handleMemberOAuthCallback() {
-  // member_token 已由 IIFE 存入 sessionStorage（因為 IIFE 會先清除網址）
-  const memberToken = localStorage.getItem('2bl_member_token_pending') || localStorage.getItem('2bl_member_token');
+  // 只處理真正的 OAuth 回調（有 pending token 才是剛登入回來）
+  const memberToken = localStorage.getItem('2bl_member_token_pending');
   const displayName = localStorage.getItem('2bl_display_name_pending') || '';
   const loginError = new URLSearchParams(window.location.search).get('login_error');
 
@@ -1345,11 +1345,14 @@ async function handleMemberOAuthCallback() {
     if (errEl) { errEl.textContent = '登入失敗：' + loginError; errEl.style.display = 'block'; }
     return;
   }
-  if (!memberToken) return;
+  if (!memberToken) return; // 不是 OAuth 回調，直接結束
 
   // 清除暫存的 pending token
   localStorage.removeItem('2bl_member_token_pending');
   localStorage.removeItem('2bl_display_name_pending');
+
+  // 存入正式 token
+  localStorage.setItem('2bl_member_token', memberToken);
 
   // 解析 JWT payload 取 email
   try {
@@ -1361,8 +1364,7 @@ async function handleMemberOAuthCallback() {
     if (!email) return;
     ST.memberEmail = email;
     ST.memberToken = memberToken;
-    memberSaveEmail(email);  // 存入 localStorage 供後續使用
-    localStorage.setItem('2bl_member_token', memberToken);
+    memberSaveEmail(email);
     // 載入會員資料
     await safeLoadMemberPage(email);
   } catch(e) {
