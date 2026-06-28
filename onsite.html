@@ -112,29 +112,31 @@ function renderRegs(){
       ? `<span class="tag ${r.depositRefunded==='已退押金'?'ok':r.depositRefunded==='押金沒收'?'bad':'warn'}">${esc(r.depositRefunded||'未退押金')}</span>`
       : '';
     return `<div class="reg">
-      <h3>${esc(r.brand||'未填品牌')}</h3>
-      <div class="row">
-        <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
-        <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span>
-        <span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>
-        ${depositTag}
-        ${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}
+      <div class="reg-left">
+        <h3>${esc(r.brand||'未填品牌')}</h3>
+        <div class="row" style="margin-bottom:8px">
+          <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
+          <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span>
+          <span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>
+          ${depositTag}
+          ${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}
+        </div>
+        <div class="kv">
+          <div class="k">聯絡人</div><div>${esc(r.name)}｜${esc(r.phone)}</div>
+          <div class="k">已繳金額</div><div>${money(r.amount||r.totalAmount||0)}</div>
+          <div class="k">付款時間</div><div>${dt(r.paidAt)}</div>
+          <div class="k">攤位數</div><div>${r.stallCount||1}</div>
+          <div class="k">加租設備</div><div>${esc(equipText(r.equip))}</div>
+          <div class="k">押金</div><div>${money(r.deposit||0)}　${esc(r.depositRefunded||'未退押金')}</div>
+          <div class="k">備註</div><div>${esc(r.adminNote||'—')}</div>
+        </div>
       </div>
-      <div class="kv">
-        <div class="k">聯絡人</div><div>${esc(r.name)}｜${esc(r.phone)}</div>
-        <div class="k">已繳金額</div><div>${money(r.amount||r.totalAmount||0)}</div>
-        <div class="k">付款時間</div><div>${dt(r.paidAt)}</div>
-        <div class="k">攤位數</div><div>${r.stallCount||1}</div>
-        <div class="k">加租設備</div><div>${esc(equipText(r.equip))}</div>
-        <div class="k">押金</div><div>${money(r.deposit||0)}　${esc(r.depositRefunded||'未退押金')}</div>
-        <div class="k">備註</div><div>${esc(r.adminNote||'—')}</div>
-      </div>
-      <div class="actions">
-        <button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>已報到</button>
-        <button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>
-        <button class="warn" onclick="mark('${esc(r.id)}','noShow')">未到</button>
-        ${hasDeposit&&!depositDone?`<button class="secondary" onclick="mark('${esc(r.id)}','depositRefund')">退押金</button><button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')">沒收押金</button>`:''}
-        <button class="danger" onclick="mark('${esc(r.id)}','refundFlag')">特殊／退費標記</button>
+      <div class="reg-actions">
+        <button class="btn-checkin" onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>已報到</button>
+        <button class="btn-undo" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>
+        <button class="btn-noshow" onclick="mark('${esc(r.id)}','noShow')">未到</button>
+        ${hasDeposit&&!depositDone?`<button class="btn-deposit" onclick="mark('${esc(r.id)}','depositRefund')">退押金</button><button class="btn-forfeit" onclick="mark('${esc(r.id)}','depositForfeited')">沒收押金</button>`:''}
+        <button class="btn-special" onclick="mark('${esc(r.id)}','refundFlag')">特殊標記</button>
       </div>
     </div>`;
   }).join('');
