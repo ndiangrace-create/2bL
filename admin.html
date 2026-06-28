@@ -1695,7 +1695,10 @@ async function handleOAuthCallback(){
       try{ sessionStorage.setItem('2bl_tenant', tenant); }catch(e){}
     }
     const workerBase = API.replace(/\/+$/, '');
-    const url = `${workerBase}/admin/me?token=${encodeURIComponent(adminToken)}&tenant=${encodeURIComponent(TENANT_ID)}&_t=${Date.now()}`;
+    // 先從 JWT 解出 email，/admin/me 需要同時帶 token + email 驗證
+    const jwtPayload = adminDecodeJwt(adminToken);
+    const jwtEmail = encodeURIComponent((jwtPayload && jwtPayload.email) || '');
+    const url = `${workerBase}/admin/me?token=${encodeURIComponent(adminToken)}&email=${jwtEmail}&tenant=${encodeURIComponent(TENANT_ID)}&_t=${Date.now()}`;
     const resp = await fetch(url, {cache:'no-store'});
     let res = null;
     try{ res = await resp.json(); }catch(e){ res = {error:'admin/me 回應不是 JSON'}; }
