@@ -834,19 +834,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <div style="background:#f0faf4;border:1px solid #b7e4c7;border-radius:12px;padding:14px 16px">
           <button type="button" id="agreementViewBtn"
             onclick="openAgreementModal()"
-            style="display:block;width:100%;background:none;border:1px solid var(--g);color:var(--g);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">
-            📋 點此查看報名合約／活動規範
+            style="display:block;width:100%;background:var(--c-purple);border:none;color:#2C2C2C;border-radius:12px;padding:14px;font-size:16px;font-weight:700;cursor:pointer">
+            📋 查看合約內容 ›
           </button>
-          <label id="agreementCheckLabel" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#444;cursor:not-allowed;opacity:.5">
-            <input type="checkbox" id="agreementCheckbox" disabled
-              onchange="onAgreementCheck(this.checked)"
-              style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--g)">
-            <span>我已閱讀並同意本場次報名合約／活動規範</span>
-          </label>
         </div>
       </div>
       <div style="padding:12px 16px 40px">
-        <button class="submit-btn-new" id="submitBtn" type="button" onclick="submitReg(event)" disabled>送出報名</button>
+        <button class="submit-btn-new" id="submitBtn" type="button" onclick="submitReg(event)" style="display:none" disabled>送出報名</button>
       </div>
     </div>
   </div>
@@ -863,8 +857,8 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div style="color:#aaa;text-align:center;padding:40px 0">載入中…</div>
     </div>
     <div style="padding:14px 20px;border-top:1px solid #eee;flex-shrink:0;background:#fff">
-      <button onclick="onAgreementRead()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">
-        我已閱讀，關閉
+      <button onclick="onAgreementRead()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:13px;font-size:16px;font-weight:700;cursor:pointer">
+        我同意合約，關閉
       </button>
     </div>
   </div>
@@ -3218,13 +3212,23 @@ function closeAgreementModal() {
 }
 
 function onAgreementRead() {
-  // 關閉合約 Modal 並啟用勾選框
   closeAgreementModal();
   ST._agreementViewed = true;
-  const cb = $('agreementCheckbox');
-  const lbl = $('agreementCheckLabel');
-  if (cb) { cb.disabled = false; }
-  if (lbl) { lbl.style.opacity = '1'; lbl.style.cursor = 'pointer'; }
+  ST._agreementAccepted = true;
+  // 直接顯示送出按鈕
+  const submitBtn = $('submitBtn');
+  if (submitBtn) {
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = false;
+  }
+  // 更新查看按鈕樣式表示已同意
+  const viewBtn = $('agreementViewBtn');
+  if (viewBtn) {
+    viewBtn.textContent = '✅ 已同意合約';
+    viewBtn.style.background = 'var(--c-green)';
+    viewBtn.style.cursor = 'default';
+    viewBtn.onclick = null;
+  }
 }
 
 function onAgreementCheck(checked) {
