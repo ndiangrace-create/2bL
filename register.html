@@ -1726,9 +1726,23 @@ function fillMemberCard(member){
   const email=String(m.email||ST.memberEmail||memberSafeEmail()||'').trim();
   const name=(m.name||m.realName||email||'會員');
   const brand=(m.brand||m.brandName||m.brand_name||'');
+  const phone=(m.phone||'');
+  const fb=(m.fb||m.fb_url||'');
+  const ig=(m.ig||m.ig_url||'');
+  // 更新「我的紀錄」頁的顯示
   const nameEl=$('memberName'); if(nameEl) nameEl.textContent=name;
   const emailEl=$('memberEmail2'); if(emailEl) emailEl.textContent=email;
   const brandEl=$('memberBrandShow'); if(brandEl) brandEl.textContent=brand?('品牌：'+brand):'';
+  // 同步更新報名表的顯示欄位
+  const dispBrand=$('disp_brand'); if(dispBrand) dispBrand.textContent=brand;
+  const dispName=$('disp_name'); if(dispName) dispName.textContent=name;
+  const dispPhone=$('disp_phone'); if(dispPhone) dispPhone.textContent=phone;
+  // 同步更新報名表的隱藏欄位（送出時使用）
+  const fBrand=$('f_brand'); if(fBrand) fBrand.value=brand;
+  const fName=$('f_name'); if(fName) fName.value=name;
+  const fPhone=$('f_phone'); if(fPhone) fPhone.value=phone;
+  const fFb=$('f_fb'); if(fFb) fFb.value=fb;
+  const fIg=$('f_ig'); if(fIg) fIg.value=ig;
 }
 async function safeGetMyRegs(email){
   const el=$('myRegsList');
