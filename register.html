@@ -1628,10 +1628,19 @@ function navTo(tab, opts={}){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   window.scrollTo(0,0);
-  // 記住當前頁面，刷新後還原
-  try{ localStorage.setItem('2bl_current_tab', tab); }catch(e){}
-  // 返回首頁時清除 portal 和 body 背景
-  if(tab==='home'){const pp=$('pagePortal');if(pp)pp.style.background='';document.body.style.background='var(--wh)';}  
+  // 儲存完整狀態（含 portal 分類）
+  try{
+    const state = { tab };
+    if(tab==='portal' && ST.currentCatFilter) state.catFilter = ST.currentCatFilter;
+    localStorage.setItem('2bl_current_tab', tab);
+    localStorage.setItem('2bl_page_state', JSON.stringify(state));
+  }catch(e){}
+  // 返回首頁時清除背景和報名表狀態
+  if(tab==='home'){
+    const pp=$('pagePortal');if(pp)pp.style.background='';
+    document.body.style.background='var(--wh)';
+    try{ localStorage.removeItem('2bl_page_state'); localStorage.setItem('2bl_page_state', JSON.stringify({tab:'home'})); }catch(e){}
+  }
   if(!opts.noPush){
     history.pushState({page:tab}, '', location.href);
   }
@@ -2345,6 +2354,26 @@ function renderDynFormFull(s, isNew=false){
   const dynEl=$('dynForm');
   if(dynEl) dynEl.innerHTML=html;
 
+  // 表單欄位變動時自動儲存（刷新還原用）
+  setTimeout(()=>{
+    const saveFields = ['f_brand','f_name','f_phone','f_sellItem','f_brandIntro','f_note',
+                        'f_fb','f_ig','f_web','f_taxId','f_company','f_invoiceCarrier','f_invoiceEmail'];
+    saveFields.forEach(id=>{
+      const el=$(id);
+      if(!el) return;
+      el.addEventListener('input', ()=>{
+        try{
+          const existing = JSON.parse(localStorage.getItem('2bl_page_state')||'{}');
+          if(existing.tab==='regForm'){
+            if(!existing.formFields) existing.formFields={};
+            existing.formFields[id] = el.value;
+            localStorage.setItem('2bl_page_state', JSON.stringify(existing));
+          }
+        }catch(e){}
+      });
+    });
+  }, 200);
+
   // 合約區塊控制
   const agArea=$('agreementArea');
   if(agArea) agArea.style.display='none'; // 用新版合約卡片取代
@@ -2519,6 +2548,18 @@ function openRegFormModal(){
   if(page) page.classList.add('active');
   window.scrollTo(0,0);
   history.pushState({regFormOpen:true}, '', location.href);
+  // 儲存報名表狀態（刷新還原用）
+  try{
+    const state = {
+      tab: 'regForm',
+      sessionId: ST.currentSession ? ST.currentSession.id : null,
+      stallCount: ST.stallCount || 1,
+      equipQty: ST.equipQty || {},
+      addonQty: ST.addonQty || {},
+    };
+    localStorage.setItem('2bl_current_tab', 'regForm');
+    localStorage.setItem('2bl_page_state', JSON.stringify(state));
+  }catch(e){}
   // 底部無 active
   ['botHome','botMember','botSupport'].forEach(id=>{
     const el=document.getElementById(id);
@@ -2977,6 +3018,16 @@ function updateFee(){
   const s=ST.currentSession; if(!s)return;
   const stalls=ST.stallCount||1;
   const dep=(s.deposit||0);  // 保證金固定，不乘攤數
+  // 同步儲存最新狀態（刷新還原用）
+  try{
+    const existing = JSON.parse(localStorage.getItem('2bl_page_state')||'{}');
+    if(existing.tab==='regForm'){
+      existing.stallCount = ST.stallCount||1;
+      existing.equipQty = {...(ST.equipQty||{})};
+      existing.addonQty = {...(ST.addonQty||{})};
+      localStorage.setItem('2bl_page_state', JSON.stringify(existing));
+    }
+  }catch(e){}
   // 計算日期費用
   let fee=0;
   const dates=s.dates||[];
@@ -3898,11 +3949,8 @@ if(document.readyState==='loading'){
     ST.memberEmail = savedEmail;
     ST.memberToken = savedToken;
   }
-  // 還原上次所在頁面（只支援三顆：home / member / support）
-  const rawTab = localStorage.getItem('2bl_current_tab') || 'home';
-  // 舊版 myregs 對應到 member
-  const lastTab = (rawTab === 'myregs') ? 'member' : rawTab;
-  // OAuth 回來後不強制跳會員頁，停在首頁讓使用者自己點
+
+  // OAuth 回來後停在首頁
   const isOAuthReturn = !!(new URLSearchParams(location.search).get('member_token') ||
     sessionStorage.getItem('2bl_member_token_pending'));
   if(isOAuthReturn){
@@ -3910,14 +3958,66 @@ if(document.readyState==='loading'){
     navToTab('home');
     return;
   }
-  if (lastTab === 'member' && savedEmail) {
-    await loadHome();
+
+  // 讀取上次儲存的完整狀態
+  let savedState = null;
+  try { savedState = JSON.parse(localStorage.getItem('2bl_page_state')||'null'); } catch(e){}
+  const rawTab = (savedState && savedState.tab) || localStorage.getItem('2bl_current_tab') || 'home';
+  const lastTab = (rawTab === 'myregs') ? 'member' : rawTab;
+
+  await loadHome();
+
+  // 還原頁面
+  if(lastTab === 'regForm' && savedState && savedState.sessionId){
+    // 還原報名表
+    try{
+      const s = await api({action:'getSession', id:savedState.sessionId, _t:Date.now()});
+      if(s && !s.error){
+        ST.currentSession = s;
+        // 還原攤數和設備數量
+        if(savedState.stallCount) ST.stallCount = savedState.stallCount;
+        if(savedState.equipQty) ST.equipQty = savedState.equipQty;
+        if(savedState.addonQty) ST.addonQty = savedState.addonQty;
+        const evt=(ST.events||[]).find(e=>String(e.id)===String(s.eventId));
+        buildFormHero(s, s.cover||evt?.cover||'');
+        const titleEl=$('formBackTitle');
+        if(titleEl) titleEl.textContent=s.name||'報名表';
+        openRegFormModal();
+        // 還原表單欄位（延遲等 DOM 渲染完）
+        setTimeout(()=>{
+          if(ST.memberEmail){
+            renderDynFormFull(s, false);
+            // 還原已填欄位
+            setTimeout(()=>{
+              const fields = savedState.formFields || {};
+              const ids = ['f_brand','f_name','f_phone','f_sellItem','f_brandIntro','f_note',
+                           'f_fb','f_ig','f_web','f_taxId','f_company','f_invoiceCarrier','f_invoiceEmail'];
+              ids.forEach(id=>{ const el=$(id); if(el && fields[id]) el.value=fields[id]; });
+              // 還原攤數顯示
+              const stallDisp=$('stallDisplay');
+              if(stallDisp) stallDisp.textContent=(ST.stallCount||1);
+              const stallInp=$('stallInput');
+              if(stallInp) stallInp.value=(ST.stallCount||1);
+              updateFee();
+            }, 400);
+          } else {
+            showEmailStep(s);
+          }
+        }, 300);
+        return;
+      }
+    }catch(e){ console.warn('還原報名表失敗', e); }
+    // 還原失敗→回首頁
+    navToTab('home');
+  } else if(lastTab === 'portal' && savedState && savedState.catFilter){
+    // 還原場次列表
+    ST.currentCatFilter = savedState.catFilter;
+    setTimeout(()=>{ filterCat(savedState.catFilter, null); }, 200);
+  } else if(lastTab === 'member' && savedEmail){
     setTimeout(()=>{ navToTab('member'); }, 200);
-  } else if (lastTab === 'support') {
-    await loadHome();
+  } else if(lastTab === 'support'){
     setTimeout(()=>{ navToTab('support'); }, 200);
   } else {
-    await loadHome();
     navToTab('home');
   }
 }
