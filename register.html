@@ -1457,7 +1457,10 @@ function goBack(){
 
 // ── UI v2：底部五分類導覽 ──
 function navToTab(tab){
-  try{ localStorage.setItem('2bl_current_tab', tab); }catch(e){}
+  try{
+    localStorage.setItem('2bl_current_tab', tab);
+    localStorage.setItem('2bl_page_state', JSON.stringify({tab}));
+  }catch(e){}
   ['botHome','botMember','botSupport'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.classList.remove('active');
