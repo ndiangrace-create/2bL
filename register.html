@@ -2947,8 +2947,11 @@ function adjEquip(k,delta){
     return;
   }
   ST.equipQty[k]=next;
-  const el=document.getElementById('eq_num_'+k);
-  if(el)el.textContent=next;
+  // 相容 input（id=eq_${k}）和 span（id=eq_num_${k}）兩種格式
+  const elInput=document.getElementById('eq_'+k);
+  if(elInput) elInput.value=next;
+  const elNum=document.getElementById('eq_num_'+k);
+  if(elNum) elNum.textContent=next;
   // 動態更新說明：已含幾件、額外幾件
   const _ed=(s?.equip||{})[k]||{};
   const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
