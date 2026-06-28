@@ -101,8 +101,54 @@ async function openSession(id){currentSession=sessions.find(s=>String(s.id)===St
 function backToSessions(){currentSession=null; regs=[]; $('regsView').classList.add('hidden'); $('sessionsView').classList.remove('hidden')}
 function canCheckin(r){return r.status==='已錄取' && (String(r.payStatus).includes('已繳費') || r.payStatus==='免費') && !String(r.transferStatus||'').includes('退費')}
 function filteredRegs(){const kw=$('kw').value.trim().toLowerCase(); const f=$('filter').value; return regs.filter(r=>{const hay=[r.brand,r.name,r.phone,r.email].join(' ').toLowerCase(); if(kw&&!hay.includes(kw))return false; if(f==='canCheckin')return canCheckin(r); if(f==='checked')return r.checkin==='已報到'; if(f==='notChecked')return r.checkin!=='已報到'; if(f==='issue')return String(r.adminNote||'').includes('特殊')||String(r.transferStatus||'').includes('退費'); return true})}
-function renderRegs(){const box=$('regsList'); const list=filteredRegs(); if(!list.length){box.innerHTML='<div class="card empty">沒有符合條件的名單</div>';return} box.innerHTML=list.map(r=>`<div class="reg"><h3>${esc(r.brand||'未填品牌')}</h3><div class="row"><span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span><span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span><span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}</div><div class="kv"><div class="k">聯絡人</div><div>${esc(r.name)}｜${esc(r.phone)}</div><div class="k">已繳金額</div><div>${money(r.amount||r.totalAmount||0)}</div><div class="k">付款時間</div><div>${dt(r.paidAt)}</div><div class="k">攤位數</div><div>${r.stallCount||1}</div><div class="k">加租設備</div><div>${esc(equipText(r.equip))}</div><div class="k">押金</div><div>${money(r.deposit||0)}</div><div class="k">備註</div><div>${esc(r.adminNote||'—')}</div></div><div class="actions"><button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>已報到</button><button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button><button class="warn" onclick="mark('${esc(r.id)}','noShow')">未到</button><button class="danger" onclick="mark('${esc(r.id)}','refundFlag')">特殊／退費標記</button></div></div>`).join('')}
-async function mark(id,mode){const note=(mode==='refundFlag'||mode==='noShow')?prompt('可輸入現場備註（可留空）',''):''; try{await apiPost('onsiteMark',{regId:id,mode,note}); showMsg('已更新'); if(currentSession) await openSession(currentSession.id)}catch(e){showMsg(e.message,'err')}}
+function renderRegs(){
+  const box=$('regsList');
+  const list=filteredRegs();
+  if(!list.length){box.innerHTML='<div class="card empty">沒有符合條件的名單</div>';return}
+  box.innerHTML=list.map(r=>{
+    const hasDeposit = Number(r.deposit||0) > 0;
+    const depositDone = r.depositRefunded==='已退押金'||r.depositRefunded==='押金沒收';
+    const depositTag = hasDeposit
+      ? `<span class="tag ${r.depositRefunded==='已退押金'?'ok':r.depositRefunded==='押金沒收'?'bad':'warn'}">${esc(r.depositRefunded||'未退押金')}</span>`
+      : '';
+    return `<div class="reg">
+      <h3>${esc(r.brand||'未填品牌')}</h3>
+      <div class="row">
+        <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
+        <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span>
+        <span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>
+        ${depositTag}
+        ${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}
+      </div>
+      <div class="kv">
+        <div class="k">聯絡人</div><div>${esc(r.name)}｜${esc(r.phone)}</div>
+        <div class="k">已繳金額</div><div>${money(r.amount||r.totalAmount||0)}</div>
+        <div class="k">付款時間</div><div>${dt(r.paidAt)}</div>
+        <div class="k">攤位數</div><div>${r.stallCount||1}</div>
+        <div class="k">加租設備</div><div>${esc(equipText(r.equip))}</div>
+        <div class="k">押金</div><div>${money(r.deposit||0)}　${esc(r.depositRefunded||'未退押金')}</div>
+        <div class="k">備註</div><div>${esc(r.adminNote||'—')}</div>
+      </div>
+      <div class="actions">
+        <button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>已報到</button>
+        <button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>
+        <button class="warn" onclick="mark('${esc(r.id)}','noShow')">未到</button>
+        ${hasDeposit&&!depositDone?`<button class="secondary" onclick="mark('${esc(r.id)}','depositRefund')">退押金</button><button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')">沒收押金</button>`:''}
+        <button class="danger" onclick="mark('${esc(r.id)}','refundFlag')">特殊／退費標記</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function mark(id,mode){
+  const needNote=['refundFlag','noShow','depositForfeited'];
+  const confirmMsgs={
+    depositRefund:'確認退還押金給攤商？',
+    depositForfeited:'確認沒收押金（違約）？押金將轉為收入。'
+  };
+  if(confirmMsgs[mode] && !confirm(confirmMsgs[mode])) return;
+  const note=needNote.includes(mode)?prompt('可輸入現場備註（可留空）',''):'';
+  try{await apiPost('onsiteMark',{regId:id,mode,note}); showMsg('已更新'); if(currentSession) await openSession(currentSession.id)}catch(e){showMsg(e.message,'err')}
+}
 boot();
 </script>
 </body>
