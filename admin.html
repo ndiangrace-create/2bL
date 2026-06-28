@@ -1380,11 +1380,14 @@ const _adminUrlParams = new URLSearchParams(window.location.search);
 // 租戶解析：優先從 URL 讀取，存入 sessionStorage 後清除網址列參數
 (function(){
   const urlTenant = _adminUrlParams.get('tenant') || _adminUrlParams.get('tenantId');
-  if (urlTenant) {
-    sessionStorage.setItem('2bl_tenant', urlTenant);
-    // 清除網址列的 tenant 參數，保持網址乾淨
-    const cleanUrl = window.location.pathname;
-    window.history.replaceState({}, '', cleanUrl);
+  const urlAdminToken = _adminUrlParams.get('admin_token');
+  const urlLoginError = _adminUrlParams.get('login_error');
+  // 先把 token 和 error 存起來，再清 URL
+  if (urlAdminToken) sessionStorage.setItem('2bl_admin_token_pending', urlAdminToken);
+  if (urlLoginError) sessionStorage.setItem('2bl_login_error_pending', urlLoginError);
+  if (urlTenant) sessionStorage.setItem('2bl_tenant', urlTenant);
+  if (urlTenant || urlAdminToken || urlLoginError) {
+    window.history.replaceState({}, '', window.location.pathname);
   }
 })();
 let TENANT_ID = sessionStorage.getItem('2bl_tenant') || _adminUrlParams.get('tenant') || _adminUrlParams.get('tenantId') || 'tuibile';
@@ -1546,12 +1549,16 @@ function startGoogleLogin(){
   window.location.href = `${workerBase}/auth/google/start?tenant=${encodeURIComponent(TENANT_ID)}`;
 }
 
-// OAuth callback 後，URL 帶 admin_token 回來
+// OAuth callback 後，URL 帶 admin_token 回來（已由 IIFE 存入 sessionStorage）
 async function handleOAuthCallback(){
   const params = new URLSearchParams(window.location.search);
-  const adminToken = params.get('admin_token');
-  const tenant = params.get('tenant');
-  const loginError = params.get('login_error');
+  // 優先從 sessionStorage 讀（IIFE 已清除 URL）
+  const adminToken = sessionStorage.getItem('2bl_admin_token_pending') || params.get('admin_token');
+  const tenant = sessionStorage.getItem('2bl_tenant') || params.get('tenant');
+  const loginError = sessionStorage.getItem('2bl_login_error_pending') || params.get('login_error');
+  // 清除 pending 狀態
+  sessionStorage.removeItem('2bl_admin_token_pending');
+  sessionStorage.removeItem('2bl_login_error_pending');
 
   if(loginError){
     const errMap = {
@@ -1563,7 +1570,6 @@ async function handleOAuthCallback(){
     };
     const errEl=$('loginErr');
     if(errEl){ errEl.textContent=errMap[loginError]||`登入失敗：${loginError}`; errEl.style.display='block'; }
-    // 清除 URL 參數
     window.history.replaceState({}, '', window.location.pathname);
     return;
   }
