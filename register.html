@@ -276,21 +276,15 @@ button,a,[onclick]{touch-action:manipulation}
 .act-meta-icon{font-size:16px;flex-shrink:0;margin-top:1px}
 .act-desc{font-size:15px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
 /* 設備確認 */
-/* 操作者閉環保護：設備確認列固定為「單價｜- 數字 +｜小計」，避免下次改版又回到上下箭頭 */
-.qty-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(86px,auto);align-items:center;gap:10px;min-height:58px;border-bottom:1px solid rgba(0,0,0,.06);padding:8px 0}
+.qty-row{display:grid;grid-template-columns:1fr 60px 28px auto;align-items:center;gap:8px;min-height:50px;border-bottom:1px solid rgba(0,0,0,.06)}
 .qty-row:last-child{border-bottom:0}
-.qty-icon{font-size:24px;margin-right:2px;flex-shrink:0}
-.qty-name-wrap{display:flex;align-items:center;gap:8px;min-width:0}
-.qty-name-text{min-width:0}
-.qty-name{font-size:17px;font-weight:900;color:#111;line-height:1.25;word-break:break-word}
-.qty-unit{font-size:13px;font-weight:800;color:#666;margin-top:3px;line-height:1.25}
-.qty-input{width:44px;height:38px;border:0;border-left:1px solid rgba(0,0,0,.12);border-right:1px solid rgba(0,0,0,.12);text-align:center;font-size:18px;font-weight:900;background:#fff;font-family:inherit;color:#111;-moz-appearance:textfield}
-.qty-input::-webkit-outer-spin-button,.qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.qty-stepper{display:inline-flex;align-items:center;height:40px;border:1.5px solid rgba(0,0,0,.12);border-radius:999px;background:#fff;overflow:hidden;flex-shrink:0}
-.qty-stepper button{width:34px;height:40px;border:0;background:#fff;color:#111;font-size:20px;font-weight:900;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
-.qty-stepper button:active{background:var(--c-purple)}
-.qty-total{font-size:17px;font-weight:900;color:#111;white-space:nowrap;text-align:right;min-width:86px}
-@media(max-width:390px){.qty-row{grid-template-columns:1fr auto;gap:8px}.qty-total{grid-column:2;text-align:center;font-size:15px;min-width:74px}.qty-name{font-size:16px}.qty-unit{font-size:12px}.qty-stepper button{width:30px}.qty-input{width:38px}}
+.qty-icon{font-size:22px;margin-right:2px}
+.qty-name-wrap{display:flex;align-items:center;gap:6px}
+.qty-name{font-size:16px;font-weight:800;color:#111}
+.qty-input{width:60px;height:40px;border:1.5px solid var(--line);border-radius:10px;text-align:center;font-size:18px;font-weight:900;background:#fff;font-family:inherit}
+.qty-spin{display:flex;flex-direction:column;gap:2px}
+.qty-spin button{width:28px;height:18px;border:0;border-radius:6px;background:var(--c-purple);color:#111;font-size:13px;font-weight:900;line-height:1;cursor:pointer;font-family:inherit}
+.qty-total{font-size:14px;font-weight:800;color:#111;white-space:nowrap;text-align:right}
 /* 總計費用 */
 .total-new{background:linear-gradient(135deg,#fff,var(--c-yellow));border:1.5px solid var(--c-yellow);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px}
 .total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-bottom:6px}
@@ -699,143 +693,6 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-helper-profile-title{ font-size:16px; font-weight:900; line-height:1.5; margin:0 0 6px; color:#111; }
 .m-helper-profile-text{ font-size:13px; color:#666; margin:0; line-height:1.5; }
 
-
-/* ══════════════════════════════════════
-   FIX 20260627：會員資料編輯閉環修復
-   目的：只修 register.html，不改 Worker / DB
-   - 讓會員編輯彈窗高於底部三顆固定按鈕
-   - 讓欄位在手機一欄顯示，不再擠在同一行或超出版面
-   - 讓儲存資料按鈕固定可見，可完成操作
-   ══════════════════════════════════════ */
-:root{
-  --dk:#111111;
-  --md:#666666;
-}
-#memberEditModal{
-  z-index:1600 !important;
-  align-items:flex-end !important;
-  justify-content:center !important;
-}
-#memberEditModal.show,
-#memberEditModal.open{
-  display:flex !important;
-}
-#memberEditModal .modal-box{
-  width:100% !important;
-  max-width:560px !important;
-  max-height:calc(100dvh - 36px) !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch !important;
-  border-radius:24px 24px 0 0 !important;
-  padding:20px 18px calc(24px + env(safe-area-inset-bottom)) !important;
-  background:#fff !important;
-}
-#memberEditModal label{
-  display:block !important;
-  width:100% !important;
-  margin:0 0 6px !important;
-  font-size:15px !important;
-  font-weight:800 !important;
-  line-height:1.35 !important;
-  color:#333 !important;
-}
-#memberEditModal input,
-#memberEditModal textarea{
-  display:block !important;
-  width:100% !important;
-  min-width:0 !important;
-  max-width:100% !important;
-  min-height:46px !important;
-  padding:11px 12px !important;
-  border:1.5px solid rgba(0,0,0,.16) !important;
-  border-radius:12px !important;
-  background:#fff !important;
-  color:#111 !important;
-  font-size:16px !important;
-  font-family:inherit !important;
-  line-height:1.45 !important;
-  outline:none !important;
-}
-#memberEditModal textarea{
-  min-height:96px !important;
-  resize:vertical !important;
-}
-#memberEditModal input:focus,
-#memberEditModal textarea:focus{
-  border-color:#91B574 !important;
-  box-shadow:0 0 0 3px rgba(145,181,116,.18) !important;
-}
-#memberEditModal .member-edit-grid-2{
-  display:grid !important;
-  grid-template-columns:1fr 1fr !important;
-  gap:10px !important;
-  margin-bottom:10px !important;
-}
-#memberEditModal .member-edit-field{
-  min-width:0 !important;
-  width:100% !important;
-}
-#memberEditModal .member-edit-card{
-  border-radius:18px !important;
-  padding:16px !important;
-  margin-bottom:14px !important;
-  overflow:hidden !important;
-}
-#memberEditModal #saveMemberBtn,
-#memberEditModal .btn-p{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  width:100% !important;
-  min-height:54px !important;
-  border:none !important;
-  border-radius:16px !important;
-  background:#91B574 !important;
-  color:#fff !important;
-  font-size:18px !important;
-  font-weight:900 !important;
-  font-family:inherit !important;
-  cursor:pointer !important;
-  box-shadow:0 6px 16px rgba(145,181,116,.28) !important;
-}
-#memberEditModal #saveMemberBtn{
-  position:sticky !important;
-  bottom:0 !important;
-  z-index:5 !important;
-  margin-top:16px !important;
-  margin-bottom:0 !important;
-}
-#memberEditModal #saveMemberBtn:disabled{
-  opacity:.65 !important;
-  cursor:wait !important;
-}
-#memberEditModal #saveSuccessMsg{
-  margin-top:8px !important;
-}
-@media(max-width:599px){
-  #memberEditModal .modal-box{
-    max-width:none !important;
-    max-height:calc(100dvh - 24px) !important;
-  }
-  #memberEditModal .member-edit-grid-2,
-  #memberEditModal div[style*="grid-template-columns:1fr 1fr"]{
-    grid-template-columns:1fr !important;
-  }
-  #memberEditModal input,
-  #memberEditModal textarea{
-    font-size:16px !important;
-  }
-}
-@media(min-width:600px){
-  #memberEditModal{
-    align-items:center !important;
-  }
-  #memberEditModal .modal-box{
-    border-radius:24px !important;
-    margin:16px !important;
-  }
-}
-
 </style>
 </head>
 <body>
@@ -1097,18 +954,18 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div id="memberEditHint" style="display:none;font-size:15px;color:#c0392b;background:#fdecea;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-weight:800;line-height:1.6"></div>
 
       <!-- 卡片一：基本聯絡資訊 -->
-      <div class="member-edit-card" style="background:#e8f4fd;border:1px solid #b8d9f0">
+      <div style="background:#e8f4fd;border:1px solid #b8d9f0;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">👤 基本聯絡資訊</div>
-        <div class="member-edit-grid-2">
-          <div class="member-edit-field"><label>姓名</label><input type="text" id="editName"></div>
-          <div class="member-edit-field"><label>手機</label><input type="tel" id="editPhone" inputmode="tel"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div><label style="font-size:14px;color:var(--md)">姓名</label><input type="text" id="editName"></div>
+          <div><label style="font-size:14px;color:var(--md)">手機</label><input type="tel" id="editPhone" inputmode="tel"></div>
         </div>
         <label style="font-size:14px;color:var(--md)">LINE ID</label>
         <input type="text" id="editLineId">
       </div>
 
       <!-- 卡片二：品牌資訊 -->
-      <div class="member-edit-card" style="background:#fde8f0;border:1px solid #f0b8d0">
+      <div style="background:#fde8f0;border:1px solid #f0b8d0;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🏷️ 品牌資訊</div>
         <label style="font-size:14px;color:var(--md)">品牌名稱</label>
         <input type="text" id="editBrand" style="margin-bottom:8px">
@@ -1119,25 +976,25 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       </div>
 
       <!-- 卡片三：社群連結（審核必要）-->
-      <div class="member-edit-card" style="background:#e8fdf0;border:1px solid #b8f0d0">
+      <div style="background:#e8fdf0;border:1px solid #b8f0d0;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:4px">🔗 社群連結</div>
         <div style="font-size:12px;color:#c0392b;margin-bottom:10px">審核必要，至少填一項</div>
-        <div class="member-edit-grid-2">
-          <div class="member-edit-field"><label>FB</label><input type="url" id="editFb" placeholder="https://facebook.com/..."></div>
-          <div class="member-edit-field"><label>IG</label><input type="url" id="editIg" placeholder="https://instagram.com/..."></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div><label style="font-size:14px;color:var(--md)">FB</label><input type="url" id="editFb" placeholder="https://facebook.com/..."></div>
+          <div><label style="font-size:14px;color:var(--md)">IG</label><input type="url" id="editIg" placeholder="https://instagram.com/..."></div>
         </div>
         <label style="font-size:14px;color:var(--md)">官網</label>
         <input type="url" id="editCollabUrl" placeholder="https://...">
       </div>
 
       <!-- 卡片四：常用發票資訊 -->
-      <div class="member-edit-card" style="background:#fdfbe8;border:1px solid #f0e8b8">
+      <div style="background:#fdfbe8;border:1px solid #f0e8b8;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🧾 常用發票資訊</div>
         <label style="font-size:14px;color:var(--md)">手機載具</label>
         <input type="text" id="editInvoiceCarrier" placeholder="/ABC-1234" style="margin-bottom:8px">
-        <div class="member-edit-grid-2">
-          <div class="member-edit-field"><label>統一編號</label><input type="text" id="editTaxId" inputmode="numeric" maxlength="8"></div>
-          <div class="member-edit-field"><label>公司抬頭</label><input type="text" id="editCompany"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div><label style="font-size:14px;color:var(--md)">統一編號</label><input type="text" id="editTaxId" inputmode="numeric" maxlength="8"></div>
+          <div><label style="font-size:14px;color:var(--md)">公司抬頭</label><input type="text" id="editCompany"></div>
         </div>
         <label style="font-size:14px;color:var(--md)">收發票 Email</label>
         <input type="email" id="editInvoiceEmail" inputmode="email">
@@ -1475,18 +1332,17 @@ function startMemberGoogleLogin() {
 
 // OAuth callback 後，URL 帶 member_token 回來
 async function handleMemberOAuthCallback() {
-  // 只處理「這次 Google OAuth 回來」的 pending token。
-  // 已登入的舊 token 只用來恢復登入狀態，不能每次刷新都導到我的紀錄。
-  const pendingToken = localStorage.getItem('2bl_member_token_pending') || '';
+  // member_token 已由 IIFE 存入 sessionStorage（因為 IIFE 會先清除網址）
+  const memberToken = localStorage.getItem('2bl_member_token_pending') || localStorage.getItem('2bl_member_token');
   const displayName = localStorage.getItem('2bl_display_name_pending') || '';
   const loginError = new URLSearchParams(window.location.search).get('login_error');
 
   if (loginError) {
     const errEl = document.getElementById('memberLoginErr');
     if (errEl) { errEl.textContent = '登入失敗：' + loginError; errEl.style.display = 'block'; }
-    return false;
+    return;
   }
-  if (!pendingToken) return false;
+  if (!memberToken) return;
 
   // 清除暫存的 pending token
   localStorage.removeItem('2bl_member_token_pending');
@@ -1494,23 +1350,20 @@ async function handleMemberOAuthCallback() {
 
   // 解析 JWT payload 取 email
   try {
-    const memberToken = pendingToken;
     let _b64 = memberToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
     let _raw = atob(_b64);
     let _str; try { _str = decodeURIComponent(escape(_raw)); } catch(e) { _str = _raw; }
     const payload = JSON.parse(_str);
     const email = (payload.email || '').toLowerCase().trim();
-    if (!email) return false;
+    if (!email) return;
     ST.memberEmail = email;
     ST.memberToken = memberToken;
     memberSaveEmail(email);  // 存入 localStorage 供後續使用
     localStorage.setItem('2bl_member_token', memberToken);
-    // OAuth 登入完成時才進會員頁；一般刷新不會走到這裡。
-    await safeLoadMemberPage(email,{navOptions:{noPush:true}});
-    return true;
+    // 載入會員資料
+    await safeLoadMemberPage(email);
   } catch(e) {
     console.error('member token parse failed', e);
-    return false;
   }
 }
 const _urlParams = new URLSearchParams(window.location.search);
@@ -1552,7 +1405,6 @@ let ST = {
   member:null, memberEmail:null, equipQty:{}, stallCount:1,
   currentCatFilter:'市集場次',
 };
-window.ST = ST;
 
 function $(id){return document.getElementById(id);}
 function toast(msg,dur=2500){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
@@ -1613,28 +1465,13 @@ function navToTab(tab){
   if(tab==='home'){
     navTo('home');
   } else if(tab==='member'){
-    // 我的紀錄 → 進會員頁，預設顯示「我的報名」頁籤。
-    // PROTECTED-MEMBER-RECORDS-FLOW-20260627:
-    // 不能只顯示 memberArea，必須同步呼叫 safeLoadMemberPage() 重新載入會員資料與報名紀錄。
-    // 否則刷新或切回「我的紀錄」會出現空白頁。
+    // 我的紀錄 → 進會員頁，預設顯示「我的報名」頁籤
     const email=ST.memberEmail||memberSafeEmail();
     if(email){
-      navTo('member',{noPush:true});
       memberShowArea('regs');
-      const listEl=$('myRegsList');
-      if(listEl && !String(listEl.textContent||'').trim()){
-        listEl.innerHTML='<div style="color:#999;font-size:16px;text-align:center;padding:20px">報名紀錄載入中…</div>';
-      }
-      clearTimeout(ST.__memberNavLoadTimer);
-      ST.__memberNavLoadTimer=setTimeout(()=>{
-        safeLoadMemberPage(email,{navOptions:{noPush:true}}).catch(e=>{
-          console.warn('[member nav load failed]', e);
-          const el=$('myRegsList');
-          if(el) el.innerHTML='<div style="color:#c0392b;font-size:16px;text-align:center;padding:20px;line-height:1.7">報名紀錄暫時載入失敗，請稍後再試。<br>資料沒有消失，請截圖給官方 LINE。</div>';
-        });
-      },30);
+      navTo('member');
     } else {
-      navTo('member',{noPush:true});
+      navTo('member');
       memberShowLogin();
     }
   } else if(tab==='support'){
@@ -2280,7 +2117,6 @@ async function checkMemberStep(){
     setTimeout(()=>{ renderDynFormFull(ST.currentSession,true); },600);
   }
 }
-
 function renderDynFormFull(s, isNew=false){
   const V=ST.member||{};
   const email=ST.memberEmail||V.email||'';
@@ -2311,11 +2147,6 @@ function renderDynFormFull(s, isNew=false){
   const sType=s.type||'市集場次';
   const isCollab=sType==='合作申請';
   const isMkt=sType==='市集場次'||sType==='通路寄賣';
-  const agreementRequired = s.agreementRequired !== false;
-  ST._agreementRequired = agreementRequired;
-  ST._agreementViewed = false;
-  ST._agreementAccepted = !agreementRequired;
-  ST._agreementData = s.agreementContent ? {title:s.agreementTitle||'報名合約／活動細則與攤商規範', content:s.agreementContent, version:s.agreementVersion||''} : null;
   const stallUnit=isMkt?'攤':'份';
   const equipDefs=Object.entries(s.equip||{}).filter(([k,v])=>v&&(v.open===true||v.open==='true'));
   const addons=(s.addons||[]).map((a,i)=>({...a,_idx:i})).filter(a=>a.open===true||a.open==='true');
@@ -2359,13 +2190,13 @@ function renderDynFormFull(s, isNew=false){
 
     // 租幾攤
     html+=`<div class="qty-row">
-      <div class="qty-name-wrap"><span class="qty-icon">🏪</span><div class="qty-name-text"><div class="qty-name">租幾${stallUnit}</div><div class="qty-unit">單價 NT$${Number(s.fee)||0}</div></div></div>
-      <div class="qty-stepper" aria-label="租幾${stallUnit}">
-        <button type="button" onclick="adjStall(-1)" aria-label="減少">−</button>
-        <input class="qty-input" type="number" id="stallInput" value="1" min="1" max="${Number(s.maxStalls)>0?s.maxStalls:99}" oninput="adjStallDirect(this.value)" onchange="adjStallDirect(this.value)">
-        <button type="button" onclick="adjStall(1)" aria-label="增加">+</button>
+      <div class="qty-name-wrap"><span class="qty-icon">🏪</span><span class="qty-name">租幾${stallUnit}</span></div>
+      <input class="qty-input" type="number" id="stallInput" value="1" min="1" max="${Number(s.maxStalls)>0?s.maxStalls:99}" oninput="adjStallDirect(this.value)" onchange="adjStallDirect(this.value)">
+      <div class="qty-spin">
+        <button type="button" onclick="adjStall(1)">⌃</button>
+        <button type="button" onclick="adjStall(-1)">⌄</button>
       </div>
-      <div class="qty-total" id="stallTotal">NT$${Number(s.fee)||0}</div>
+      <div class="qty-total" id="stallTotal">（NT$${Number(s.fee)||0}）</div>
     </div>`;
 
     // 設備品項
@@ -2376,13 +2207,13 @@ function renderDynFormFull(s, isNew=false){
       const inclNote=Number(v.incl)>0?`（含${v.incl}）`:'';
       const priceTxt=Number(v.price)>0?` NT$${v.price}`:'';
       html+=`<div class="qty-row">
-        <div class="qty-name-wrap"><span class="qty-icon">${icon}</span><div class="qty-name-text"><div class="qty-name">${esc(k)}${inclNote}</div><div class="qty-unit">單價 NT$${Number(v.price)||0}</div></div></div>
-        <div class="qty-stepper" aria-label="${esc(k)}數量">
-          <button type="button" onclick="adjEquip('${k}',-1)" aria-label="減少">−</button>
-          <input class="qty-input" type="number" id="eq_${k}" value="${v.incl||0}" min="0" oninput="adjEquipDirect('${k}',this.value)" onchange="adjEquipDirect('${k}',this.value)">
-          <button type="button" onclick="adjEquip('${k}',1)" aria-label="增加">+</button>
+        <div class="qty-name-wrap"><span class="qty-icon">${icon}</span><span class="qty-name">${esc(k)}${inclNote}${priceTxt}</span></div>
+        <input class="qty-input" type="number" id="eq_${k}" value="${v.incl||0}" min="0" oninput="adjEquipDirect('${k}',this.value)" onchange="adjEquipDirect('${k}',this.value)">
+        <div class="qty-spin">
+          <button type="button" onclick="adjEquip('${k}',1)">⌃</button>
+          <button type="button" onclick="adjEquip('${k}',-1)">⌄</button>
         </div>
-        <div class="qty-total" id="eqTotal_${k}">NT$0</div>
+        <div class="qty-total" id="eqTotal_${k}">（NT$0）</div>
       </div>`;
     });
 
@@ -2390,13 +2221,13 @@ function renderDynFormFull(s, isNew=false){
     addons.forEach((a)=>{
       ST.addonQty[a._idx]=0;
       html+=`<div class="qty-row">
-        <div class="qty-name-wrap"><span class="qty-icon">➕</span><div class="qty-name-text"><div class="qty-name">${esc(a.name||'')}</div><div class="qty-unit">單價 NT$${Number(a.price)||0}</div></div></div>
-        <div class="qty-stepper" aria-label="${esc(a.name||'加購')}數量">
-          <button type="button" onclick="adjAddon(${a._idx},-1)" aria-label="減少">−</button>
-          <input class="qty-input" type="number" id="addon_${a._idx}" value="0" min="0" oninput="adjAddonDirect(${a._idx},this.value)" onchange="adjAddonDirect(${a._idx},this.value)">
-          <button type="button" onclick="adjAddon(${a._idx},1)" aria-label="增加">+</button>
+        <div class="qty-name-wrap"><span class="qty-icon">➕</span><span class="qty-name">${esc(a.name||'')}${Number(a.price)>0?' NT$'+a.price:''}</span></div>
+        <input class="qty-input" type="number" id="addon_${a._idx}" value="0" min="0" oninput="adjAddonDirect(${a._idx},this.value)" onchange="adjAddonDirect(${a._idx},this.value)">
+        <div class="qty-spin">
+          <button type="button" onclick="adjAddon(${a._idx},1)">⌃</button>
+          <button type="button" onclick="adjAddon(${a._idx},-1)">⌄</button>
         </div>
-        <div class="qty-total" id="addonTotal_${a._idx}">NT$0</div>
+        <div class="qty-total" id="addonTotal_${a._idx}">（NT$0）</div>
       </div>`;
     });
 
@@ -2488,29 +2319,14 @@ function renderDynFormFull(s, isNew=false){
   }
 
   // ── ⑥ 合約 ──
-  if(agreementRequired){
-    html+=`<div class="form-card-new card-purple" id="contractCard">
-      <div class="form-card-head">
-        <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-purple)">${cardNum+2}</span>合約</div>
-        <span class="contract-done-badge" id="contractDoneBadge">✅ 已完成合約同意</span>
-      </div>
-      <p style="font-size:15px;color:#555;margin-bottom:12px">請先查看合約內容，再勾選同意後送出報名。</p>
-      <button type="button" class="contract-open-btn" onclick="openAgreementModal()">查看合約內容 ›</button>
-      <label id="contractAgreeLabel" style="display:flex;align-items:flex-start;gap:10px;margin-top:12px;padding:12px;border-radius:12px;background:#fff;border:1px solid rgba(0,0,0,.08);font-size:15px;color:#555;cursor:not-allowed;opacity:.55">
-        <input type="checkbox" id="contractAgreeCheckbox" disabled onchange="onAgreementCheck(this.checked)" style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:var(--g)">
-        <span>我已閱讀並同意本場次報名合約／活動規範</span>
-      </label>
-      <div id="contractHint" style="font-size:13px;color:#777;margin-top:8px">需點開合約內容後，才可勾選同意。</div>
-    </div>`;
-  } else {
-    html+=`<div class="form-card-new card-purple" id="contractCard">
-      <div class="form-card-head">
-        <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-purple)">${cardNum+2}</span>合約</div>
-        <span class="contract-done-badge" style="display:inline-block">免合約</span>
-      </div>
-      <p style="font-size:15px;color:#555;margin:0">此場次未啟用合約同意，可直接送出報名。</p>
-    </div>`;
-  }
+  html+=`<div class="form-card-new card-purple" id="contractCard">
+    <div class="form-card-head">
+      <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-purple)">${cardNum+2}</span>合約</div>
+      <span class="contract-done-badge" id="contractDoneBadge">✅ 已完成合約同意</span>
+    </div>
+    <p style="font-size:15px;color:#555;margin-bottom:12px">請先查看合約內容，完成同意後才能送出報名。</p>
+    <button type="button" class="contract-open-btn" onclick="openAgreementModal()">查看合約內容 ›</button>
+  </div>`;
 
   // ── ⑦ 備註留言 ──
   html+=`<div class="form-card-new card-pink">
@@ -2529,11 +2345,10 @@ function renderDynFormFull(s, isNew=false){
   const agArea=$('agreementArea');
   if(agArea) agArea.style.display='none'; // 用新版合約卡片取代
 
-  // 送出按鈕：需要合約時先停用；免合約時可直接送出
+  // 送出按鈕初始 disabled
   const subBtn=$('submitBtn');
-  if(subBtn){ subBtn.style.display='block'; subBtn.disabled=agreementRequired; subBtn.classList.add('submit-btn-new'); subBtn.textContent=agreementRequired?'請先閱讀並同意合約':'送出報名'; }
+  if(subBtn){ subBtn.style.display='block'; subBtn.disabled=true; subBtn.classList.add('submit-btn-new'); subBtn.textContent='送出報名'; }
 
-  try{ initAgreementArea(s); }catch(e){ console.warn('[initAgreementArea call failed]', e); }
   updateFee();
   setTimeout(()=>{ preFillMemberFields(); }, 100);
 }
@@ -2597,7 +2412,10 @@ function updateEquipRowTotal(k){
   const extra=Math.max(0,want-incl);
   const subtotal=(v.price||0)*extra;
   const el=$('eqTotal_'+k);
-  if(el) el.textContent='（NT$'+subtotal+'）';
+  if(el){
+    const isQtyRow=el.classList.contains('qty-total');
+    el.textContent=isQtyRow?'（NT$'+subtotal+'）':'NT$'+subtotal;
+  }
 }
 
 // 發票修改彈窗
@@ -2675,12 +2493,6 @@ function resetRegFormState(options={}){
   if (cb) { cb.checked = false; cb.disabled = true; }
   const lbl = $('agreementCheckLabel');
   if (lbl) { lbl.style.opacity = '.5'; lbl.style.cursor = 'not-allowed'; }
-  const ccb = $('contractAgreeCheckbox');
-  if (ccb) { ccb.checked = false; ccb.disabled = true; }
-  const clbl = $('contractAgreeLabel');
-  if (clbl) { clbl.style.opacity = '.55'; clbl.style.cursor = 'not-allowed'; }
-  const badge = $('contractDoneBadge');
-  if (badge) badge.style.display = 'none';
   const modalBox=document.querySelector('#regFormModal .modal-box');
   if(modalBox){ modalBox.querySelectorAll('.success-screen').forEach(el=>el.remove()); }
   const formErr=$('formError');
@@ -3107,8 +2919,8 @@ function adjAddon(i,delta){
   const cur=ST.addonQty[i]||0;
   const next=Math.max(0,cur+delta);
   ST.addonQty[i]=next;
-  const el=document.getElementById('addon_'+i);
-  if(el) el.value=next;
+  const el=document.getElementById('addon_num_'+i);
+  if(el)el.textContent=next;
   updateFee();
 }
 
@@ -3135,8 +2947,8 @@ function adjEquip(k,delta){
     return;
   }
   ST.equipQty[k]=next;
-  const el=document.getElementById('eq_'+k);
-  if(el) el.value=next;
+  const el=document.getElementById('eq_num_'+k);
+  if(el)el.textContent=next;
   // 動態更新說明：已含幾件、額外幾件
   const _ed=(s?.equip||{})[k]||{};
   const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
@@ -3211,11 +3023,14 @@ function updateFee(){
   // feeBox 在卡片內時永遠顯示（不需要切換）
   const feeBoxEl=$('feeBox');
   if(feeBoxEl && !feeBoxEl.closest('#dynForm')) feeBoxEl.style.display=total>0?'block':'none';
-  // 更新表格式設備各列小計
+  // 更新設備各列小計（相容 qty-row 與 table 兩種UI格式）
   const _s=ST.currentSession||{};
   // 攤位小計
   const stEl=$('stallTotal');
-  if(stEl) stEl.textContent='NT$'+fee;
+  if(stEl){
+    const isQtyRow=stEl.classList.contains('qty-total');
+    stEl.textContent=isQtyRow?'（NT$'+fee+'）':'NT$'+fee;
+  }
   // 設備各列小計
   Object.entries(_s.equip||{}).forEach(([k,v])=>{
     if(!v||!v.open) return;
@@ -3224,13 +3039,21 @@ function updateFee(){
     const _want=ST.equipQty[k]||0;
     const _extra=Math.max(0,_want-_incl);
     const _sub=(Number(v.price)||0)*_extra;
-    const _el=$('eqTotal_'+k); if(_el) _el.textContent='NT$'+_sub;
+    const _el=$('eqTotal_'+k);
+    if(_el){
+      const _isQty=_el.classList.contains('qty-total');
+      _el.textContent=_isQty?'（NT$'+_sub+'）':'NT$'+_sub;
+    }
   });
   // 加購各列小計
   (_s.addons||[]).forEach((a,i)=>{
     if(!a||!(a.open===true||a.open==='true')) return;
     const _sub2=(Number(a.price)||0)*(ST.addonQty&&ST.addonQty[i]||0);
-    const _el2=$('addonTotal_'+i); if(_el2) _el2.textContent='NT$'+_sub2;
+    const _el2=$('addonTotal_'+i);
+    if(_el2){
+      const _isQty2=_el2.classList.contains('qty-total');
+      _el2.textContent=_isQty2?'（NT$'+_sub2+'）':'NT$'+_sub2;
+    }
   });
 }
 
@@ -3262,8 +3085,7 @@ async function initAgreementArea(session) {
     ST._agreementAccepted = true;
     return;
   }
-  // 新版合約同意放在 dynForm 內的 contractCard，舊 agreementArea 保持隱藏
-  area.style.display = 'none';
+  area.style.display = 'block';
   ST._agreementRequired = true;
   ST._agreementViewed   = false;
   ST._agreementAccepted = false;
@@ -3272,7 +3094,9 @@ async function initAgreementArea(session) {
   if (cb) { cb.checked = false; cb.disabled = true; }
   const lbl = $('agreementCheckLabel');
   if (lbl) { lbl.style.opacity = '.5'; lbl.style.cursor = 'not-allowed'; }
-  // 送出按鈕由新版 contractAgreeCheckbox / onAgreementCheck 控制，不在這裡隱藏
+  // 送出按鈕預設隱藏
+  const submitBtn = $('submitBtn');
+  if (submitBtn) submitBtn.style.display = 'none';
   // 預載合約內容（快取在 ST）
   if (session && session.id) {
     try {
@@ -3324,12 +3148,6 @@ function openAgreementModal() {
   if (cb) cb.disabled = false;
   const lbl = $('agreementCheckLabel');
   if (lbl) { lbl.style.opacity = '1'; lbl.style.cursor = 'pointer'; }
-  const ccb = $('contractAgreeCheckbox');
-  if (ccb) ccb.disabled = false;
-  const clbl = $('contractAgreeLabel');
-  if (clbl) { clbl.style.opacity = '1'; clbl.style.cursor = 'pointer'; }
-  const hint = $('contractHint');
-  if (hint) hint.textContent = '已查看合約，請勾選同意後即可送出。';
 }
 
 function closeAgreementModal() {
@@ -3346,31 +3164,18 @@ function onAgreementRead() {
   const lbl = $('agreementCheckLabel');
   if (cb) { cb.disabled = false; }
   if (lbl) { lbl.style.opacity = '1'; lbl.style.cursor = 'pointer'; }
-  const ccb = $('contractAgreeCheckbox');
-  const clbl = $('contractAgreeLabel');
-  if (ccb) { ccb.disabled = false; }
-  if (clbl) { clbl.style.opacity = '1'; clbl.style.cursor = 'pointer'; }
-  const hint = $('contractHint');
-  if (hint) hint.textContent = '已查看合約，請勾選同意後即可送出。';
-  const card = $('contractCard');
-  try{ if(card) card.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
 }
 
 function onAgreementCheck(checked) {
   ST._agreementAccepted = !!checked;
-  const oldCb = $('agreementCheckbox');
-  const newCb = $('contractAgreeCheckbox');
-  if (oldCb && oldCb.checked !== !!checked) oldCb.checked = !!checked;
-  if (newCb && newCb.checked !== !!checked) newCb.checked = !!checked;
-  const badge = $('contractDoneBadge');
-  if (badge) badge.style.display = checked ? 'inline-block' : 'none';
-  const hint = $('contractHint');
-  if (hint) hint.textContent = checked ? '合約同意已完成，可以送出報名。' : (ST._agreementViewed ? '已查看合約，請勾選同意後即可送出。' : '需點開合約內容後，才可勾選同意。');
   const submitBtn = $('submitBtn');
   if (!submitBtn) return;
-  submitBtn.style.display = 'block';
-  submitBtn.disabled = !checked;
-  submitBtn.textContent = checked ? '送出報名' : '請先閱讀並同意合約';
+  if (checked) {
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = false;
+  } else {
+    submitBtn.style.display = 'none';
+  }
 }
 
 async function submitReg(ev){
@@ -3438,8 +3243,8 @@ async function submitReg(ev){
       invoiceCarrier:($('f_invoiceCarrier')?.value||'').trim(),taxId:($('f_taxId')?.value||'').trim(),invoiceTitle:($('f_invoiceTitle')?.value||'').trim(),invoiceEmail:(($('f_invoiceEmail')?.value||'').trim()||($('f_personalInvoiceEmail')?.value||'').trim()||email),selectedDates,
       brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:M.fb||M.fb_url||'',ig:M.ig||M.ig_url||'',remark:($('f_remark')?.value||'').trim(),stallNumber:ST.selectedStall||'',participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
       // ── 合約同意（後端必須收到這兩個欄位才建立報名）──
-      agreementViewed:   ST._agreementRequired === false ? true : ST._agreementViewed === true,
-      agreementAccepted: ST._agreementRequired === false ? true : ST._agreementAccepted === true,
+      agreementViewed:   ST._agreementViewed   !== false,
+      agreementAccepted: ST._agreementAccepted !== false,
     };
     const res=await apiPost(body);
     if(!res){ toast('❌ 後端沒有回傳資料'); restoreBtn(); return false; }
@@ -3948,11 +3753,7 @@ function initFrontApp(){
   }catch(e){}
   try{ applySiteConfig(); }catch(e){}
   // 使用 bootDbFront 統一處理：OAuth callback + 頁面還原 + loadHome
-  if (typeof window.bootDbFront === 'function') {
-    window.bootDbFront().catch(e=>{ console.error('bootDbFront error:',e); loadHome(); });
-  } else {
-    loadHome().catch(e=>console.error('loadHome fallback error:', e));
-  }
+  bootDbFront().catch(e=>{ console.error('bootDbFront error:',e); loadHome(); });
   const p=new URLSearchParams(window.location.search);
   const deepSes=p.get('ses')||p.get('session')||p.get('sessionId');
   if(deepSes){ setTimeout(()=>openSession(deepSes), 800); }
@@ -3969,41 +3770,17 @@ if(document.readyState==='loading'){
 // DB-DRIVEN CORE PATCH 20260618：資料庫主導前台，不再靠零散前台狀態
 // ────────────────────────────────────────────────────────────────
 (function(){
-  const OPEN_STATUS = new Set(['報名中','開放中','open','active','published','registration_open','accepting','上架']);
-  const CLOSED_STATUS = new Set(['停用','關閉','已關閉','截止','已截止','closed','cancelled','canceled','archived','disabled','paused']);
-  const portalTypeMap = {'市集報名':['市集場次','市集'],'體驗活動':['活動報名','體驗活動','體驗'],'通路寄賣':['通路寄賣','寄賣'],'合作洽詢':['合作申請','合作洽詢','合作']};
-  function unwrapData(v){ return (v && typeof v==='object' && !Array.isArray(v) && 'data' in v) ? v.data : v; }
-  function asArr(v){ v=unwrapData(v); return Array.isArray(v)?v:[]; }
-  function normList(v){
-    v = unwrapData(v);
-    if(Array.isArray(v)) return v.map(x=>String(x||'').trim()).filter(Boolean);
-    if(v==null || v==='') return [];
-    const str=String(v).trim();
-    if(!str) return [];
-    if(str[0]==='['){ try{ const parsed=JSON.parse(str); if(Array.isArray(parsed)) return parsed.map(x=>String(x||'').trim()).filter(Boolean); }catch(e){} }
-    return str.split(/[,，、|｜\n]/).map(x=>x.trim()).filter(Boolean);
-  }
-  function openSess(s){
-    if(!s) return false;
-    if(s.isHidden || s.hidden || s.testMode || s.internal) return false;
-    if(s.regOpen === false || s.open === false) return false;
-    if(s.isFull === true || Number(s.remainSlots) === 0) return false;
-    const raw=String(s.status||s.regStatus||s.state||'').trim();
-    const st=raw.toLowerCase();
-    if(!raw) return true;
-    if(CLOSED_STATUS.has(raw) || CLOSED_STATUS.has(st)) return false;
-    if(OPEN_STATUS.has(raw) || OPEN_STATUS.has(st)) return true;
-    if(raw.includes('報名') || raw.includes('開放')) return true;
-    return false;
-  }
-  function uniqueSessions(list){ return [...new Map(asArr(list).filter(Boolean).map(s=>[String(s.id||s.sessionId),s])).values()].filter(s=>s.id||s.sessionId); }
+  const OPEN_STATUS = new Set(['報名中','開放中']);
+  const portalTypeMap = {'市集報名':['市集場次'],'體驗活動':['活動報名','體驗活動'],'通路寄賣':['通路寄賣'],'合作洽詢':['合作申請']};
+  function openSess(s){ return OPEN_STATUS.has(String(s?.status||'')); }
+  function asArr(v){ return Array.isArray(v)?v:[]; }
+  function uniqueSessions(list){ return [...new Map(asArr(list).filter(Boolean).map(s=>[String(s.id),s])).values()]; }
   function saveEmail(email){ try{ localStorage.setItem('tb_member_email', email||''); localStorage.removeItem('tb_member'); }catch(e){} }
   function readEmail(){ try{ return localStorage.getItem('tb_member_email')||''; }catch(e){ return ''; } }
   window.isOpenSession = openSess;
   window.loadHome = async function(){
     const evEl=$('eventsList'); if(evEl) evEl.innerHTML='<div style="padding:20px;color:#aaa;font-size:13px">載入中…</div>';
-    try{ let boot = await api({action:'frontBootstrap', tenant:TENANT_ID, _t:Date.now()});
-      boot = unwrapData(boot) || {};
+    try{ const boot = await api({action:'frontBootstrap', tenant:TENANT_ID, _t:Date.now()});
       ST.events=asArr(boot.events); ST.sessions=uniqueSessions(boot.sessions).filter(openSess); ST.allSessionsData=ST.sessions;
       if(boot.tenant){
         // 動態更新 LINE_URL
@@ -4041,33 +3818,24 @@ if(document.readyState==='loading'){
     // ── 精選主題活動（ST.events 活動層）──
     const fl=$('featuredEventsList');
     if(fl){
-      let events=asArr(ST.events);
-      if(!events.length){
-        const groups=new Map();
-        uniqueSessions(ST.allSessionsData).filter(openSess).forEach(s=>{
-          const key=String(s.eventId||s.event_id||s.theme||'').trim();
-          if(!key) return;
-          if(!groups.has(key)) groups.set(key,{id:key,title:s.eventTitle||s.event_title||s.theme||'主題活動',location:s.region||s.venue||'',cover:s.eventCover||s.event_cover||s.cover||s.coverUrl||''});
-        });
-        events=[...groups.values()];
-      }
+      const events=asArr(ST.events);
       if(events.length){
         fl.innerHTML=events.map(e=>{
-          const evId=String(e.id||e.eventId||'');
-          const evTitle=e.title||e.name||'主題活動';
-          const evCover=e.cover||e.coverUrl||e.imageUrl||'';
-          const coverHtml=evCover
-            ?`<img src="${esc(evCover)}" alt="" style="width:100%;height:104px;object-fit:cover;background:#DDEAD1;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          const feeStr=Number(e.fee)>0?'NT$'+Number(e.fee).toLocaleString():'免費';
+          const coverHtml=e.cover
+            ?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:104px;object-fit:cover;background:#DDEAD1;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
             :``;
-          const placeholderHtml=`<div style="display:${evCover?'none':'flex'};width:100%;height:104px;background:#DDEAD1;align-items:center;justify-content:center">
+          const placeholderHtml=`<div style="display:${e.cover?'none':'flex'};width:100%;height:104px;background:#DDEAD1;align-items:center;justify-content:center">
             <img src="IP歡迎.png" style="width:56px;height:56px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:32px>🎪</span>'">
           </div>`;
-          return `<div style="position:relative;min-width:155px;max-width:165px;background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;flex-shrink:0" onclick="openActivityFromHome('${esc(evId)}')">
+          return `<div style="position:relative;min-width:155px;max-width:165px;background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;flex-shrink:0" onclick="openActivityFromHome('${esc(e.id)}')">
             ${coverHtml}${placeholderHtml}
+            <button onclick="event.stopPropagation();shareSession('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔗</button>
             <div style="padding:10px">
-              <div style="font-size:15px;font-weight:900;color:#111;line-height:1.3;min-height:38px">${esc(evTitle)}</div>
+              <div style="font-size:15px;font-weight:900;color:#111;line-height:1.3;min-height:38px">${esc(e.title||'')}</div>
               ${e.location?`<div style="font-size:12px;color:#555;margin-top:3px">📍 ${esc(e.location)}</div>`:''}
-              <button onclick="event.stopPropagation();registerFromHome('${esc(evId)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:#DCD7ED;color:#111;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">查看場次</button>
+              <div style="font-size:15px;font-weight:900;color:#111;margin-top:5px">${feeStr}</div>
+              <button onclick="event.stopPropagation();registerFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:#DCD7ED;color:#111;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">立即報名</button>
             </div>
           </div>`;
         }).join('');
@@ -4113,39 +3881,12 @@ if(document.readyState==='loading'){
   };
   window.openSessionFromCard=function(ev,sessionId){ if(ev){ev.preventDefault();ev.stopPropagation();} openSession(sessionId); }; window.handleSessionTap=window.openSessionFromCard;
   window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||s.event_id||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
-  window.filterCat=async function(type,el){
-    ST.currentCatFilter=type;
-    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-    if(el) el.classList.add('active');
-    const title=$('portalTitle'); if(title) title.textContent=type;
-    const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>';
-    navTo('portal');
-    const allow=portalTypeMap[type]||[];
-    const matchesPortal=s=>{
-      const ps=normList(s.portals||s.portal||s.categories);
-      const st=String(s.type||s.category||s.regType||'').trim();
-      return ps.includes(type) || allow.includes(st) || allow.some(a=>st.includes(a.replace('場次','').replace('活動','')));
-    };
-    let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&matchesPortal(s));
-    if(!data.length){
-      data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess);
-      ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]);
-      data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&matchesPortal(s));
-    }
-    if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>';
-  };
+  window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
   const _oldCheckMemberStep=window.checkMemberStep; window.checkMemberStep=async function(){ const email=(($('step1Email')&&$('step1Email').value)||'').trim(); if(email) saveEmail(email); return _oldCheckMemberStep?_oldCheckMemberStep():undefined; };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
-  if(window.__tbBootDbFrontStarted) return;
-  window.__tbBootDbFrontStarted = true;
-  const didOAuthLogin = await handleMemberOAuthCallback();
-  if(didOAuthLogin){
-    // 登入 callback 已完成會員頁導向；補載首頁資料但不覆蓋目前所在頁。
-    try{ await loadHome(); }catch(e){ console.warn('[loadHome after OAuth failed]', e); }
-    return;
-  }
-  // 從 localStorage 恢復登入狀態；只設定登入資料，不主動切頁。
+  await handleMemberOAuthCallback();
+  // 從 localStorage 恢復登入狀態
   const savedToken = localStorage.getItem('2bl_member_token');
   const savedEmail = readEmail();
   if (savedToken && savedEmail) {
@@ -4166,10 +3907,7 @@ if(document.readyState==='loading'){
   }
   if (lastTab === 'member' && savedEmail) {
     await loadHome();
-    // PROTECTED-MEMBER-REFRESH-FLOW-20260627:
-    // 刷新停在會員頁時，不可只 navToTab('member')，因為那只會切畫面；
-    // 必須走 safeLoadMemberPage()，才會把會員資料與我的報名重新載入。
-    await safeLoadMemberPage(savedEmail,{navOptions:{noPush:true}});
+    setTimeout(()=>{ navToTab('member'); }, 200);
   } else if (lastTab === 'support') {
     await loadHome();
     setTimeout(()=>{ navToTab('support'); }, 200);
@@ -4178,7 +3916,6 @@ if(document.readyState==='loading'){
     navToTab('home');
   }
 }
-  window.bootDbFront = bootDbFront;
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootDbFront,{once:true}); else setTimeout(bootDbFront,0);
 })();
 

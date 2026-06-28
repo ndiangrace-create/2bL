@@ -175,7 +175,7 @@ body{
   white-space:nowrap;line-height:1.35;min-height:40px;
 }
 .btn:active{opacity:.72;transform:scale(.97)}
-.btn-g{background:var(--ov-btn);color:#fff}
+.btn-g{background:var(--ov-btn);color:#2C2C2C}
 .btn-g:hover{background:var(--ov-btn-dk)}
 .btn-s{background:#EFEFED;color:var(--dk)}
 .btn-r{background:var(--s-err-bg);color:var(--s-err)}
@@ -259,7 +259,7 @@ textarea{min-height:64px;resize:vertical}
   color:var(--ov-txt);
   transition:background .12s,border-color .12s;
 }
-.ov-filter-btn.active{background:var(--ov-btn)!important;color:#fff!important;border-color:var(--ov-btn)!important}
+.ov-filter-btn.active{background:var(--ov-btn)!important;color:#2C2C2C!important;border-color:var(--ov-btn-dk)!important}
 
 /* ── 分頁專屬快捷區（通用底座） ── */
 .page-quick-bar{
@@ -344,28 +344,28 @@ textarea{min-height:64px;resize:vertical}
 .summary-table.ov-theme tr:hover td{background:var(--ov-bg)}
 .summary-card.ov-theme{border-color:var(--ov-btn)}
 .summary-card.ov-theme .summary-card-title{color:var(--ov-txt)}
-.enter-btn.ov-enter{background:var(--ov-btn);color:#fff}
+.enter-btn.ov-enter{background:var(--ov-btn);color:#2C2C2C;border:1.5px solid var(--ov-btn-dk)}
 
 /* 名單色 */
 .summary-table.rg-theme th{background:var(--rg-bg);color:var(--rg-txt);border-color:var(--rg-border)}
 .summary-table.rg-theme tr:hover td{background:var(--rg-bg)}
 .summary-card.rg-theme{border-color:var(--rg-btn)}
 .summary-card.rg-theme .summary-card-title{color:var(--rg-txt)}
-.enter-btn.rg-enter{background:var(--rg-btn);color:#fff}
+.enter-btn.rg-enter{background:var(--rg-btn);color:#2C2C2C;border:1.5px solid var(--rg-btn-dk)}
 
 /* 現場色 */
 .summary-table.ck-theme th{background:var(--ck-bg);color:var(--ck-txt);border-color:var(--ck-border)}
 .summary-table.ck-theme tr:hover td{background:var(--ck-bg)}
 .summary-card.ck-theme{border-color:var(--ck-btn)}
 .summary-card.ck-theme .summary-card-title{color:var(--ck-txt)}
-.enter-btn.ck-enter{background:var(--ck-btn);color:#fff}
+.enter-btn.ck-enter{background:var(--ck-btn);color:#2C2C2C;border:1.5px solid var(--ck-btn-dk)}
 
 /* 金流色 */
 .summary-table.py-theme th{background:var(--py-bg);color:var(--py-txt);border-color:var(--py-border)}
 .summary-table.py-theme tr:hover td{background:var(--py-bg)}
 .summary-card.py-theme{border-color:var(--py-btn)}
 .summary-card.py-theme .summary-card-title{color:var(--py-txt)}
-.enter-btn.py-enter{background:var(--py-btn);color:#fff}
+.enter-btn.py-enter{background:var(--py-btn);color:#2C2C2C;border:1.5px solid var(--py-btn-dk)}
 
 /* ── Toast ── */
 .toast{
@@ -438,7 +438,7 @@ textarea{min-height:64px;resize:vertical}
 .finance-card-close:active{transform:scale(.94);background:#E8E8E4}
 .finance-card-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 96px}
 .finance-card-footer{position:sticky;bottom:0;background:#fff;border-top:1px solid #EDEDEA;padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:.7fr 1.2fr 1.2fr;gap:8px;z-index:50;box-shadow:0 -4px 14px rgba(0,0,0,.06)}
-.finance-download-btn{flex:1;border:none;border-radius:12px;background:var(--ov-btn);color:#fff;font-size:16px;font-weight:800;padding:13px 12px;cursor:pointer;font-family:inherit}
+.finance-download-btn{flex:1;border:1.5px solid var(--ov-btn-dk);border-radius:12px;background:var(--ov-btn);color:#2C2C2C;font-size:16px;font-weight:800;padding:13px 12px;cursor:pointer;font-family:inherit}
 .finance-download-btn:active{transform:scale(.98);opacity:.9}
 .finance-secondary-btn{border:1px solid #D8D8D4;border-radius:12px;background:#fff;color:#444;font-size:14px;font-weight:700;padding:13px 12px;cursor:pointer;font-family:inherit}
 .finance-invoice-btn{flex:1;border:1px solid #D8B4FE;border-radius:12px;background:#F3E8FF;color:#5B21B6;font-size:15px;font-weight:800;padding:13px 12px;cursor:pointer;font-family:inherit}
@@ -582,13 +582,13 @@ input[type=date],input[type=time],input[type=password],textarea,select{
 <div id="adminPage" style="display:none">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
-      <button onclick="toggleSb()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:0 2px">☰</button>
+      <button onclick="toggleSb()" style="background:none;border:none;color:#2C2C2C;font-size:20px;cursor:pointer;line-height:1;padding:0 2px">☰</button>
       <div class="topbar-logo">活動報名系統後台</div>
     </div>
     <div class="topbar-right">
       <a class="topbar-front-btn" href="register.html" target="_blank">前台報名</a>
       <span id="staffName"></span>
-      <button onclick="logout()" style="background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit">登出</button>
+      <button onclick="logout()" style="background:rgba(0,0,0,.10);border:1px solid rgba(0,0,0,.18);color:#2C2C2C;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit">登出</button>
     </div>
   </div>
 
@@ -895,7 +895,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
     <div style="font-size:13px;color:var(--md);margin-bottom:10px">輸入你自己的 Email，按「測試寄信」，看看信件系統是否正常運作。</div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <input type="email" id="testEmailAddr" placeholder="輸入你的 Email" style="flex:1;padding:9px 12px;border:1.5px solid #d0e8d8;border-radius:10px;font-size:13px">
-      <button onclick="testSendEmail()" style="background:var(--g);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">📨 測試寄信</button>
+      <button onclick="testSendEmail()" style="background:var(--g);color:#2C2C2C;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">📨 測試寄信</button>
     </div>
     <div id="testEmailResult" style="display:none;border-radius:10px;padding:12px 14px;font-size:13px;margin-top:4px"></div>
   </div>
@@ -1377,23 +1377,14 @@ const API = 'https://2bl-v7.ndiangrace.workers.dev';
 // V5 SaaS: 後台登入後從 adminLogin 回傳的 tenantId 決定租戶
 // 初始值從 URL ?tenant= 讀取（方便直接連結特定租戶後台）
 const _adminUrlParams = new URLSearchParams(window.location.search);
-// 租戶解析：優先從 URL 讀取，存入 sessionStorage。
-// 重要：Google OAuth callback 會帶 admin_token/login_error，不能在這裡先清網址，
-// 否則 handleOAuthCallback() 會讀不到 token，造成登入後又回到登入頁。
+// 租戶解析：優先從 URL 讀取，存入 sessionStorage 後清除網址列參數
 (function(){
   const urlTenant = _adminUrlParams.get('tenant') || _adminUrlParams.get('tenantId');
-  const isOAuthCallback = _adminUrlParams.has('admin_token') || _adminUrlParams.has('token') ||
-    _adminUrlParams.has('login_error') || _adminUrlParams.has('error') ||
-    _adminUrlParams.has('code') || _adminUrlParams.has('state');
   if (urlTenant) {
     sessionStorage.setItem('2bl_tenant', urlTenant);
-    // 只有一般 tenant 連結才清掉網址；OAuth callback 交給 handleOAuthCallback() 處理。
-    if (!isOAuthCallback) {
-      const cleanUrl = new URL(window.location.href);
-      cleanUrl.searchParams.delete('tenant');
-      cleanUrl.searchParams.delete('tenantId');
-      window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
-    }
+    // 清除網址列的 tenant 參數，保持網址乾淨
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, '', cleanUrl);
   }
 })();
 let TENANT_ID = sessionStorage.getItem('2bl_tenant') || _adminUrlParams.get('tenant') || _adminUrlParams.get('tenantId') || 'tuibile';
@@ -1413,15 +1404,6 @@ function thumbHtml(url, size=36, radius=6){
   const box=`width:${size}px;height:${size}px;border-radius:${radius}px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:${Math.max(16,Math.round(size*.5))}px;flex-shrink:0;overflow:hidden`;
   if(!u) return `<span style="${box}">🎪</span>`;
   return `<span style="${box};position:relative"><img src="${escAttr(u)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:100%;height:100%;object-fit:cover;display:block"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#f0f0f0">🎪</span></span>`;
-}
-function fmtDateShort(iso){
-  if(!iso) return '';
-  try{
-    const d=new Date(iso);
-    if(isNaN(d.getTime())) return iso;
-    const pad=n=>String(n).padStart(2,'0');
-    return (d.getMonth()+1)+'/'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
-  }catch(e){ return iso; }
 }
 function escAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function safeNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
@@ -1556,109 +1538,20 @@ async function testSendEmail(){
 }
 
 // ── Google OAuth 登入流程 ──────────────────────────────────────────
-// auth-loop-fix-20260627：後台登入只由「明確的 OAuth callback」或「已保存的有效 session」進後台。
-// 下次修檔請勿把這段改回單純只讀 window.location.search，否則 hash token / 巢狀 admin/me 回應會再次造成登入循環。
-function adminAuthParams(){
-  const out = new URLSearchParams();
-  try{
-    const q = new URLSearchParams(window.location.search || '');
-    q.forEach((v,k)=>out.set(k,v));
-  }catch(e){}
-  try{
-    let h = String(window.location.hash || '').replace(/^#/, '');
-    if(h.startsWith('?')) h = h.slice(1);
-    // 支援 #admin_token=...、#/admin?admin_token=...、#/?admin_token=...
-    const qi = h.indexOf('?');
-    if(qi >= 0) h = h.slice(qi + 1);
-    if(h && h.includes('=')){
-      const hp = new URLSearchParams(h);
-      hp.forEach((v,k)=>{ if(!out.has(k)) out.set(k,v); });
-    }
-  }catch(e){}
-  return out;
-}
-function adminCleanAuthUrl(){
-  try{
-    const url = new URL(window.location.href);
-    ['admin_token','token','adminToken','login_error','error','code','state','scope','authuser','prompt'].forEach(k=>url.searchParams.delete(k));
-    // OAuth hash 通常只用來帶 token，處理完就清掉，避免刷新又重新跑 callback。
-    if(/(admin_token|adminToken|login_error|error|code|state|token)=/.test(String(url.hash||''))) url.hash='';
-    const clean = url.pathname + (url.search ? url.search : '') + (url.hash || '');
-    window.history.replaceState({}, '', clean);
-  }catch(e){
-    try{ window.history.replaceState({}, '', window.location.pathname); }catch(_e){}
-  }
-}
-function adminStorageGet(key){
-  try{ const v = localStorage.getItem(key); if(v) return v; }catch(e){}
-  try{ return sessionStorage.getItem(key); }catch(e){ return null; }
-}
-function adminStorageSet(key, value){
-  try{ localStorage.setItem(key, value); }catch(e){}
-  try{ sessionStorage.setItem(key, value); }catch(e){}
-}
-function adminStorageRemove(key){
-  try{ localStorage.removeItem(key); }catch(e){}
-  try{ sessionStorage.removeItem(key); }catch(e){}
-}
-function adminReadSession(){
-  try{ return JSON.parse(adminStorageGet('tb_v3') || 'null'); }catch(e){ return null; }
-}
-function adminSaveSession(session){
-  adminStorageSet('tb_v3', JSON.stringify(session || {}));
-}
-function adminClearSession(){
-  adminStorageRemove('tb_v3');
-  adminStorageRemove('2bl_admin_token_pending');
-}
-function adminDecodeJwt(token){
-  try{
-    const part = String(token||'').split('.')[1];
-    if(!part) return {};
-    const b64 = part.replace(/-/g,'+').replace(/_/g,'/');
-    const raw = atob(b64.padEnd(Math.ceil(b64.length/4)*4, '='));
-    let str = raw;
-    try{ str = decodeURIComponent(escape(raw)); }catch(e){}
-    return JSON.parse(str) || {};
-  }catch(e){ return {}; }
-}
-function normalizeAdminMeResponse(res, token){
-  if(!res || typeof res !== 'object') return {error:'admin/me 回應格式錯誤'};
-  if(res.error || res.message === 'Unauthorized' || res.ok === false){
-    return {error: res.error || res.message || '登入驗證失敗'};
-  }
-  const jwt = adminDecodeJwt(token);
-  const data = res.staff || res.admin || res.user ||
-    (res.data && (res.data.staff || res.data.admin || res.data.user || res.data)) || res;
-  const tenantObj = res.tenant || (res.data && res.data.tenant) || {};
-  const email = String(data.email || data.admin_email || res.email || jwt.email || '').trim().toLowerCase();
-  const role = data.role || data.admin_role || data.permission_role || res.role || jwt.role || 'organizer_admin';
-  const name = data.display_name || data.displayName || data.name || res.display_name || res.name || jwt.name || email;
-  const tenantId = data.tenant_id || data.tenantId || res.tenant_id || res.tenantId || tenantObj.id || tenantObj.tenant_id || TENANT_ID;
-  const tenantName = data.tenant_name || data.tenantName || res.tenant_name || res.tenantName || tenantObj.name || '';
-  if(!email) return {error:'admin/me 未回傳管理員 Email'};
-  return {email, role, name, tenantId, tenantName};
-}
-function showAdminLoginError(message){
-  const errEl=$('loginErr');
-  if(errEl){ errEl.textContent=message || '登入失敗，請重新登入'; errEl.style.display='block'; }
-}
 function startGoogleLogin(){
   const btn=$('googleLoginBtn');
   if(btn){ btn.disabled=true; btn.textContent='正在跳轉至 Google 登入…'; }
-  adminClearSession();
   // 跳轉至 Worker /auth/google/start
   const workerBase = API.replace(/\/+$/, '');
   window.location.href = `${workerBase}/auth/google/start?tenant=${encodeURIComponent(TENANT_ID)}`;
 }
 
-// OAuth callback 後，URL 可能帶 admin_token / token，也可能在 hash 裡。
+// OAuth callback 後，URL 帶 admin_token 回來
 async function handleOAuthCallback(){
-  const params = adminAuthParams();
-  const adminToken = params.get('admin_token') || params.get('token') || params.get('adminToken') || adminStorageGet('2bl_admin_token_pending');
-  const tenant = params.get('tenant') || params.get('tenantId') || sessionStorage.getItem('2bl_tenant') || TENANT_ID;
-  const loginError = params.get('login_error') || params.get('error');
-  const hasOAuthSignal = !!adminToken || !!loginError || params.has('code') || params.has('state');
+  const params = new URLSearchParams(window.location.search);
+  const adminToken = params.get('admin_token');
+  const tenant = params.get('tenant');
+  const loginError = params.get('login_error');
 
   if(loginError){
     const errMap = {
@@ -1667,76 +1560,48 @@ async function handleOAuthCallback(){
       id_token_verify_failed:'Google 身份驗證失敗，請重試',
       google_cancelled:'Google 登入已取消',
       token_exchange_failed:'Google 登入流程錯誤，請重試',
-      oauth_not_configured:'Google 登入尚未完成 Worker 環境設定，請檢查 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / ADMIN_REDIRECT_URI',
-      redirect_uri_mismatch:'Google OAuth 回呼網址不一致，請檢查 Google Cloud Console 的 Authorized redirect URI',
     };
-    adminClearSession();
-    showAdminLoginError(errMap[loginError] || `登入失敗：${loginError}`);
-    adminCleanAuthUrl();
-    return true;
+    const errEl=$('loginErr');
+    if(errEl){ errEl.textContent=errMap[loginError]||`登入失敗：${loginError}`; errEl.style.display='block'; }
+    // 清除 URL 參數
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
   }
 
-  if(!adminToken){
-    // 有 code/state 卻沒有 Worker 換好的 admin_token，代表回呼沒有完成；停在登入頁並顯示原因，避免無限跳轉。
-    if(hasOAuthSignal){
-      adminClearSession();
-      showAdminLoginError('Google 已回到後台，但沒有取得管理員登入憑證。請確認 Worker OAuth 回呼設定會回傳 admin_token。');
-      adminCleanAuthUrl();
-      return true;
-    }
-    return false;
-  }
+  if(!adminToken) return; // 不是 callback，正常初始化
 
-  try{
-    adminStorageSet('2bl_admin_token_pending', adminToken);
-    if(tenant){
-      TENANT_ID = tenant;
-      ST.tenantId = tenant;
-      try{ sessionStorage.setItem('2bl_tenant', tenant); }catch(e){}
-    }
+  // 用 /admin/me 驗證 token 並取得角色資料
+  try {
+    if(tenant) TENANT_ID = tenant;
     const workerBase = API.replace(/\/+$/, '');
-    // 先從 JWT 解出 email，/admin/me 需要同時帶 token + email 驗證
-    const jwtPayload = adminDecodeJwt(adminToken);
-    const jwtEmail = encodeURIComponent((jwtPayload && jwtPayload.email) || '');
-    const url = `${workerBase}/admin/me?token=${encodeURIComponent(adminToken)}&email=${jwtEmail}&tenant=${encodeURIComponent(TENANT_ID)}&_t=${Date.now()}`;
-    const resp = await fetch(url, {cache:'no-store'});
-    let res = null;
-    try{ res = await resp.json(); }catch(e){ res = {error:'admin/me 回應不是 JSON'}; }
-    if(!resp.ok && !res.error) res.error = '登入驗證失敗 HTTP '+resp.status;
+    const res = await fetch(`${workerBase}/admin/me?email=_&token=${encodeURIComponent(adminToken)}&_t=${Date.now()}`, {cache:'no-store'}).then(r=>r.json());
 
-    const session = normalizeAdminMeResponse(res, adminToken);
-    if(session.error){
-      adminClearSession();
-      showAdminLoginError(`登入驗證失敗：${session.error}`);
-      adminCleanAuthUrl();
-      return true;
+    if(res.error || !res.email){
+      const errEl=$('loginErr');
+      if(errEl){ errEl.textContent='無權限登入後台，請聯繫系統管理員'; errEl.style.display='block'; }
+      // 清 URL
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
     }
 
-    TENANT_ID = session.tenantId || TENANT_ID;
-    ST.email = session.email;
+    // 登入成功
+    const tenantId = res.tenant_id || TENANT_ID;
+    TENANT_ID = tenantId;
+    ST.email = res.email;
     ST.token = adminToken;
-    ST.role = session.role;
-    ST.tenantId = TENANT_ID;
-    ST.tenantName = session.tenantName || '';
-    try{ sessionStorage.setItem('2bl_tenant', TENANT_ID); }catch(e){}
-    adminSaveSession({
-      email: session.email,
-      token: adminToken,
-      role: session.role,
-      name: session.name || session.email,
-      tenantId: TENANT_ID,
-      tenantName: ST.tenantName,
-      loginAt: Date.now()
-    });
-    adminStorageRemove('2bl_admin_token_pending');
-    adminCleanAuthUrl();
-    initAdmin(session.name || session.email, session.role);
-    return true;
-  }catch(e){
-    adminClearSession();
-    showAdminLoginError('登入驗證失敗，請重試：'+(e&&e.message?e.message:''));
-    adminCleanAuthUrl();
-    return true;
+    ST.role = res.role;
+    ST.tenantName = '';
+    localStorage.setItem('tb_v3', JSON.stringify({
+      email: res.email, token: adminToken, role: res.role,
+      name: res.display_name||res.email, tenantId, tenantName: '',
+    }));
+    // 清 URL，避免 token 留在網址列
+    window.history.replaceState({}, '', window.location.pathname + (tenantId?`?tenant=${tenantId}`:''));
+    initAdmin(res.display_name||res.email, res.role);
+  } catch(e) {
+    const errEl=$('loginErr');
+    if(errEl){ errEl.textContent='登入驗證失敗，請重試'; errEl.style.display='block'; }
+    window.history.replaceState({}, '', window.location.pathname);
   }
 }
 
@@ -1754,30 +1619,22 @@ function logout(){
       body: JSON.stringify({action:'adminLogout', email:ST.email, token:ST.token, tenant:TENANT_ID})
     }).catch(()=>{});
   }
-  adminClearSession();
+  localStorage.removeItem('tb_v3');
   ST.email=''; ST.token=''; ST.role=''; ST.tenantName='';
   location.reload();
 }
 
 // 頁面載入時：先檢查 OAuth callback，再檢查已存 session
-(async function(){
-  // 先處理 OAuth callback；若已處理完成，不再用舊 session 覆蓋，也不重複跳登入。
-  const oauthHandled = await handleOAuthCallback();
-  if(oauthHandled) return;
-
-  // 若已有有效 session，直接進後台；localStorage 不可用時也可從 sessionStorage 還原。
-  const s = adminReadSession();
-  if(s && s.token && s.email){
+(function(){
+  // 先處理 OAuth callback
+  handleOAuthCallback();
+  // 若已有有效 session
+  const s=JSON.parse(localStorage.getItem('tb_v3')||'null');
+  if(s&&s.token&&s.email){
     ST.email=s.email;ST.token=s.token;ST.role=s.role;ST.tenantName=s.tenantName||'';
-    if(s.tenantId){TENANT_ID=s.tenantId;ST.tenantId=s.tenantId;try{sessionStorage.setItem('2bl_tenant',s.tenantId);}catch(e){}}
+    if(s.tenantId){TENANT_ID=s.tenantId;ST.tenantId=s.tenantId;}
     initAdmin(s.name||s.email,s.role);
-    return;
   }
-
-  // 沒有 callback、沒有 session，才留在登入頁。
-  const lp=$('loginPage'), ap=$('adminPage');
-  if(lp) lp.style.display='flex';
-  if(ap) ap.style.display='none';
 })();
 
 function normalizeAdminRole(role){
@@ -3908,8 +3765,6 @@ function renderRegs(){
         <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
           <span style="background:${statusBg};color:${statusColor};padding:3px 8px;border-radius:20px;font-size:12px;font-weight:800">${escAttr(r.status||'待審核')}</span>
           <span style="background:${paidOk?'#e6f9f0':'#fff3cd'};color:${paidOk?'#1D9E75':'#856404'};padding:3px 8px;border-radius:20px;font-size:12px;font-weight:800">${escAttr(pay)}</span>
-          ${r.payment_report_at?`<span style="font-size:11px;color:#888;margin-left:4px">回報：${fmtDateShort(r.payment_report_at)}</span>`:''}
-          ${r.paid_at?`<span style="font-size:11px;color:#1D9E75;margin-left:4px;font-weight:800">✅ 確認：${fmtDateShort(r.paid_at)}</span>`:''}
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,minmax(90px,1fr));gap:8px;margin-bottom:10px">
@@ -3926,7 +3781,7 @@ function renderRegs(){
         <div style="grid-column:span 2"><div style="font-size:11px;color:#999">粉專 / IG</div>${formatSocialLinks(r)}</div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        ${r.status!=='已錄取'?`<button onclick="quickApprove('${esc(r.id)}')" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">錄取</button>`:''}
+        ${r.status!=='已錄取'?`<button onclick="quickApprove('${esc(r.id)}')" style="background:var(--g);color:#2C2C2C;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">錄取</button>`:''}
         ${r.status!=='不錄取'?`<button onclick="quickReject('${esc(r.id)}')" style="background:var(--rdp);color:var(--rd);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">不錄取</button>`:''}
         ${r.status!=='備取'?`<button onclick="quickWaitlist('${esc(r.id)}')" style="background:#e2e3ff;color:#383d8a;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">備取</button>`:''}
         <button onclick="openRegDetail('${esc(r.id)}')" style="background:#f0f0f0;color:var(--dk);border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer">明細</button>
@@ -4647,7 +4502,7 @@ async function assignStaffSessions(targetEmail){
       <div id="sesAssignList">${sesListHtml}</div>
       <div style="display:flex;gap:8px;margin-top:16px">
         <button id="cancelAssignBtn" style="flex:1;padding:12px;border-radius:10px;background:#f0f0f0;border:none;cursor:pointer">取消</button>
-        <button id="saveAssignBtn" style="flex:2;padding:12px;border-radius:10px;background:var(--g);color:#fff;border:none;cursor:pointer;font-weight:700">儲存</button>
+        <button id="saveAssignBtn" style="flex:2;padding:12px;border-radius:10px;background:var(--g);color:#2C2C2C;border:none;cursor:pointer;font-weight:700">儲存</button>
       </div>
     </div>`;
 
@@ -5534,7 +5389,7 @@ function compactPaymentConfirmHtml(r){
 function showConfirmDialog(html, onOk){
   const modal=document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:99999;display:flex;align-items:center;justify-content:center;padding:14px';
-  modal.innerHTML=`<div style="background:#fff;border-radius:18px;width:100%;max-width:560px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.25);max-height:88vh;overflow:auto">${html}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px"><button id="cfCancel" style="background:#eee;color:#666;border:none;border-radius:10px;padding:12px;font-size:18px;font-weight:900">取消</button><button id="cfOk" style="background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;font-size:18px;font-weight:900">確認</button></div></div>`;
+  modal.innerHTML=`<div style="background:#fff;border-radius:18px;width:100%;max-width:560px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.25);max-height:88vh;overflow:auto">${html}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px"><button id="cfCancel" style="background:#eee;color:#666;border:none;border-radius:10px;padding:12px;font-size:18px;font-weight:900">取消</button><button id="cfOk" style="background:var(--g);color:#2C2C2C;border:none;border-radius:10px;padding:12px;font-size:18px;font-weight:900">確認</button></div></div>`;
   document.body.appendChild(modal);
   modal.querySelector('#cfCancel').onclick=()=>modal.remove();
   modal.querySelector('#cfOk').onclick=async()=>{ const btn=modal.querySelector('#cfOk'); btn.disabled=true; btn.textContent='確認中…'; await onOk(); modal.remove(); };
