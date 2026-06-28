@@ -3215,19 +3215,14 @@ function onAgreementRead() {
   closeAgreementModal();
   ST._agreementViewed = true;
   ST._agreementAccepted = true;
-  // 直接顯示送出按鈕
+  // 隱藏合約區塊
+  const agArea = $('agreementArea');
+  if (agArea) agArea.style.display = 'none';
+  // 顯示送出按鈕
   const submitBtn = $('submitBtn');
   if (submitBtn) {
     submitBtn.style.display = 'block';
     submitBtn.disabled = false;
-  }
-  // 更新查看按鈕樣式表示已同意
-  const viewBtn = $('agreementViewBtn');
-  if (viewBtn) {
-    viewBtn.textContent = '✅ 已同意合約';
-    viewBtn.style.background = 'var(--c-green)';
-    viewBtn.style.cursor = 'default';
-    viewBtn.onclick = null;
   }
 }
 
