@@ -4387,11 +4387,26 @@ function refreshAgreementSelectOptions() {
 }
 
 // 套用合約範本到場次
-function applyAgreementTemplate(slot) {
+async function applyAgreementTemplate(slot) {
   if (!slot) return;
-  const title = (document.getElementById('agr_title_'+slot)||{}).value || '';
-  const version = (document.getElementById('agr_version_'+slot)||{}).value || '';
-  const content = (document.getElementById('agr_content_'+slot)||{}).value || '';
+  // 優先從已載入的 DOM 讀（設定頁開著時）
+  const domTitle   = (document.getElementById('agr_title_'+slot)||{}).value || '';
+  const domVersion = (document.getElementById('agr_version_'+slot)||{}).value || '';
+  const domContent = (document.getElementById('agr_content_'+slot)||{}).value || '';
+
+  let title = domTitle, version = domVersion, content = domContent;
+
+  // DOM 是空的（設定頁未開）→ 直接從 API 讀
+  if (!content && !title) {
+    try {
+      const res = await api({action:'getAgreementTemplate', email:ST.email, token:ST.token, tenant:TENANT_ID});
+      if (Array.isArray(res)) {
+        const tmpl = res.find(t => String(t.slot_no) === String(slot));
+        if (tmpl) { title = tmpl.title||''; version = tmpl.version||''; content = tmpl.content||''; }
+      }
+    } catch(e) { console.warn('applyAgreementTemplate API failed', e); }
+  }
+
   const t = document.getElementById('ses_agreement_title');
   const v = document.getElementById('ses_agreement_version');
   const c = document.getElementById('ses_agreement_content');
