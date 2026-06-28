@@ -2236,7 +2236,7 @@ function renderDynFormFull(s, isNew=false){
     // ── ③ 總計費用 ──
     html+=`<div class="total-new" id="feeBox">
       <div class="form-card-title-new" style="margin-bottom:12px"><span class="form-card-num" style="background:var(--c-yellow)">3</span>總計費用</div>
-      <div class="total-row"><span>攤位小計</span><span id="feeBase">NT$0</span></div>
+      <div class="total-row" id="feeBaseRow"><span>攤位小計</span><span id="feeBase">NT$0</span></div>
       <div class="total-row" id="feeEquipRow" style="display:none"><span>設備小計</span><span id="feeEquip">NT$0</span></div>
       <div class="total-row" id="feeAddonRow" style="display:none"><span>加購小計</span><span id="feeAddon">NT$0</span></div>
       <div class="total-row" id="feeDepRow"><span>保證金</span><span id="feeDeposit">NT$${s.deposit||0}</span></div>
@@ -3008,9 +3008,7 @@ function updateFee(){
   });
   const total=fee+dep+equipTotal+addonTotal;
   // 只顯示有值的費用行
-  const feeBaseRow=$('feeBase')?.closest('.fee-row');
-  const feeEquipRow=$('feeEquip')?.closest('.fee-row');
-  const feeDepRow=$('feeDeposit')?.closest('.fee-row');
+  // 費用行顯隱（直接用 id）
   if($('feeBase')) $('feeBase').textContent='NT$'+fee;
   const fbRow=$('feeBaseRow'); if(fbRow) fbRow.style.display=fee>0?'':'none';
   if($('feeEquip')) $('feeEquip').textContent='NT$'+equipTotal;
