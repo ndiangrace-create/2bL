@@ -1323,7 +1323,11 @@ async function applySiteConfig(){
   }catch(e){}
 }
 
-// V5 SaaS: tenant 從 URL ?tenant= 讀取，API 端點固定
+// 2BL V8 資料來源邊界：
+// localStorage / sessionStorage 僅供登入 token、email、頁籤狀態、表單暫存使用。
+// 正式會員資料、報名紀錄、付款狀態、場次設定、合約內容，一律以 Worker / Supabase 回傳為準。
+// 禁止從 localStorage 判斷正式報名狀態或付款狀態。
+// 既有 Worker 服務名稱仍為 2bl-v7，僅為部署資源名稱，不代表系統版本。
 const API_BASE = 'https://2bl-v7.ndiangrace.workers.dev';
 
 // Google OAuth 前台登入

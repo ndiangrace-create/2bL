@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════════════════
-   2BL V7 後台 UI — 淡色系 SaaS 風格
+   2BL V8 後台 UI — 淡色系 SaaS 風格
    一個色系代表一個功能分類
    ════════════════════════════════════════════════════ */
 
@@ -1313,12 +1313,15 @@ input[type=date],input[type=time],input[type=password],textarea,select{
 <!-- ══ Modal：新增管理員 ══ -->
 <div class="overlay" id="staffModal">
   <div class="modal">
-    <div class="modal-title">新增管理員</div>
+    <div class="modal-title">新增管理員／現場人員</div>
     <label>Email *</label><input type="email" id="sf_email" inputmode="email">
     <label>姓名</label><input type="text" id="sf_name">
     <label>角色</label>
     <select id="sf_role" onchange="toggleSuperAdminPerms(this.value)">
       <option value="活動夥伴">活動夥伴（自訂權限）</option>
+      <option value="onsite_staff">現場人員（只進 onsite.html）</option>
+      <option value="session_admin">場次管理員（限定場次）</option>
+      <option value="finance_admin">財務管理員</option>
       <option value="superadmin">超級管理員（全部權限）</option>
     </select>
     <div id="sf_perms_area" style="margin-top:12px;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px">
@@ -1326,7 +1329,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="sf_perms_grid"></div>
     </div>
     <div id="sf_sessions_area" style="margin-top:12px;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--md);margin-bottom:8px">限定場次（不勾=可管理）</div>
+      <div style="font-size:13px;font-weight:700;color:var(--md);margin-bottom:8px">限定場次（現場人員必須勾選；不勾=管理員可看全場次）</div>
       <div style="display:grid;grid-template-columns:1fr;gap:6px;max-height:200px;overflow-y:auto" id="sf_sessions_grid"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:16px">
@@ -4275,10 +4278,12 @@ function parsePermsJson(raw){
   try{return JSON.parse(String(raw));}catch(e){return {};}
 }
 function getStaffPermCache(email){
-  try{return JSON.parse(localStorage.getItem('tb_staff_perms_'+email)||'{}');}catch(e){return {};}
+  // 版本殘留清理：staff 權限不得以 localStorage 作為正式來源。
+  // 正式權限一律以 Worker / Supabase 回傳的 staff.perms_json 為準。
+  return {};
 }
 function setStaffPermCache(email,perms){
-  try{localStorage.setItem('tb_staff_perms_'+email,JSON.stringify(perms||{}));}catch(e){}
+  // no-op：避免畫面快取覆蓋資料庫權限。
 }
 function truthyPerm(v){return v===true || v==='TRUE' || v==='true' || v==='1' || v===1 || v==='是' || v==='開啟';}
 
@@ -4435,55 +4440,61 @@ async function loadStaff(){
   const allSes=await api({action:'getSessionsAdmin',email:ST.email,token:ST.token});
   const sesList=Array.isArray(allSes)?allSes:[];
   const el=$('staffList');
-  if(!(list||[]).length){el.innerHTML='<div style="color:var(--lt)">尚無管理員</div>';return;}
+  if(!(list||[]).length){el.innerHTML='<div style="color:var(--lt)">尚無管理員／現場人員</div>';return;}
   el.innerHTML=(list||[]).map(s=>{
     let perms=parsePermsJson(s.permsJson||'{}');
-    const cached=getStaffPermCache(s.email);
-    if(cached&&Object.keys(cached).length) perms={...perms,...cached};
-    const isSuperAdmin=s.role==='superadmin'||s.role==='超級管理員';
-    const roleLabel=isSuperAdmin?'超級管理員':'共創夥伴';
-    const roleColor=isSuperAdmin?'var(--g)':'#185FA5';
-    const roleBg=isSuperAdmin?'var(--gp)':'#E6F1FB';
+    const roleNorm=normalizeAdminRole(s.role);
+    const isSuperAdmin=roleNorm==='platform_super_admin';
+    const isOnsite=roleNorm==='onsite_staff';
+    const active=s.isActive!==false;
+    const roleName={
+      platform_super_admin:'超級管理員', organizer_owner:'主辦者', organizer_admin:'共創夥伴',
+      session_admin:'場次管理員', finance_admin:'財務管理員', onsite_staff:'現場人員'
+    }[roleNorm] || (s.role||'管理員');
+    const roleColor=isSuperAdmin?'var(--g)':(isOnsite?'#7A4A00':'#185FA5');
+    const roleBg=isSuperAdmin?'var(--gp)':(isOnsite?'#FAEEC7':'#E6F1FB');
+    const statusHtml=`<span style="background:${active?'#DDEAD1':'#eee'};color:${active?'#315225':'#777'};font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700">${active?'啟用':'停用'}</span>`;
 
-    // 權限膠囊（固定順序，勾選綠色，未勾灰色）
     const permHtml=isSuperAdmin
       ?'<span style="font-size:11px;color:var(--g)">所有功能全開，不受限制</span>'
       :PERM_DEFS.map(p=>{
           const on=truthyPerm(perms[p.k]);
-          return `<label style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:${on?'var(--gp)':'#f0f0f0'};border:0.5px solid ${on?'var(--gl)':'#ddd'};border-radius:20px;cursor:pointer;margin:2px 2px 0 0">
+          return `<label style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:${on?'var(--gp)':'#f0f0f0'};border:0.5px solid ${on?'var(--gl)':'#ddd'};border-radius:20px;cursor:pointer;margin:2px 2px 0 0;opacity:${active?1:.55}">
             <input type="checkbox" data-email="${s.email}" data-perm="${p.k}" ${on?'checked':''} style="width:12px;height:12px;accent-color:var(--g);margin:0;cursor:pointer" onchange="updatePerm('${s.email}',this)">
             <span style="font-size:11px;font-weight:600;color:${on?'var(--g)':'#999'}">${p.label}</span>
           </label>`;
         }).join('');
 
-    // 負責場次標籤
     const limitIds=s.limitSessions||[];
     const sesTagsHtml=limitIds.length
       ?limitIds.map(id=>{
           const ses=sesList.find(ss=>ss.id===id)||{};
-          const shortName=(ses.name||id).slice(0,8);
+          const shortName=(ses.name||id).slice(0,12);
           return `<span style="background:#E6F1FB;color:#185FA5;font-size:11px;padding:3px 8px;border-radius:20px;margin:2px">${shortName}</span>`;
         }).join('')
-      :'<span style="font-size:11px;color:var(--lt);font-style:italic">全場次</span>';
+      :`<span style="font-size:11px;color:${isOnsite?'#A32D2D':'var(--lt)'};font-style:italic">${isOnsite?'尚未指派場次':'全場次'}</span>`;
 
-    return `<div style="padding:10px 0;border-bottom:0.5px solid #f0f0f0">
+    return `<div style="padding:12px 0;border-bottom:0.5px solid #f0f0f0;opacity:${active?1:.72}">
       <div style="display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap">
         <div style="flex:1;min-width:200px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:700;color:var(--dk)">${s.name||s.email}</span>
-            <span style="background:${roleBg};color:${roleColor};font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600">${roleLabel}</span>
+            <span style="background:${roleBg};color:${roleColor};font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600">${roleName}</span>
+            ${statusHtml}
             <span style="font-size:11px;color:var(--lt)">${s.email}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;margin-bottom:6px">${permHtml}</div>
           ${!isSuperAdmin?`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px">
-            <span style="font-size:11px;color:var(--lt);flex-shrink:0">場次：</span>
+            <span style="font-size:11px;color:var(--lt);flex-shrink:0">可看場次：</span>
             ${sesTagsHtml}
             <button onclick="assignStaffSessions('${s.email}')" style="font-size:11px;padding:3px 8px;border-radius:20px;background:#f0f0f0;border:0.5px solid #ddd;cursor:pointer;color:var(--md)">＋ 指派</button>
           </div>`:''}
+          ${s.lastLoginAt?`<div style="font-size:10px;color:var(--lt);margin-top:4px">最後登入：${new Date(s.lastLoginAt).toLocaleString('zh-TW',{hour12:false})}</div>`:''}
         </div>
-        ${!isSuperAdmin?`<div style="display:flex;gap:4px;flex-shrink:0;padding-top:2px">
+        ${!isSuperAdmin?`<div style="display:flex;gap:4px;flex-shrink:0;padding-top:2px;flex-wrap:wrap">
           <button class="btn btn-b btn-xs" onclick="resendStaffInvite('${s.email}')">重寄</button>
-          <button class="btn btn-r btn-xs" onclick="removeStaff('${s.email}','${esc(s.name||s.email)}',this)">移除</button>
+          <button class="btn ${active?'btn-s':'btn-g'} btn-xs" onclick="setStaffActive('${s.email}',${active?'false':'true'},this)">${active?'停用':'啟用'}</button>
+          <button class="btn btn-r btn-xs" onclick="removeStaff('${s.email}','${esc(s.name||s.email)}',this)">刪除</button>
         </div>`:''}
       </div>
     </div>`;
@@ -4519,7 +4530,7 @@ async function assignStaffSessions(targetEmail){
         <div style="font-size:15px;font-weight:700">指派負責場次</div>
         <button id="closeAssignBtn" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa">✕</button>
       </div>
-      <div style="font-size:12px;color:var(--lt);margin-bottom:12px">不勾選 = 可存取</div>
+      <div style="font-size:12px;color:var(--lt);margin-bottom:12px">現場人員請勾選可管理場次；取消勾選即關閉該場權限</div>
       <div id="sesAssignList">${sesListHtml}</div>
       <div style="display:flex;gap:8px;margin-top:16px">
         <button id="cancelAssignBtn" style="flex:1;padding:12px;border-radius:10px;background:#f0f0f0;border:none;cursor:pointer">取消</button>
@@ -4550,6 +4561,16 @@ async function assignStaffSessions(targetEmail){
 function toggleSuperAdminPerms(role){
   const area=$('sf_perms_area');
   if(area) area.style.display=role==='superadmin'?'none':'block';
+  const perms=document.querySelectorAll('#sf_perms_grid input[type=checkbox]');
+  if(role==='onsite_staff'){
+    perms.forEach(c=>{c.checked=(c.dataset.perm==='checkin');});
+  }else if(role==='finance_admin'){
+    perms.forEach(c=>{c.checked=(c.dataset.perm==='finance');});
+  }else if(role==='session_admin'){
+    perms.forEach(c=>{c.checked=['review','checkin','sessions'].includes(c.dataset.perm);});
+  }else if(role==='活動夥伴'||role==='staff'||role==='organizer_admin'){
+    perms.forEach(c=>{c.checked=true;});
+  }
 }
 
 function initStaffModal(){
@@ -4570,18 +4591,15 @@ async function updatePerm(email, chk){
   const allChks=document.querySelectorAll(`[data-email="${email}"]`);
   const perms={};
   allChks.forEach(c=>{perms[c.dataset.perm]=c.checked;});
-  setStaffPermCache(email,perms);
   try{
     const res=await apiPost({action:'updateStaffPerms',email:ST.email,token:ST.token,targetEmail:email,perms});
     if(res.error){
       toast('❌ '+res.error);
       chk.checked=!enable;
-      const rollback={};
-      allChks.forEach(c=>{rollback[c.dataset.perm]=c.checked;});
-      setStaffPermCache(email,rollback);
       return;
     }
     toast('✅ 權限已儲存');
+    loadStaff();
   }finally{
     chk.dataset.busy='0';
   }
@@ -4612,12 +4630,13 @@ function openAddStaffModal(){
   $('sf_name').value='';
   $('sf_role').value='活動夥伴';
   $('sf_perms_area').style.display='block';
+  toggleSuperAdminPerms('活動夥伴');
   openModal('staffModal');
 }
 function openStaffModal(){
   initStaffModal();
   $('sf_email').value='';$('sf_name').value='';
-  $('sf_role').value='staff';
+  $('sf_role').value='活動夥伴';
   $('sf_perms_area').style.display='block';
   document.querySelectorAll('#sf_perms_grid input').forEach(c=>c.checked=true);
   openModal('staffModal');
@@ -4634,11 +4653,11 @@ async function saveStaff(){
   }
   const limitSessions=[];
   document.querySelectorAll('#sf_sessions_grid input:checked').forEach(c=>{limitSessions.push(c.dataset.sesid);});
+  if(role==='onsite_staff' && !limitSessions.length){toast('現場人員必須至少指派一個場次');return;}
   const btn=getClickBtn();
   return withBtnLock(btn,'新增中…',async()=>{
     const res=await apiPost({action:'addStaff',targetEmail:email,targetName:name,role,perms,limitSessions});
     if(res.error){toast('❌ '+res.error);return;}
-    setStaffPermCache(email,perms);
     toast('✅ 已新增');closeModal('staffModal');loadStaff();
   });
 }
@@ -4662,13 +4681,26 @@ async function resendStaffInvite(email){
   toast('✅ 已重寄通知信');
 }
 
+async function setStaffActive(email,active,btn){
+  const verb=active?'啟用':'停用';
+  if(!confirm('確定要'+verb+' '+email+'？'))return;
+  if(btn){btn.disabled=true;btn.textContent='處理中…';}
+  try{
+    const res=await apiPost({action:'setStaffActive',targetEmail:email,active});
+    if(res.error){toast('❌ '+res.error);return;}
+    toast('✅ 已'+verb);loadStaff();
+  }finally{
+    if(btn){btn.disabled=false;}
+  }
+}
+
 async function removeStaff(email,name,btn){
-  if(!confirm('確定移除「'+name+'」？'))return;
+  if(!confirm('確定刪除「'+name+'」？\n若只是暫時不使用，請按「停用」即可保留帳號與場次權限。'))return;
   if(btn){btn.disabled=true;btn.textContent='處理中…';}
   try{
     const res=await apiPost({action:'removeStaff',targetEmail:email});
     if(res.error){toast('❌ '+res.error);return;}
-    toast('✅ 已移除');loadStaff();
+    toast('✅ 已刪除');loadStaff();
   }finally{
     if(btn){btn.disabled=false;}
   }
@@ -5766,7 +5798,7 @@ async function confirmForceRefund(regId) {
   } catch(e) { alert('失敗：'+e.message); }
 }
 
-// 不可抗力退費：從金流頁內進入（符合 2BL V7 規格：不可抗力退費歸入金流頁）
+// 不可抗力退費：從金流頁內進入（符合 2BL V8 規格：不可抗力退費歸入金流頁）
 document.addEventListener('DOMContentLoaded', function() {
   // 在金流詳細層底部加入不可抗力退費入口按鈕
   const paymentsDetailLayer = document.getElementById('paymentsDetailLayer');

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2BL 現場管理</title>
+  <style>
+    :root{
+      --bg:#f7f4ee; --card:#fffdf8; --text:#222; --muted:#6b6b6b;
+      --line:#e8dfd0; --main:#82ABA3; --soft:#D4E3DD; --warn:#FAE1DD; --yellow:#FAEEC7;
+      --ok:#DDEAD1; --blue:#D9E5EE; --shadow:0 8px 24px rgba(0,0,0,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Segoe UI",sans-serif;font-size:17px;line-height:1.55}
+    header{position:sticky;top:0;z-index:5;background:rgba(247,244,238,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+    .bar{max-width:980px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+    .brand{font-weight:900;font-size:20px}.sub{font-size:13px;color:var(--muted)}
+    main{max-width:980px;margin:0 auto;padding:16px 14px 90px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin:12px 0}
+    .login{min-height:55vh;display:grid;place-items:center}.login .card{max-width:440px;width:100%;text-align:center}
+    button,.btn{border:0;border-radius:999px;padding:10px 15px;background:var(--main);color:#fff;font-weight:800;font-size:15px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+    button.secondary{background:#fff;color:#333;border:1px solid var(--line)}
+    button.danger{background:#d36b60} button.warn{background:#b9823b} button:disabled{opacity:.45;cursor:not-allowed}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}.stat b{display:block;font-size:22px}.stat span{color:var(--muted);font-size:13px}
+    .session{display:grid;gap:10px}.session-title{font-weight:900;font-size:18px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tag{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:13px;font-weight:800;background:var(--blue)}.tag.ok{background:var(--ok)}.tag.warn{background:var(--yellow)}.tag.bad{background:var(--warn)}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.toolbar input,.toolbar select,textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:11px 12px;font-size:16px;background:#fff}.toolbar input{flex:1;min-width:180px}.toolbar select{width:auto;min-width:150px}
+    .reg{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;margin:10px 0}.reg h3{margin:0 0 5px;font-size:18px}.kv{display:grid;grid-template-columns:96px 1fr;gap:4px 10px;font-size:14px}.kv .k{color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.noteBox{display:none;margin-top:10px}.empty{text-align:center;color:var(--muted);padding:30px 10px}.err{background:var(--warn);border:1px solid #efb8ad;color:#8b2d24;border-radius:14px;padding:12px;margin:12px 0}.okmsg{background:var(--ok);border:1px solid #b7d1aa;color:#315225;border-radius:14px;padding:12px;margin:12px 0}.hidden{display:none!important}
+    @media(max-width:680px){.grid{grid-template-columns:repeat(2,1fr)}.bar{align-items:flex-start}.kv{grid-template-columns:84px 1fr}.actions button{flex:1}.toolbar select{width:100%}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div><div class="brand">2BL 現場管理</div><div class="sub" id="who">Google 登入後顯示授權場次</div></div>
+    <button class="secondary" id="logoutBtn" onclick="logout()" style="display:none">登出</button>
+  </div>
+</header>
+<main>
+  <section id="loginView" class="login">
+    <div class="card">
+      <h1>現場管理入口</h1>
+      <p class="sub">此頁只顯示授權場次與該場名單，不進入完整後台。</p>
+      <a class="btn" id="googleLogin" href="#">使用 Google 登入</a>
+      <div id="loginErr" class="err hidden"></div>
+    </div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <div id="msg"></div>
+    <section id="sessionsView">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div><h2 style="margin:0">我的場次</h2><div class="sub">只列出此帳號被授權的場次</div></div>
+          <button class="secondary" onclick="loadSessions()">重新整理</button>
+        </div>
+      </div>
+      <div id="sessionsList"></div>
+    </section>
+
+    <section id="regsView" class="hidden">
+      <div class="card">
+        <button class="secondary" onclick="backToSessions()">← 回我的場次</button>
+        <h2 id="sessionTitle" style="margin-bottom:0"></h2>
+        <div class="sub" id="sessionSub"></div>
+        <div class="toolbar">
+          <input id="kw" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderRegs()" />
+          <select id="filter" onchange="renderRegs()">
+            <option value="all">全部名單</option>
+            <option value="canCheckin">可報到</option>
+            <option value="checked">已報到</option>
+            <option value="notChecked">未報到</option>
+            <option value="issue">特殊／退費標記</option>
+          </select>
+        </div>
+      </div>
+      <div id="regsList"></div>
+    </section>
+  </section>
+</main>
+<script>
+const API='https://2bl-v7.ndiangrace.workers.dev';
+const TENANT='tuibile';
+const LS_TOKEN='2bl_onsite_admin_token';
+const LS_EMAIL='2bl_onsite_email';
+let token='', email='', me=null, sessions=[], regs=[], currentSession=null;
+function $(id){return document.getElementById(id)}
+function money(n){return 'NT$ '+(Number(n)||0).toLocaleString('zh-TW')}
+function dt(v){if(!v)return '—'; try{return new Date(v).toLocaleString('zh-TW',{hour12:false})}catch(e){return v}}
+function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function equipText(v){let o=v; if(typeof o==='string'){try{o=JSON.parse(o||'{}')}catch(e){o={}}} const arr=[]; Object.keys(o||{}).forEach(k=>{const n=Number(o[k]); if(n>0) arr.push(`${k} × ${n}`)}); return arr.length?arr.join('、'):'—'}
+function showMsg(t,type='ok'){ $('msg').innerHTML=t?`<div class="${type==='err'?'err':'okmsg'}">${esc(t)}</div>`:''; if(t) setTimeout(()=>$('msg').innerHTML='',2600)}
+async function apiGet(action, extra={}){const u=new URL(API); u.searchParams.set('action',action); u.searchParams.set('tenant',TENANT); u.searchParams.set('token',token); u.searchParams.set('email',email||'_'); Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v)); const r=await fetch(u); const j=await r.json().catch(()=>null); if(!r.ok||j?.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
+async function apiPost(action, body={}){const r=await fetch(API+'?action='+encodeURIComponent(action),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,tenant:TENANT,token,email:email||'_'})}); const j=await r.json().catch(()=>null); if(!r.ok||j?.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
+function logout(){localStorage.removeItem(LS_TOKEN);localStorage.removeItem(LS_EMAIL);location.href='onsite.html'}
+function handleCallback(){const u=new URL(location.href); const t=u.searchParams.get('admin_token'); const tenant=u.searchParams.get('tenant'); const err=u.searchParams.get('login_error'); if(err){$('loginErr').textContent='登入失敗：'+err; $('loginErr').classList.remove('hidden')} if(t){localStorage.setItem(LS_TOKEN,t); if(tenant)localStorage.setItem('2bl_onsite_tenant',tenant); history.replaceState({},'',location.pathname);}}
+async function boot(){handleCallback(); token=localStorage.getItem(LS_TOKEN)||''; $('googleLogin').href=API+'/auth/google/unified/start?tenant='+encodeURIComponent(TENANT)+'&next=onsite'; if(!token){$('loginView').classList.remove('hidden');return} try{me=await apiGet('adminMe',{email:'_'}); email=me.email; localStorage.setItem(LS_EMAIL,email); $('who').textContent=`${me.display_name||me.email}｜${me.role||''}`; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); await loadSessions();}catch(e){localStorage.removeItem(LS_TOKEN); $('loginView').classList.remove('hidden'); $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden')}}
+async function loadSessions(){try{sessions=await apiGet('onsiteSessions'); renderSessions()}catch(e){showMsg(e.message,'err')}}
+function renderSessions(){const box=$('sessionsList'); if(!sessions.length){box.innerHTML='<div class="card empty">目前沒有授權場次</div>';return} box.innerHTML=sessions.map(s=>`<div class="card session" onclick="openSession('${esc(s.id)}')"><div class="session-title">${esc(s.name)}</div><div class="row"><span class="tag">全部 ${s.total||0}</span><span class="tag ok">可報到 ${s.payable||0}</span><span class="tag">已報到 ${s.checkedIn||0}</span><span class="tag warn">攤位 ${s.stallCount||0}</span>${s.refundFlag?`<span class="tag bad">退費 ${s.refundFlag}</span>`:''}</div><div class="grid"><div class="stat"><b>${money(s.paidAmount||0)}</b><span>已繳金額</span></div><div class="stat"><b>${money(s.depositTotal||0)}</b><span>押金</span></div><div class="stat"><b>${s.approved||0}</b><span>已錄取</span></div></div><button>查看名單</button></div>`).join('')}
+async function openSession(id){currentSession=sessions.find(s=>String(s.id)===String(id)); if(!currentSession)return; $('sessionsView').classList.add('hidden'); $('regsView').classList.remove('hidden'); $('sessionTitle').textContent=currentSession.name; $('sessionSub').textContent='載入名單中…'; try{regs=await apiGet('onsiteRegs',{sessionId:id}); $('sessionSub').textContent=`全部 ${regs.length} 筆｜可報到 ${regs.filter(canCheckin).length} 筆`; renderRegs()}catch(e){showMsg(e.message,'err')}}
+function backToSessions(){currentSession=null; regs=[]; $('regsView').classList.add('hidden'); $('sessionsView').classList.remove('hidden')}
+function canCheckin(r){return r.status==='已錄取' && (String(r.payStatus).includes('已繳費') || r.payStatus==='免費') && !String(r.transferStatus||'').includes('退費')}
+function filteredRegs(){const kw=$('kw').value.trim().toLowerCase(); const f=$('filter').value; return regs.filter(r=>{const hay=[r.brand,r.name,r.phone,r.email].join(' ').toLowerCase(); if(kw&&!hay.includes(kw))return false; if(f==='canCheckin')return canCheckin(r); if(f==='checked')return r.checkin==='已報到'; if(f==='notChecked')return r.checkin!=='已報到'; if(f==='issue')return String(r.adminNote||'').includes('特殊')||String(r.transferStatus||'').includes('退費'); return true})}
+function renderRegs(){const box=$('regsList'); const list=filteredRegs(); if(!list.length){box.innerHTML='<div class="card empty">沒有符合條件的名單</div>';return} box.innerHTML=list.map(r=>`<div class="reg"><h3>${esc(r.brand||'未填品牌')}</h3><div class="row"><span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span><span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span><span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}</div><div class="kv"><div class="k">聯絡人</div><div>${esc(r.name)}｜${esc(r.phone)}</div><div class="k">已繳金額</div><div>${money(r.amount||r.totalAmount||0)}</div><div class="k">付款時間</div><div>${dt(r.paidAt)}</div><div class="k">攤位數</div><div>${r.stallCount||1}</div><div class="k">加租設備</div><div>${esc(equipText(r.equip))}</div><div class="k">押金</div><div>${money(r.deposit||0)}</div><div class="k">備註</div><div>${esc(r.adminNote||'—')}</div></div><div class="actions"><button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>已報到</button><button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button><button class="warn" onclick="mark('${esc(r.id)}','noShow')">未到</button><button class="danger" onclick="mark('${esc(r.id)}','refundFlag')">特殊／退費標記</button></div></div>`).join('')}
+async function mark(id,mode){const note=(mode==='refundFlag'||mode==='noShow')?prompt('可輸入現場備註（可留空）',''):''; try{await apiPost('onsiteMark',{regId:id,mode,note}); showMsg('已更新'); if(currentSession) await openSession(currentSession.id)}catch(e){showMsg(e.message,'err')}}
+boot();
+</script>
+</body>
+</html>
