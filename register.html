@@ -2376,6 +2376,38 @@ function renderDynFormFull(s, isNew=false){
   const addons=(s.addons||[]).map((a,i)=>({...a,_idx:i})).filter(a=>a.open===true||a.open==='true');
 
   let html='';
+  // ── 已報名狀態提示（非同步查詢，不阻塞報名表渲染）──
+  const _email = ST.memberEmail || (ST.member && ST.member.email) || '';
+  if (_email && s && s.id) {
+    api({ action:'getMyRegs', email:_email, phone:memberSafePhone()||'', _t:Date.now() })
+      .then(regs => {
+        const list = Array.isArray(regs) ? regs : [];
+        const existing = list.find(r => String(r.sessionId||r.session_id||'') === String(s.id));
+        const banner = document.getElementById('regStatusBanner');
+        if (!banner) return;
+        if (!existing) { banner.style.display='none'; return; }
+        const status = existing.status || existing.reviewStatus || '';
+        const payStatus = existing.payStatus || existing.payment_status || '';
+        const transfer = existing.transferStatus || existing.transfer_status || '';
+        let msg='', bg='', icon='';
+        if (transfer==='已退費'||transfer==='已退款') {
+          msg=`你曾報名此場次，但已退費，可重新報名。`; bg='#FAEEC7'; icon='⚠️';
+        } else if (status==='已取消'||status==='不錄取') {
+          msg=`你曾報名此場次（${status}），可重新報名。`; bg='#FAEEC7'; icon='⚠️';
+        } else if (status==='已錄取' && (payStatus==='已繳費'||payStatus==='免費')) {
+          msg=`✅ 你已完成報名並繳費，請等待通知。`; bg='#DDEAD1'; icon='';
+        } else if (status==='已錄取') {
+          msg=`✅ 你已報名此場次，目前狀態：${status}（${payStatus}）。`; bg='#DDEAD1'; icon='';
+        } else if (status==='待審核') {
+          msg=`🕐 你已報名此場次，目前狀態：待審核，請等待主辦審核。`; bg='#D9E5EE'; icon='';
+        } else {
+          msg=`你已報名此場次，目前狀態：${status}。`; bg='#DCD7ED'; icon='';
+        }
+        banner.style.cssText=`display:block;background:${bg};border-radius:12px;padding:14px 16px;margin:0 16px 12px;font-size:16px;font-weight:700;color:#2C2C2C;line-height:1.6`;
+        banner.textContent=msg;
+      })
+      .catch(()=>{}); // 查詢失敗不影響報名表
+  }
   // ── ① 活動資訊 ──
   html+=`<div class="form-card-new">
     <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
@@ -2601,6 +2633,15 @@ function renderDynFormFull(s, isNew=false){
   </div>`;
 
   const dynEl=$('dynForm');
+  // banner 放在 dynForm 前面（form-hero 和 dynForm 之間）
+  let bannerEl=document.getElementById('regStatusBanner');
+  if(!bannerEl){
+    bannerEl=document.createElement('div');
+    bannerEl.id='regStatusBanner';
+    bannerEl.style.display='none';
+    const dynElParent=dynEl?dynEl.parentNode:null;
+    if(dynElParent) dynElParent.insertBefore(bannerEl, dynEl);
+  }
   if(dynEl) dynEl.innerHTML=html;
   syncMemberIntoCurrentRegForm(ST.member||{});
 
