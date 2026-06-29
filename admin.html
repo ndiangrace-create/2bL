@@ -612,10 +612,10 @@ body.seat-drawer-open{overflow:hidden}
 
 /* ── V8 選位穩定版：圖片與點位同圖層縮放，座標存百分比 ── */
 .seat-map-workspace{position:relative;overflow:auto;background:#f4f7f5;border:1px solid #e0eee6;border-radius:12px;padding:16px;height:calc(100vh - 138px);min-height:520px;}
-.seat-map-canvas{position:relative!important;display:block!important;min-height:420px;width:100%!important;max-width:none!important;margin:0 auto!important;border:2px dashed #b9dcc8;border-radius:12px;background:#fff;overflow:visible!important;color:#999;font-size:15px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.seat-map-canvas{position:relative!important;display:block!important;min-height:420px;width:100%!important;max-width:none!important;margin:0 auto!important;border:2px dashed #b9dcc8;border-radius:12px;background:#fff;overflow:hidden!important;color:#999;font-size:15px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
 .seat-map-canvas.has-map{min-height:0!important;height:auto!important;line-height:0;color:transparent;}
 .seat-map-canvas.no-map{display:flex!important;align-items:center!important;justify-content:center!important;color:#999;line-height:1.5;}
-.seat-map-img{width:100%;height:auto;display:block;user-select:none;pointer-events:none;border-radius:10px;}
+.seat-map-img{width:100%;height:auto;display:block;user-select:none;border-radius:10px;}
 .seat-dot{position:absolute;transform:translate(-50%,-50%);width:24px;height:24px;min-width:24px;min-height:24px;padding:0;border:2px solid #fff;background:#d8f3dc;border-radius:999px;font-size:11px;font-weight:950;line-height:20px;text-align:center;box-shadow:0 1px 5px rgba(0,0,0,.22);cursor:pointer;z-index:3;color:#111;white-space:nowrap;}
 .seat-dot.paid{background:#fff3cd;}
 .seat-dot.service{background:#dbeafe;font-size:10px;}
@@ -1207,8 +1207,8 @@ body.seat-drawer-open{overflow:hidden}
       <div class="seat-drawer" role="dialog" aria-modal="true" aria-label="選位編輯抽屜">
         <div class="seat-drawer-head">
           <div>
-            <div class="seat-drawer-title">🗺️ 選位地圖編輯</div>
-            <div class="seat-drawer-sub">先上傳地圖 → 批次產生號碼 → 點清單號碼 → 在大地圖點位置。</div>
+            <div class="seat-drawer-title">🗺️ 已編號場地圖選位設定</div>
+            <div class="seat-drawer-sub">先上傳已編號場地圖 → 批次建立號碼 → 設定可選／加價／不開放 → 儲存。</div>
           </div>
           <div class="seat-drawer-actions">
             <button class="btn btn-s btn-sm" type="button" onclick="saveSeatMapNow()">儲存選位設定</button>
@@ -1218,39 +1218,34 @@ body.seat-drawer-open{overflow:hidden}
         <div class="seat-drawer-body">
           <aside class="seat-drawer-panel">
             <div class="seat-panel-title">① 地圖與號碼</div>
-            <label style="font-size:12px;color:var(--md)">場地圖（可貼圖片網址，或選檔上傳預覽）</label>
-            <input type="text" id="sm_seatMapUrl" placeholder="可貼圖片網址，或直接選擇圖片上傳" oninput="renderSeatMapBuilder()" style="margin-bottom:8px">
+            <label style="font-size:12px;color:var(--md);font-weight:900">已編號場地圖（可貼圖片網址，或選檔上傳預覽）</label>
+            <input type="text" id="sm_seatMapUrl" placeholder="請上傳已排好號碼的場地圖，或貼圖片網址" oninput="renderSeatMapBuilder()" style="margin-bottom:8px">
             <input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSeatMapFile(this)" style="font-size:12px;margin-bottom:12px">
+            <div style="display:grid;grid-template-columns:1fr 110px;gap:8px;margin-bottom:10px;align-items:end">
+              <div><label style="font-size:12px;color:#666;font-weight:900">選位保留時間（小時）</label><input type="number" id="sm_seatHoldHours" value="24" min="1" max="168" inputmode="numeric" style="padding:8px;border:1px solid #d0e8d8;border-radius:8px;font-size:14px"></div>
+              <div style="font-size:11px;color:#666;line-height:1.45">逾時未回報付款會釋出選位。</div>
+            </div>
             <div class="seat-batch-box">
-              <div><label style="font-size:11px;color:#666">區碼</label><input type="text" id="seatBatchPrefix" value="A" placeholder="A"></div>
+              <div><label style="font-size:11px;color:#666">區碼（可空白）</label><input type="text" id="seatBatchPrefix" value="" placeholder="例：A；空白=1"></div>
               <div><label style="font-size:11px;color:#666">起始號</label><input type="number" id="seatBatchStart" value="1" min="1" inputmode="numeric"></div>
-              <div><label style="font-size:11px;color:#666">數量</label><input type="number" id="seatBatchCount" value="10" min="1" inputmode="numeric"></div>
-              <button class="btn btn-g btn-sm" type="button" onclick="batchCreateSeats()">批次產生號碼</button>
-              <button class="seat-tool-btn" id="seatLineBtn" type="button" onclick="startSeatLinePlacement()">拉線平均排位</button>
-              <button class="seat-tool-btn" type="button" onclick="cancelSeatLinePlacement()">取消拉線</button>
+              <div><label style="font-size:11px;color:#666">數量</label><input type="number" id="seatBatchCount" value="40" min="1" inputmode="numeric"></div>
+              <button class="btn btn-g btn-sm" type="button" onclick="batchCreateSeats()">批次建立號碼</button>
             </div>
             <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px">
-              <input type="text" id="seatSingleCode" placeholder="單一攤位代碼，例：A11">
+              <input type="text" id="seatSingleCode" placeholder="單一號碼，例：41 或 A11">
               <button class="btn btn-s btn-sm" type="button" onclick="addSeatItemFromInput()">新增單號</button>
             </div>
-            <div style="margin-top:12px">
-              <label style="font-size:12px;color:var(--md)">地圖放大</label>
-              <div style="display:grid;grid-template-columns:1fr 52px;gap:8px;align-items:center">
-                <input type="range" id="seatMapZoom" min="100" max="260" value="140" step="10" oninput="updateSeatMapZoom(this.value)">
-                <div id="seatMapZoomLabel" style="font-size:12px;font-weight:900;color:#2d6a4f;text-align:right">140%</div>
-              </div>
-            </div>
-            <div id="seatBuilderStatus" class="seat-builder-status">請先上傳圖片，或直接批次產生號碼後再貼圖。</div>
-            <div class="seat-help-box">提示：一般模式可點清單號碼後放位置；一整排攤位可用「拉線平均排位」點起點與終點，系統會自動平均排好。縮放只改觀看大小，不會改變實際座標。</div>
+            <div id="seatBuilderStatus" class="seat-builder-status">請上傳已編號場地圖，並建立對應號碼清單。</div>
+            <div class="seat-help-box">正式版採「已編號場地圖＋號碼狀態清單」。後台不再拖拉點位，避免縮放跑位；前台顯示這張圖，再由攤友點清單選號碼。</div>
           </aside>
           <main class="seat-map-panel">
-            <div class="seat-panel-title">② 大地圖放位置</div>
+            <div class="seat-panel-title">② 場地圖預覽</div>
             <div id="seatMapWorkspace" class="seat-map-workspace">
-              <div id="seatMapCanvas" class="seat-map-canvas" onclick="placeSelectedSeatOnMap(event)">請先上傳或貼上場地圖，再點圖放位置</div>
+              <div id="seatMapCanvas" class="seat-map-canvas no-map">請先上傳已編號場地圖</div>
             </div>
           </main>
           <aside class="seat-list-panel">
-            <div class="seat-panel-title">③ 攤位清單</div>
+            <div class="seat-panel-title">③ 號碼狀態清單</div>
             <div id="seatItemsList" class="seat-items-list"></div>
           </aside>
         </div>
@@ -3357,13 +3352,15 @@ function setSeatPricingEnabled(on){
 }
 function toggleStallConfig(checked){ setSeatPricingEnabled(!!checked); }
 
+
 let seatItems=[];
 let selectedSeatCode='';
-let seatLineMode=false;
-let seatLineStart=null;
 
-function clampSeatPct(v){ return Math.max(0.2, Math.min(99.8, Number(v)||0)); }
-function isSeatPlaced(s){ return !!((Number(s&&s.x)||0) || (Number(s&&s.y)||0)); }
+function seatHoldHoursValue(){
+  const n=parseInt(($('sm_seatHoldHours')&&$('sm_seatHoldHours').value)||'24',10);
+  return Math.max(1, Math.min(168, n||24));
+}
+function isSeatPlaced(s){ return false; }
 function sortSeatItems(){
   seatItems.sort((a,b)=>{
     const ao=Number(a.order)||0, bo=Number(b.order)||0;
@@ -3377,56 +3374,31 @@ function openSeatDrawer(){
   if(drawer) drawer.classList.add('show');
   document.body.classList.add('seat-drawer-open');
   renderSeatMapBuilder();
-  updateSeatMapZoom($('seatMapZoom')?.value||140);
-  setTimeout(centerSeatWorkspace,80);
 }
 function closeSeatDrawer(){
   const drawer=$('seatDrawerOverlay');
   if(drawer) drawer.classList.remove('show');
   document.body.classList.remove('seat-drawer-open');
 }
-function centerSeatWorkspace(){
-  const ws=$('seatMapWorkspace');
-  if(ws){
-    ws.scrollLeft=Math.max(0,(ws.scrollWidth-ws.clientWidth)/2);
-    ws.scrollTop=Math.max(0,(ws.scrollHeight-ws.clientHeight)/2);
-  }
-}
-function getSeatZoom(){
-  const el=$('seatMapZoom');
-  return Math.max(80,Math.min(260,parseInt(el&&el.value?el.value:120,10)||120));
-}
-function updateSeatMapZoom(v){
-  const z=Math.max(80,Math.min(260,parseInt(v||120,10)||120));
-  const slider=$('seatMapZoom'); if(slider) slider.value=z;
-  const label=$('seatMapZoomLabel'); if(label) label.textContent=z+'%';
-  applySeatStageSize();
-}
-function applySeatStageSize(){
-  const canvas=$('seatMapCanvas'), ws=$('seatMapWorkspace');
-  if(!canvas || !ws) return;
-  const mapUrl=String($('sm_seatMapUrl')?.value||'').trim();
-  if(!mapUrl){ canvas.style.width='100%'; return; }
-  const z=getSeatZoom()/100;
-  const base=Math.max(360, (ws.clientWidth||720)-36);
-  canvas.style.width=Math.round(base*z)+'px';
-}
+function updateSeatMapZoom(){ renderSeatMapBuilder(false); }
+function applySeatStageSize(){ /* 已編號地圖模式不需要計算點位座標 */ }
 function updateSeatBuilderMiniSummary(){
   const el=$('seatBuilderMiniSummary'); if(!el) return;
   const mapUrl=String($('sm_seatMapUrl')?.value||'').trim();
   const total=seatItems.length;
-  const placed=seatItems.filter(isSeatPlaced).length;
   const paid=seatItems.filter(s=>s.type==='paid').length;
+  const auto=seatItems.filter(s=>s.type==='auto').length;
+  const closed=seatItems.filter(s=>s.type==='closed').length;
   const service=seatItems.filter(s=>s.type==='service').length;
-  el.textContent=`${mapUrl?'已上傳位置圖':'未上傳位置圖'}｜號碼 ${total}｜已放位置 ${placed}｜加價 ${paid}｜服務台 ${service}`;
+  el.textContent=`${mapUrl?'已上傳已編號場地圖':'未上傳場地圖'}｜號碼 ${total}｜自動 ${auto}｜加價 ${paid}｜不開放 ${closed}｜服務台 ${service}`;
 }
 function normalizeSeatItem(s){
   return {
     code:String(s.code||s.seatCode||s.stallNo||'').trim(),
     type:s.type||s.seatType||'auto',
     price:Number(s.price||s.priceDelta||0)||0,
-    x:clampSeatPct(Number(s.x)||0),
-    y:clampSeatPct(Number(s.y)||0),
+    x:0,
+    y:0,
     active:s.active!==false,
     note:s.note||'',
     order:Number(s.order||s.mapOrder||0)||0
@@ -3449,11 +3421,7 @@ function seatBuilderStatus(msg,kind='info'){
   el.style.borderColor=kind==='warn'?'#fed7aa':(kind==='error'?'#f5b7b1':'#d8efe3');
   el.textContent=msg||'';
 }
-function syncSeatOrders(){ seatItems.forEach((s,i)=>{ s.order=i+1; }); }
-function nextUnplacedSeatCode(){
-  const item=seatItems.find(s=>!isSeatPlaced(s));
-  return item ? item.code : (seatItems[0] ? seatItems[0].code : '');
-}
+function syncSeatOrders(){ seatItems.forEach((s,i)=>{ s.order=i+1; s.x=0; s.y=0; }); }
 function loadSeatMapFile(input){
   const f=input.files&&input.files[0]; if(!f) return;
   if(!/^image\//.test(f.type||'')){ toast('請上傳圖片檔'); return; }
@@ -3462,9 +3430,8 @@ function loadSeatMapFile(input){
     const el=$('sm_seatMapUrl');
     if(el) el.value=rd.result;
     renderSeatMapBuilder();
-    updateSeatMapZoom(120);
-    seatBuilderStatus('✅ 場地圖已載入。下一步：批次產生號碼；一整排可用「拉線平均排位」。');
-    toast('✅ 圖片已載入，請新增號碼後放位置');
+    seatBuilderStatus('✅ 已載入已編號場地圖。請確認下方號碼清單與圖上的號碼一致。');
+    toast('✅ 場地圖已載入');
   };
   rd.onerror=()=>toast('圖片讀取失敗，請換一張圖片再試');
   rd.readAsDataURL(f);
@@ -3472,25 +3439,22 @@ function loadSeatMapFile(input){
 function cleanSeatCode(v){return String(v||'').trim().replace(/\s+/g,'').toUpperCase();}
 function batchCreateSeats(){
   const zoneEl=$('seatBatchPrefix'), startEl=$('seatBatchStart'), countEl=$('seatBatchCount');
-  const zone=cleanSeatCode(zoneEl&&zoneEl.value?zoneEl.value:prompt('區域代碼（例：A）','A'));
-  if(!zone){ toast('請輸入區碼，例如 A'); return; }
+  const zone=cleanSeatCode(zoneEl&&zoneEl.value?zoneEl.value:'');
   const start=Math.max(1, parseInt(startEl&&startEl.value?startEl.value:(prompt('起始號碼','1')||'1'),10)||1);
-  const count=Math.max(1, parseInt(countEl&&countEl.value?countEl.value:(prompt('數量','10')||'10'),10)||10);
-  let added=0, firstCode='';
+  const count=Math.max(1, parseInt(countEl&&countEl.value?countEl.value:(prompt('數量','40')||'40'),10)||40);
+  let added=0;
   for(let i=0;i<count;i++){
     const code=zone+String(start+i);
     if(!seatItems.some(s=>String(s.code)===code)){
       seatItems.push({code,type:'auto',price:0,x:0,y:0,active:true,note:'',order:seatItems.length+1});
-      if(!firstCode) firstCode=code;
       added++;
     }
   }
-  if(firstCode) selectedSeatCode=firstCode;
   syncSeatOrders();
   renderSeatMapBuilder();
   if(added){
-    toast(`已新增 ${added} 個攤位號碼`);
-    seatBuilderStatus(`已新增 ${added} 個號碼。目前選取 ${selectedSeatCode}。可點地圖單點放置，或用「拉線平均排位」。`);
+    toast(`已建立 ${added} 個號碼`);
+    seatBuilderStatus(`✅ 已建立 ${added} 個號碼。請把需要開放付費選位的位置改成「加價」，並設定金額。`);
   }else{
     toast('沒有新增：號碼已存在');
     seatBuilderStatus('沒有新增：這批號碼已存在。', 'warn');
@@ -3499,110 +3463,44 @@ function batchCreateSeats(){
 function addSeatItemFromInput(){
   const input=$('seatSingleCode');
   const code=cleanSeatCode(input&&input.value);
-  if(!code){ toast('請先輸入攤位代碼，例如 A1'); return; }
+  if(!code){ toast('請先輸入號碼，例如 41 或 A11'); return; }
   addSeatItem(code);
   if(input) input.value='';
 }
 function addSeatItem(code=''){
-  const c=cleanSeatCode(code||prompt('攤位代碼','A1')); if(!c) return;
-  if(seatItems.some(s=>String(s.code)===c)){toast('攤位代碼重複');seatBuilderStatus('攤位代碼重複：'+c,'warn');return;}
+  const c=cleanSeatCode(code||prompt('攤位號碼','1')); if(!c) return;
+  if(seatItems.some(s=>String(s.code)===c)){toast('號碼重複');seatBuilderStatus('號碼重複：'+c,'warn');return;}
   seatItems.push({code:c,type:'auto',price:0,x:0,y:0,active:true,note:'',order:seatItems.length+1});
-  selectedSeatCode=c;
   syncSeatOrders();
   renderSeatMapBuilder();
   toast('已新增 '+c);
-  seatBuilderStatus(`已新增 ${c}，請點地圖放位置。`);
+  seatBuilderStatus(`已新增 ${c}。請確認圖上也有這個號碼。`);
 }
 function updateSeatItem(code,key,val){
   const s=seatItems.find(x=>x.code===code); if(!s) return;
-  if(key==='price') s.price=parseInt(val)||0; else if(key==='active') s.active=!!val; else s[key]=val;
+  if(key==='price') s.price=parseInt(val)||0;
+  else if(key==='active') s.active=!!val;
+  else s[key]=val;
   if(s.type!=='paid') s.price=0;
+  s.active = s.type!=='closed' && s.type!=='service';
   renderSeatMapBuilder(false);
 }
 function removeSeatItem(code){
   if(!confirm('確定移除 '+code+'？已被占用的位置請勿移除。')) return;
   seatItems=seatItems.filter(s=>s.code!==code);
-  if(selectedSeatCode===code) selectedSeatCode=nextUnplacedSeatCode();
   syncSeatOrders();
   renderSeatMapBuilder();
 }
 function selectSeatForPlacement(code){
   selectedSeatCode=code;
-  cancelSeatLinePlacement(false);
-  renderSeatMapBuilder(false);
-  seatBuilderStatus(`目前選取 ${code}，請點地圖放位置或重新點圖移動。`);
-}
-function startSeatLinePlacement(){
-  const mapUrl=String($('sm_seatMapUrl')?.value||'').trim();
-  if(!mapUrl){ toast('請先上傳場地圖'); seatBuilderStatus('請先上傳場地圖，再使用拉線排位。','warn'); return; }
-  if(seatItems.length<2){ toast('至少需要 2 個攤位號碼'); seatBuilderStatus('至少需要 2 個攤位號碼，才能拉線平均排位。','warn'); return; }
-  seatLineMode=true; seatLineStart=null;
-  const btn=$('seatLineBtn'); if(btn) btn.classList.add('active');
-  const targets=getSeatLineTargets();
-  seatBuilderStatus(`拉線排位：將排列 ${targets.length} 個號碼。請先點第一個位置，再點最後一個位置。`);
   renderSeatMapBuilder(false);
 }
-function cancelSeatLinePlacement(showMsg=true){
-  seatLineMode=false; seatLineStart=null;
-  const btn=$('seatLineBtn'); if(btn) btn.classList.remove('active');
-  if(showMsg) seatBuilderStatus('已取消拉線排位。');
-  renderSeatMapBuilder(false);
-}
-function getSeatLineTargets(){
-  sortSeatItems();
-  const unplaced=seatItems.filter(s=>!isSeatPlaced(s));
-  return unplaced.length>=2 ? unplaced : seatItems.slice();
-}
-function distributeSeatLine(start,end){
-  const targets=getSeatLineTargets();
-  const n=targets.length;
-  if(!n) return 0;
-  targets.forEach((s,i)=>{
-    const t=n===1?0:i/(n-1);
-    s.x=clampSeatPct(start.x+(end.x-start.x)*t);
-    s.y=clampSeatPct(start.y+(end.y-start.y)*t);
-  });
-  selectedSeatCode=targets[n-1]?.code||selectedSeatCode;
-  return n;
-}
-function mapEventToSeatPct(ev){
-  const box=$('seatMapCanvas'); if(!box) return null;
-  const rect=box.getBoundingClientRect();
-  if(!rect.width || !rect.height) return null;
-  const x=clampSeatPct(((ev.clientX-rect.left)/rect.width)*100);
-  const y=clampSeatPct(((ev.clientY-rect.top)/rect.height)*100);
-  return {x,y};
-}
-function placeSelectedSeatOnMap(ev){
-  const box=$('seatMapCanvas'); if(!box) return;
-  const img=box.querySelector('img');
-  if(!img){ toast('請先上傳或貼上場地圖'); seatBuilderStatus('請先上傳或貼上場地圖，再放位置。','warn'); return; }
-  const pt=mapEventToSeatPct(ev); if(!pt) return;
-  if(seatLineMode){
-    if(!seatLineStart){
-      seatLineStart=pt;
-      renderSeatMapBuilder(false);
-      seatBuilderStatus('拉線排位：起點已設定，請點最後一個位置。');
-      return;
-    }
-    const count=distributeSeatLine(seatLineStart,pt);
-    seatLineMode=false; seatLineStart=null;
-    const btn=$('seatLineBtn'); if(btn) btn.classList.remove('active');
-    renderSeatMapBuilder();
-    seatBuilderStatus(`✅ 已平均排好 ${count} 個號碼。縮放只會改觀看大小，點位不會跑掉。`);
-    return;
-  }
-  if(!seatItems.length){ toast('請先批次產生號碼或新增單號'); seatBuilderStatus('請先批次產生號碼，例如 A1～A20，再點地圖放位置。','warn'); return; }
-  if(!selectedSeatCode){ selectedSeatCode=nextUnplacedSeatCode(); }
-  const s=seatItems.find(x=>x.code===selectedSeatCode);
-  if(!s){ toast('請先選取要放置的攤位號碼'); seatBuilderStatus('請先選取要放置的攤位號碼。','warn'); return; }
-  s.x=pt.x; s.y=pt.y;
-  const placedCode=s.code;
-  const next=seatItems.find(item=>item.code!==placedCode && !isSeatPlaced(item));
-  if(next) selectedSeatCode=next.code;
-  renderSeatMapBuilder(false);
-  seatBuilderStatus(next ? `已放置 ${placedCode}。下一個選取 ${next.code}，可繼續點地圖。` : `已放置 ${placedCode}。全部號碼都已有位置，可點號碼再移動。`);
-}
+function startSeatLinePlacement(){ toast('已改為「已編號場地圖＋號碼清單」模式，不需要拉線排位。'); }
+function cancelSeatLinePlacement(){ }
+function getSeatLineTargets(){ return seatItems.slice(); }
+function distributeSeatLine(){ return 0; }
+function mapEventToSeatPct(){ return null; }
+function placeSelectedSeatOnMap(){ toast('此版本不需要在地圖上拖拉點位，請在右側設定號碼狀態。'); }
 function seatTypeText(t){return t==='paid'?'加價選位':t==='service'?'服務台':t==='closed'?'不開放':'自動排位';}
 function renderSeatMapBuilder(updateList=true){
   const mapUrl=String($('sm_seatMapUrl')?.value||'').trim();
@@ -3610,42 +3508,21 @@ function renderSeatMapBuilder(updateList=true){
   if(box){
     box.classList.toggle('has-map',!!mapUrl);
     box.classList.toggle('no-map',!mapUrl);
-    box.innerHTML=mapUrl?`<img class="seat-map-img" src="${escHtml(mapUrl)}" alt="選位地圖" onload="applySeatStageSize()">`:'請先上傳或貼上場地圖，再點圖放位置';
-    if(mapUrl){
-      applySeatStageSize();
-      seatItems.forEach(s=>{
-        if(!isSeatPlaced(s)) return;
-        const el=document.createElement('button');
-        el.type='button';
-        el.textContent=s.type==='service'?'服':s.code;
-        el.title=`${s.code}｜${seatTypeText(s.type)}${s.type==='paid'?'｜加價 '+(Number(s.price)||0):''}`;
-        el.className='seat-dot '+(s.type||'auto')+(selectedSeatCode===s.code?' selected':'');
-        el.onclick=(e)=>{e.stopPropagation();selectSeatForPlacement(s.code);};
-        el.style.left=clampSeatPct(s.x)+'%';
-        el.style.top=clampSeatPct(s.y)+'%';
-        box.appendChild(el);
-      });
-      if(seatLineMode && seatLineStart){
-        const mark=document.createElement('div');
-        mark.className='seat-line-marker';
-        mark.style.left=clampSeatPct(seatLineStart.x)+'%';
-        mark.style.top=clampSeatPct(seatLineStart.y)+'%';
-        box.appendChild(mark);
-      }
-    }
+    box.innerHTML=mapUrl
+      ? `<img class="seat-map-img" src="${escHtml(mapUrl)}" alt="已編號選位地圖">`
+      : '請先上傳已編號場地圖';
   }
   updateSeatBuilderMiniSummary();
   const list=$('seatItemsList'); if(!list) return;
-  const placedCount=seatItems.filter(isSeatPlaced).length;
-  if(!seatItems.length) seatBuilderStatus(mapUrl?'圖片已載入。請先批次產生號碼。':'請先上傳圖片，或直接批次產生號碼後再貼圖。','warn');
-  else if(!seatLineMode) seatBuilderStatus(`選位號碼 ${seatItems.length} 個，已放位置 ${placedCount} 個，目前選取：${selectedSeatCode||'未選取'}`);
+  if(!seatItems.length) seatBuilderStatus(mapUrl?'圖片已載入。請批次建立圖上的號碼。':'請先上傳已編號場地圖，並建立號碼清單。','warn');
+  else seatBuilderStatus(`選位號碼 ${seatItems.length} 個｜加價 ${seatItems.filter(s=>s.type==='paid').length} 個｜保留 ${seatHoldHoursValue()} 小時`);
   sortSeatItems();
   list.innerHTML=seatItems.map(s=>{
     const codeHtml=escHtml(s.code);
     const codeArg=escJsArg(s.code);
-    const placed=isSeatPlaced(s);
+    const typeLabel=seatTypeText(s.type);
     return `<div class="seat-list-row ${selectedSeatCode===s.code?'is-selected':''}">
-    <button type="button" class="seat-code-btn ${placed?'':'need-place'}" onclick="selectSeatForPlacement(${codeArg})">${codeHtml}${placed?'':' *'}</button>
+    <button type="button" class="seat-code-btn" onclick="selectSeatForPlacement(${codeArg})" title="圖上對應號碼：${codeHtml}">${codeHtml}</button>
     <select onchange="updateSeatItem(${codeArg},'type',this.value)" style="padding:8px 6px;border:1px solid #d0e8d8;border-radius:8px">
       <option value="auto" ${s.type==='auto'?'selected':''}>自動</option>
       <option value="paid" ${s.type==='paid'?'selected':''}>加價</option>
@@ -3655,18 +3532,18 @@ function renderSeatMapBuilder(updateList=true){
     <input type="number" value="${Number(s.price)||0}" ${s.type!=='paid'?'disabled':''} onchange="updateSeatItem(${codeArg},'price',this.value)" style="padding:8px 6px;border:1px solid #d0e8d8;border-radius:8px" placeholder="加價">
     <button type="button" onclick="removeSeatItem(${codeArg})" style="border:none;background:#fdecea;color:#c0392b;border-radius:8px;padding:8px 5px;font-size:13px;font-weight:950">刪</button>
   </div>`;
-  }).join('') || '<div style="font-size:12px;color:#777">尚未建立攤位，請用「批次產生號碼」或「新增單號」。</div>';
+  }).join('') || '<div style="font-size:12px;color:#777">尚未建立號碼，請用「批次建立號碼」或「新增單號」。</div>';
 }
 async function loadSeatMapForSession(sessionId){
-  seatItems=[]; selectedSeatCode=''; seatLineMode=false; seatLineStart=null;
+  seatItems=[]; selectedSeatCode='';
   if(!sessionId) { renderSeatMapBuilder(); return; }
   try{
     const res=await api({action:'getSeatMap',sessionId,email:ST.email,token:ST.token,_t:Date.now()});
     if(res && !res.error){
       setSeatPricingEnabled(!!res.enabled);
       if($('sm_seatMapUrl')) $('sm_seatMapUrl').value=res.mapUrl||'';
+      if($('sm_seatHoldHours')) $('sm_seatHoldHours').value=res.holdHours||24;
       seatItems=(res.seats||[]).map(normalizeSeatItem).filter(s=>s.code);
-      selectedSeatCode=nextUnplacedSeatCode();
       syncSeatOrders();
       renderSeatMapBuilder();
     }
@@ -3678,14 +3555,10 @@ async function saveSeatMapNow(){
   if(!sessionId){toast('新增場次請按底部「儲存場次」，系統會一起儲存選位設定');seatBuilderStatus('新增場次尚未有場次 ID，請按底部「儲存場次」一起保存。','warn');return;}
   const enabled = String(val('sm_enableStalls','0'))==='1' || val('sm_enableStalls',false)===true;
   syncSeatOrders();
-  const res=await apiPost({action:'saveSeatMap',sessionId,enabled,mapUrl:String(val('sm_seatMapUrl','')).trim(),holdHours:24,seats:seatItems});
+  const res=await apiPost({action:'saveSeatMap',sessionId,enabled,mapUrl:String(val('sm_seatMapUrl','')).trim(),holdHours:seatHoldHoursValue(),seats:seatItems});
   if(res.error){toast('❌ '+res.error);seatBuilderStatus('儲存失敗：'+res.error,'error');return;}
   toast(`✅ 選位設定已儲存（${seatItems.length} 個號碼）`);
-  seatBuilderStatus(`✅ 已儲存 ${seatItems.length} 個號碼。`);
-}
-if(!window.__seatStableResizeBound){
-  window.__seatStableResizeBound=true;
-  window.addEventListener('resize',()=>{ if(document.body.classList.contains('seat-drawer-open')) applySeatStageSize(); });
+  seatBuilderStatus(`✅ 已儲存 ${seatItems.length} 個號碼；加價選位保留 ${seatHoldHoursValue()} 小時。`);
 }
 
 function getEquipJson(){
@@ -3742,6 +3615,11 @@ function resetSesModal(){
   if(agTitle) agTitle.value = '報名合約／活動細則與攤商規範';
   if(agVersion) agVersion.value = 'v1.0';
   if(agContent) agContent.value = '';
+  seatItems=[]; selectedSeatCode='';
+  if($('sm_seatMapUrl')) $('sm_seatMapUrl').value='';
+  if($('sm_seatHoldHours')) $('sm_seatHoldHours').value=24;
+  setSeatPricingEnabled(false);
+  renderSeatMapBuilder();
 }
 
 function fillAssignStaff(){}
@@ -3936,8 +3814,7 @@ async function editSes(id){
   $('sm_deposit').value=Math.max(0,Number(s.deposit)||0);
   // sm_limit 已移除，由各日 dates[].limit 控管
   const hasStalls=(s.stallList&&s.stallList.length>0)||s.enableStalls;
-  $('sm_enableStalls').checked=!!hasStalls;
-  $('sm_stallsConfig').style.display=hasStalls?'block':'none';
+  setSeatPricingEnabled(!!hasStalls);
   if($('sm_maxStalls')) $('sm_maxStalls').value=0;
   $('sm_organizer').value=s.organizer||'';
   $('sm_coorg').value=s.coorg||'';
@@ -3949,6 +3826,7 @@ async function editSes(id){
   seatItems=[]; selectedSeatCode='';
   if($('sm_enableStalls')) setSeatPricingEnabled(!!s.seatPricingEnabled);
   if($('sm_seatMapUrl')) $('sm_seatMapUrl').value=s.seatMapUrl||'';
+  if($('sm_seatHoldHours')) $('sm_seatHoldHours').value=s.seatHoldHours||24;
   try{ loadSeatMapForSession(s.id); }catch(e){}
   if($('sm_stallFee')) $('sm_stallFee').value=s.stallFee||0;
   $('sm_review').checked=s.needReview!==false;
@@ -4071,7 +3949,7 @@ async function saveSession(btn){
       limit:0,
       maxStalls:0,
       seatPricingEnabled:(String(getVal('sm_enableStalls','0'))==='1'||getVal('sm_enableStalls',false)===true),
-      seatHoldHours:24,
+      seatHoldHours:seatHoldHoursValue(),
       seatMapUrl:String(getVal('sm_seatMapUrl','')).trim(),
       organizer:String(getVal('sm_organizer','')).trim(),
       coorg:String(getVal('sm_coorg','')).trim(),
@@ -4103,7 +3981,7 @@ async function saveSession(btn){
     if(res.error){ showFail(res.error); return; }
 
     const savedId = res.id || id;
-    try{ if(savedId && (String(getVal('sm_enableStalls','0'))==='1'||seatItems.length)) await apiPost({action:'saveSeatMap',sessionId:savedId,enabled:(String(getVal('sm_enableStalls','0'))==='1'),mapUrl:String(getVal('sm_seatMapUrl','')).trim(),holdHours:24,seats:seatItems}); }catch(seatErr){ console.warn('save seat map skipped', seatErr); }
+    try{ if(savedId && (String(getVal('sm_enableStalls','0'))==='1'||seatItems.length)) await apiPost({action:'saveSeatMap',sessionId:savedId,enabled:(String(getVal('sm_enableStalls','0'))==='1'),mapUrl:String(getVal('sm_seatMapUrl','')).trim(),holdHours:seatHoldHoursValue(),seats:seatItems}); }catch(seatErr){ console.warn('save seat map skipped', seatErr); }
     // V8 加價選位地圖模組：攤位資料已由 saveSeatMap 儲存。
     // 加價選位地圖資料由 saveSeatMap 儲存，避免覆蓋類型／座標／加價／服務台資料。
 

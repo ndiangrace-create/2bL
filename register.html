@@ -1061,9 +1061,10 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 </div>
 
 <div class="modal-overlay" id="stallPickerModal" onclick="if(event.target===this)closeModal('stallPickerModal')">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:820px">
     <div class="modal-title" id="stallPickerTitle">加價選位</div>
-    <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">綠色=可選　黃色=預留中　紅色=已選走</div>
+    <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">請先看上方已編號場地圖，再從下方清單選號碼。</div>
+    <div id="stallPickerMap" style="margin-bottom:12px"></div>
     <div id="stallGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     <button id="stallConfirmBtn" onclick="submitSelectedStalls()" style="width:100%;margin-top:14px;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;font-size:17px;font-weight:900">確認選位</button>
     <button class="btn-s2" onclick="closeModal('stallPickerModal')" style="width:100%;margin-top:8px">取消</button>
@@ -3684,12 +3685,16 @@ async function previewSeatMap(sessionId){
     if(res.error){ body.innerHTML='<div style="color:var(--rd);padding:16px">'+escHtml(res.error)+'</div>'; return; }
     const seats=Array.isArray(res.seats)?res.seats:[];
     const map=res.mapUrl||'';
-    const marks=seats.filter(s=>s.x||s.y).map(s=>{
-      const bg=s.type==='paid'?'#fff3cd':s.type==='service'?'#dbeafe':s.type==='closed'?'#eee':'#d8f3dc';
-      const txt=s.type==='paid'?`${escHtml(s.code)} +NT$${Number(s.price||0)}`:s.type==='service'?'服務台':s.type==='closed'?'不開放':escHtml(s.code);
-      return `<span style="position:absolute;left:${Number(s.x)||0}%;top:${Number(s.y)||0}%;transform:translate(-50%,-50%);background:${bg};border:2px solid #fff;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;box-shadow:0 1px 5px rgba(0,0,0,.2)">${txt}</span>`;
+    const stats={auto:0,paid:0,service:0,closed:0};
+    seats.forEach(s=>{ const t=s.type||'auto'; if(stats[t]!=null) stats[t]++; });
+    const list=seats.map(s=>{
+      const label=s.type==='paid'?`加價 NT$${Number(s.price||0)}`:s.type==='service'?'服務台':s.type==='closed'?'不開放':'自動排位';
+      const bg=s.type==='paid'?'#fff8ed':s.type==='closed'?'#f3f4f6':s.type==='service'?'#eff6ff':'#f7fff9';
+      return `<span style="display:inline-flex;gap:5px;align-items:center;border:1px solid #ddeee5;background:${bg};border-radius:999px;padding:5px 9px;margin:3px;font-size:13px;font-weight:900"><b>${escHtml(s.code)}</b><small style="font-size:11px;color:#666">${label}</small></span>`;
     }).join('');
-    body.innerHTML=map?`<div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid #ddd"><img src="${escHtml(map)}" style="width:100%;display:block">${marks}</div>`:`<div style="padding:20px;text-align:center;color:#777">此場次尚未上傳場地圖</div>`;
+    body.innerHTML=map
+      ? `<div style="border-radius:12px;overflow:auto;border:1px solid #ddd;background:#fff"><img src="${escHtml(map)}" style="width:100%;display:block"></div><div style="font-size:12px;color:#666;margin:8px 0 5px;font-weight:800">號碼狀態：自動 ${stats.auto}｜加價 ${stats.paid}｜不開放 ${stats.closed}｜服務台 ${stats.service}</div><div>${list||'<span style="color:#777;font-size:14px">尚未建立號碼清單</span>'}</div>`
+      : `<div style="padding:20px;text-align:center;color:#777">此場次尚未上傳已編號場地圖</div>`;
   }catch(e){ body.innerHTML='<div style="color:var(--rd);padding:16px">場地圖載入失敗</div>'; }
 }
 
@@ -3707,6 +3712,7 @@ async function openStallPickerForReg(regId){
   ST._stallPick={reg, selected:[]};
   $('stallPickerTitle').textContent='加價選位｜'+(reg.sessionName||reg.sesName||'場次');
   $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:15px;text-align:center;padding:16px">載入攤位中…</div>';
+  if($('stallPickerMap')) $('stallPickerMap').innerHTML='';
   $('stallConfirmBtn').disabled=true;
   $('stallConfirmBtn').style.opacity='.5';
   openModal('stallPickerModal');
@@ -3717,6 +3723,7 @@ async function openStallPickerForReg(regId){
     const list=paidSeats.map(s=>s.code);
     const taken={}; paidSeats.forEach(s=>{ if(s.occupied) taken[s.code]={status:s.status==='預留'?'reserved':'paid',regId:s.regId}; });
     ST._stallPick.seatMap=res; ST._stallPick.seatMeta=Object.fromEntries(paidSeats.map(s=>[s.code,s]));
+    if($('stallPickerMap')) $('stallPickerMap').innerHTML=res.mapUrl?`<div style="border:1px solid #ddd;border-radius:12px;overflow:auto;background:#fff"><img src="${escHtml(res.mapUrl)}" style="width:100%;display:block"></div>`:`<div style="font-size:13px;color:#777;background:#f7f7f7;border-radius:10px;padding:10px;text-align:center">此場次尚未上傳已編號場地圖，請依號碼清單選擇。</div>`;
     if(!list.length){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:15px;text-align:center;padding:16px">此場次尚未建立可選攤位</div>'; return; }
     ST._stallPick.stallList=list;
     ST._stallPick.taken=taken;
@@ -3731,7 +3738,7 @@ function renderStallPickerGrid(){
   const max=Math.max(1,Number(reg.stallCount||1));
   const taken=pick.taken||{};
   const selected=pick.selected||[];
-  $('stallPickerHint').textContent=`請選擇 ${max} 個攤位。綠色=可選，黃色=預留中，紅色=已選走。`;
+  $('stallPickerHint').textContent=`請選擇 ${max} 個攤位。請先看上方已編號場地圖，再從下方清單點號碼；逾時未付款會自動釋出。`;
   $('stallGrid').innerHTML=(pick.stallList||[]).map(num=>{
     const info=taken[num];
     const mine=info && String(info.regId||'')===String(reg.id||'');
