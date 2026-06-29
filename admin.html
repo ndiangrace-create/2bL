@@ -5245,19 +5245,18 @@ async function goToSesRegs(sesId){
 
 // 待審核數 → 該場次只看待審核
 async function goToSesPending(sesId){
-    // 先載入資料，再跳到名單詳細層篩選待審核
     const ses=(ST.sdData||[]).find(s=>String(s.id)===String(sesId));
     const sesName=ses?ses.name:sesId;
-    // 切換頁面
+    // 切換 tab（不呼叫 goPage，避免其 async init 蓋掉 detail layer）
     document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
     const page=$('page-regs'); if(page) page.classList.add('active');
     try{ localStorage.setItem('2bl_admin_page','regs'); }catch(e){}
+    document.querySelectorAll('.admin-tab,.nav-item').forEach(n=>n.classList.remove('active'));
     const tab=$('atab-regs'); if(tab) tab.classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     const nav=$('nav-regs'); if(nav) nav.classList.add('active');
-    // 確保資料已載入
+    // 確保資料已載入（等待完成）
     if(!ST.allRegs||!ST.allRegs.length) await loadAllRegs();
-    // 直接跳到詳細層
+    // 資料載入完成後再設 layer，不會被 init 蓋掉
     goRegsList(sesId, sesName, '待審核');
   }
 
