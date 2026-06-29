@@ -170,6 +170,14 @@ button,a,[onclick]{touch-action:manipulation}
 .modal-overlay.open{display:flex}
 .modal-overlay.show{display:flex}
 .modal-box{background:var(--wh);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 16px 32px}
+.seat-preview-box{max-width:760px!important;max-height:92dvh!important;height:min(92dvh,760px);padding:0!important;overflow:hidden!important;display:flex;flex-direction:column;border-radius:20px 20px 0 0}
+.seat-preview-header{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:16px 18px 12px;background:#fff;border-bottom:1px solid var(--border)}
+.seat-preview-header-title{font-size:20px;font-weight:950;line-height:1.25;flex:1}
+.seat-preview-close{width:42px;height:42px;border:none;border-radius:14px;background:var(--c-pink);color:#111;font-size:26px;font-weight:950;line-height:1;cursor:pointer}
+.seat-preview-scroll{flex:1;overflow-y:auto;padding:14px 16px 16px;-webkit-overflow-scrolling:touch}
+.seat-preview-footer{flex-shrink:0;background:#fff;border-top:1px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.06)}
+.seat-preview-footer button{width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950}
+@media(min-width:600px){.seat-preview-box{border-radius:20px;height:min(92dvh,820px)}}
 .modal-title{font-size:18px;font-weight:900;margin-bottom:16px}
 .modal-actions{display:flex;gap:10px;margin-top:16px}
 .f-row{margin-bottom:14px}
@@ -270,6 +278,15 @@ button,a,[onclick]{touch-action:manipulation}
 .edit-pill-btn{border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:6px 14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
 /* 活動資訊 */
 .act-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:12px}
+@media (min-width:900px){
+  #regFormModal > div{max-width:1180px;margin:0 auto}
+  #regFormModal .reg-form-content{display:grid;grid-template-columns:minmax(320px,42%) minmax(0,1fr);gap:18px;align-items:start;padding:18px;overflow:visible!important}
+  #regFormModal #formHero{position:sticky;top:72px;aspect-ratio:1/1;height:auto;min-height:0;max-height:calc(100vh - 110px);border-radius:24px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  #regFormModal #formHero .form-hero-img{width:100%;height:100%;object-fit:cover;display:block}
+  #regFormModal #formHero .form-hero-placeholder{height:100%;min-height:360px;display:flex;align-items:center;justify-content:center;font-size:64px}
+  #regFormModal .form-wrap{max-width:none!important;padding:0!important;margin:0!important}
+  #regFormModal .reg-form-content > div:last-child{grid-column:2;padding:0 0 40px!important}
+}
 .act-name{font-size:22px;font-weight:900;color:#111;line-height:1.3;margin-bottom:8px}
 .act-price{font-size:20px;font-weight:900;color:#111;margin-bottom:6px}
 .act-meta-row{display:flex;align-items:flex-start;gap:8px;font-size:15px;color:#555;margin-bottom:4px}
@@ -821,7 +838,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <button onclick="shareCurrentSession()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;color:var(--md)" title="分享">🔗</button>
     </div>
     <!-- 可捲動內容區 -->
-    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div class="reg-form-content" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch">
       <div class="form-hero" id="formHero">
         <div class="form-hero-placeholder">🎪</div>
       </div>
@@ -1063,13 +1080,20 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   </div>
 </div>
 <div class="modal-overlay" id="seatPreviewModal" onclick="if(event.target===this)closeModal('seatPreviewModal')">
-  <div class="modal-box" style="max-width:760px;max-height:92vh;padding-bottom:18px">
-    <div class="modal-title">場地圖與加價位置</div>
-    <div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:10px">
-      此畫面可直接選擇「加價位置意願」。只有加價位置可選；自動排位位置由系統依付款確認順序安排，不開放指定。
+  <div class="modal-box seat-preview-box">
+    <div class="seat-preview-header">
+      <div class="seat-preview-header-title">場地圖與加價位置</div>
+      <button type="button" class="seat-preview-close" onclick="closeModal('seatPreviewModal')" aria-label="關閉">×</button>
     </div>
-    <div id="seatPreviewBody" style="min-height:180px"></div>
-    <button class="btn-s2" onclick="closeModal('seatPreviewModal')" style="width:100%;margin-top:8px">關閉</button>
+    <div class="seat-preview-scroll">
+      <div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:10px">
+        此畫面僅供報名前查看位置配置；正式加價選位將於錄取後 24 小時內，在「我的紀錄」完成選位與付款。
+      </div>
+      <div id="seatPreviewBody" style="min-height:180px"></div>
+    </div>
+    <div class="seat-preview-footer">
+      <button type="button" onclick="closeModal('seatPreviewModal')">關閉，返回報名表</button>
+    </div>
   </div>
 </div>
 
@@ -1537,7 +1561,7 @@ function renderExplorePage(catFilter){
     });
   }
   // 依日期排序
-  sessions.sort((a,b)=>String(a.date||a.startDate||'').localeCompare(String(b.date||b.startDate||'')));
+  sessions = sortSessionsByUpcoming(sessions);
   if(!sessions.length){
     list.innerHTML='<div style="text-align:center;color:#aaa;font-size:14px;padding:40px 20px">目前無符合條件的場次</div>';
     return;
@@ -1550,12 +1574,12 @@ function renderRecentSessions(){
   const el=document.getElementById('recentSessionList');
   if(!el) return;
   const allSessions = (window.ST && ST.allSessionsData) ? ST.allSessionsData : [];
-  const sessions = allSessions
+  let sessions = allSessions
     .filter(s=>{
       if(s.status==='closed'||s.status==='archived'||s.status==='cancelled'||s.isHidden||s.testMode||s.internal) return false;
       return true;
-    })
-    .sort((a,b)=>String(a.date||a.startDate||'').localeCompare(String(b.date||b.startDate||'')));
+    });
+  sessions = sortSessionsByUpcoming(sessions);
   if(!sessions.length){
     el.innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:20px">目前無近期活動</div>';
     return;
@@ -2054,10 +2078,50 @@ function mergeSessions(list){
   ST.sessions=ST.allSessionsData.filter(isOpenSession);
   return ST.sessions;
 }
+function sessionStartMs(s){
+  if(!s) return Number.POSITIVE_INFINITY;
+  let rawDate='';
+  let rawTime='';
+  const dates=Array.isArray(s.dates)?s.dates:[];
+  if(dates.length){
+    const sorted=dates.slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+    rawDate=sorted[0]?.date||'';
+    rawTime=sorted[0]?.start||sorted[0]?.startTime||'';
+  }
+  rawDate = rawDate || s.date || s.startDate || s.eventDate || s.sessionDate || '';
+  rawTime = rawTime || s.startTime || s.time || '';
+  let date=String(rawDate||'').trim();
+  if(!date) return Number.POSITIVE_INFINITY;
+  date=date.replace(/[./]/g,'-');
+  const now=new Date();
+  if(/^\d{1,2}-\d{1,2}$/.test(date)) date=now.getFullYear()+'-'+date;
+  const m=date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(!m) {
+    const t=Date.parse(date);
+    return Number.isFinite(t)?t:Number.POSITIVE_INFINITY;
+  }
+  const y=m[1], mo=String(m[2]).padStart(2,'0'), da=String(m[3]).padStart(2,'0');
+  let time=String(rawTime||'').trim();
+  const tm=time.match(/(\d{1,2}):(\d{2})/);
+  time=tm?`${String(tm[1]).padStart(2,'0')}:${tm[2]}`:'00:00';
+  const t=Date.parse(`${y}-${mo}-${da}T${time}:00`);
+  return Number.isFinite(t)?t:Number.POSITIVE_INFINITY;
+}
+function sortSessionsByUpcoming(list){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const base=today.getTime();
+  return (Array.isArray(list)?list:[]).slice().sort((a,b)=>{
+    const am=sessionStartMs(a), bm=sessionStartMs(b);
+    const af=am>=base?0:1, bf=bm>=base?0:1;
+    if(af!==bf) return af-bf;
+    if(af===0) return am-bm;
+    return bm-am;
+  });
+}
 function renderHomeFallbackSessions(){
   const el=$('eventsList');
   if(!el) return;
-  const open=(ST.allSessionsData||[]).filter(isOpenSession);
+  const open=sortSessionsByUpcoming((ST.allSessionsData||[]).filter(isOpenSession));
   if(!open.length){
     el.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center;line-height:1.7">目前沒有開放報名場次<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>';
     return;
@@ -2129,6 +2193,7 @@ async function filterCat(type, el){
     list.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前無開放場次<br><button type="button" onclick="loadHome().then(()=>filterCat(ST.currentCatFilter))" style="margin-top:10px;border:none;border-radius:10px;background:var(--g);color:#fff;padding:9px 14px;font-weight:800;font-size:15px">重新載入</button></div>';
     return;
   }
+  data=sortSessionsByUpcoming(data);
   list.innerHTML = data.map(s=>renderSessionCard(s)).join('');
 }
 function renderEvents(){
@@ -2177,7 +2242,8 @@ async function openEvent(eventId){
   if(!sessions.length){
     sessions=(ST.allSessionsData||[]).filter(s=>isOpenSession(s) && String(s.eventId||'')===String(eventId));
   }
-  ST.sessions=sessions;
+  ST.sessions=sortSessionsByUpcoming(sessions);
+  sessions=ST.sessions;
   if(!list) return;
   if(!sessions.length){
     list.innerHTML='<div style="padding:20px;text-align:center;color:#aaa;font-size:16px">目前無開放場次</div>';
@@ -2380,8 +2446,6 @@ function renderDynFormFull(s, isNew=false){
   // ── ① 活動資訊 ──
   html+=`<div class="form-card-new">
     <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
-    ${cover?`<img class="act-img" src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:
-    `<div style="width:100%;height:140px;border-radius:var(--radius-md);background:var(--c-green);display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:12px">🎪</div>`}
     <div class="act-name">${esc(s.name||'')}</div>
     <div class="act-price">${esc(feeStr)}</div>
     ${dateStr?`<div class="act-meta-row"><span class="act-meta-icon">📅</span><span>${esc(dateStr)}</span></div>`:''}
@@ -4301,7 +4365,7 @@ if(document.readyState==='loading'){
     // ── 近期場次（ST.allSessionsData 場次層）──
     const el=$('eventsList');
     if(el){
-      const sessions=uniqueSessions(ST.allSessionsData).filter(openSess);
+      const sessions=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(openSess));
       if(sessions.length){
         el.innerHTML=sessions.slice(0,12).map(s=>{
           const dates=asArr(s.dates);
@@ -4334,8 +4398,8 @@ if(document.readyState==='loading'){
     setTimeout(enableDragScroll,100);
   };
   window.openSessionFromCard=function(ev,sessionId){ if(ev){ev.preventDefault();ev.stopPropagation();} openSession(sessionId); }; window.handleSessionTap=window.openSessionFromCard;
-  window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||s.event_id||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
-  window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
+  window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||s.event_id||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
+  window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
   const _oldCheckMemberStep=window.checkMemberStep; window.checkMemberStep=async function(){ const email=(($('step1Email')&&$('step1Email').value)||'').trim(); if(email) saveEmail(email); return _oldCheckMemberStep?_oldCheckMemberStep():undefined; };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
