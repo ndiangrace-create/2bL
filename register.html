@@ -3539,15 +3539,10 @@ function showSubmitOverlay(msg){
   ov.style.display='flex';
 }
 function hideSubmitOverlay(){ const ov=document.getElementById('submitOverlay'); if(ov) ov.style.display='none'; }
-function showSubmitSuccessOverlay(email){
-  let ov=document.getElementById('submitOverlay');
-  if(!ov){ showSubmitOverlay('報名成功！'); ov=document.getElementById('submitOverlay'); }
-  const icon=document.getElementById('submitOverlayIcon'); if(icon) icon.textContent='🎉';
-  const t=document.getElementById('submitOverlayText'); if(t) t.textContent='報名成功！';
-  const sub=document.getElementById('submitOverlaySub');
-  if(sub) sub.innerHTML='已收到您的報名申請。<br>日後可使用 Email + 手機查詢我的紀錄。';
-  ov.style.display='flex';
-}
+  function showSubmitSuccessOverlay(email){
+    // 成功後直接隱藏 overlay，讓 regFormModal 內的成功畫面顯示
+    hideSubmitOverlay();
+  }
 
 async function submitReg(ev){
   if(ev && ev.preventDefault) ev.preventDefault();
