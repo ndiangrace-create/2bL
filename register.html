@@ -1052,23 +1052,42 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   </div>
 </div>
 <div class="modal-overlay" id="seatPreviewModal" onclick="if(event.target===this)closeModal('seatPreviewModal')">
-  <div class="modal-box" style="max-width:760px">
+  <div class="modal-box" style="max-width:760px;max-height:92vh;padding-bottom:18px">
     <div class="modal-title">場地圖與加價位置</div>
-    <div style="font-size:14px;color:#666;margin-bottom:10px">此畫面僅供報名前查看位置配置。實際選位將於錄取後、付款前開放。</div>
+    <div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:10px">
+      此畫面可直接選擇「加價位置意願」。只有加價位置可選；自動排位位置由系統依付款確認順序安排，不開放指定。
+    </div>
     <div id="seatPreviewBody" style="min-height:180px"></div>
     <button class="btn-s2" onclick="closeModal('seatPreviewModal')" style="width:100%;margin-top:8px">關閉</button>
   </div>
 </div>
 
 <div class="modal-overlay" id="stallPickerModal" onclick="if(event.target===this)closeModal('stallPickerModal')">
-  <div class="modal-box" style="max-width:820px">
+  <div class="modal-box" style="max-width:820px;max-height:92vh;padding-bottom:18px">
     <div class="modal-title" id="stallPickerTitle">加價選位</div>
-    <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">請先看上方已編號場地圖，再從下方清單選號碼。</div>
+    <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">請先看上方已編號場地圖，再從下方加價位置清單選號碼。</div>
     <div id="stallSelectedSummary" style="background:#fff8ed;border:2px solid #f59e0b;color:#7c2d12;border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:17px;font-weight:950;text-align:center">尚未選擇位置</div>
     <div id="stallPickerMap" style="margin-bottom:12px"></div>
-    <div id="stallGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
-    <button id="stallConfirmBtn" onclick="submitSelectedStalls()" style="width:100%;margin-top:14px;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;font-size:17px;font-weight:900">確認選位</button>
-    <button class="btn-s2" onclick="closeModal('stallPickerModal')" style="width:100%;margin-top:8px">取消</button>
+    <div id="stallGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+    <div style="position:sticky;bottom:-18px;background:linear-gradient(0deg,#fff 80%,rgba(255,255,255,.82));padding:10px 0 2px;margin-top:10px">
+      <button id="stallConfirmBtn" onclick="submitSelectedStalls()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;font-size:17px;font-weight:900">確認選位</button>
+      <button class="btn-s2" onclick="closeModal('stallPickerModal')" style="width:100%;margin-top:8px">取消</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="seatMapZoomModal" onclick="if(event.target===this)closeModal('seatMapZoomModal')" style="align-items:stretch;z-index:260;background:rgba(0,0,0,.72)">
+  <div style="background:#fff;width:100%;height:100%;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #eee;background:#fff;flex-shrink:0">
+      <div style="font-size:18px;font-weight:950;flex:1" id="seatMapZoomTitle">放大查看場地圖</div>
+      <button type="button" onclick="adjustSeatMapZoom(-0.35)" style="border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 10px;font-size:15px;font-weight:900">－</button>
+      <button type="button" onclick="adjustSeatMapZoom(0.35)" style="border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 10px;font-size:15px;font-weight:900">＋</button>
+      <button type="button" onclick="closeModal('seatMapZoomModal')" style="border:none;background:#2d6a4f;color:#fff;border-radius:10px;padding:9px 12px;font-size:15px;font-weight:950">返回選位</button>
+    </div>
+    <div style="font-size:13px;color:#666;padding:8px 12px;background:#f7f7f7;line-height:1.5;flex-shrink:0">可左右滑動查看長條圖；按 ＋ 可放大號碼。回到選位後，下方只會開放加價位置可點選。</div>
+    <div id="seatMapZoomScroller" style="flex:1;overflow:auto;background:#fff;padding:12px">
+      <img id="seatMapZoomImg" src="" alt="場地圖" style="display:block;max-width:none;width:160%;height:auto;transform-origin:top left">
+    </div>
   </div>
 </div>
 
@@ -2378,12 +2397,13 @@ function renderDynFormFull(s, isNew=false){
           若不加價選位，錄取並完成付款後，系統將依付款確認順序安排位置。
         </div>
         <button type="button" onclick="previewSeatMap('${s.id}')" style="width:100%;background:#2d6a4f;border:2px solid #1b4332;color:#fff;border-radius:12px;padding:13px;font-size:17px;font-weight:950;margin-bottom:10px;box-shadow:0 3px 0 rgba(0,0,0,.12)">🗺️ 查看場地圖與加價位置</button>
+        <div id="seatIntentSummary" style="display:none;background:#e8f5ec;border:2px solid #2d6a4f;color:#1b4332;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:16px;font-weight:950;line-height:1.5"></div>
         <label style="display:flex;gap:9px;align-items:flex-start;background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #e3eee8">
-          <input type="radio" name="seatIntent" value="paid" onchange="ST.seatChoiceIntent='paid';updateFee()" style="width:20px;height:20px;accent-color:var(--g)">
+          <input type="radio" name="seatIntent" value="paid" onchange="setSeatIntent('paid')" style="width:20px;height:20px;accent-color:var(--g)">
           <span><b>我有加價選位意願</b><br><small>錄取後、付款前可選擇後台開放的加價位置，選位費併入本次繳費金額。</small></span>
         </label>
         <label style="display:flex;gap:9px;align-items:flex-start;background:#fff;border-radius:10px;padding:10px;border:1px solid #e3eee8">
-          <input type="radio" name="seatIntent" value="auto" checked onchange="ST.seatChoiceIntent='auto';updateFee()" style="width:20px;height:20px;accent-color:var(--g)">
+          <input type="radio" name="seatIntent" value="auto" checked onchange="setSeatIntent('auto')" style="width:20px;height:20px;accent-color:var(--g)">
           <span><b>不加價選位</b><br><small>依付款確認順序安排位置。付款後不可再加購加價選位。</small></span>
         </label>
       </div>`;
@@ -3682,25 +3702,118 @@ function handlePendingPayLink(regs){
 }
 
 
+
+function setSeatIntent(intent, code='', price=0){
+  ST.seatChoiceIntent = intent==='paid' ? 'paid' : 'auto';
+  if(ST.seatChoiceIntent==='paid'){
+    if(code){ ST.previewPaidSeatCode=String(code); ST.previewPaidSeatPrice=Number(price)||0; }
+  }else{
+    ST.previewPaidSeatCode=''; ST.previewPaidSeatPrice=0;
+  }
+  const radios=document.querySelectorAll('input[name="seatIntent"]');
+  radios.forEach(r=>{ r.checked = String(r.value)===String(ST.seatChoiceIntent); });
+  renderSeatIntentSummary();
+  updateFee();
+}
+function renderSeatIntentSummary(){
+  const el=$('seatIntentSummary');
+  if(!el) return;
+  if(ST.seatChoiceIntent==='paid'){
+    el.style.display='block';
+    const code=String(ST.previewPaidSeatCode||'').trim();
+    const price=Number(ST.previewPaidSeatPrice||0);
+    el.innerHTML=code
+      ? `✅ 已選加價意願：<span style="font-size:20px">${escHtml(code)}</span>${price>0?`｜加價 NT$${price}`:''}<br><small style="font-weight:800;color:#386641">此為報名前意願提示；錄取後仍需到「我的紀錄」完成正式選位與保留。</small>`
+      : `✅ 已選擇加價選位意願<br><small style="font-weight:800;color:#386641">錄取後請到「我的紀錄」選擇加價位置。</small>`;
+  }else{
+    el.style.display='none';
+    el.innerHTML='';
+  }
+}
+function renderSeatPreviewSelection(){
+  const box=$('seatPreviewPickSummary');
+  if(!box) return;
+  const code=String(ST._seatPreviewSelectedCode||'').trim();
+  const price=Number(ST._seatPreviewSelectedPrice||0);
+  if(code){
+    box.style.background='#e8f5ec'; box.style.borderColor='#2d6a4f'; box.style.color='#1b4332';
+    box.innerHTML=`✅ 已選加價意願：<span style="font-size:22px">${escHtml(code)}</span>${price>0?`｜加價 NT$${price}`:''}`;
+  }else{
+    box.style.background='#fff8ed'; box.style.borderColor='#f59e0b'; box.style.color='#7c2d12';
+    box.textContent='請從下方加價位置選擇一個號碼，或直接關閉改選不加價。';
+  }
+  document.querySelectorAll('[data-preview-paid-seat]').forEach(btn=>{
+    const on=String(btn.getAttribute('data-preview-paid-seat'))===code;
+    btn.style.background=on?'#2d6a4f':'#fff8ed';
+    btn.style.color=on?'#fff':'#111';
+    btn.style.borderColor=on?'#1b4332':'#f4c77a';
+    btn.querySelector('[data-seat-state]').textContent=on?'✅ 已選':'可選';
+  });
+  const cbtn=$('seatPreviewConfirmBtn');
+  if(cbtn){ cbtn.disabled=!code; cbtn.style.opacity=code?'1':'.55'; cbtn.textContent=code?`確認加價意願：${code}`:'請先選擇加價位置'; }
+}
+function choosePreviewPaidSeat(code, price){
+  ST._seatPreviewSelectedCode=String(code||'').trim();
+  ST._seatPreviewSelectedPrice=Number(price)||0;
+  renderSeatPreviewSelection();
+}
+function confirmPreviewPaidSeat(){
+  const code=String(ST._seatPreviewSelectedCode||'').trim();
+  if(!code){ toast('請先選擇加價位置'); return; }
+  setSeatIntent('paid', code, Number(ST._seatPreviewSelectedPrice||0));
+  closeModal('seatPreviewModal');
+  toast('✅ 已登記加價選位意願：'+code);
+}
+function openSeatMapZoom(kind){
+  const src = kind==='picker' ? (ST._stallPickerMapUrl||'') : (ST._seatPreviewMapUrl||'');
+  if(!src){ toast('目前沒有可放大的場地圖'); return; }
+  ST._seatMapZoomScale=1.8;
+  const img=$('seatMapZoomImg');
+  if(img){ img.src=src; img.style.width=(ST._seatMapZoomScale*100)+'%'; }
+  const title=$('seatMapZoomTitle');
+  if(title) title.textContent='放大查看場地圖';
+  openModal('seatMapZoomModal');
+  setTimeout(()=>{ const sc=$('seatMapZoomScroller'); if(sc){ sc.scrollLeft=Math.max(0,(sc.scrollWidth-sc.clientWidth)/2); sc.scrollTop=0; } },80);
+}
+function adjustSeatMapZoom(delta){
+  ST._seatMapZoomScale=Math.max(1, Math.min(4, Number(ST._seatMapZoomScale||1.8)+Number(delta||0)));
+  const img=$('seatMapZoomImg');
+  if(img) img.style.width=(ST._seatMapZoomScale*100)+'%';
+}
+
 async function previewSeatMap(sessionId){
   openModal('seatPreviewModal');
   const body=$('seatPreviewBody');
+  ST._seatPreviewSelectedCode='';
+  ST._seatPreviewSelectedPrice=0;
+  ST._seatPreviewMapUrl='';
   if(body) body.innerHTML='<div style="padding:20px;text-align:center;color:#777">載入場地圖…</div>';
   try{
     const res=await api({action:'getSeatMap',sessionId,_t:Date.now()});
     if(res.error){ body.innerHTML='<div style="color:var(--rd);padding:16px">'+escHtml(res.error)+'</div>'; return; }
     const seats=Array.isArray(res.seats)?res.seats:[];
     const map=res.mapUrl||'';
+    ST._seatPreviewMapUrl=map;
     const stats={auto:0,paid:0,service:0,closed:0};
     seats.forEach(s=>{ const t=s.type||'auto'; if(stats[t]!=null) stats[t]++; });
-    const list=seats.map(s=>{
-      const label=s.type==='paid'?`加價 NT$${Number(s.price||0)}`:s.type==='service'?'服務台':s.type==='closed'?'不開放':'自動排位';
-      const bg=s.type==='paid'?'#fff8ed':s.type==='closed'?'#f3f4f6':s.type==='service'?'#eff6ff':'#f7fff9';
-      return `<span style="display:inline-flex;gap:5px;align-items:center;border:1px solid #ddeee5;background:${bg};border-radius:999px;padding:5px 9px;margin:3px;font-size:13px;font-weight:900"><b>${escHtml(s.code)}</b><small style="font-size:11px;color:#666">${label}</small></span>`;
+    const paidSeats=seats.filter(s=>s.type==='paid'&&s.active&&!s.occupied);
+    const paidList=paidSeats.map(s=>{
+      const code=String(s.code||s.stallNo||'').trim();
+      const price=Number(s.price||0);
+      return `<button type="button" data-preview-paid-seat="${escHtml(code)}" onclick="choosePreviewPaidSeat('${esc(code)}',${price})" style="border:2.5px solid #f4c77a;background:#fff8ed;color:#111;border-radius:999px;padding:10px 12px;margin:4px;font-size:16px;font-weight:950;min-width:96px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.04)"><span style="font-size:20px">${escHtml(code)}</span><br><small data-seat-state style="font-size:12px;font-weight:900;color:inherit">可選</small>${price>0?`<br><small style="font-size:12px;font-weight:900;color:inherit">+NT$${price}</small>`:''}</button>`;
     }).join('');
+    const occupiedPaid=seats.filter(s=>s.type==='paid'&&s.active&&s.occupied).length;
     body.innerHTML=map
-      ? `<div style="border-radius:12px;overflow:auto;border:1px solid #ddd;background:#fff"><img src="${escHtml(map)}" style="width:100%;display:block"></div><div style="font-size:12px;color:#666;margin:8px 0 5px;font-weight:800">號碼狀態：自動 ${stats.auto}｜加價 ${stats.paid}｜不開放 ${stats.closed}｜服務台 ${stats.service}</div><div>${list||'<span style="color:#777;font-size:14px">尚未建立號碼清單</span>'}</div>`
+      ? `<div style="border-radius:14px;overflow:hidden;border:1px solid #ddd;background:#fff;margin-bottom:8px"><img src="${escHtml(map)}" style="width:100%;display:block"></div>
+         <button type="button" onclick="openSeatMapZoom('preview')" style="width:100%;background:#111827;color:#fff;border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:950;margin:8px 0 10px">🔍 放大查看場地圖</button>
+         <div style="font-size:13px;color:#666;margin:8px 0 8px;font-weight:900;line-height:1.6">號碼狀態：自動 ${stats.auto}｜加價可選 ${paidSeats.length}｜加價已占用 ${occupiedPaid}｜不開放 ${stats.closed}｜服務台 ${stats.service}</div>
+         <div id="seatPreviewPickSummary" style="background:#fff8ed;border:2px solid #f59e0b;color:#7c2d12;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:16px;font-weight:950;text-align:center">請從下方加價位置選擇一個號碼，或直接關閉改選不加價。</div>
+         <div style="font-size:15px;font-weight:950;color:#1b4332;margin:10px 0 6px">可選加價位置</div>
+         <div style="display:flex;flex-wrap:wrap;gap:4px">${paidList||'<div style="width:100%;color:#777;background:#f7f7f7;border-radius:12px;padding:14px;text-align:center;font-size:15px">此場次目前沒有可選的加價位置。</div>'}</div>
+         <div style="font-size:13px;color:#666;line-height:1.6;margin-top:10px;background:#f7fff9;border-radius:12px;padding:10px">自動排位號碼只供查看，不開放指定；若不加價，系統將依付款確認順序安排位置。</div>
+         <button id="seatPreviewConfirmBtn" type="button" onclick="confirmPreviewPaidSeat()" disabled style="width:100%;margin-top:12px;background:#2d6a4f;color:#fff;border:none;border-radius:12px;padding:13px;font-size:17px;font-weight:950;opacity:.55">請先選擇加價位置</button>`
       : `<div style="padding:20px;text-align:center;color:#777">此場次尚未上傳已編號場地圖</div>`;
+    renderSeatPreviewSelection();
   }catch(e){ body.innerHTML='<div style="color:var(--rd);padding:16px">場地圖載入失敗</div>'; }
 }
 
@@ -3729,7 +3842,8 @@ async function openStallPickerForReg(regId){
     const list=paidSeats.map(s=>s.code);
     const taken={}; paidSeats.forEach(s=>{ if(s.occupied) taken[s.code]={status:s.status==='預留'?'reserved':'paid',regId:s.regId}; });
     ST._stallPick.seatMap=res; ST._stallPick.seatMeta=Object.fromEntries(paidSeats.map(s=>[s.code,s]));
-    if($('stallPickerMap')) $('stallPickerMap').innerHTML=res.mapUrl?`<div style="border:1px solid #ddd;border-radius:12px;overflow:auto;background:#fff"><img src="${escHtml(res.mapUrl)}" style="width:100%;display:block"></div>`:`<div style="font-size:13px;color:#777;background:#f7f7f7;border-radius:10px;padding:10px;text-align:center">此場次尚未上傳已編號場地圖，請依號碼清單選擇。</div>`;
+    ST._stallPickerMapUrl=res.mapUrl||'';
+    if($('stallPickerMap')) $('stallPickerMap').innerHTML=res.mapUrl?`<div style="border:1px solid #ddd;border-radius:12px;overflow:hidden;background:#fff"><img src="${escHtml(res.mapUrl)}" style="width:100%;display:block"></div><button type="button" onclick="openSeatMapZoom('picker')" style="width:100%;background:#111827;color:#fff;border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:950;margin-top:8px">🔍 放大查看場地圖</button>`:`<div style="font-size:13px;color:#777;background:#f7f7f7;border-radius:10px;padding:10px;text-align:center">此場次尚未上傳已編號場地圖，請依號碼清單選擇。</div>`;
     if(!list.length){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:15px;text-align:center;padding:16px">此場次尚未建立可選攤位</div>'; return; }
     ST._stallPick.stallList=list;
     ST._stallPick.taken=taken;
@@ -3744,7 +3858,7 @@ function renderStallPickerGrid(){
   const max=Math.max(1,Number(reg.stallCount||1));
   const taken=pick.taken||{};
   const selected=pick.selected||[];
-  $('stallPickerHint').textContent=`請選擇 ${max} 個位置。先看上方已編號場地圖，再點下方號碼；逾時未付款會自動釋出。`;
+  $('stallPickerHint').textContent=`請選擇 ${max} 個加價位置。只有加價位置可選；逾時未付款會自動釋出。`;
   const summary=$('stallSelectedSummary');
   if(summary){
     if(selected.length){
