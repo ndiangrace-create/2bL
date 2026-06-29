@@ -7,8 +7,6 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>活動報名系統</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --c1:#DDEAD1;--c2:#FAEEC7;--c3:#D9E5EE;--c4:#FAE1DD;--c5:#DCD7ED;
@@ -885,7 +883,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   <div id="memberLoginArea" style="padding:20px 16px">
     <div class="mcard">
       <div style="font-size:18px;font-weight:900;margin-bottom:8px">會員登入／我的紀錄</div>
-      <div style="font-size:14px;color:var(--md);margin-bottom:14px;line-height:1.65">可用 Email＋手機查詢我的紀錄；Google 登入保留，資料會綁定同一個會員。</div>
+      <div style="font-size:14px;color:var(--md);margin-bottom:14px;line-height:1.65">請使用 Email＋手機查詢我的紀錄。資料會依會員 Email 與手機綁定，不需另外跳轉登入。</div>
       <div style="background:#fff;border:2px solid #DDEAD1;border-radius:16px;padding:14px;margin-bottom:14px">
         <div style="font-size:16px;font-weight:950;color:#111;margin-bottom:8px">Email＋手機查詢</div>
         <label style="font-size:14px;font-weight:900;color:#333">Email</label>
@@ -895,21 +893,6 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
         <div style="font-size:13px;color:#666;line-height:1.55;margin-top:8px">需 Email 與手機符合會員或報名資料，才會顯示紀錄。</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin:12px 0;color:#888;font-size:13px;font-weight:800"><span style="height:1px;background:#eee;flex:1"></span>或<span style="height:1px;background:#eee;flex:1"></span></div>
-      <div style="font-size:14px;color:var(--md);margin-bottom:10px">使用 Google 帳號登入，資料自動帶入，下次報名更快速</div>
-      <button id="googleMemberLoginBtn" onclick="startMemberGoogleLogin()"
-        style="width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
-               padding:14px 20px;border-radius:12px;border:1.5px solid #dadce0;
-               background:#fff;color:#3c4043;font-size:16px;font-weight:700;
-               font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-        <svg width="20" height="20" viewBox="0 0 48 48">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        </svg>
-        使用 Google 帳號登入
-      </button>
       <div id="memberLoginErr" style="font-size:13px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
   </div>
@@ -1375,64 +1358,13 @@ async function applySiteConfig(){
 // V5 SaaS: tenant 從 URL ?tenant= 讀取，API 端點固定
 const API_BASE = 'https://2bl-v7.ndiangrace.workers.dev';
 
-// Google OAuth 前台登入
-function startMemberGoogleLogin() {
-  const btn = document.getElementById('googleMemberLoginBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '正在跳轉…'; }
-  window.location.href = API_BASE + '/auth/google/unified/start?tenant=' + encodeURIComponent(TENANT_ID) + '&next=member';
-}
-
-// OAuth callback 後，URL 帶 member_token 回來
-async function handleMemberOAuthCallback() {
-  // 只處理真正的 OAuth 回調（有 pending token 才是剛登入回來）
-  const memberToken = localStorage.getItem('2bl_member_token_pending');
-  const displayName = localStorage.getItem('2bl_display_name_pending') || '';
-  const loginError = new URLSearchParams(window.location.search).get('login_error');
-
-  if (loginError) {
-    const errEl = document.getElementById('memberLoginErr');
-    if (errEl) { errEl.textContent = '登入失敗：' + loginError; errEl.style.display = 'block'; }
-    return;
-  }
-  if (!memberToken) return; // 不是 OAuth 回調，直接結束
-
-  // 清除暫存的 pending token
-  localStorage.removeItem('2bl_member_token_pending');
-  localStorage.removeItem('2bl_display_name_pending');
-
-  // 存入正式 token
-  localStorage.setItem('2bl_member_token', memberToken);
-
-  // 解析 JWT payload 取 email
-  try {
-    let _b64 = memberToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-    let _raw = atob(_b64);
-    let _str; try { _str = decodeURIComponent(escape(_raw)); } catch(e) { _str = _raw; }
-    const payload = JSON.parse(_str);
-    const email = (payload.email || '').toLowerCase().trim();
-    if (!email) return;
-    ST.memberEmail = email;
-    ST.memberToken = memberToken;
-    memberSaveEmail(email);
-    // 載入會員資料
-    await safeLoadMemberPage(email);
-  } catch(e) {
-    console.error('member token parse failed', e);
-  }
-}
 const _urlParams = new URLSearchParams(window.location.search);
 // 租戶解析：優先從 URL 讀取，存入 sessionStorage 後清除網址列參數
 (function(){
   const urlTenant = _urlParams.get('tenant') || _urlParams.get('tenantId');
-  const urlMemberToken = _urlParams.get('member_token');
-  const urlDisplayName = _urlParams.get('display_name') || '';
   // 先把所有需要的參數存起來，再清除網址
   if (urlTenant) sessionStorage.setItem('2bl_tenant', urlTenant);
-  if (urlMemberToken) {
-    localStorage.setItem('2bl_member_token_pending', urlMemberToken);
-    localStorage.setItem('2bl_display_name_pending', urlDisplayName);
-  }
-  if (urlTenant || urlMemberToken) {
+  if (urlTenant) {
     window.history.replaceState({}, '', window.location.pathname);
   }
 })();
@@ -2335,8 +2267,6 @@ function showEmailStep(s){
         <button class="btn-submit" type="button" onclick="checkMemberStep()" style="margin-top:14px">
           查詢 / 繼續 →
         </button>
-        <div style="display:flex;align-items:center;gap:10px;margin:14px 0;color:#888;font-size:13px;font-weight:800"><span style="height:1px;background:#eee;flex:1"></span>或<span style="height:1px;background:#eee;flex:1"></span></div>
-        <button type="button" onclick="startMemberGoogleLogin()" style="width:100%;background:#fff;border:1.5px solid #dadce0;border-radius:12px;padding:13px;font-size:16px;font-weight:900;color:#333;font-family:inherit;cursor:pointer">使用 Google 帳號帶入會員資料</button>
       </div>
     </div>`;
 }
@@ -4270,7 +4200,7 @@ function initFrontApp(){
     }
   }catch(e){}
   try{ applySiteConfig(); }catch(e){}
-  // 使用 bootDbFront 統一處理：OAuth callback + 頁面還原 + loadHome
+  // 使用 bootDbFront 統一處理：頁面還原 + loadHome
   bootDbFront().catch(e=>{ console.error('bootDbFront error:',e); loadHome(); });
   const p=new URLSearchParams(window.location.search);
   const deepSes=p.get('ses')||p.get('session')||p.get('sessionId');
@@ -4403,23 +4333,10 @@ if(document.readyState==='loading'){
   const _oldCheckMemberStep=window.checkMemberStep; window.checkMemberStep=async function(){ const email=(($('step1Email')&&$('step1Email').value)||'').trim(); if(email) saveEmail(email); return _oldCheckMemberStep?_oldCheckMemberStep():undefined; };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
-  await handleMemberOAuthCallback();
-  // 從 localStorage 恢復登入狀態
-  const savedToken = localStorage.getItem('2bl_member_token');
+  // 前台已改為 Email＋手機會員查詢；不再恢復第三方登入 token
   const savedEmail = readEmail();
-  if (savedToken && savedEmail) {
-    ST.memberEmail = savedEmail;
-    ST.memberToken = savedToken;
-  }
+  if (savedEmail) ST.memberEmail = savedEmail;
 
-  // OAuth 回來後停在首頁
-  const isOAuthReturn = !!(new URLSearchParams(location.search).get('member_token') ||
-    sessionStorage.getItem('2bl_member_token_pending'));
-  if(isOAuthReturn){
-    await loadHome();
-    navToTab('home');
-    return;
-  }
 
   // 讀取上次儲存的完整狀態
   let savedState = null;
