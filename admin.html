@@ -564,6 +564,21 @@ body,#adminPage,.layout,.main,.tab-page,.tab-page.active{
 .ses-table td,.reg-table td,.summary-table td{background:#FFFFFF;color:#111111;}
 .ses-table tr:hover td,.reg-table tr:hover td,.summary-table tr:hover td{background:#FAFAFA!important;}
 
+
+/* V8 single-session dashboard: white background, black text, one-line overview */
+.ssd-wrap{background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:14px;margin:0 0 14px;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.ssd-head{display:flex;align-items:flex-start;gap:10px;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
+.ssd-title{font-size:22px;font-weight:950;color:#111;line-height:1.25}
+.ssd-meta{font-size:12px;color:#555;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+.ssd-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ssd-actions button{border:1px solid #D6DEE8;background:#fff;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:900;color:#111;cursor:pointer;font-family:inherit}.ssd-actions button:hover{background:#F8FAFC}
+.ssd-sec{background:#fff;border:1px solid #EDF0F3;border-radius:14px;padding:10px 12px;margin:10px 0}.ssd-sec-title{font-size:15px;font-weight:950;color:#111;margin-bottom:8px;display:flex;align-items:center;gap:6px}.ssd-sec-title small{font-size:12px;color:#666;font-weight:700}
+.ssd-grid{display:grid;grid-template-columns:repeat(7,minmax(92px,1fr));gap:8px}.ssd-grid.todo{grid-template-columns:repeat(6,minmax(100px,1fr))}.ssd-grid.booth{grid-template-columns:repeat(7,minmax(92px,1fr))}
+.ssd-stat{background:#fff;border:1.5px solid #E2E8F0;border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;min-height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#111;font-family:inherit}.ssd-stat:hover{border-color:#94A3B8;box-shadow:0 2px 8px rgba(0,0,0,.08);transform:translateY(-1px)}.ssd-stat .ico{font-size:18px}.ssd-stat .lbl{font-size:13px;font-weight:900;color:#111}.ssd-stat .num{font-size:28px;line-height:1;font-weight:950;color:#111}.ssd-stat .sub{font-size:12px;color:#333;font-weight:750}.ssd-stat.warn{border-color:#FDBA74;background:#FFF7ED}.ssd-stat.red{border-color:#FCA5A5;background:#FFF7F7}.ssd-stat.green{border-color:#86EFAC;background:#F8FFF9}.ssd-stat.blue{border-color:#93C5FD;background:#F8FBFF}.ssd-stat.purple{border-color:#C4B5FD;background:#FBFAFF}.ssd-stat.gray{border-color:#CBD5E1;background:#F8FAFC}
+.ssd-bar{height:14px;border-radius:999px;overflow:hidden;background:#E5E7EB;display:flex;margin:8px 0 4px}.ssd-bar span{display:block;min-width:2px}.ssd-bar-labels{display:grid;grid-template-columns:repeat(6,1fr);font-size:11px;color:#333;font-weight:750;text-align:center;gap:4px}
+.ssd-mid{display:grid;grid-template-columns:1.35fr .95fr;gap:10px}.ssd-equip-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:8px 10px}.ssd-equip-row{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #F0F2F4}.ssd-equip-row:last-child{border-bottom:none}.ssd-equip-name{font-size:15px;font-weight:950;color:#111;white-space:nowrap}.ssd-equip-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:15px;color:#111;font-weight:850}.ssd-eq-pill{display:inline-flex;align-items:center;gap:4px;border:1px solid #DDE5EE;border-radius:999px;padding:4px 9px;background:#fff}.ssd-eq-pill strong{font-size:20px;color:#111}.ssd-eq-note{font-size:11px;color:#666;font-weight:700}.ssd-fin-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid #93C5FD;background:#F8FBFF;border-radius:14px;padding:14px;cursor:pointer;color:#111}.ssd-fin-entry:hover{background:#EFF6FF}.ssd-fin-main{display:flex;align-items:center;gap:12px}.ssd-fin-ico{font-size:34px}.ssd-fin-title{font-size:22px;font-weight:950;color:#1D4ED8}.ssd-fin-sub{font-size:13px;font-weight:800;color:#333;margin-top:2px}.ssd-fin-ring{width:56px;height:56px;border-radius:50%;background:conic-gradient(#22C55E 0 42%,#EF4444 42% 64%,#3B82F6 64% 80%,#A855F7 80% 100%);position:relative;flex:0 0 auto}.ssd-fin-ring:after{content:'';position:absolute;inset:13px;border-radius:50%;background:#fff}.ssd-arrow{font-size:28px;color:#1D4ED8;font-weight:950}
+.ssd-note{font-size:11px;color:#667085;margin-top:4px}.ssd-xlsx-note{font-size:12px;color:#555;font-weight:800;margin:4px 0 0;text-align:right}.ssd-error-inline{font-size:12px;color:#A32D2D;font-weight:900;margin-left:6px}
+@media(max-width:900px){.ssd-grid,.ssd-grid.todo,.ssd-grid.booth{grid-template-columns:repeat(3,1fr)}.ssd-mid{grid-template-columns:1fr}.ssd-title{font-size:18px}.ssd-stat .num{font-size:24px}.ssd-bar-labels{grid-template-columns:repeat(2,1fr);text-align:left}.ssd-equip-row{grid-template-columns:1fr}.ssd-actions{width:100%}.ssd-actions button{flex:1}.ssd-fin-title{font-size:18px}}
+
 </style>
 <!-- db-driven-20260618 -->
 <!-- build: finance-card-invoice-footer-187 -->
@@ -683,6 +698,7 @@ body,#adminPage,.layout,.main,.tab-page,.tab-page.active{
 
   <!-- 第二層：單場名單（點入後才顯示） -->
   <div id="regsDetailLayer" style="display:none">
+    <div id="singleSessionDashboard"></div>
     <select id="regSesFilter" onchange="onRegSesFilterChange()" style="width:100%;padding:10px;border:1.5px solid #D9E5EE;border-radius:10px;font-size:14px;margin-bottom:8px;background:#fff"><option value="">所有場次</option></select>
     <select id="regStatusFilter" onchange="ST._showAllRegStatus=this.value==='';renderRegs();" style="width:100%;padding:10px;border:1.5px solid #D9E5EE;border-radius:10px;font-size:14px;margin-bottom:8px;background:#fff;font-family:inherit">
       <option value="">全部狀態</option>
@@ -5758,6 +5774,155 @@ function downloadInvoiceList(){
   document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   toast('✅ 發票清單已下載');
 }
+
+
+
+/* ===== V8 單場次營運總表：資料來源 registrations / sessions / finance modal ===== */
+(function(){
+  function n(v){const x=Number(v);return Number.isFinite(x)?x:0;}
+  function txt(v){return String(v??'').trim();}
+  function esc(v){return (typeof adminEsc==='function'?adminEsc(v):String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])));}
+  function sidOf(r){return String(r.sessionId||r.sesId||r.session_id||'');}
+  function reviewOf(r){return txt(r.status||r.reviewStatus||r.review_status||'待審核');}
+  function payOf(r){return txt(r.payStatus||r.payment_status||r.pay_status||'未繳費');}
+  function isPaid(r){try{return isPaidText(payOf(r));}catch(e){return /已繳費|已付款|免費/.test(payOf(r));}}
+  function isPendingPay(r){try{return isPendingPayText(payOf(r));}catch(e){return /待確認|待核|回報/.test(payOf(r));}}
+  function isCancelled(r){try{return isCancelledPaymentReg(r);}catch(e){return /取消/.test(reviewOf(r))||/取消/.test(payOf(r));}}
+  function isRefundReq(r){try{return isRefundRequestReg(r);}catch(e){return /退費/.test(payOf(r))&&!/已退/.test(payOf(r));}}
+  function amountOf(r){return n(r.amount||r.totalAmount||r.total_amount||r.payAmount||r.payment_report_amount||r.paymentReportAmount);}
+  function reportAmtOf(r){return n(r.paymentReportAmount||r.payment_report_amount||r.reportAmount||r.amount);}
+  function depositOf(r,ses){const direct=n(r.deposit||r.depositAmount); if(direct) return direct; return n(ses&&ses.deposit)*(n(r.stallCount||r.stall_count)||1);}
+  function approved(r){const st=reviewOf(r);return st==='已錄取'||st==='approved'||isPaid(r)||isPendingPay(r);}
+  function reported(r){return !!(r.paymentScreenshotStatus||r.payment_screenshot_status||r.paymentScreenshotReceivedAt||r.payment_screenshot_received_at||/已回報客服|截圖已收|匯款回報|繳費通知/.test(txt(r.adminNote||r.note||r.payment_line_card_text)));}
+  function stallCount(r){return n(r.stallCount||r.stall_count)||1;}
+  function equipObj(r){
+    const candidates=[r.actualEquip,r.equip,r.equip_json,r.equipment_json,r.equipmentJson,r.equipment];
+    for(const c of candidates){
+      if(!c) continue;
+      if(typeof c==='object') return c;
+      try{return JSON.parse(c||'{}');}catch(e){}
+    }
+    return {};
+  }
+  function equipDefs(ses){return (ses&&typeof ses.equip==='object')?ses.equip:{};}
+  function equipDef(ses,name){const defs=equipDefs(ses); const def=defs[name]||{}; const fb=(typeof EQUIP_LIST!=='undefined'?(EQUIP_LIST||[]):[]).find(x=>x.k===name||x.name===name)||{}; return {incl:n(def.incl||def.included||fb.incl||fb.included), price:n(def.price||fb.price)};}
+  function dateText(ses){try{return fmtOverviewDateRangeText(ses);}catch(e){return ses.date||ses.eventDate||'';}}
+  function nameOfSes(ses){return ses.title||ses.name||ses.sessionName||ses.id||'場次';}
+  function sessionOf(sesId){return (ST.sdData||[]).find(s=>String(s.id)===String(sesId))||{};}
+  function safePercent(part,total){return total>0?Math.max(0,Math.round(part/total*100)):0;}
+  function metric(label,num,sub,cls,onclick,ico){return `<button type="button" class="ssd-stat ${cls||''}" onclick="${onclick||''}"><div class="ico">${ico||''}</div><div class="lbl">${esc(label)}</div><div class="num">${esc(num)}</div>${sub?`<div class="sub">${esc(sub)}</div>`:''}</button>`;}
+  function getSessionRegs(sesId){return (ST.allRegs||[]).filter(r=>sidOf(r)===String(sesId));}
+  function financeAnomalyRows(sesId){
+    return getSessionRegs(sesId).filter(r=>{
+      const amt=amountOf(r), rep=reportAmtOf(r), total=n(r.totalAmount||r.total_amount||r.amount);
+      if(rep && amt && Math.abs(rep-amt)>1) return true;
+      if(isPaid(r) && total>0 && amt<=0) return true;
+      if(isPendingPay(r) && rep && total && Math.abs(rep-total)>1) return true;
+      if(r.finance_issue||r.financeIssue||r.amount_issue) return true;
+      return false;
+    });
+  }
+  function equipmentRows(ses,sr){
+    const src=sr.filter(r=>approved(r)&&!isCancelled(r));
+    const totals={};
+    src.forEach(r=>{
+      const eq=equipObj(r), sc=stallCount(r);
+      Object.entries(eq||{}).forEach(([name,qtyRaw])=>{
+        const qty=n(qtyRaw); if(!name||qty<=0) return;
+        const def=equipDef(ses,name); const inc=def.incl*sc; const useInc=Math.min(qty,inc); const add=Math.max(qty-inc,0);
+        if(!totals[name]) totals[name]={name,demand:0,included:0,addon:0};
+        totals[name].demand+=qty; totals[name].included+=useInc; totals[name].addon+=add;
+      });
+    });
+    const arr=Object.values(totals);
+    return arr.length?arr:[{name:'桌子',demand:0,included:0,addon:0},{name:'椅子',demand:0,included:0,addon:0},{name:'電力',demand:0,included:0,addon:0}];
+  }
+  window.renderSingleSessionDashboard=function(sesId, sesName){
+    const holder=document.getElementById('singleSessionDashboard'); if(!holder) return;
+    if(!sesId || sesId==='all'){holder.innerHTML=''; return;}
+    const ses=sessionOf(sesId); const sr=getSessionRegs(sesId); const sName=sesName||nameOfSes(ses);
+    const total=sr.length;
+    const pending=sr.filter(r=>reviewOf(r)==='待審核').length;
+    const approvedRows=sr.filter(r=>approved(r)&&!isCancelled(r));
+    const approvedCount=approvedRows.length;
+    const paidRows=sr.filter(r=>isPaid(r)&&!isCancelled(r));
+    const paid=paidRows.length;
+    const pendingPayRows=sr.filter(r=>isPendingPay(r)&&!isCancelled(r));
+    const pendingPay=pendingPayRows.length;
+    const unpaidRows=approvedRows.filter(r=>!isPaid(r)&&!isPendingPay(r));
+    const unpaid=unpaidRows.length;
+    const reportedRows=approvedRows.filter(reported);
+    const unreportedRows=approvedRows.filter(r=>!reported(r));
+    const refundReq=sr.filter(r=>isRefundReq(r)).length;
+    const cancelTodo=sr.filter(r=>/取消/.test(reviewOf(r)) && !/已取消/.test(reviewOf(r))).length;
+    const anomalies=financeAnomalyRows(sesId);
+    const approvedAmt=approvedRows.reduce((a,r)=>a+amountOf(r),0);
+    const paidAmt=paidRows.reduce((a,r)=>a+amountOf(r),0);
+    const pendingAmt=pendingPayRows.reduce((a,r)=>a+amountOf(r),0);
+    const unpaidAmt=unpaidRows.reduce((a,r)=>a+amountOf(r),0);
+    const openCap=n(ses.capacity||ses.maxStalls||ses.stallCapacity||ses.quota||ses.boothCount||ses.totalStalls)||Math.max(approvedRows.reduce((a,r)=>a+stallCount(r),0),0);
+    const assigned=paidRows.reduce((a,r)=>a+stallCount(r),0);
+    const locked=sr.filter(r=>/locked|已鎖定|鎖定/.test(txt(r.seat_choice_status||r.seatChoiceStatus))).length;
+    const reserved=sr.filter(r=>/reserved|保留/.test(txt(r.seat_choice_status||r.seatChoiceStatus))).length;
+    const service=n(ses.serviceDeskCount||ses.service_count||ses.serviceStalls)||0;
+    const checkedIn=sr.filter(r=>/已報到/.test(txt(r.checkin||r.checkinStatus||r.checkin_status))).length;
+    const depPending=paidRows.filter(r=>!/已退/.test(txt(r.depositRefunded||r.deposit_refunded))).length;
+    const empty=Math.max(0,openCap-approvedRows.reduce((a,r)=>a+stallCount(r),0));
+    const eRows=equipmentRows(ses,sr);
+    const colors=['#FB923C','#22C55E','#14B8A6','#8B5CF6','#EF4444','#6B7280'];
+    const statusParts=[pending,approvedCount,paid,pendingPay,unpaid,empty]; const denom=Math.max(1,total+empty);
+    const bar=statusParts.map((v,i)=>`<span style="width:${safePercent(v,denom)}%;background:${colors[i]}"></span>`).join('');
+    const ev=(ST.events||[]).find(e=>String(e.id)===String(ses.eventId))||{};
+    holder.innerHTML=`<div class="ssd-wrap">
+      <div class="ssd-head"><div><div class="ssd-title">${esc(sName)}</div><div class="ssd-meta"><span>📅 ${esc(dateText(ses)||'-')}</span><span>📍 ${esc(ses.venue||ses.location||ev.location||'-')}</span><span>報名期間：${esc(ses.regStart||ses.reg_start||'-')} ~ ${esc(ses.regEnd||ses.reg_end||'-')}</span><span>場次編號：${esc(ses.code||ses.sessionCode||ses.id||'')}</span></div></div><div class="ssd-actions"><button onclick="downloadSesData('${escAttr(String(sesId))}','${escAttr(String(sName))}')">⬇ 下載本場完整 Excel（含名單＋金流）</button><button onclick="openFinanceModal('${escAttr(String(sesId))}','${escAttr(String(sName))}','${escAttr(String(ev.title||ev.name||''))}')">📊 查看本場財報</button><button onclick="backToRegsSummary()">← 返回跨場次</button></div></div>
+      <div class="ssd-sec"><div class="ssd-sec-title">1 本場概況</div><div class="ssd-grid">
+        ${metric('報名',total,'名單總數','blue',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','')`,'👥')}
+        ${metric('待審核',pending,'待人工審核','warn',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','待審核')`,'🕘')}
+        ${metric('已錄取',approvedCount,'應收 NT$'+approvedAmt.toLocaleString(),'green',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已錄取')`,'✅')}
+        ${metric('已繳費',paid,'已收 NT$'+paidAmt.toLocaleString(),'green',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已繳費')`,'💵')}
+        ${metric('待確認',pendingPay,'待確認 NT$'+pendingAmt.toLocaleString(),'purple',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','待確認')`,'🛡️')}
+        ${metric('未繳費',unpaid,'未收 NT$'+unpaidAmt.toLocaleString(),'red',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','未繳費')`,'⚠️')}
+        ${metric('空攤',empty,'可供分配','gray','','🏪')}
+      </div><div style="margin-top:8px;font-size:12px;font-weight:900;color:#111">狀態分布（依名單狀態）</div><div class="ssd-bar">${bar}</div><div class="ssd-bar-labels"><span>待審核 ${pending}（${safePercent(pending,denom)}%）</span><span>已錄取 ${approvedCount}（${safePercent(approvedCount,denom)}%）</span><span>已繳費 ${paid}（${safePercent(paid,denom)}%）</span><span>待確認 ${pendingPay}（${safePercent(pendingPay,denom)}%）</span><span>未繳費 ${unpaid}（${safePercent(unpaid,denom)}%）</span><span>空攤 ${empty}（${safePercent(empty,denom)}%）</span></div></div>
+      <div class="ssd-sec"><div class="ssd-sec-title">2 待處理提醒</div><div class="ssd-grid todo">
+        ${metric('已回報客服',reportedRows.length,'待處理','blue',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','待確認')`,'🎧')}
+        ${metric('尚未回報',unreportedRows.length,'待回報','gray',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已錄取')`,'✉️')}
+        ${metric('金額異常',anomalies.length,'待確認',anomalies.length?'red':'gray',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','金額異常')`,'🔺')}
+        ${metric('退款待處理',refundReq,'待處理','red',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','申請退費')`,'↩️')}
+        ${metric('取消待處理',cancelTodo,'待處理','purple',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已取消')`,'✖️')}
+        ${metric('選位即將逾期',reserved,'保留中','blue',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','全部')`,'📅')}
+      </div></div>
+      <div class="ssd-mid"><div class="ssd-sec" style="margin:0"><div class="ssd-sec-title">3 設備總覽 <small>僅顯示數量</small><button class="btn btn-s btn-xs" style="margin-left:auto" onclick="downloadSesData('${escAttr(String(sesId))}','${escAttr(String(sName))}')">查看設備明細 ›</button></div><div class="ssd-equip-card">${eRows.map((r,i)=>`<div class="ssd-equip-row"><div class="ssd-equip-name">${i===0?'▰':i===1?'▟':'⚡'} ${esc(r.name)}</div><div class="ssd-equip-line"><span class="ssd-eq-pill">需求 <strong>${r.demand}</strong></span><span>|</span><span class="ssd-eq-pill">內含 <strong>${r.included}</strong></span><span>|</span><span class="ssd-eq-pill">加購 <strong>${r.addon}</strong></span></div></div>`).join('')}</div><div class="ssd-note">內含不計收入；加購收入與設備租借成本統一放在「本場財報」。</div></div>
+      <div class="ssd-sec" style="margin:0"><div class="ssd-sec-title">4 收支 / 財報入口</div><div class="ssd-fin-entry" onclick="openFinanceModal('${escAttr(String(sesId))}','${escAttr(String(sName))}','${escAttr(String(ev.title||ev.name||''))}')"><div class="ssd-fin-main"><div class="ssd-fin-ico">📈</div><div><div class="ssd-fin-title">查看本場財報</div><div class="ssd-fin-sub">收入 / 支出 / 押金 / 額外收支 / 退款</div></div></div><div style="display:flex;align-items:center;gap:14px"><div class="ssd-fin-ring"></div><div class="ssd-arrow">→</div></div></div><div class="ssd-xlsx-note">下載內容：名單＋金流＋設備＋狀態（整場資料）</div></div></div>
+      <div class="ssd-sec"><div class="ssd-sec-title">5 攤位 / 現場 <small>場地使用率 ${openCap?safePercent(assigned+locked+reserved,openCap):0}%</small></div><div class="ssd-grid booth">
+        ${metric('開放',openCap,'','blue','','🏬')}${metric('已分配',assigned,'','green','','✅')}${metric('加價鎖定',locked,'','purple','','🔒')}${metric('保留中',reserved,'','warn','','🕘')}${metric('服務台',service,'','blue','','👤')}${metric('已報到',checkedIn,'','green',`goCheckinList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已報到')`,'🙋')}${metric('押金待退',depPending,'','red',`goCheckinList('${escAttr(String(sesId))}','${escAttr(String(sName))}','押金')`,'↩️')}
+      </div></div>
+    </div>`;
+  };
+  function ensureSingleSessionDashboard(){
+    const d=document.getElementById('regsDetailLayer'); if(!d) return;
+    if(!document.getElementById('singleSessionDashboard')){const div=document.createElement('div');div.id='singleSessionDashboard';d.insertBefore(div,d.firstChild);}
+  }
+  const oldGo=window.goRegsList;
+  if(typeof oldGo==='function') window.goRegsList=function(sesId,sesName,statusFilter){const out=oldGo.apply(this,arguments);setTimeout(()=>{ensureSingleSessionDashboard(); renderSingleSessionDashboard(sesId==='all'?'':sesId,sesName);},60);return out;};
+  const oldShow=window.showRegsDetailLayer;
+  if(typeof oldShow==='function') window.showRegsDetailLayer=function(sesId,sesName){const out=oldShow.apply(this,arguments);setTimeout(()=>{ensureSingleSessionDashboard(); renderSingleSessionDashboard(sesId,sesName);},60);return out;};
+  const oldBack=window.backToRegsSummary;
+  if(typeof oldBack==='function') window.backToRegsSummary=function(){const out=oldBack.apply(this,arguments);const h=document.getElementById('singleSessionDashboard'); if(h) h.innerHTML='';return out;};
+  const oldRenderRegs=window.renderRegs;
+  if(typeof oldRenderRegs==='function') window.renderRegs=function(){const out=oldRenderRegs.apply(this,arguments);const sesId=ST._filterSesId||document.getElementById('regSesFilter')?.value||''; if(sesId){setTimeout(()=>{ensureSingleSessionDashboard();renderSingleSessionDashboard(sesId);},40);} return out;};
+  window.renderFinanceAnomalyList=async function(el,kw){
+    if(!el) return; el.innerHTML='<div style="color:#888;text-align:center;padding:22px;font-size:14px;background:#fff;border-radius:12px;box-shadow:var(--sh)">金額異常明細載入中…</div>';
+    let list=[];
+    try{const rows=await api({action:'adminFinanceAnomalies',email:ST.email,token:ST.token,tenant:TENANT_ID,_t:Date.now()}); if(Array.isArray(rows)) list=rows;}catch(e){list=[];}
+    const sesFilter=ST._payFilterSesId||''; if(sesFilter) list=list.filter(r=>String(r.session_id||r.sessionId||r.sesId||'')===String(sesFilter));
+    if(!list.length && sesFilter) list=financeAnomalyRows(sesFilter).map(r=>({id:r.id,name:r.name,brand_name:r.brand,brand:r.brand,email:r.email,issue:'前台金額與回報/應收金額不一致',payment_status:payOf(r),review_status:reviewOf(r),amount:amountOf(r),total_amount:n(r.totalAmount||r.total_amount||r.amount)}));
+    const q=String(kw||'').toLowerCase().trim(); if(q) list=list.filter(r=>[r.name,r.brand_name,r.brand,r.email,r.issue,r.session_id,r.payment_status,r.review_status].join(' ').toLowerCase().includes(q));
+    if(!list.length){el.innerHTML='<div style="color:#aaa;text-align:center;padding:22px;font-size:14px;background:#fff;border-radius:12px;box-shadow:var(--sh)">目前沒有金額異常資料</div>';return;}
+    el.innerHTML=list.map(r=>`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:9px;box-shadow:var(--sh);border-left:5px solid #A32D2D"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="line-height:1.6;min-width:0;flex:1"><div style="font-size:16px;font-weight:900;color:#A32D2D">金額異常｜${esc(r.issue||'未標示異常原因')}</div><div style="font-size:18px;font-weight:900;color:#111">${esc(r.brand_name||r.brand||r.name||r.email||'未命名')}</div><div style="font-size:15px;color:#333">Email：${esc(r.email||'-')}</div><div style="font-size:15px;color:#333">付款：${esc(r.payment_status||'-')}｜審核：${esc(r.review_status||'-')}</div><div style="font-size:17px;font-weight:900;color:#111">amount：NT$${n(r.amount).toLocaleString()}｜total_amount：NT$${n(r.total_amount).toLocaleString()}</div></div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0"><button class="btn btn-b btn-sm" onclick="openRegDetail('${escAttr(String(r.id||''))}')">看明細</button><button class="btn btn-g btn-sm" onclick="setPaymentFilter('全部')">回全部</button></div></div></div>`).join('');
+  };
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(ensureSingleSessionDashboard,80));
+})();
 
 </script>
 
