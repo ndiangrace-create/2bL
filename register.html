@@ -1949,7 +1949,7 @@ async function memberEmailPhoneLogin(){
   }finally{ if(btn){btn.disabled=false;btn.textContent='查詢我的紀錄';} }
 }
 function goMemberPage(){
-  return safeLoadMemberPage(ST.memberEmail||memberSafeEmail());
+  return safeLoadMemberPage(ST.memberEmail||memberSafeEmail(), {phone: memberSafePhone()});
 }
 window.safeLoadMemberPage=safeLoadMemberPage;
 window.memberLogin=memberLogin;
@@ -3620,6 +3620,8 @@ async function submitReg(ev){
     hideFormError();
     ST.memberEmail=email;
     try{ localStorage.setItem('tb_member_email',email||''); }catch(e){}
+    // 同步存入 phone，讓 getMyRegs 查詢時能帶入
+    if(phone) { try{ localStorage.setItem('tb_member_phone', phone); }catch(e){} }
     scheduleMemberRecordsSync('after-register',500);
     // 更新本地 member 資料（包含發票資訊，下次報名自動帶入）
     const _brand=($('f_brand')?.value||'').trim();
@@ -3649,7 +3651,7 @@ async function submitReg(ev){
         <div style="font-size:28px;font-weight:950;color:#111;margin-bottom:12px">報名成功！</div>
         <div style="font-size:17px;line-height:1.8;color:#333;font-weight:800;margin-bottom:18px">已收到您的報名申請。<br>審核結果將寄送至<br><b>${esc(email)}</b></div>
         <div style="background:var(--c-green);border:2px solid #9fb59c;border-radius:16px;padding:14px 16px;font-size:16px;line-height:1.7;font-weight:900;margin-bottom:18px">日後可到「我的紀錄」使用 Email + 手機查詢報名狀態。</div>
-        <button type="button" onclick="hideSubmitOverlay();closeRegFormModal();goMemberPage();scheduleMemberRecordsSync('after-register-success-button',100)" style="width:100%;border:none;background:var(--c-yellow);border-radius:16px;padding:15px;font-size:18px;font-weight:950;margin-bottom:10px">前往我的紀錄</button>
+        <button type="button" onclick="hideSubmitOverlay();closeRegFormModal();safeLoadMemberPage(ST.memberEmail||email,{phone:memberSafePhone()});scheduleMemberRecordsSync('after-register-success-button',100)" style="width:100%;border:none;background:var(--c-yellow);border-radius:16px;padding:15px;font-size:18px;font-weight:950;margin-bottom:10px">前往我的紀錄</button>
         <button type="button" onclick="hideSubmitOverlay();closeRegFormModal();window.scrollTo(0,0)" style="width:100%;border:2px solid #ddd;background:#fff;border-radius:16px;padding:14px;font-size:17px;font-weight:900">返回活動列表</button>
       </div>`;
     }else{ alert('報名成功！'); }
