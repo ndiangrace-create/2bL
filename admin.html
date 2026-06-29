@@ -579,6 +579,36 @@ body,#adminPage,.layout,.main,.tab-page,.tab-page.active{
 .ssd-note{font-size:11px;color:#667085;margin-top:4px}.ssd-xlsx-note{font-size:12px;color:#555;font-weight:800;margin:4px 0 0;text-align:right}.ssd-error-inline{font-size:12px;color:#A32D2D;font-weight:900;margin-left:6px}
 @media(max-width:900px){.ssd-grid,.ssd-grid.todo,.ssd-grid.booth{grid-template-columns:repeat(3,1fr)}.ssd-mid{grid-template-columns:1fr}.ssd-title{font-size:18px}.ssd-stat .num{font-size:24px}.ssd-bar-labels{grid-template-columns:repeat(2,1fr);text-align:left}.ssd-equip-row{grid-template-columns:1fr}.ssd-actions{width:100%}.ssd-actions button{flex:1}.ssd-fin-title{font-size:18px}}
 
+
+/* ── V8 選位大型抽屜 ── */
+body.seat-drawer-open{overflow:hidden}
+.seat-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99990;display:none;justify-content:flex-end;align-items:stretch;padding:0}
+.seat-drawer-overlay.show{display:flex}
+.seat-drawer{background:#fff;width:min(96vw,1180px);height:100vh;display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.24);border-left:1px solid #d8efe3}
+.seat-drawer-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #e6f3ec;background:#f7faf8;flex-shrink:0}
+.seat-drawer-title{font-size:20px;font-weight:950;color:#223;font-weight:950}
+.seat-drawer-sub{font-size:12px;color:#666;font-weight:800;margin-top:2px}
+.seat-drawer-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seat-drawer-body{display:grid;grid-template-columns:280px minmax(420px,1fr) 330px;gap:12px;padding:12px;height:calc(100vh - 72px);min-height:0;background:#fff}
+.seat-drawer-panel,.seat-map-panel,.seat-list-panel{border:1px solid #d8efe3;border-radius:14px;background:#fbfffc;padding:12px;min-height:0;overflow:auto}
+.seat-panel-title{font-size:14px;font-weight:950;color:#2d6a4f;margin-bottom:10px}
+.seat-batch-box{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#fff;border:1px solid #e0eee6;border-radius:12px;padding:10px}
+.seat-batch-box button{grid-column:1 / -1;justify-content:center}
+.seat-batch-box input{padding:8px;border:1px solid #d0e8d8;border-radius:8px;font-size:14px}
+.seat-map-workspace{height:calc(100vh - 138px);min-height:520px;overflow:auto;background:#f4f7f5;border:1px solid #e0eee6;border-radius:12px;padding:14px}
+.seat-map-canvas{position:relative;width:140%;min-height:520px;border:2px dashed #b9dcc8;border-radius:12px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#999;font-size:15px;margin:auto;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.seat-builder-status{font-size:12px;font-weight:900;margin:12px 0 0;padding:9px 10px;border-radius:10px;background:#f7faf8;color:#2d6a4f;border:1px solid #d8efe3}
+.seat-help-box{font-size:12px;color:#777;margin-top:10px;line-height:1.5;background:#fff;border:1px solid #edf5ef;border-radius:10px;padding:9px}
+.seat-items-list{padding-bottom:24px}
+@media(max-width:920px){
+  .seat-drawer{width:100vw}
+  .seat-drawer-head{align-items:flex-start;flex-direction:column}
+  .seat-drawer-body{grid-template-columns:1fr;height:calc(100vh - 126px);overflow:auto}
+  .seat-drawer-panel,.seat-map-panel,.seat-list-panel{overflow:visible}
+  .seat-map-workspace{height:62vh;min-height:420px}
+  .seat-map-canvas{min-height:420px;width:160%}
+}
+
 </style>
 <!-- db-driven-20260618 -->
 <!-- build: finance-card-invoice-footer-187 -->
@@ -1140,26 +1170,67 @@ body,#adminPage,.layout,.main,.tab-page,.tab-page.active{
     <button type="button" id="seatSwitchOff" onclick="setSeatPricingEnabled(false)" style="flex:1;border:1.5px solid #ccc;border-radius:10px;padding:10px;font-weight:900;background:#fff;color:#555">關</button>
   </div>
   <input type="hidden" id="sm_enableStalls" value="0">
-  <div id="sm_stallsConfig" style="display:none;margin-top:8px;padding:10px;background:#f7faf8;border-radius:8px">
-    <div style="font-size:13px;font-weight:900;color:var(--g);margin-bottom:6px">加價選位地圖設定</div>
-    <div style="font-size:12px;color:#666;margin-bottom:8px">後台直覺放位置，前台只能選你開放的加價選位。自動排位、服務台、不開放都不可由攤商點選。</div>
-    <label style="font-size:12px;color:var(--md)">場地圖（可貼圖片網址，或選檔轉成預覽）</label>
-    <input type="text" id="sm_seatMapUrl" placeholder="可貼圖片網址，或直接選擇圖片上傳" oninput="renderSeatMapBuilder()" style="margin-bottom:6px">
-    <input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSeatMapFile(this)" style="font-size:12px;margin-bottom:8px">
-    <div style="display:grid;grid-template-columns:70px 80px 80px auto;gap:6px;align-items:end;margin:8px 0;background:#fff;border:1px solid #e0eee6;border-radius:10px;padding:8px">
-      <div><label style="font-size:11px;color:#666">區碼</label><input type="text" id="seatBatchPrefix" value="A" placeholder="A" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:13px"></div>
-      <div><label style="font-size:11px;color:#666">起始號</label><input type="number" id="seatBatchStart" value="1" min="1" inputmode="numeric" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:13px"></div>
-      <div><label style="font-size:11px;color:#666">數量</label><input type="number" id="seatBatchCount" value="10" min="1" inputmode="numeric" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:13px"></div>
-      <button class="btn btn-g btn-xs" type="button" onclick="batchCreateSeats()" style="height:36px">批次產生號碼</button>
-      <div style="grid-column:1 / -1;display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center">
-        <input type="text" id="seatSingleCode" placeholder="單一攤位代碼，例：A11" style="padding:8px;border:1px solid #d0e8d8;border-radius:8px;font-size:13px">
-        <button class="btn btn-s btn-xs" type="button" onclick="addSeatItemFromInput()">新增單號</button>
-        <button class="btn btn-s btn-xs" type="button" onclick="saveSeatMapNow()">儲存選位設定</button>
+  <div id="sm_stallsConfig" style="display:none;margin-top:8px;padding:10px;background:#f7faf8;border-radius:8px;border:1px solid #d8efe3">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:13px;font-weight:900;color:var(--g);margin-bottom:3px">加價選位地圖設定</div>
+        <div id="seatBuilderMiniSummary" style="font-size:12px;color:#666;font-weight:800">尚未設定位置圖與攤位號碼</div>
+      </div>
+      <button class="btn btn-g btn-sm" type="button" onclick="openSeatDrawer()">打開選位編輯抽屜</button>
+    </div>
+    <div style="font-size:11px;color:#777;margin-top:6px">選位已改為大型抽屜頁面編輯，避免在場次表單內太小不好點位置。</div>
+
+    <div id="seatDrawerOverlay" class="seat-drawer-overlay" onclick="if(event.target===this)closeSeatDrawer()">
+      <div class="seat-drawer" role="dialog" aria-modal="true" aria-label="選位編輯抽屜">
+        <div class="seat-drawer-head">
+          <div>
+            <div class="seat-drawer-title">🗺️ 選位地圖編輯</div>
+            <div class="seat-drawer-sub">先上傳地圖 → 批次產生號碼 → 點清單號碼 → 在大地圖點位置。</div>
+          </div>
+          <div class="seat-drawer-actions">
+            <button class="btn btn-s btn-sm" type="button" onclick="saveSeatMapNow()">儲存選位設定</button>
+            <button class="btn btn-s btn-sm" type="button" onclick="closeSeatDrawer()">關閉</button>
+          </div>
+        </div>
+        <div class="seat-drawer-body">
+          <aside class="seat-drawer-panel">
+            <div class="seat-panel-title">① 地圖與號碼</div>
+            <label style="font-size:12px;color:var(--md)">場地圖（可貼圖片網址，或選檔上傳預覽）</label>
+            <input type="text" id="sm_seatMapUrl" placeholder="可貼圖片網址，或直接選擇圖片上傳" oninput="renderSeatMapBuilder()" style="margin-bottom:8px">
+            <input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSeatMapFile(this)" style="font-size:12px;margin-bottom:12px">
+            <div class="seat-batch-box">
+              <div><label style="font-size:11px;color:#666">區碼</label><input type="text" id="seatBatchPrefix" value="A" placeholder="A"></div>
+              <div><label style="font-size:11px;color:#666">起始號</label><input type="number" id="seatBatchStart" value="1" min="1" inputmode="numeric"></div>
+              <div><label style="font-size:11px;color:#666">數量</label><input type="number" id="seatBatchCount" value="10" min="1" inputmode="numeric"></div>
+              <button class="btn btn-g btn-sm" type="button" onclick="batchCreateSeats()">批次產生號碼</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px">
+              <input type="text" id="seatSingleCode" placeholder="單一攤位代碼，例：A11">
+              <button class="btn btn-s btn-sm" type="button" onclick="addSeatItemFromInput()">新增單號</button>
+            </div>
+            <div style="margin-top:12px">
+              <label style="font-size:12px;color:var(--md)">地圖放大</label>
+              <div style="display:grid;grid-template-columns:1fr 52px;gap:8px;align-items:center">
+                <input type="range" id="seatMapZoom" min="100" max="260" value="140" step="10" oninput="updateSeatMapZoom(this.value)">
+                <div id="seatMapZoomLabel" style="font-size:12px;font-weight:900;color:#2d6a4f;text-align:right">140%</div>
+              </div>
+            </div>
+            <div id="seatBuilderStatus" class="seat-builder-status">請先上傳圖片，或直接批次產生號碼後再貼圖。</div>
+            <div class="seat-help-box">提示：已放置的號碼會在地圖上出現。點清單內的號碼後，再點地圖可移動位置。</div>
+          </aside>
+          <main class="seat-map-panel">
+            <div class="seat-panel-title">② 大地圖放位置</div>
+            <div id="seatMapWorkspace" class="seat-map-workspace">
+              <div id="seatMapCanvas" class="seat-map-canvas" onclick="placeSelectedSeatOnMap(event)">請先上傳或貼上場地圖，再點圖放位置</div>
+            </div>
+          </main>
+          <aside class="seat-list-panel">
+            <div class="seat-panel-title">③ 攤位清單</div>
+            <div id="seatItemsList" class="seat-items-list"></div>
+          </aside>
+        </div>
       </div>
     </div>
-    <div id="seatMapCanvas" style="position:relative;min-height:180px;border:1.5px dashed #cfe5d6;border-radius:10px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px" onclick="placeSelectedSeatOnMap(event)">請先上傳或貼上場地圖，再點圖放位置</div>
-    <div style="font-size:11px;color:#777;margin-top:6px">提示：先批次產生 A1～A20，再點選清單中的攤位，最後在地圖上點位置放上去。</div>
-    <div id="seatItemsList" style="margin-top:8px"></div>
   </div>
   <input type="hidden" id="sm_maxStalls" value="0">
 </div>
@@ -3253,12 +3324,43 @@ function getModulesJson(){
 function setSeatPricingEnabled(on){
   const hidden=$('sm_enableStalls'); if(hidden) hidden.value=on?'1':'0';
   const cfg=$('sm_stallsConfig'); if(cfg) cfg.style.display=on?'block':'none';
+  if(!on) closeSeatDrawer();
   const onBtn=$('seatSwitchOn'), offBtn=$('seatSwitchOff');
   if(onBtn){ onBtn.style.background=on?'var(--g)':'#fff'; onBtn.style.color=on?'#fff':'var(--g)'; }
   if(offBtn){ offBtn.style.background=!on?'#555':'#fff'; offBtn.style.color=!on?'#fff':'#555'; }
   renderSeatMapBuilder();
 }
 function toggleStallConfig(checked){ setSeatPricingEnabled(!!checked); }
+function openSeatDrawer(){
+  setSeatPricingEnabled(true);
+  const drawer=$('seatDrawerOverlay');
+  if(drawer) drawer.classList.add('show');
+  document.body.classList.add('seat-drawer-open');
+  updateSeatMapZoom($('seatMapZoom')?.value||140);
+  renderSeatMapBuilder();
+  setTimeout(()=>{ const ws=$('seatMapWorkspace'); if(ws){ ws.scrollLeft=Math.max(0,(ws.scrollWidth-ws.clientWidth)/2); } },60);
+}
+function closeSeatDrawer(){
+  const drawer=$('seatDrawerOverlay');
+  if(drawer) drawer.classList.remove('show');
+  document.body.classList.remove('seat-drawer-open');
+}
+function updateSeatMapZoom(v){
+  const z=Math.max(100,Math.min(260,parseInt(v||140,10)||140));
+  const canvas=$('seatMapCanvas');
+  const label=$('seatMapZoomLabel');
+  if(canvas) canvas.style.width=z+'%';
+  if(label) label.textContent=z+'%';
+}
+function updateSeatBuilderMiniSummary(){
+  const el=$('seatBuilderMiniSummary'); if(!el) return;
+  const mapUrl=String($('sm_seatMapUrl')?.value||'').trim();
+  const total=seatItems.length;
+  const placed=seatItems.filter(s=>(Number(s.x)||0)||(Number(s.y)||0)).length;
+  const paid=seatItems.filter(s=>s.type==='paid').length;
+  const service=seatItems.filter(s=>s.type==='service').length;
+  el.textContent=`${mapUrl?'已上傳位置圖':'未上傳位置圖'}｜號碼 ${total}｜已放位置 ${placed}｜加價 ${paid}｜服務台 ${service}`;
+}
 let seatItems=[]; let selectedSeatCode='';
 function normalizeSeatItem(s){
   return {
@@ -3393,11 +3495,12 @@ function renderSeatMapBuilder(updateList=true){
         el.type='button'; el.textContent=s.type==='service'?'服務台':s.code;
         el.onclick=(e)=>{e.stopPropagation();selectSeatForPlacement(s.code)};
         const bg=s.type==='paid'?'#fff3cd':s.type==='service'?'#dbeafe':s.type==='closed'?'#eee':'#d8f3dc';
-        el.style.cssText=`position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);border:2px solid ${selectedSeatCode===s.code?'#2d6a4f':'#fff'};background:${bg};border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;box-shadow:0 1px 5px rgba(0,0,0,.18);cursor:pointer;z-index:2`;
+        el.style.cssText=`position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);border:3px solid ${selectedSeatCode===s.code?'#2d6a4f':'#fff'};background:${bg};border-radius:999px;padding:8px 12px;font-size:16px;font-weight:950;box-shadow:0 2px 9px rgba(0,0,0,.24);cursor:pointer;z-index:2;min-width:42px;min-height:42px`;
         box.appendChild(el);
       });
     }
   }
+  updateSeatBuilderMiniSummary();
   const list=$('seatItemsList'); if(!list) return;
   const placedCount=seatItems.filter(s=>(Number(s.x)||0)||(Number(s.y)||0)).length;
   if(!seatItems.length) seatBuilderStatus(mapUrl?'圖片已載入。請先批次產生號碼。':'請先上傳圖片，或直接批次產生號碼後再貼圖。','warn');
@@ -3406,16 +3509,16 @@ function renderSeatMapBuilder(updateList=true){
     const codeHtml=escHtml(s.code);
     const codeArg=escJsArg(s.code);
     const placed=(Number(s.x)||0)||(Number(s.y)||0);
-    return `<div style="display:grid;grid-template-columns:68px 1fr 76px 52px;gap:6px;align-items:center;background:#fff;border:1px solid #e0eee6;border-radius:9px;padding:6px;margin-bottom:5px;${selectedSeatCode===s.code?'outline:2px solid var(--g)':''}">
-    <button type="button" onclick="selectSeatForPlacement(${codeArg})" style="border:none;background:${placed?'#f4faf6':'#fff7ed'};border-radius:7px;padding:7px;font-weight:900">${codeHtml}${placed?'':' *'}</button>
-    <select onchange="updateSeatItem(${codeArg},'type',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px">
+    return `<div style="display:grid;grid-template-columns:74px 1fr 88px 50px;gap:7px;align-items:center;background:#fff;border:1px solid #e0eee6;border-radius:10px;padding:7px;margin-bottom:7px;${selectedSeatCode===s.code?'outline:3px solid var(--g)':''}">
+    <button type="button" onclick="selectSeatForPlacement(${codeArg})" style="border:none;background:${placed?'#f4faf6':'#fff7ed'};border-radius:8px;padding:9px 7px;font-weight:950;font-size:16px">${codeHtml}${placed?'':' *'}</button>
+    <select onchange="updateSeatItem(${codeArg},'type',this.value)" style="padding:9px 8px;border:1px solid #d0e8d8;border-radius:8px;font-size:14px">
       <option value="auto" ${s.type==='auto'?'selected':''}>自動排位</option>
       <option value="paid" ${s.type==='paid'?'selected':''}>加價選位</option>
       <option value="service" ${s.type==='service'?'selected':''}>服務台</option>
       <option value="closed" ${s.type==='closed'?'selected':''}>不開放</option>
     </select>
-    <input type="number" value="${Number(s.price)||0}" ${s.type!=='paid'?'disabled':''} onchange="updateSeatItem(${codeArg},'price',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px" placeholder="加價">
-    <button type="button" onclick="removeSeatItem(${codeArg})" style="border:none;background:#fdecea;color:#c0392b;border-radius:7px;padding:7px;font-size:12px;font-weight:900">刪</button>
+    <input type="number" value="${Number(s.price)||0}" ${s.type!=='paid'?'disabled':''} onchange="updateSeatItem(${codeArg},'price',this.value)" style="padding:9px 8px;border:1px solid #d0e8d8;border-radius:8px;font-size:14px" placeholder="加價">
+    <button type="button" onclick="removeSeatItem(${codeArg})" style="border:none;background:#fdecea;color:#c0392b;border-radius:8px;padding:9px 7px;font-size:14px;font-weight:950">刪</button>
   </div>`;
   }).join('') || '<div style="font-size:12px;color:#777">尚未建立攤位，請用「批次產生號碼」或「新增單號」。</div>';
 }
