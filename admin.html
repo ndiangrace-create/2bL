@@ -75,7 +75,7 @@
   --s-err-bg:#FAE1DD;      --s-err:#8B2C1C;
   --s-grey-bg:#DCD7ED;     --s-grey:#444444;
 
-  /* 相容舊變數 → 全換淡色 */
+  /* 相容色票變數 → 全換淡色 */
   --g:#B8D49A;--gl:#A0C080;--gp:#DDEAD1;--gp2:#EDFAE4;
   --rd:#F5C8C0;--rdp:#FAE1DD;--yl:#F5E0A0;--ylp:#FAEEC7;
   --bl:#C0D4E8;--blp:#D9E5EE;
@@ -427,6 +427,7 @@ textarea{min-height:64px;resize:vertical}
 [data-page=regs]     .admin-tab.active{color:var(--rg-btn-dk)}
 [data-page=checkin]  .admin-tab.active{color:var(--ck-btn-dk)}
 [data-page=payments] .admin-tab.active{color:var(--py-btn-dk)}
+[data-page=staff]    .admin-tab.active{color:var(--st-btn-dk)}
 [data-page=settings] .admin-tab.active{color:var(--st-btn-dk)}
 
 /* ── 財報大卡片 ── */
@@ -597,22 +598,28 @@ input[type=date],input[type=time],input[type=password],textarea,select{
   <div class="layout">
     <div class="sidebar" id="sidebar">
       <div class="nav-section">主功能</div>
-      <div class="nav-item active" id="nav-overview" onclick="goPage('overview')"><span class="nav-icon">🗓️</span>場次</div>
-      <div class="nav-item" id="nav-regs" onclick="goPage('regs')"><span class="nav-icon">📋</span>名單</div>
-      <div class="nav-item" id="nav-checkin-side" onclick="goPage('checkin')"><span class="nav-icon">📍</span>現場</div>
-      <div class="nav-item" id="nav-payments" onclick="goPage('payments')"><span class="nav-icon">💰</span>金流</div>
+      <div class="nav-item active" id="nav-regs" onclick="goPage('regs')"><span class="nav-icon">📋</span>跨場次</div>
+      <div class="nav-item" id="nav-payments" onclick="goPage('payments')"><span class="nav-icon">💰</span>財務</div>
+      <div class="nav-item" id="nav-overview" onclick="goPage('overview')"><span class="nav-icon">📊</span>總覽</div>
+      <div class="nav-item" id="nav-staff" onclick="goPage('staff')"><span class="nav-icon">👥</span>人員</div>
       <div class="nav-section">系統</div>
-      <div class="nav-item" id="nav-announce" onclick="goPage('settings')"><span class="nav-icon">⚙️</span>更多設定</div>
-      <div class="nav-item" id="nav-staff" onclick="goPage('staff')" style="display:none"><span class="nav-icon">👥</span>管理員</div>
+      <div class="nav-item" id="nav-announce" onclick="goPage('settings')"><span class="nav-icon">⚙️</span>設定</div>
       <div style="padding:10px 14px"><a href="register.html" target="_blank" style="font-size:12px;color:var(--md)">🏠 前台</a></div>
     </div>
 
     <div class="main">
 
       <!-- ── 場次總覽 ── -->
-      <div id="page-overview" class="tab-page active">
+      <div id="page-overview" class="tab-page">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <div class="page-title" style="margin:0">場次</div>
+    <div class="page-title" style="margin:0">總覽</div>
+    <button class="btn btn-g btn-sm" onclick="loadBusinessOverview()">↻ 更新統計</button>
+  </div>
+
+  <div id="businessOverviewCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px"></div>
+  <div id="businessOverviewTasks" style="margin-bottom:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
+    <div style="font-size:16px;font-weight:800;color:var(--ov-txt)">場次快速入口</div>
     <button class="btn btn-g btn-sm" onclick="openSessionCreateModal()">＋ 新增場次</button>
   </div>
 
@@ -635,9 +642,9 @@ input[type=date],input[type=time],input[type=password],textarea,select{
   <div id="overviewSessionList"></div>
 </div>
 
-<div id="page-regs" class="tab-page">
+<div id="page-regs" class="tab-page active">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-    <div class="page-title" id="regsTitle" style="margin:0;flex:1">名單</div>
+    <div class="page-title" id="regsTitle" style="margin:0;flex:1">跨場次</div>
     <button id="regsBackBtn" class="btn btn-s btn-sm" style="display:none" onclick="backToRegsSummary()">← 回總覽</button>
   </div>
 
@@ -742,7 +749,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
 
 <div id="page-payments" class="tab-page">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-    <div class="page-title" id="paymentsTitle" style="margin:0;flex:1">金流</div>
+    <div class="page-title" id="paymentsTitle" style="margin:0;flex:1">財務</div>
     <button id="paymentsBackBtn" class="btn btn-s btn-sm" style="display:none" onclick="backToPaymentsSummary()">← 回總覽</button>
   </div>
 
@@ -781,12 +788,24 @@ input[type=date],input[type=time],input[type=password],textarea,select{
   </div>
 </div>
 
+
+<div id="page-staff" class="tab-page">
+  <div class="page-title">人員</div>
+  <div style="background:#fff;border-radius:14px;box-shadow:var(--sh);padding:14px;margin-bottom:12px">
+    <div style="font-size:15px;font-weight:800;color:var(--st-txt);margin-bottom:6px">系統管理員 / 現場人員</div>
+    <div style="font-size:13px;color:var(--md);line-height:1.6">系統管理員可進完整後台；現場人員使用 Google 登入 onsite.html，只能看到授權場次。</div>
+  </div>
+  <div id="settings-staff" style="font-size:14px;font-weight:700;color:var(--st-txt);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--st-border)">👥 管理員帳號</div>
+  <button class="btn btn-g btn-sm" onclick="openAddStaffModal()" style="margin-bottom:10px">＋ 新增管理員</button>
+  <div id="staffList" style="margin-bottom:24px"></div>
+
+</div>
+
 <div id="page-settings" class="tab-page">
-  <div class="page-title">更多</div>
+  <div class="page-title">設定</div>
 
   <!-- 更多頁專屬快捷區 -->
   <div class="page-quick-bar st-quick-bar">
-    <a href="#settings-staff" class="qb-btn qb-st">👥 管理員</a>
     <a href="#settings-announce" class="qb-btn qb-st">📢 公告</a>
     <a href="#settings-appearance" class="qb-btn qb-st">🎨 外觀</a>
     <a href="#settings-agreement" class="qb-btn qb-st">📋 合約</a>
@@ -795,12 +814,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
     <span class="qb-btn qb-st-dim" title="待實作">⬇ 匯出</span>
   </div>
 
-  <!-- 管理員 -->
-  <div id="settings-staff" style="font-size:14px;font-weight:700;color:var(--st-txt);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--st-border)">👥 管理員帳號</div>
-  <button class="btn btn-g btn-sm" onclick="openAddStaffModal()" style="margin-bottom:10px">＋ 新增管理員</button>
-  <div id="staffList" style="margin-bottom:24px"></div>
-
-  <!-- 公告 -->
+  <!-- 人員管理已移至 page-staff；設定頁從公告管理開始 -->
   <div id="settings-announce" style="font-size:14px;font-weight:700;color:var(--st-txt);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--st-border)">📢 公告管理</div>
   <button class="btn btn-g btn-sm" onclick="openAnnModal()" style="margin-bottom:10px">＋ 新增公告</button>
   <div id="announceList" style="margin-bottom:24px"></div>
@@ -916,29 +930,28 @@ input[type=date],input[type=time],input[type=password],textarea,select{
 <!-- ── 底部 Tab Bar ── -->
 <div class="admin-bottom-bar" id="adminBottomBar">
   <div class="admin-tab-row">
-    <button class="admin-tab active" id="atab-overview" onclick="goPage('overview')">
-      <span class="admin-tab-icon">🗓️</span>
-      <span class="admin-tab-label">場次</span>
-    </button>
-    <button class="admin-tab" id="atab-regs" onclick="goPage('regs')">
+    <button class="admin-tab active" id="atab-regs" onclick="goPage('regs')">
       <span class="admin-tab-icon">📋</span>
-      <span class="admin-tab-label">名單</span>
-    </button>
-    <button class="admin-tab" id="atab-checkin" onclick="goPage('checkin')">
-      <span class="admin-tab-icon">📍</span>
-      <span class="admin-tab-label">現場</span>
+      <span class="admin-tab-label">跨場次</span>
     </button>
     <button class="admin-tab" id="atab-payments" onclick="goPage('payments')">
       <span class="admin-tab-icon">💰</span>
-      <span class="admin-tab-label">金流</span>
+      <span class="admin-tab-label">財務</span>
+    </button>
+    <button class="admin-tab" id="atab-overview" onclick="goPage('overview')">
+      <span class="admin-tab-icon">📊</span>
+      <span class="admin-tab-label">總覽</span>
+    </button>
+    <button class="admin-tab" id="atab-staff" onclick="goPage('staff')">
+      <span class="admin-tab-icon">👥</span>
+      <span class="admin-tab-label">人員</span>
     </button>
     <button class="admin-tab" id="atab-settings" onclick="goPage('settings')">
       <span class="admin-tab-icon">⚙️</span>
-      <span class="admin-tab-label">更多</span>
+      <span class="admin-tab-label">設定</span>
     </button>
   </div>
 </div>
-
 <!-- ══ Modal：場次財報（大卡片） ══ -->
 <div class="modal-overlay" id="financeModal" onclick="if(event.target===this)closeModal('financeModal')">
   <div class="finance-card" role="dialog" aria-modal="true" aria-labelledby="financeTitle">
@@ -1100,24 +1113,26 @@ input[type=date],input[type=time],input[type=password],textarea,select{
     <div style="font-size:11px;color:var(--lt);margin-top:2px">（活動日全選才適用此優惠價）例：7/18 NT$1000 + 7/19 NT$800，多日優惠填 NT$1700</div>
     <div class="form-row">
       <div>
-  <label>開放選位（付費選項）</label>
-  <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-    <input type="checkbox" id="sm_enableStalls" onchange="toggleStallConfig(this.checked)" style="width:18px;height:18px;accent-color:var(--g)">
-    <span style="font-size:13px">開放攤主自選攤位（付款後鎖定，未付款2日內釋出）</span>
+  <label>此場次是否開放加價選位？</label>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+    <button type="button" id="seatSwitchOn" onclick="setSeatPricingEnabled(true)" style="flex:1;border:1.5px solid var(--g);border-radius:10px;padding:10px;font-weight:900;background:#fff;color:var(--g)">開</button>
+    <button type="button" id="seatSwitchOff" onclick="setSeatPricingEnabled(false)" style="flex:1;border:1.5px solid #ccc;border-radius:10px;padding:10px;font-weight:900;background:#fff;color:#555">關</button>
   </div>
+  <input type="hidden" id="sm_enableStalls" value="0">
   <div id="sm_stallsConfig" style="display:none;margin-top:8px;padding:10px;background:#f7faf8;border-radius:8px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <label style="font-size:12px;color:var(--md)">攤位號碼（逗號分隔，例：A1,A2,A3）</label>
-      <button class="btn btn-g btn-xs" onclick="addStallItem()" type="button">＋ 新增</button>
+    <div style="font-size:13px;font-weight:900;color:var(--g);margin-bottom:6px">加價選位地圖設定</div>
+    <div style="font-size:12px;color:#666;margin-bottom:8px">後台直覺放位置，前台只能選你開放的加價選位。自動排位、服務台、不開放都不可由攤商點選。</div>
+    <label style="font-size:12px;color:var(--md)">場地圖（可貼圖片網址，或選檔轉成預覽）</label>
+    <input type="url" id="sm_seatMapUrl" placeholder="https://... 或選擇圖片" oninput="renderSeatMapBuilder()" style="margin-bottom:6px">
+    <input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSeatMapFile(this)" style="font-size:12px;margin-bottom:8px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
+      <button class="btn btn-g btn-xs" type="button" onclick="batchCreateSeats()">批次新增</button>
+      <button class="btn btn-s btn-xs" type="button" onclick="addSeatItem()">新增攤位</button>
+      <button class="btn btn-s btn-xs" type="button" onclick="saveSeatMapNow()">儲存選位設定</button>
     </div>
-    <div style="font-size:11px;color:var(--lt);margin-bottom:6px">例：A1、A2、B1、B2...</div>
-    <div id="stallItemsList"></div>
-    <input type="text" id="sm_stallNumbers" placeholder="A1,A2,A3,B1,B2" style="margin-top:8px">
-    <div id="stallPreview" style="margin-top:6px;font-size:12px;color:var(--md)"></div>
-    <div style="margin-top:8px">
-      <label style="font-size:12px;color:var(--md)">每攤選位加購費用（NT$）</label>
-      <input type="number" id="sm_stallFee" value="0" inputmode="numeric" placeholder="0=不加收" style="margin-top:4px">
-    </div>
+    <div id="seatMapCanvas" style="position:relative;min-height:180px;border:1.5px dashed #cfe5d6;border-radius:10px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px" onclick="placeSelectedSeatOnMap(event)">請先上傳或貼上場地圖，再點圖放位置</div>
+    <div style="font-size:11px;color:#777;margin-top:6px">提示：先批次產生 A1～A20，再點選清單中的攤位，最後在地圖上點位置放上去。</div>
+    <div id="seatItemsList" style="margin-top:8px"></div>
   </div>
   <input type="hidden" id="sm_maxStalls" value="0">
 </div>
@@ -1291,21 +1306,6 @@ input[type=date],input[type=time],input[type=password],textarea,select{
     <div class="modal-actions">
       <button class="btn btn-s" onclick="closeModal('annModal')" style="flex:1">取消</button>
       <button class="btn btn-g" onclick="saveAnn()" style="flex:2">儲存</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ Modal：攤位設定 ══ -->
-<div class="overlay" id="stallModal" onclick="if(event.target===this)closeModal('stallModal')">
-  <div class="modal">
-    <div class="modal-title">攤位清單設定</div>
-    <div style="font-size:13px;color:var(--md);margin-bottom:12px">每行一個攤位號碼，例如：A1、B2、C3</div>
-    <label>攤位號碼列表（每行一個）</label>
-    <textarea id="stallListInput" placeholder="A1&#10;A2&#10;B1&#10;B2&#10;C1" rows="8" style="font-family:monospace"></textarea>
-    <div style="font-size:12px;color:var(--lt);margin-top:6px" id="stallCount">0 個攤位</div>
-    <div class="modal-actions">
-      <button class="btn btn-s" onclick="closeModal('stallModal')" style="flex:1">取消</button>
-      <button class="btn btn-g" onclick="saveStallConfig()" style="flex:2">儲存攤位清單</button>
     </div>
   </div>
 </div>
@@ -1616,7 +1616,7 @@ async function handleOAuthCallback(){
 
 async function doLogin(){
   // doLogin 已停用（Google OAuth 升級後移除 Email 直接登入）
-  // 保留函式避免舊呼叫報錯
+  // 保留相容函式避免未定義錯誤
   startGoogleLogin();
 }
 
@@ -1654,20 +1654,20 @@ function normalizeAdminRole(role){
 function adminCanPage(page){
   const role=normalizeAdminRole(ST.role);
   if(['platform_super_admin','organizer_owner','organizer_admin'].includes(role)) return true;
-  if(role==='session_admin') return ['overview','regs','checkin'].includes(page);
-  if(role==='finance_admin') return ['overview','payments'].includes(page);
-  if(role==='onsite_staff') return ['overview','checkin'].includes(page);
+  if(role==='session_admin') return ['regs','overview'].includes(page);
+  if(role==='finance_admin') return ['payments','overview'].includes(page);
+  if(role==='onsite_staff') return false; // 現場人員請使用 onsite.html，不進完整後台
   return page==='overview';
 }
 function setVisible(id, visible){ const el=$(id); if(el) el.style.display=visible?'flex':'none'; }
 function applyRoleUi(){
   const role=normalizeAdminRole(ST.role);
   setVisible('nav-regs', adminCanPage('regs'));
-  setVisible('nav-checkin-side', adminCanPage('checkin'));
   setVisible('nav-payments', adminCanPage('payments'));
+  setVisible('nav-overview', adminCanPage('overview'));
+  setVisible('nav-staff', adminCanPage('staff'));
   setVisible('nav-announce', ['platform_super_admin','organizer_owner','organizer_admin'].includes(role));
-  setVisible('nav-staff', ['platform_super_admin','organizer_owner'].includes(role));
-  ['regs','payments','checkin','settings'].forEach(p=>setVisible('atab-'+p, adminCanPage(p) || (p==='settings' && ['platform_super_admin','organizer_owner','organizer_admin'].includes(role))));
+  ['regs','payments','overview','staff','settings'].forEach(p=>setVisible('atab-'+p, adminCanPage(p) || (p==='settings' && ['platform_super_admin','organizer_owner','organizer_admin'].includes(role))));
 }
 function initAdmin(name,role){
   $('loginPage').style.display='none';
@@ -1678,8 +1678,8 @@ function initAdmin(name,role){
   startAdminDbSync();
   loadAllData().then(()=>{
     // 還原上次所在頁面
-    const lastPage = localStorage.getItem('2bl_admin_page') || 'overview';
-    try{ goPage(lastPage); }catch(e){ goPage('overview'); }
+    const lastPage = localStorage.getItem('2bl_admin_page') || 'regs';
+    try{ goPage(lastPage); }catch(e){ goPage('regs'); }
   });
 }
 
@@ -1891,6 +1891,75 @@ async function quickRefund(regId, deposit, btn){
 }
 
 // ── 總覽 ──
+
+async function loadBusinessOverview(){
+  const cards=$('businessOverviewCards');
+  const tasks=$('businessOverviewTasks');
+  if(cards) cards.innerHTML='<div style="padding:18px;color:#aaa">統計載入中…</div>';
+  if(tasks) tasks.innerHTML='';
+  const money=v=>'NT$ '+safeN(v).toLocaleString();
+  const card=(label,val,sub='',tone='')=>`<div style="background:#fff;border:1px solid var(--ov-border);border-radius:14px;padding:12px;box-shadow:var(--sh)">
+    <div style="font-size:12px;color:var(--md);font-weight:800">${label}</div>
+    <div style="font-size:23px;font-weight:900;margin-top:4px;color:${tone||'var(--ov-txt)'}">${val}</div>
+    ${sub?`<div style="font-size:11px;color:var(--lt);margin-top:3px;line-height:1.35">${sub}</div>`:''}
+  </div>`;
+  const section=(title,html)=>`<div style="background:#fff;border-radius:14px;box-shadow:var(--sh);padding:12px 14px;border:1px solid var(--ov-border);margin-bottom:12px">
+    <div style="font-size:15px;font-weight:900;color:var(--ov-txt);margin-bottom:8px">${title}</div>${html}</div>`;
+  const chip=(label,val,cls='btn-s',page='')=>`<button class="btn ${cls}" ${page?`onclick="goPage('${page}')"`:''}>${label} ${safeN(val)}</button>`;
+  const miniRows=(rows,empty='目前沒有資料')=>{
+    rows=Array.isArray(rows)?rows:[];
+    if(!rows.length) return `<div style="font-size:13px;color:var(--lt);padding:6px 0">${empty}</div>`;
+    return `<div style="display:grid;gap:6px">${rows.map(r=>`<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #f2f2f2;padding:6px 0;font-size:13px"><span>${esc(r.name||r.label||r.venue||'未命名')}</span><b>${safeN(r.count||r.total||r.registrations||r.revenue||0).toLocaleString()}</b></div>`).join('')}</div>`;
+  };
+  try{
+    const res=await api({action:'adminBusinessOverview', email:ST.email, token:ST.token, tenant:TENANT_ID});
+    if(res && res.error){ if(cards) cards.innerHTML='<div style="padding:18px;color:#c33">'+esc(res.error)+'</div>'; return; }
+    const m=res.month||{}, q=res.quarter||{}, y=res.year||{}, a=res.all||{};
+    const reg=res.registrationStatus||{}, fin=res.finance||{}, onsite=res.onsite||{}, db=res.databaseCounts||{};
+    if(cards){
+      cards.innerHTML=[
+        card('本月場次',safeN(m.sessions),'本季 '+safeN(q.sessions)+'｜今年 '+safeN(y.sessions)),
+        card('本月報名',safeN(m.registrations),'本季 '+safeN(q.registrations)+'｜今年 '+safeN(y.registrations)),
+        card('本月錄取',safeN(m.approved),'待審核 '+safeN(reg.pendingReview)+'｜備取 '+safeN(reg.waitlist)),
+        card('本月收入',money(m.netRevenue),'今年 '+money(y.netRevenue)),
+        card('累計品牌',safeN(a.brands),'會員 '+safeN(db.members)+'｜場域 '+safeN(a.venues)),
+        card('金額異常',safeN(fin.anomalies),'點財務查看明細',safeN(fin.anomalies)>0?'#A32D2D':''),
+      ].join('');
+    }
+    if(tasks){
+      tasks.innerHTML=[
+        section('近期待辦提醒',`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+          ${chip('待審核',res.tasks?.pendingReview,'btn-y','regs')}
+          ${chip('付款待確認',res.tasks?.pendingPayment,'btn-y','payments')}
+          ${chip('未繳費',res.tasks?.unpaid,'btn-s','payments')}
+          ${chip('退款待處理',res.tasks?.refundPending,'btn-r','payments')}
+          ${chip('金額異常',res.tasks?.financeAnomalies,'btn-r','payments')}
+          ${chip('未報到',res.tasks?.checkinNotYet,'btn-s','regs')}
+        </div>`),
+        section('報名狀態數據',`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">
+          ${card('全部報名',safeN(reg.total))}${card('待審核',safeN(reg.pendingReview))}${card('已錄取',safeN(reg.approved))}${card('備取',safeN(reg.waitlist))}${card('不錄取',safeN(reg.rejected))}${card('已取消',safeN(reg.cancelled))}
+        </div>`),
+        section('金流／押金／發票數據',`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px">
+          ${card('未繳費',safeN(fin.unpaid))}${card('付款待確認',safeN(fin.paymentPending))}${card('已繳費/免費',safeN(fin.paid)+' / '+safeN(fin.free))}${card('總收款',money(fin.grossRevenue))}${card('押金總額',money(fin.depositTotal))}${card('退費總額',money(fin.refundTotal))}${card('實收淨額',money(fin.netRevenue))}${card('發票資料',safeN(a.invoiceCount),'已開立 '+safeN(a.invoiceIssued))}
+        </div>`),
+        section('現場／押金狀態數據',`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px">
+          ${card('已報到',safeN(onsite.checkinDone))}${card('未報到',safeN(onsite.checkinNotYet))}${card('未到',safeN(onsite.absent))}${card('已清場',safeN(onsite.clearDone))}${card('已退押金',safeN(onsite.depositRefunded))}${card('押金沒收',safeN(onsite.depositForfeited))}
+        </div>`),
+        section('系統資料量',`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px">
+          ${card('場次資料',safeN(db.sessions))}${card('報名資料',safeN(db.registrations))}${card('會員資料',safeN(db.members))}${card('管理人員',safeN(db.staff),'啟用 '+safeN(db.activeStaff))}${card('活動分類',safeN(db.events))}${card('合約範本',safeN(db.agreementTemplates))}
+        </div>`),
+        section('場域統計',miniRows(res.byVenue,'尚無場域資料')),
+        section('活動類型統計',miniRows(res.byType,'尚無類型資料')),
+        section('設備統計',miniRows(res.equipment,'目前沒有加租設備資料')),
+        section('近期場次數據',`<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px">
+          <thead><tr style="background:#f7faf8"><th style="text-align:left;padding:8px">場次</th><th>日期</th><th>報名</th><th>待審</th><th>錄取</th><th>待確認</th><th>已付</th><th>收入</th><th>報到</th></tr></thead>
+          <tbody>${(res.bySession||[]).map(s=>`<tr style="border-bottom:1px solid #eee"><td style="padding:8px;font-weight:800">${esc(s.name||'')}</td><td>${esc(s.date||'')}</td><td>${safeN(s.total)}</td><td>${safeN(s.pending)}</td><td>${safeN(s.approved)}</td><td>${safeN(s.paymentPending)}</td><td>${safeN(s.paid)}</td><td>${money(s.revenue)}</td><td>${safeN(s.checkinDone)}</td></tr>`).join('') || `<tr><td colspan="9" style="padding:10px;color:var(--lt)">尚無場次資料</td></tr>`}</tbody>
+        </table></div>`)
+      ].join('');
+    }
+  }catch(e){ if(cards) cards.innerHTML='<div style="padding:18px;color:#c33">統計載入失敗：'+esc(e.message)+'</div>'; }
+}
+
 function renderOverviewCards(){
   // 活動橫向卡片：只顯示真正活動，不顯示「全部場次」或「未分類活動」
   const row=$('eventCardRow');
@@ -1965,7 +2034,7 @@ function loadSessions(){
   if(typeof renderOverviewSessionsFn==="function") renderOverviewSessionsFn();
 }
 
-// 相容修正：舊流程會呼叫 renderOverviewSessions，實際主函式為 renderOverviewSessionsFn
+// 相容修正：renderOverviewSessions 轉接至主函式 renderOverviewSessionsFn
 function renderOverviewSessions(){
   if (typeof renderOverviewSessionsFn === 'function') {
     return renderOverviewSessionsFn();
@@ -2165,10 +2234,10 @@ function goPage(name, opts){
   if(tab) tab.classList.add('active');
   // BUG-A FIX: 同步底部 Tab Bar 高亮
   const _navMap = {
-    overview:  'nav-overview',
     regs:      'nav-regs',
-    checkin:   'nav-checkin-side',
     payments:  'nav-payments',
+    overview:  'nav-overview',
+    staff:     'nav-staff',
     settings:  'nav-announce'
   };
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2179,7 +2248,7 @@ function goPage(name, opts){
   // UI: 設定 main 背景色依分頁
   const mainEl=document.querySelector('.main');
   if(mainEl){
-    const bgMap={overview:'var(--ov-bg)',regs:'var(--rg-bg)',checkin:'var(--ck-bg)',payments:'var(--py-bg)',settings:'var(--st-bg)'};
+    const bgMap={regs:'var(--rg-bg)',payments:'var(--py-bg)',overview:'var(--ov-bg)',staff:'var(--st-bg)',settings:'var(--st-bg)',checkin:'var(--ck-bg)'};
     mainEl.style.background=bgMap[name]||'var(--bg)';
   }
   const skipHistory=opts&&opts.skipHistory;
@@ -2189,14 +2258,15 @@ function goPage(name, opts){
   ST._showAllRegStatus=false;
   if(!['regs'].includes(name)) ST._filterSesId=null;
   const inits={
-    overview: ()=>{ renderOverviewCards(); },
     regs: async ()=>{ await loadAllRegs(); showRegsSummaryLayer(); renderRegsSummary(); },
-    checkin: async ()=>{ await loadAllRegs(); showCheckinSummaryLayer(); renderCheckinSummary(); },
     payments: async ()=>{ await loadAllRegs(); showPaymentsSummaryLayer(); renderPaymentsSummary(); },
-    settings: ()=>{ loadStaff(); loadAnnounce(); loadSiteConfig(); },
+    overview: async ()=>{ await loadBusinessOverview(); renderOverviewCards(); },
+    staff: ()=>{ loadStaff(); },
+    settings: ()=>{ loadAnnounce(); loadSiteConfig(); },
+    checkin: async ()=>{ await loadAllRegs(); showCheckinSummaryLayer(); renderCheckinSummary(); },
   };
   if(inits[name]) inits[name]();
-  if(['overview','regs','payments','checkin'].includes(name)) scheduleAdminDbSync('goPage:'+name, 350);
+  if(['regs','payments','overview','staff'].includes(name)) scheduleAdminDbSync('goPage:'+name, 350);
 }
 
 // ── 場次快捷篩選 ──────────────────────────────────────────────────
@@ -2961,7 +3031,7 @@ function fillRegSessionFilter(){
 
 // ── 場次總覽 ──
 function renderOverview(){
-  // 統一呼叫新版總覽（舊版 DOM 已不存在）
+  // 統一呼叫新版總覽
   renderOverviewSessions();
 }
 
@@ -3157,11 +3227,107 @@ function getModulesJson(){
   const obj={};MOD_DEFS.forEach(d=>{obj[d.k]=!!$('mod_'+d.k)?.checked;});return obj;
 }
 
-function toggleStallConfig(checked){
-  const cfg=$('sm_stallsConfig');
-  if(cfg) cfg.style.display=checked?'block':'none';
-}
 
+function setSeatPricingEnabled(on){
+  const hidden=$('sm_enableStalls'); if(hidden) hidden.value=on?'1':'0';
+  const cfg=$('sm_stallsConfig'); if(cfg) cfg.style.display=on?'block':'none';
+  const onBtn=$('seatSwitchOn'), offBtn=$('seatSwitchOff');
+  if(onBtn){ onBtn.style.background=on?'var(--g)':'#fff'; onBtn.style.color=on?'#fff':'var(--g)'; }
+  if(offBtn){ offBtn.style.background=!on?'#555':'#fff'; offBtn.style.color=!on?'#fff':'#555'; }
+  renderSeatMapBuilder();
+}
+function toggleStallConfig(checked){ setSeatPricingEnabled(!!checked); }
+let seatItems=[]; let selectedSeatCode='';
+function normalizeSeatItem(s){return {code:String(s.code||s.seatCode||s.stallNo||'').trim(),type:s.type||s.seatType||'auto',price:Number(s.price||s.priceDelta||0)||0,x:Number(s.x)||0,y:Number(s.y)||0,active:s.active!==false,note:s.note||''};}
+function loadSeatMapFile(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  const rd=new FileReader(); rd.onload=()=>{ $('sm_seatMapUrl').value=rd.result; renderSeatMapBuilder(); }; rd.readAsDataURL(f);
+}
+function batchCreateSeats(){
+  const zone=prompt('區域代碼（例：A）','A'); if(!zone) return;
+  const start=parseInt(prompt('起始號碼','1')||'1')||1;
+  const count=parseInt(prompt('數量','10')||'10')||10;
+  for(let i=0;i<count;i++){
+    const code=String(zone).trim()+String(start+i);
+    if(!seatItems.some(s=>s.code===code)) seatItems.push({code,type:'auto',price:0,x:0,y:0,active:true,note:''});
+  }
+  renderSeatMapBuilder();
+}
+function addSeatItem(code=''){
+  const c=code||prompt('攤位代碼','A1'); if(!c) return;
+  if(seatItems.some(s=>s.code===c)){toast('攤位代碼重複');return;}
+  seatItems.push({code:c,type:'auto',price:0,x:0,y:0,active:true,note:''}); selectedSeatCode=c; renderSeatMapBuilder();
+}
+function updateSeatItem(code,key,val){
+  const s=seatItems.find(x=>x.code===code); if(!s) return;
+  if(key==='price') s.price=parseInt(val)||0; else if(key==='active') s.active=!!val; else s[key]=val;
+  if(s.type!=='paid') s.price=0;
+  renderSeatMapBuilder(false);
+}
+function removeSeatItem(code){ if(!confirm('確定移除 '+code+'？已被占用的位置請勿移除。')) return; seatItems=seatItems.filter(s=>s.code!==code); if(selectedSeatCode===code) selectedSeatCode=''; renderSeatMapBuilder(); }
+function selectSeatForPlacement(code){ selectedSeatCode=code; renderSeatMapBuilder(false); }
+function placeSelectedSeatOnMap(ev){
+  if(!selectedSeatCode) return;
+  const box=$('seatMapCanvas'); if(!box) return;
+  const img=box.querySelector('img'); if(!img) return;
+  const rect=box.getBoundingClientRect();
+  const x=((ev.clientX-rect.left)/rect.width)*100;
+  const y=((ev.clientY-rect.top)/rect.height)*100;
+  const s=seatItems.find(x=>x.code===selectedSeatCode); if(!s) return;
+  s.x=Math.max(0,Math.min(100,x)); s.y=Math.max(0,Math.min(100,y));
+  renderSeatMapBuilder(false);
+}
+function seatTypeText(t){return t==='paid'?'加價選位':t==='service'?'服務台':t==='closed'?'不開放':'自動排位';}
+function renderSeatMapBuilder(updateList=true){
+  const mapUrl=$('sm_seatMapUrl')?.value||'';
+  const box=$('seatMapCanvas');
+  if(box){
+    box.innerHTML=mapUrl?`<img src="${escHtml(mapUrl)}" style="width:100%;display:block;object-fit:contain">`:'請先上傳或貼上場地圖，再點圖放位置';
+    if(mapUrl){
+      seatItems.forEach(s=>{
+        if(!s.x&&!s.y) return;
+        const el=document.createElement('button');
+        el.type='button'; el.textContent=s.type==='service'?'服務台':s.code;
+        el.onclick=(e)=>{e.stopPropagation();selectSeatForPlacement(s.code)};
+        const bg=s.type==='paid'?'#fff3cd':s.type==='service'?'#dbeafe':s.type==='closed'?'#eee':'#d8f3dc';
+        el.style.cssText=`position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);border:2px solid ${selectedSeatCode===s.code?'#2d6a4f':'#fff'};background:${bg};border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;box-shadow:0 1px 5px rgba(0,0,0,.18);cursor:pointer`;
+        box.appendChild(el);
+      });
+    }
+  }
+  const list=$('seatItemsList'); if(!list) return;
+  list.innerHTML=seatItems.map(s=>`<div style="display:grid;grid-template-columns:64px 1fr 72px 52px;gap:6px;align-items:center;background:#fff;border:1px solid #e0eee6;border-radius:9px;padding:6px;margin-bottom:5px;${selectedSeatCode===s.code?'outline:2px solid var(--g)':''}">
+    <button type="button" onclick="selectSeatForPlacement('${escHtml(s.code)}')" style="border:none;background:#f4faf6;border-radius:7px;padding:7px;font-weight:900">${escHtml(s.code)}</button>
+    <select onchange="updateSeatItem('${escHtml(s.code)}','type',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px">
+      <option value="auto" ${s.type==='auto'?'selected':''}>自動排位</option>
+      <option value="paid" ${s.type==='paid'?'selected':''}>加價選位</option>
+      <option value="service" ${s.type==='service'?'selected':''}>服務台</option>
+      <option value="closed" ${s.type==='closed'?'selected':''}>不開放</option>
+    </select>
+    <input type="number" value="${Number(s.price)||0}" ${s.type!=='paid'?'disabled':''} onchange="updateSeatItem('${escHtml(s.code)}','price',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px" placeholder="加價">
+    <button type="button" onclick="removeSeatItem('${escHtml(s.code)}')" style="border:none;background:#fdecea;color:#c0392b;border-radius:7px;padding:7px;font-size:12px;font-weight:900">刪</button>
+  </div>`).join('') || '<div style="font-size:12px;color:#777">尚未建立攤位，請用「批次新增」。</div>';
+}
+async function loadSeatMapForSession(sessionId){
+  seatItems=[]; selectedSeatCode='';
+  if(!sessionId) { renderSeatMapBuilder(); return; }
+  try{
+    const res=await api({action:'getSeatMap',sessionId,email:ST.email,token:ST.token,_t:Date.now()});
+    if(res && !res.error){
+      setSeatPricingEnabled(!!res.enabled);
+      if($('sm_seatMapUrl')) $('sm_seatMapUrl').value=res.mapUrl||'';
+      seatItems=(res.seats||[]).map(normalizeSeatItem);
+      renderSeatMapBuilder();
+    }
+  }catch(e){ console.warn('loadSeatMapForSession failed',e); }
+}
+async function saveSeatMapNow(){
+  const sessionId=String(getVal('sm_id','')).trim();
+  if(!sessionId){toast('請先儲存場次，再設定選位地圖');return;}
+  const res=await apiPost({action:'saveSeatMap',sessionId,enabled:getVal('sm_enableStalls',false)||String(getVal('sm_enableStalls','0'))==='1',mapUrl:getVal('sm_seatMapUrl',''),holdHours:24,seats:seatItems});
+  if(res.error){toast('❌ '+res.error);return;}
+  toast('✅ 選位設定已儲存');
+}
 function getEquipJson(){
   const obj={};EQUIP_LIST.forEach(eq=>{obj[eq.k]={open:!!$('eq_open_'+eq.k)?.checked,price:parseInt($('eq_price_'+eq.k)?.value)||0,incl:parseInt($('eq_incl_'+eq.k)?.value)||0,maxPerStall:parseInt($('eq_maxPerStall_'+eq.k)?.value)||0};});return obj;
 }
@@ -3178,27 +3344,6 @@ function quickAddEvent(){
       $('sm_eventId').value=res.id;
     });
   });
-}
-// 攤位號碼管理
-let stallItemIdx=0;
-function addStallItem(name=''){
-  const idx=stallItemIdx++;
-  const div=document.createElement('div');
-  div.id='si_'+idx;
-  div.style='display:inline-flex;align-items:center;gap:4px;margin:3px';
-  div.innerHTML=`
-    <input type="text" id="si_name_${idx}" value="${name}" placeholder="攤位號碼" style="width:70px;padding:6px;border:1.5px solid #d0e8d8;border-radius:7px;font-size:13px">
-    <button onclick="document.getElementById('si_${idx}').remove()" style="background:var(--rdp);color:var(--rd);border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">✕</button>
-  `;
-  $('stallItemsList').appendChild(div);
-}
-function getStallList(){
-  const items=[];
-  document.querySelectorAll('[id^=si_name_]').forEach(el=>{
-    const v=el.value.trim();
-    if(v) items.push(v);
-  });
-  return items;
 }
 function openSesModal(){
   resetSesModal();
@@ -3449,10 +3594,12 @@ async function editSes(id){
   $('sm_desc').value=s.desc||'';
   $('sm_cover').value=s.cover||'';
   if(s.cover){$('sesCoverImg').src=s.cover;$('sesCoverPreview').style.display='block';}
-  // 攤位清單
-  $('stallItemsList').innerHTML='';stallItemIdx=0;
-  (s.stallList||[]).forEach(name=>addStallItem(name));
-  $('sm_stallFee').value=s.stallFee||0;
+  // 加價選位地圖
+  seatItems=[]; selectedSeatCode='';
+  if($('sm_enableStalls')) setSeatPricingEnabled(!!s.seatPricingEnabled);
+  if($('sm_seatMapUrl')) $('sm_seatMapUrl').value=s.seatMapUrl||'';
+  try{ loadSeatMapForSession(s.id); }catch(e){}
+  if($('sm_stallFee')) $('sm_stallFee').value=s.stallFee||0;
   $('sm_review').checked=s.needReview!==false;
   // 日期
   $('dateSlots').innerHTML='';dateSlotIdx=0;
@@ -3486,19 +3633,6 @@ async function editSes(id){
   if(_agVer) _agVer.value = s.agreementVersion || '';
   const _agContent = document.getElementById('ses_agreement_content');
   if(_agContent) _agContent.value = s.agreementContent || '';
-  // 載入攤位設定
-  $('sm_stallNumbers').value='';
-  $('stallPreview').innerHTML='<div style="color:var(--lt);font-size:12px">載入攤位中…</div>';
-  api({action:'getStalls',sessionId:s.id}).then(stalls=>{
-    if(stalls&&stalls.length){
-      $('sm_stallNumbers').value=stalls.map(s=>s.number).join(', ');
-      $('stallPreview').innerHTML='<div style="display:flex;flex-wrap:wrap;gap:4px">'+
-        stalls.map(st=>`<span style="background:${st.status==='開放'?'#d8f3dc':st.status==='預留'?'#fff8e1':'#fdecea'};color:#333;padding:4px 10px;border-radius:6px;font-size:12px">${st.number}${st.status!=='開放'?' ('+st.status+')':''}</span>`).join('')+
-        '</div>';
-    } else {
-      $('stallPreview').innerHTML='<div style="color:var(--lt);font-size:12px">尚未設定攤位</div>';
-    }
-  });
   const assigned=s.assignedStaff||[];
   if(!(ST.staffList&&ST.staffList.length)){
     api({action:'getStaff',email:ST.email,token:ST.token}).then(list=>{
@@ -3509,23 +3643,6 @@ async function editSes(id){
     fillAssignStaff(assigned);
   }
   openModal('sesModal');
-}
-async function saveStallNumbers(){
-  const id=$('sm_id').value;
-  if(!id){toast('請先儲存場次');return;}
-  const nums=$('sm_stallNumbers').value;
-  if(!nums.trim()){toast('請填寫攤位號碼');return;}
-  const res=await apiPost({action:'initStalls',sessionId:id,stallNumbers:nums});
-  if(res.error){toast('❌ '+res.error);return;}
-  toast('✅ 已設定 '+res.count+' 個攤位');
-  // 顯示預覽
-  const preview=$('stallPreview');
-  const stalls=await api({action:'getStalls',sessionId:id});
-  if(stalls&&stalls.length){
-    preview.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:4px">'+
-      stalls.map(s=>`<span style="background:${s.status==='開放'?'#d8f3dc':s.status==='預留'?'#fff8e1':'#fdecea'};color:#333;padding:4px 10px;border-radius:6px;font-size:12px">${s.number}</span>`).join('')+
-      '</div>';
-  }
 }
 
 async function saveSession(btn){
@@ -3580,7 +3697,7 @@ async function saveSession(btn){
 
     let stallList = [];
     try{ stallList = getStallList(); }catch(e){ stallList = []; console.warn('[getStallList failed]', e); }
-    const typedStalls = String(getVal('sm_stallNumbers','')).trim();
+    const typedStalls = $('sm_stallNumbers') ? String(getVal('sm_stallNumbers','')).trim() : '';
     if(typedStalls){
       stallList = Array.from(new Set(stallList.concat(typedStalls.split(/[,，\n\r]/).map(x=>x.trim()).filter(Boolean))));
     }
@@ -3600,7 +3717,10 @@ async function saveSession(btn){
       fee:parseInt(getVal('sm_fee','0'))||0,
       deposit:parseInt(getVal('sm_deposit','0'))||0,
       limit:0,
-      maxStalls:getVal('sm_enableStalls',false)?(parseInt(getVal('sm_maxStalls','3'))||3):0,
+      maxStalls:0,
+      seatPricingEnabled:(String(getVal('sm_enableStalls','0'))==='1'||getVal('sm_enableStalls',false)===true),
+      seatHoldHours:24,
+      seatMapUrl:String(getVal('sm_seatMapUrl','')).trim(),
       organizer:String(getVal('sm_organizer','')).trim(),
       coorg:String(getVal('sm_coorg','')).trim(),
       basicEquip:String(getVal('sm_basicEquip','')).trim(),
@@ -3613,7 +3733,7 @@ async function saveSession(btn){
       customFields:customFields,
       addons:addons,
       stallList:stallList,
-      stallFee:parseInt(getVal('sm_stallFee','0'))||0,
+      stallFee:0,
       invoiceTax:invoiceTax,
       status:'報名中',
       // ── 合約同意設定 ────────────────────────────────────
@@ -3631,13 +3751,9 @@ async function saveSession(btn){
     if(res.error){ showFail(res.error); return; }
 
     const savedId = res.id || id;
-    if(!id && savedId && Array.isArray(body.stallList) && body.stallList.length){
-      const stallNumbers = body.stallList.join(',');
-      const stallRes = await apiPost({action:'initStalls',sessionId:savedId,stallNumbers});
-      if(stallRes && stallRes.error){
-        alert('場次已儲存，但攤位清單未建立：\n' + stallRes.error);
-      }
-    }
+    try{ if(savedId && (String(getVal('sm_enableStalls','0'))==='1'||seatItems.length)) await apiPost({action:'saveSeatMap',sessionId:savedId,enabled:(String(getVal('sm_enableStalls','0'))==='1'),mapUrl:String(getVal('sm_seatMapUrl','')).trim(),holdHours:24,seats:seatItems}); }catch(seatErr){ console.warn('save seat map skipped', seatErr); }
+    // V8 加價選位地圖模組：攤位資料已由 saveSeatMap 儲存。
+    // 加價選位地圖資料由 saveSeatMap 儲存，避免覆蓋類型／座標／加價／服務台資料。
 
     try{ toast('✅ 場次已儲存', 3000); }catch(e){}
     alert('場次已儲存成功');
@@ -3810,28 +3926,6 @@ function closeRegDetail(){
   const _rd=$('regDetailArea'); if(_rd) _rd.style.display='none';
 }
 
-let ST_currentSesId='';
-function openStallConfig(){
-  const sesId=$('sm_id').value;
-  if(!sesId){toast('請先選擇場次再設定攤位');return;}
-  ST_currentSesId=sesId;
-  // 載入現有攤位
-  api({action:'getStalls',sessionId:sesId,email:ST.email,token:ST.token}).then(stalls=>{
-    const nums=stalls.map(s=>s.number).join('\n');
-    $('stallListInput').value=nums;
-    $('stallCount').textContent=stalls.length+' 個攤位';
-  });
-  openModal('stallModal');
-}
-async function saveStallConfig(){
-  const lines=$('stallListInput').value.split('\n').map(l=>l.trim()).filter(Boolean);
-  if(!lines.length){toast('請填寫攤位號碼');return;}
-  const res=await apiPost({action:'saveStallConfig',sessionId:ST_currentSesId,stalls:lines});
-  if(res.error){toast('❌ '+res.error);return;}
-  toast('✅ 攤位清單已儲存（'+lines.length+' 個）');
-  $('stallConfigPreview').textContent='已設定 '+lines.length+' 個攤位：'+lines.slice(0,5).join('、')+(lines.length>5?'...':'');
-  closeModal('stallModal');
-}
 async function saveFastPass(){
   if(!ST.currentReg)return;
   const enable=$('fastPassChk').checked;
@@ -4082,7 +4176,7 @@ function isRefundedReg(r){ return String(r?.transferStatus||'')==='已退費'; }
 function isOnsiteEligibleReg(r){ return !isCancelledPaymentReg(r) && !isRefundRequestReg(r) && !isRefundedReg(r) && String(r?.status||r?.reviewStatus||'')==='已錄取' && isPaidText(r?.payStatus||''); }
 function isPayPendingActiveReg(r){ return !isCancelledPaymentReg(r) && !isRefundRequestReg(r) && !isRefundedReg(r) && isPendingPayText(r?.payStatus); }
 async function loadPaymentsSimple(){
-  // 舊設定頁相容：若設定頁還有付款區，也用同一份資料渲染。
+  // 設定頁若保留付款區，也用同一份資料渲染。
   if(!(ST.allRegs||[]).length) await loadAllRegs();
   renderPaymentManagement('paymentsBody2');
 }
@@ -4508,7 +4602,7 @@ async function assignStaffSessions(targetEmail){
   const staff=(staffList||[]).find(s=>s.email===targetEmail)||{};
   const current=new Set(staff.limitSessions||[]);
 
-  // 移除舊的 overlay
+  // 移除既有 overlay
   const existingOverlay=document.getElementById('staffSesOverlay');
   if(existingOverlay) existingOverlay.remove();
 
@@ -4904,7 +4998,7 @@ function goToSesCheckin(sesId){
 async function downloadSesData(sesId,sesName){
   toast('準備下載最新財報資料...');
 
-  // 先重新抓最新總覽，避免使用舊快取造成金額、場次名稱或設備統計不正確
+  // 先重新抓最新總覽，避免使用快取造成金額、場次名稱或設備統計不正確
   // 單場模式：只撈這一場，不撈全部場次，效率直接
   let ses={};
   try{
@@ -5832,6 +5926,9 @@ function openForceRefundPage(){
   loadForceRefundList();
 }
 
+
+// V8 加價選位模組：正式攤位代碼以地圖 seatItems 為準
+function getStallList(){ return (Array.isArray(seatItems)?seatItems:[]).map(s=>s.code).filter(Boolean); }
 </script>
 </body>
 </html>

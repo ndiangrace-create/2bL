@@ -829,16 +829,6 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <div id="formError" style="display:none;background:#fff0f0;border:1.5px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:#c0392b"></div>
         <div id="dynForm"></div>
       </div>
-      <!-- ── 合約同意區（在 dynForm 之後，送出按鈕之前）── -->
-      <div id="agreementArea" style="display:none;padding:0 16px 12px">
-        <div style="background:#f0faf4;border:1px solid #b7e4c7;border-radius:12px;padding:14px 16px">
-          <button type="button" id="agreementViewBtn"
-            onclick="openAgreementModal()"
-            style="display:block;width:100%;background:var(--c-purple);border:none;color:#2C2C2C;border-radius:12px;padding:14px;font-size:16px;font-weight:700;cursor:pointer">
-            📋 查看合約內容 ›
-          </button>
-        </div>
-      </div>
       <div style="padding:12px 16px 40px">
         <button class="submit-btn-new" id="submitBtn" type="button" onclick="submitReg(event)" style="display:none" disabled>送出報名</button>
       </div>
@@ -1061,9 +1051,18 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="seatPreviewModal" onclick="if(event.target===this)closeModal('seatPreviewModal')">
+  <div class="modal-box" style="max-width:760px">
+    <div class="modal-title">場地圖與加價位置</div>
+    <div style="font-size:14px;color:#666;margin-bottom:10px">此畫面僅供報名前查看位置配置。實際選位將於錄取後、付款前開放。</div>
+    <div id="seatPreviewBody" style="min-height:180px"></div>
+    <button class="btn-s2" onclick="closeModal('seatPreviewModal')" style="width:100%;margin-top:8px">關閉</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="stallPickerModal" onclick="if(event.target===this)closeModal('stallPickerModal')">
   <div class="modal-box">
-    <div class="modal-title" id="stallPickerTitle">選擇攤位</div>
+    <div class="modal-title" id="stallPickerTitle">加價選位</div>
     <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">綠色=可選　黃色=預留中　紅色=已選走</div>
     <div id="stallGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     <button id="stallConfirmBtn" onclick="submitSelectedStalls()" style="width:100%;margin-top:14px;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;font-size:17px;font-weight:900">確認選位</button>
@@ -2143,6 +2142,7 @@ async function checkMemberStep(){
   }
 }
 function renderDynFormFull(s, isNew=false){
+  ST.seatChoiceIntent='auto';
   const V=ST.member||{};
   const email=ST.memberEmail||V.email||'';
   const vFb=V.fb||V.fb_url||'';
@@ -2258,6 +2258,29 @@ function renderDynFormFull(s, isNew=false){
     });
 
     html+=`</div>`;
+
+    // 加價選位意願（報名時只登記意願，不選實際位置）
+    const seatEnabled = !!(s.seatPricingEnabled || s.seat_pricing_enabled || (s.modules&&s.modules.seatPricing));
+    if(seatEnabled){
+      ST.seatChoiceIntent = ST.seatChoiceIntent || 'auto';
+      html+=`<div class="form-card-new card-blue" style="margin-top:12px">
+        <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">＋</span>加價選位意願</div>
+        <div style="font-size:15px;line-height:1.7;color:#333;margin-bottom:10px">
+          本場次開放加價選位。報名時僅登記加價選位意願，不代表已取得指定位置。<br>
+          實際加價選位將於錄取後、付款前開放選擇。付款後不可再加購或改選加價選位。<br>
+          若不加價選位，錄取並完成付款後，系統將依付款確認順序安排位置。
+        </div>
+        <button type="button" onclick="previewSeatMap('${s.id}')" style="width:100%;background:#fff;border:1.5px solid var(--g);color:var(--g);border-radius:10px;padding:11px;font-size:16px;font-weight:900;margin-bottom:10px">查看場地圖與加價位置</button>
+        <label style="display:flex;gap:9px;align-items:flex-start;background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #e3eee8">
+          <input type="radio" name="seatIntent" value="paid" onchange="ST.seatChoiceIntent='paid';updateFee()" style="width:20px;height:20px;accent-color:var(--g)">
+          <span><b>我有加價選位意願</b><br><small>錄取後、付款前可選擇後台開放的加價位置，選位費併入本次繳費金額。</small></span>
+        </label>
+        <label style="display:flex;gap:9px;align-items:flex-start;background:#fff;border-radius:10px;padding:10px;border:1px solid #e3eee8">
+          <input type="radio" name="seatIntent" value="auto" checked onchange="ST.seatChoiceIntent='auto';updateFee()" style="width:20px;height:20px;accent-color:var(--g)">
+          <span><b>不加價選位</b><br><small>依付款確認順序安排位置。付款後不可再加購加價選位。</small></span>
+        </label>
+      </div>`;
+    }
 
     // ── ③ 總計費用 ──
     html+=`<div class="total-new" id="feeBox">
@@ -2387,13 +2410,20 @@ function renderDynFormFull(s, isNew=false){
     });
   }, 200);
 
-  // 合約區塊控制
-  const agArea=$('agreementArea');
-  if(agArea) agArea.style.display='block';
+  // 合約只保留 dynForm 內的 contractCard，不再顯示第二個合約按鈕。
 
-  // 送出按鈕初始 disabled
+  // 送出按鈕初始 disabled；正式啟用交給 initAgreementArea / onAgreementRead 控制
   const subBtn=$('submitBtn');
-  if(subBtn){ subBtn.style.display='block'; subBtn.disabled=true; subBtn.classList.add('submit-btn-new'); subBtn.textContent='送出報名'; }
+  if(subBtn){
+    subBtn.style.display='block';
+    subBtn.disabled=true;
+    subBtn.classList.add('submit-btn-new');
+    subBtn.textContent='送出報名';
+  }
+
+  // 阻斷性修正：每次重繪報名表後，都必須重新初始化合約狀態。
+  // 避免「合約讀完但送出仍 disabled」或沿用上一場次合約狀態。
+  initAgreementArea(s);
 
   updateFee();
   setTimeout(()=>{ preFillMemberFields(); }, 100);
@@ -2533,12 +2563,8 @@ function resetRegFormState(options={}){
   ST._agreementViewed   = false;
   ST._agreementAccepted = false;
   ST._agreementData     = null;
-  const agArea = $('agreementArea');
-  if (agArea) agArea.style.display = 'none';
-  const cb = $('agreementCheckbox');
-  if (cb) { cb.checked = false; cb.disabled = true; }
-  const lbl = $('agreementCheckLabel');
-  if (lbl) { lbl.style.opacity = '.5'; lbl.style.cursor = 'not-allowed'; }
+  const badge = $('contractDoneBadge');
+  if (badge) badge.style.display = 'none';
   const modalBox=document.querySelector('#regFormModal .modal-box');
   if(modalBox){ modalBox.querySelectorAll('.success-screen').forEach(el=>el.remove()); }
   const formErr=$('formError');
@@ -3144,29 +3170,22 @@ function showSubmitError(msg){
 
 // 在 renderDynFormFull 完成後由外部呼叫，初始化合約區
 async function initAgreementArea(session) {
-  const area = $('agreementArea');
-  if (!area) return;
-  // 若場次 agreementRequired === false，隱藏合約區，直接顯示送出按鈕
+  // 合約 UI 只保留 dynForm 內的 contractCard；此函式保留為相容入口，不再產生第二個合約區。
   if (session && session.agreementRequired === false) {
-    area.style.display = 'none';
     ST._agreementRequired = false;
     ST._agreementViewed   = true;
     ST._agreementAccepted = true;
+    const submitBtn = $('submitBtn');
+    if (submitBtn) { submitBtn.style.display = 'block'; submitBtn.disabled = false; }
     return;
   }
-  area.style.display = 'block';
   ST._agreementRequired = true;
   ST._agreementViewed   = false;
   ST._agreementAccepted = false;
-  // checkbox 預設 disabled
-  const cb = $('agreementCheckbox');
-  if (cb) { cb.checked = false; cb.disabled = true; }
-  const lbl = $('agreementCheckLabel');
-  if (lbl) { lbl.style.opacity = '.5'; lbl.style.cursor = 'not-allowed'; }
-  // 送出按鈕預設隱藏
   const submitBtn = $('submitBtn');
-  if (submitBtn) submitBtn.style.display = 'none';
-  // 預載合約內容（快取在 ST）
+  if (submitBtn) { submitBtn.style.display = 'block'; submitBtn.disabled = true; }
+  const badge = $('contractDoneBadge');
+  if (badge) badge.style.display = 'none';
   if (session && session.id) {
     try {
       const ag = await api({ action:'getSessionAgreement', id: session.id });
@@ -3178,6 +3197,7 @@ async function initAgreementArea(session) {
     } catch(e) { console.warn('[initAgreementArea] 合約載入失敗', e); }
   }
 }
+
 
 function openAgreementModal() {
   const modal = $('agreementModal');
@@ -3210,13 +3230,8 @@ function openAgreementModal() {
   }
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  // 標記已查看
+  // 標記已查看。正式同意由 modal 內「我同意合約，關閉」完成。
   ST._agreementViewed = true;
-  // 啟用 checkbox
-  const cb = $('agreementCheckbox');
-  if (cb) cb.disabled = false;
-  const lbl = $('agreementCheckLabel');
-  if (lbl) { lbl.style.opacity = '1'; lbl.style.cursor = 'pointer'; }
 }
 
 function closeAgreementModal() {
@@ -3226,30 +3241,36 @@ function closeAgreementModal() {
 }
 
 function onAgreementRead() {
+  const body = $('agreementModalBody');
+  const txt = (body && body.textContent || '').trim();
+  // 阻斷性防呆：合約仍在載入或載入失敗時，不可直接放行送出。
+  if (ST._agreementRequired !== false) {
+    if (!txt || txt.includes('載入中') || txt.includes('無法載入') || txt.includes('合約載入失敗')) {
+      toast('合約內容尚未成功載入，請稍後再試或聯繫主辦。', 5000);
+      return;
+    }
+  }
   closeAgreementModal();
   ST._agreementViewed = true;
   ST._agreementAccepted = true;
-  // 隱藏合約區塊
-  const agArea = $('agreementArea');
-  if (agArea) agArea.style.display = 'none';
-  // 顯示送出按鈕
+  const badge = $('contractDoneBadge');
+  if (badge) badge.style.display = 'inline-block';
   const submitBtn = $('submitBtn');
   if (submitBtn) {
     submitBtn.style.display = 'block';
     submitBtn.disabled = false;
+    submitBtn.textContent = '送出報名';
+    submitBtn.style.opacity = '1';
   }
 }
 
 function onAgreementCheck(checked) {
+  // 舊 checkbox 相容入口：目前前台不再使用第二個合約勾選區。
   ST._agreementAccepted = !!checked;
   const submitBtn = $('submitBtn');
   if (!submitBtn) return;
-  if (checked) {
-    submitBtn.style.display = 'block';
-    submitBtn.disabled = false;
-  } else {
-    submitBtn.style.display = 'none';
-  }
+  submitBtn.style.display = 'block';
+  submitBtn.disabled = !checked;
 }
 
 async function submitReg(ev){
@@ -3315,7 +3336,7 @@ async function submitReg(ev){
     const body={
       action:'register',sessionId:s.id,email,name,phone,stallCount:ST.stallCount||1,invoiceType,
       invoiceCarrier:($('f_invoiceCarrier')?.value||'').trim(),taxId:($('f_taxId')?.value||'').trim(),invoiceTitle:($('f_invoiceTitle')?.value||'').trim(),invoiceEmail:(($('f_invoiceEmail')?.value||'').trim()||($('f_personalInvoiceEmail')?.value||'').trim()||email),selectedDates,
-      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:M.fb||M.fb_url||'',ig:M.ig||M.ig_url||'',remark:($('f_remark')?.value||'').trim(),stallNumber:ST.selectedStall||'',participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
+      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:M.fb||M.fb_url||'',ig:M.ig||M.ig_url||'',remark:($('f_remark')?.value||'').trim(),stallNumber:ST.selectedStall||'',seatChoiceIntent:(ST.seatChoiceIntent||'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
       // ── 合約同意（後端必須收到這兩個欄位才建立報名）──
       agreementViewed:   ST._agreementViewed   !== false,
       agreementAccepted: ST._agreementAccepted !== false,
@@ -3403,23 +3424,24 @@ function memberLogout(){
 function isPaidText(v){ return String(v||'').indexOf('已繳費')>=0 || String(v||'')==='免費'; }
 function isPendingPayText(v){ return String(v||'').trim()==='待確認'; }
 function isCancelledReg(reg){ return String(reg?.status||'').trim()==='已取消'; }
-function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus); }
+function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus) && !(String(reg.seatChoiceIntent||'')==='paid' && String(reg.seatChoiceStatus||'')!=='reserved'); }
 function canRefundReg(reg){ return reg && !isCancelledReg(reg) && isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費' && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
 function canDirectCancelReg(reg){ return reg && !isCancelledReg(reg) && ['待審核','已錄取'].includes(String(reg.status||'')) && !isPaidText(reg.payStatus) && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
 function canSelectStallReg(reg){
   if(!reg || isCancelledReg(reg)) return false;
   if(String(reg.status||'')!=='已錄取') return false;
-  if(!(isPaidText(reg.payStatus) || String(reg.payStatus||'')==='免費')) return false;
+  if(String(reg.seatChoiceIntent||'')!=='paid') return false;
+  if(isPaidText(reg.payStatus) || String(reg.payStatus||'')==='免費' || isPendingPayText(reg.payStatus)) return false;
   if(['申請退費','退費中','已退費'].includes(String(reg.transferStatus||''))) return false;
-  if(String(reg.payStatus||'')==='已退費') return false;
   return true;
 }
+
 function stallSelectionHtml(reg){
   if(!canSelectStallReg(reg)) return '';
   if(reg.stallNumber){
     return `<div style="background:#e8f7ee;color:var(--g);border-radius:10px;padding:9px 10px;margin-top:10px;font-size:17px;font-weight:900">已選位：${escHtml(reg.stallNumber)}</div>`;
   }
-  return `<button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:#fff;border:1.5px solid var(--g);color:var(--g);border-radius:10px;padding:11px;margin-top:9px;font-size:17px;font-weight:900">選擇攤位</button>`;
+  return `<button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:#fff;border:1.5px solid var(--g);color:var(--g);border-radius:10px;padding:11px;margin-top:9px;font-size:17px;font-weight:900">加價選位</button>`;
 }
 function payBadge(reg){
   if(isCancelledReg(reg)) return {t:'已取消',bg:'#eeeeee',c:'#777777'};
@@ -3451,6 +3473,7 @@ function renderMyRegs(regs){
     const refundBtn=canRefundReg(r)?`<button onclick="event.stopPropagation();cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${escHtml(r.sessionName||r.sesName||'')}" style="width:100%;background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd);border-radius:10px;padding:11px;margin-top:9px;font-size:17px;font-weight:900">申請取消／退款</button>`:'';
     const transfer=(!cancelled && r.transferStatus)?`<div style="font-size:16px;color:#b45309;font-weight:800;margin-top:6px">退款狀態：${escHtml(r.transferStatus)}</div>`:'';
     const stallHtml=stallSelectionHtml(r);
+    const autoSeatInfo=(!cancelled && String(r.status||'')==='已錄取' && String(r.seatChoiceIntent||'auto')!=='paid' && !r.stallNumber && !isPaidText(r.payStatus))?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:15px;font-weight:800">不加價選位，依付款確認順序安排位置。付款後不可再加購加價選位。</div>`:'';
 
     // ── 不可抗力狀態顯示（後端 API 回傳，前台只顯示）──
     const fs = String(r.forceStatus||'');
@@ -3492,7 +3515,7 @@ function renderMyRegs(regs){
       ${r.equipmentText?`<div style="font-size:16px;color:var(--md);margin-top:3px">設備：${escHtml(r.equipmentText)}</div>`:''}
       ${participantTextFromData(r.participants)?`<div style="font-size:16px;color:var(--md);margin-top:3px">參加者：${escHtml(participantTextFromData(r.participants))}</div>`:''}
       ${r.agreementAccepted?`<div style="font-size:12px;color:#2d6a4f;margin-top:5px">✅ 已同意報名合約${r.agreementVersion?' ('+r.agreementVersion+')':''}</div>`:''}
-      ${forceBanner||cancelMsg}${!forceBanner?waitMsg:''}${stallHtml}${!fs?refundBtn:''}${!fs?transfer:''}${!fs?payBtn:''}
+      ${forceBanner||cancelMsg}${!forceBanner?waitMsg:''}${stallHtml}${autoSeatInfo}${!fs?refundBtn:''}${!fs?transfer:''}${!fs?payBtn:''}
     </div>`;
   }).join('');
   handlePendingPayLink(ST.regs);
@@ -3507,6 +3530,25 @@ function handlePendingPayLink(regs){
   setTimeout(()=>{ if(canPayReg(reg)) showPayPage(reg.id, reg.sessionName||reg.sesName||'場次', Number(reg.total||0)); else openRegDetail(reg.id); }, 300);
 }
 
+
+async function previewSeatMap(sessionId){
+  openModal('seatPreviewModal');
+  const body=$('seatPreviewBody');
+  if(body) body.innerHTML='<div style="padding:20px;text-align:center;color:#777">載入場地圖…</div>';
+  try{
+    const res=await api({action:'getSeatMap',sessionId,_t:Date.now()});
+    if(res.error){ body.innerHTML='<div style="color:var(--rd);padding:16px">'+escHtml(res.error)+'</div>'; return; }
+    const seats=Array.isArray(res.seats)?res.seats:[];
+    const map=res.mapUrl||'';
+    const marks=seats.filter(s=>s.x||s.y).map(s=>{
+      const bg=s.type==='paid'?'#fff3cd':s.type==='service'?'#dbeafe':s.type==='closed'?'#eee':'#d8f3dc';
+      const txt=s.type==='paid'?`${escHtml(s.code)} +NT$${Number(s.price||0)}`:s.type==='service'?'服務台':s.type==='closed'?'不開放':escHtml(s.code);
+      return `<span style="position:absolute;left:${Number(s.x)||0}%;top:${Number(s.y)||0}%;transform:translate(-50%,-50%);background:${bg};border:2px solid #fff;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;box-shadow:0 1px 5px rgba(0,0,0,.2)">${txt}</span>`;
+    }).join('');
+    body.innerHTML=map?`<div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid #ddd"><img src="${escHtml(map)}" style="width:100%;display:block">${marks}</div>`:`<div style="padding:20px;text-align:center;color:#777">此場次尚未上傳場地圖</div>`;
+  }catch(e){ body.innerHTML='<div style="color:var(--rd);padding:16px">場地圖載入失敗</div>'; }
+}
+
 function normalizeStallStatus(s){
   const v=String(s||'').trim();
   if(v==='paid') return '已選走';
@@ -3519,16 +3561,18 @@ async function openStallPickerForReg(regId){
   if(!canSelectStallReg(reg)){ toast('目前狀態不可選位'); return; }
   if(reg.stallNumber){ toast('已完成選位，如需換位請聯繫主辦'); return; }
   ST._stallPick={reg, selected:[]};
-  $('stallPickerTitle').textContent='選擇攤位｜'+(reg.sessionName||reg.sesName||'場次');
+  $('stallPickerTitle').textContent='加價選位｜'+(reg.sessionName||reg.sesName||'場次');
   $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:15px;text-align:center;padding:16px">載入攤位中…</div>';
   $('stallConfirmBtn').disabled=true;
   $('stallConfirmBtn').style.opacity='.5';
   openModal('stallPickerModal');
   try{
-    const res=await api({action:'getStallStatus',sessionId:reg.sessionId,_t:Date.now()});
+    const res=await api({action:'getSeatMap',sessionId:reg.sessionId,_t:Date.now()});
     if(res.error){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--rd);font-size:15px;text-align:center;padding:16px">'+escHtml(res.error)+'</div>'; return; }
-    const list=Array.isArray(res.stallList)?res.stallList:[];
-    const taken=res.taken||{};
+    const paidSeats=(Array.isArray(res.seats)?res.seats:[]).filter(s=>s.type==='paid'&&s.active);
+    const list=paidSeats.map(s=>s.code);
+    const taken={}; paidSeats.forEach(s=>{ if(s.occupied) taken[s.code]={status:s.status==='預留'?'reserved':'paid',regId:s.regId}; });
+    ST._stallPick.seatMap=res; ST._stallPick.seatMeta=Object.fromEntries(paidSeats.map(s=>[s.code,s]));
     if(!list.length){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:15px;text-align:center;padding:16px">此場次尚未建立可選攤位</div>'; return; }
     ST._stallPick.stallList=list;
     ST._stallPick.taken=taken;
@@ -3553,7 +3597,7 @@ function renderStallPickerGrid(){
     const color=blocked?(info.status==='reserved'?'#b45309':'#c0392b'):(on?'var(--g)':'var(--dk)');
     const border=on?'var(--g)':(blocked?'#f3b5ad':'#ddeee5');
     const label=blocked?normalizeStallStatus(info.status):(on?'已選':'可選');
-    return `<button type="button" ${blocked?'disabled':''} onclick="toggleStallPick('${escHtml(num)}')" style="border:2px solid ${border};background:${bg};color:${color};border-radius:10px;padding:8px 4px;font-size:14px;font-weight:900;min-height:50px;${blocked?'opacity:.75;cursor:not-allowed':'cursor:pointer'}"><div>${escHtml(num)}</div><div style="font-size:11px;font-weight:700">${label}</div></button>`;
+    return `<button type="button" ${blocked?'disabled':''} onclick="toggleStallPick('${escHtml(num)}')" style="border:2px solid ${border};background:${bg};color:${color};border-radius:10px;padding:8px 4px;font-size:14px;font-weight:900;min-height:50px;${blocked?'opacity:.75;cursor:not-allowed':'cursor:pointer'}"><div>${escHtml(num)}</div><div style="font-size:11px;font-weight:700">${label}${(pick.seatMeta&&pick.seatMeta[num]&&Number(pick.seatMeta[num].price)>0)?'｜+NT$'+Number(pick.seatMeta[num].price):''}</div></button>`;
   }).join('');
   const btn=$('stallConfirmBtn');
   btn.disabled=selected.length!==max;
@@ -3584,10 +3628,11 @@ async function submitSelectedStalls(){
   const btn=$('stallConfirmBtn');
   if(btn){ btn.disabled=true; btn.textContent='送出中…'; }
   try{
-    const res=await apiPost({action:'selectStall',regId:reg.id,sessionId:reg.sessionId,stalls:selected,email:ST.member?.email||ST.memberEmail||''});
+    const res=await apiPost({action:'claimPaidSeat',regId:reg.id,sessionId:reg.sessionId,seats:selected,email:ST.member?.email||ST.memberEmail||''});
     if(res.error){ toast('❌ '+res.error); return; }
     closeModal('stallPickerModal');
-    toast('✅ 已完成選位');
+    toast('✅ 已完成加價選位');
+    if(res.message) alert(res.message);
     if(ST.memberEmail) await safeGetMyRegs(ST.memberEmail);
   }finally{
     if(btn){ btn.disabled=false; btn.textContent='確認選位'; }

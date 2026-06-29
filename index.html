@@ -1,189 +1,38 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
+<!doctype html>
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>兔彼樂市集活動系統 | 2b-love.com</title>
-<meta name="description" content="專為市集、寄賣、體驗活動設計的報名管理系統。按場次計費，用多少付多少，免月租壓力。">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans TC',sans-serif;background:#fffdf9;color:#2a2a24;line-height:1.6}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:#fff;border-bottom:1px solid #f0ede6;position:sticky;top:0;z-index:100}
-.nav-logo{font-size:18px;font-weight:900;color:#3a7d5c}
-.nav-logo span{font-size:12px;font-weight:400;color:#999;display:block}
-.nav-cta{background:#3a7d5c;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none}
-.hero{background:linear-gradient(150deg,#d8f0e4 0%,#fef0f6 60%,#fef8e6 100%);padding:60px 24px;text-align:center}
-.hero-tag{display:inline-block;background:rgba(58,125,92,.12);color:#3a7d5c;font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin-bottom:16px}
-.hero h1{font-size:36px;font-weight:900;line-height:1.3;color:#1e4d38;margin-bottom:12px}
-.hero h1 span{color:#e87aaa}
-.hero p{font-size:16px;color:#555;max-width:500px;margin:0 auto 28px}
-.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn-main{background:#3a7d5c;color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
-.btn-sub{background:#fff;color:#3a7d5c;border:2px solid #3a7d5c;border-radius:12px;padding:13px 28px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
-.section{padding:60px 24px;max-width:960px;margin:0 auto}
-.section-tag{font-size:12px;font-weight:700;color:#3a7d5c;letter-spacing:.1em;margin-bottom:8px}
-.section h2{font-size:28px;font-weight:900;margin-bottom:12px}
-.section-sub{font-size:15px;color:#666;margin-bottom:40px}
-.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
-.feature-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 16px rgba(0,0,0,.07);border-top:4px solid}
-.feature-card.green{border-color:#3a7d5c}
-.feature-card.pink{border-color:#e87aaa}
-.feature-card.yellow{border-color:#f5c842}
-.feature-card.blue{border-color:#5b8ac7}
-.feature-icon{font-size:36px;margin-bottom:12px}
-.feature-card h3{font-size:18px;font-weight:800;margin-bottom:8px}
-.feature-card p{font-size:14px;color:#666;line-height:1.7}
-.pricing{background:#f3f8f3;border-radius:20px;padding:40px;text-align:center;margin-top:40px}
-.price-big{font-size:52px;font-weight:900;color:#3a7d5c}
-.price-big span{font-size:20px;font-weight:400;color:#666}
-.price-note{font-size:14px;color:#666;margin-top:8px}
-.price-features{list-style:none;margin:24px 0;text-align:left;display:inline-block}
-.price-features li{font-size:15px;margin-bottom:10px;padding-left:24px;position:relative}
-.price-features li::before{content:'✓';position:absolute;left:0;color:#3a7d5c;font-weight:700}
-.trial-box{background:#fff;border-radius:16px;padding:24px;margin-top:24px;border:2px solid #3a7d5c}
-.trial-box h3{font-size:20px;font-weight:800;color:#3a7d5c;margin-bottom:8px}
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:32px}
-.step{text-align:center;padding:20px}
-.step-num{width:48px;height:48px;border-radius:50%;background:#3a7d5c;color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
-.step h4{font-size:16px;font-weight:700;margin-bottom:6px}
-.step p{font-size:13px;color:#666}
-.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}
-.cat{background:#fff;border-radius:14px;padding:20px 12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-.cat .emoji{font-size:32px;margin-bottom:8px}
-.cat h4{font-size:15px;font-weight:800}
-.cat p{font-size:12px;color:#888;margin-top:4px}
-.cta-section{background:linear-gradient(135deg,#1e4d38,#3a7d5c);padding:60px 24px;text-align:center;color:#fff}
-.cta-section h2{font-size:28px;font-weight:900;margin-bottom:12px}
-.cta-section p{font-size:15px;opacity:.85;margin-bottom:28px}
-.btn-white{background:#fff;color:#3a7d5c;border:none;border-radius:12px;padding:14px 32px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
-footer{background:#1a1a16;color:#999;padding:24px;text-align:center;font-size:13px}
-footer a{color:#999;text-decoration:none}
-@media(max-width:600px){
-  .hero h1{font-size:26px}
-  .cats{grid-template-columns:repeat(2,1fr)}
-  .pricing{padding:24px 16px}
-  .price-big{font-size:40px}
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2BL 活動報名管理系統｜兔彼樂</title>
+  <meta name="description" content="2BL 活動報名管理系統，協助活動主辦完成報名、審核、繳費、合約、現場報到與資料統計。" />
+  <style>
+    :root{--ink:#2C2C2C;--muted:#667085;--bg:#FFFDF8;--card:#FFFFFF;--line:#E8E2D8;--blue:#D9E5EE;--yellow:#FAEEC7;--green:#DDEAD1;--pink:#FAE1DD;--purple:#DCD7ED;--shadow:0 14px 32px rgba(30,30,30,.08)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.75}.wrap{width:min(1080px,92vw);margin:auto}.hero{padding:68px 0 36px}.eyebrow{display:inline-block;background:var(--green);padding:6px 14px;border-radius:999px;font-weight:800}.hero h1{font-size:clamp(34px,6vw,64px);line-height:1.08;margin:20px 0 14px}.lead{font-size:clamp(18px,2.6vw,24px);max-width:820px;color:#3e4b4a}.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}.btn{appearance:none;border:2px solid #2C2C2C;background:#fff;color:#2C2C2C;border-radius:16px;padding:13px 18px;font-weight:900;text-decoration:none;box-shadow:4px 4px 0 #2C2C2C}.btn.primary{background:var(--yellow)}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:34px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:var(--shadow)}.card h3{margin:0 0 8px;font-size:22px}.card p{margin:0;color:var(--muted)}.band{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:30px;padding:38px 0}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.step{border-radius:22px;padding:18px;border:1px solid var(--line);background:var(--blue);font-weight:800}.step:nth-child(2){background:var(--pink)}.step:nth-child(3){background:var(--green)}.step:nth-child(4){background:var(--purple)}.section{padding:44px 0}.split{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.list{padding-left:1.2em;margin:10px 0 0}.list li{margin:8px 0}.note{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding:24px 0 42px;margin-top:20px}.small-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.small-links a{color:#2C2C2C;font-weight:800}@media (max-width:780px){.grid,.steps,.split{grid-template-columns:1fr}.hero{padding-top:42px}.btn{width:100%;text-align:center}}
+  </style>
 </head>
 <body>
-
-<nav class="nav">
-  <div class="nav-logo">兔彼樂市集活動系統<span>2b-love.com</span></div>
-  <a href="apply.html" class="nav-cta">免費試用</a>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-tag">🌿 專為市集活動設計的報名系統</div>
-  <h1>讓辦活動變得<br><span>簡單又專業</span></h1>
-  <p>報名、審核、收款、現場管理，全部一個後台搞定。用多少付多少，沒有月租壓力。</p>
-  <div class="hero-btns">
-    <a href="apply.html" class="btn-main">🎉 免費試用 30 天</a>
-    <a href="#features" class="btn-sub">了解功能</a>
-  </div>
-</section>
-
-<!-- 功能特色 -->
-<section class="section" id="features">
-  <div class="section-tag">FEATURES</div>
-  <h2>你需要的功能，全部都有</h2>
-  <p class="section-sub">從報名到結帳，從現場到財報，一個系統全包。</p>
-  <div class="features">
-    <div class="feature-card green">
-      <div class="feature-icon">📋</div>
-      <h3>線上報名管理</h3>
-      <p>客製化報名表、自動審核、Email 通知、合約同意，報名流程全自動化。</p>
-    </div>
-    <div class="feature-card pink">
-      <div class="feature-icon">💰</div>
-      <h3>金流管理</h3>
-      <p>銀行轉帳、LINE Pay 都支援。主辦自行確認付款，靈活彈性不受限。</p>
-    </div>
-    <div class="feature-card yellow">
-      <div class="feature-icon">📍</div>
-      <h3>現場管理</h3>
-      <p>掃碼報到、清場記錄、押金退還，活動當天現場狀況一目瞭然。</p>
-    </div>
-    <div class="feature-card blue">
-      <div class="feature-icon">📊</div>
-      <h3>財務報表</h3>
-      <p>單場次完整財報一鍵下載 Excel，收入、押金、退費全部清楚列出。</p>
-    </div>
-  </div>
-</section>
-
-<!-- 適用分類 -->
-<section class="section" style="padding-top:0">
-  <div class="section-tag">CATEGORIES</div>
-  <h2>適合各類活動主辦</h2>
-  <div class="cats">
-    <div class="cat"><div class="emoji">🏪</div><h4>市集</h4><p>市集報名、攤位管理</p></div>
-    <div class="cat"><div class="emoji">🎁</div><h4>寄賣</h4><p>通路寄賣、商品上架</p></div>
-    <div class="cat"><div class="emoji">🎨</div><h4>體驗</h4><p>工作坊、主題活動</p></div>
-    <div class="cat"><div class="emoji">🤝</div><h4>合作</h4><p>異業合作、人才媒合</p></div>
-  </div>
-</section>
-
-<!-- 使用步驟 -->
-<section class="section" style="background:#f8f5ef;border-radius:20px;max-width:100%;padding:60px 24px">
-  <div style="max-width:960px;margin:0 auto">
-    <div class="section-tag">HOW IT WORKS</div>
-    <h2>三步驟開始使用</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <h4>申請試用</h4>
-        <p>填寫申請表，30 天免費試用，最多 2 場活動</p>
+  <main>
+    <section class="hero wrap">
+      <span class="eyebrow">兔彼樂共創活動有限公司</span>
+      <h1>2BL 活動報名管理系統</h1>
+      <p class="lead">把活動報名、審核、繳費、合約、現場報到與資料統計集中管理，讓主辦不用一直在表單、訊息與人工名單之間來回整理。</p>
+      <div class="cta">
+        <a class="btn primary" href="register.html">查看前台報名頁</a>
+        <a class="btn" href="admin.html">管理後台登入</a>
+        <a class="btn" href="onsite.html">現場管理入口</a>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <h4>設定後台</h4>
-        <p>填入付款資訊、建立活動場次、邀請工作人員</p>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <h4>開始收報名</h4>
-        <p>分享報名連結，報名者直接線上填表繳費</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 定價 -->
-<section class="section" id="pricing">
-  <div class="section-tag">PRICING</div>
-  <h2>簡單透明的收費方式</h2>
-  <div class="pricing">
-    <div class="price-big">1% <span>/ 每筆報名金額</span></div>
-    <div class="price-note">稅金另計（5%）｜沒有月租費｜沒有隱藏費用</div>
-    <ul class="price-features">
-      <li>沒有辦活動就不用付費</li>
-      <li>辦越多場，系統越划算</li>
-      <li>所有功能完整開放</li>
-      <li>資料完整保留</li>
-      <li>不限管理員人數</li>
-    </ul>
-    <p style="font-size:14px;color:#666;margin-bottom:16px">例：50 個攤位 × NT$2,000 報名費 = 你付 NT$1,000（+稅）</p>
-    <div class="trial-box">
-      <h3>🎉 免費試用方案</h3>
-      <p style="font-size:14px;color:#555;margin-top:4px">30 天免費試用，最多 2 個場次，所有功能完整體驗</p>
-    </div>
-    <a href="apply.html" class="btn-main" style="margin-top:24px;display:inline-block">立即申請免費試用</a>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <h2>準備好讓辦活動變得更輕鬆了嗎？</h2>
-  <p>免費試用 30 天，感受一下系統有多好用</p>
-  <a href="apply.html" class="btn-white">申請免費試用</a>
-</section>
-
-<footer>
-  <p>兔彼樂市集活動系統 © 2026 | <a href="mailto:ndiangrace@gmail.com">ndiangrace@gmail.com</a> | LINE: @2beloved</p>
-</footer>
-
+    </section>
+    <section class="wrap grid" aria-label="系統功能">
+      <article class="card"><h3>報名與審核</h3><p>支援場次報名、會員資料帶入、合約同意、主辦審核與狀態管理。</p></article>
+      <article class="card"><h3>繳費與財務</h3><p>以後台確認付款為主，支援待繳費、待確認、已繳費、退款與押金管理。</p></article>
+      <article class="card"><h3>現場管理</h3><p>獨立現場入口，工作人員只看授權場次與該場名單，不進完整後台。</p></article>
+    </section>
+    <section class="band"><div class="wrap steps"><div class="step">1. 建立場次</div><div class="step">2. 開放報名</div><div class="step">3. 審核與繳費</div><div class="step">4. 現場報到</div></div></section>
+    <section class="wrap section split">
+      <article class="card"><h3>適合誰使用？</h3><ul class="list"><li>市集、動漫活動、主題展演、體驗活動主辦。</li><li>需要同時管理多場次、多人員、現場報到的團隊。</li><li>需要累積活動數據，用於提案、報告與合作洽談的品牌。</li></ul></article>
+      <article class="card"><h3>系統入口定位</h3><ul class="list"><li><strong>index.html</strong>：系統介紹／銷售頁。</li><li><strong>register.html</strong>：攤商與參加者報名頁。</li><li><strong>admin.html</strong>：完整後台。</li><li><strong>onsite.html</strong>：現場管理入口。</li></ul></article>
+    </section>
+    <footer class="wrap note">2BL 系統資料以同一份 Supabase 為唯一可信來源；前台、後台與現場管理皆透過同一個 Cloudflare Worker 讀寫資料。<div class="small-links"><a href="register.html">前台報名</a><a href="admin.html">完整後台</a><a href="onsite.html">現場管理</a></div></footer>
+  </main>
 </body>
 </html>
