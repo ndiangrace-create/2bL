@@ -1144,12 +1144,18 @@ body,#adminPage,.layout,.main,.tab-page,.tab-page.active{
     <div style="font-size:13px;font-weight:900;color:var(--g);margin-bottom:6px">加價選位地圖設定</div>
     <div style="font-size:12px;color:#666;margin-bottom:8px">後台直覺放位置，前台只能選你開放的加價選位。自動排位、服務台、不開放都不可由攤商點選。</div>
     <label style="font-size:12px;color:var(--md)">場地圖（可貼圖片網址，或選檔轉成預覽）</label>
-    <input type="url" id="sm_seatMapUrl" placeholder="https://... 或選擇圖片" oninput="renderSeatMapBuilder()" style="margin-bottom:6px">
+    <input type="text" id="sm_seatMapUrl" placeholder="可貼圖片網址，或直接選擇圖片上傳" oninput="renderSeatMapBuilder()" style="margin-bottom:6px">
     <input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSeatMapFile(this)" style="font-size:12px;margin-bottom:8px">
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
-      <button class="btn btn-g btn-xs" type="button" onclick="batchCreateSeats()">批次新增</button>
-      <button class="btn btn-s btn-xs" type="button" onclick="addSeatItem()">新增攤位</button>
-      <button class="btn btn-s btn-xs" type="button" onclick="saveSeatMapNow()">儲存選位設定</button>
+    <div style="display:grid;grid-template-columns:70px 80px 80px auto;gap:6px;align-items:end;margin:8px 0;background:#fff;border:1px solid #e0eee6;border-radius:10px;padding:8px">
+      <div><label style="font-size:11px;color:#666">區碼</label><input type="text" id="seatBatchPrefix" value="A" placeholder="A" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:13px"></div>
+      <div><label style="font-size:11px;color:#666">起始號</label><input type="number" id="seatBatchStart" value="1" min="1" inputmode="numeric" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:13px"></div>
+      <div><label style="font-size:11px;color:#666">數量</label><input type="number" id="seatBatchCount" value="10" min="1" inputmode="numeric" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:13px"></div>
+      <button class="btn btn-g btn-xs" type="button" onclick="batchCreateSeats()" style="height:36px">批次產生號碼</button>
+      <div style="grid-column:1 / -1;display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center">
+        <input type="text" id="seatSingleCode" placeholder="單一攤位代碼，例：A11" style="padding:8px;border:1px solid #d0e8d8;border-radius:8px;font-size:13px">
+        <button class="btn btn-s btn-xs" type="button" onclick="addSeatItemFromInput()">新增單號</button>
+        <button class="btn btn-s btn-xs" type="button" onclick="saveSeatMapNow()">儲存選位設定</button>
+      </div>
     </div>
     <div id="seatMapCanvas" style="position:relative;min-height:180px;border:1.5px dashed #cfe5d6;border-radius:10px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px" onclick="placeSelectedSeatOnMap(event)">請先上傳或貼上場地圖，再點圖放位置</div>
     <div style="font-size:11px;color:#777;margin-top:6px">提示：先批次產生 A1～A20，再點選清單中的攤位，最後在地圖上點位置放上去。</div>
@@ -1433,6 +1439,8 @@ function thumbHtml(url, size=36, radius=6){
   return `<span style="${box};position:relative"><img src="${escAttr(u)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:100%;height:100%;object-fit:cover;display:block"><span style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#f0f0f0">🎪</span></span>`;
 }
 function escAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function escJsArg(v){return escAttr(JSON.stringify(String(v??'')));}
 function safeNum(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 
 const EQUIP_LIST = [
@@ -3154,12 +3162,14 @@ function openSessionCreateModal(){
   } else {
     fillAssignStaff([]);
   }
+  loadAgreementTemplate().catch(e=>console.warn('agreement template preload failed', e));
   openModal('sesModal');
 }
 function openSesModalForEvent(evId){
   resetSesModal();
   setInvoiceTaxChecks({enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false});
   $('sm_eventId').value=evId;
+  loadAgreementTemplate().catch(e=>console.warn('agreement template preload failed', e));
   openModal('sesModal');
 }
 
@@ -3250,25 +3260,96 @@ function setSeatPricingEnabled(on){
 }
 function toggleStallConfig(checked){ setSeatPricingEnabled(!!checked); }
 let seatItems=[]; let selectedSeatCode='';
-function normalizeSeatItem(s){return {code:String(s.code||s.seatCode||s.stallNo||'').trim(),type:s.type||s.seatType||'auto',price:Number(s.price||s.priceDelta||0)||0,x:Number(s.x)||0,y:Number(s.y)||0,active:s.active!==false,note:s.note||''};}
+function normalizeSeatItem(s){
+  return {
+    code:String(s.code||s.seatCode||s.stallNo||'').trim(),
+    type:s.type||s.seatType||'auto',
+    price:Number(s.price||s.priceDelta||0)||0,
+    x:Number(s.x)||0,
+    y:Number(s.y)||0,
+    active:s.active!==false,
+    note:s.note||'',
+    order:Number(s.order||s.mapOrder||0)||0
+  };
+}
+function seatBuilderStatus(msg,kind='info'){
+  let el=$('seatBuilderStatus');
+  if(!el){
+    const list=$('seatItemsList');
+    if(list){
+      el=document.createElement('div');
+      el.id='seatBuilderStatus';
+      el.style.cssText='font-size:12px;font-weight:800;margin:8px 0 0;padding:8px 10px;border-radius:9px;background:#f7faf8;color:#2d6a4f;border:1px solid #d8efe3';
+      list.parentNode.insertBefore(el,list);
+    }
+  }
+  if(!el) return;
+  el.style.background=kind==='warn'?'#fff7ed':(kind==='error'?'#fdecea':'#f7faf8');
+  el.style.color=kind==='warn'?'#9a3412':(kind==='error'?'#c0392b':'#2d6a4f');
+  el.style.borderColor=kind==='warn'?'#fed7aa':(kind==='error'?'#f5b7b1':'#d8efe3');
+  el.textContent=msg||'';
+}
+function syncSeatOrders(){ seatItems.forEach((s,i)=>{ if(!Number(s.order)) s.order=i+1; }); }
+function nextUnplacedSeatCode(){
+  const item=seatItems.find(s=>!(Number(s.x)||0)&&!(Number(s.y)||0));
+  return item ? item.code : (seatItems[0] ? seatItems[0].code : '');
+}
 function loadSeatMapFile(input){
   const f=input.files&&input.files[0]; if(!f) return;
-  const rd=new FileReader(); rd.onload=()=>{ $('sm_seatMapUrl').value=rd.result; renderSeatMapBuilder(); }; rd.readAsDataURL(f);
+  if(!/^image\//.test(f.type||'')){ toast('請上傳圖片檔'); return; }
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const el=$('sm_seatMapUrl');
+    if(el) el.value=rd.result;
+    renderSeatMapBuilder();
+    seatBuilderStatus('✅ 場地圖已載入。下一步：批次產生號碼，選取號碼後點地圖放位置。');
+    toast('✅ 圖片已載入，請新增號碼後點圖放位置');
+  };
+  rd.onerror=()=>toast('圖片讀取失敗，請換一張圖片再試');
+  rd.readAsDataURL(f);
 }
+function cleanSeatCode(v){return String(v||'').trim().replace(/\s+/g,'').toUpperCase();}
 function batchCreateSeats(){
-  const zone=prompt('區域代碼（例：A）','A'); if(!zone) return;
-  const start=parseInt(prompt('起始號碼','1')||'1')||1;
-  const count=parseInt(prompt('數量','10')||'10')||10;
+  const zoneEl=$('seatBatchPrefix'), startEl=$('seatBatchStart'), countEl=$('seatBatchCount');
+  const zone=cleanSeatCode(zoneEl&&zoneEl.value?zoneEl.value:prompt('區域代碼（例：A）','A'));
+  if(!zone){ toast('請輸入區碼，例如 A'); return; }
+  const start=Math.max(1, parseInt(startEl&&startEl.value?startEl.value:(prompt('起始號碼','1')||'1'),10)||1);
+  const count=Math.max(1, parseInt(countEl&&countEl.value?countEl.value:(prompt('數量','10')||'10'),10)||10);
+  let added=0, firstCode='';
   for(let i=0;i<count;i++){
-    const code=String(zone).trim()+String(start+i);
-    if(!seatItems.some(s=>s.code===code)) seatItems.push({code,type:'auto',price:0,x:0,y:0,active:true,note:''});
+    const code=zone+String(start+i);
+    if(!seatItems.some(s=>String(s.code)===code)){
+      seatItems.push({code,type:'auto',price:0,x:0,y:0,active:true,note:'',order:seatItems.length+1});
+      if(!firstCode) firstCode=code;
+      added++;
+    }
   }
+  if(firstCode) selectedSeatCode=firstCode;
+  syncSeatOrders();
   renderSeatMapBuilder();
+  if(added){
+    toast(`已新增 ${added} 個攤位號碼`);
+    seatBuilderStatus(`已新增 ${added} 個號碼，目前選取 ${selectedSeatCode}。請直接點地圖放位置。`);
+  }else{
+    toast('沒有新增：號碼已存在');
+    seatBuilderStatus('沒有新增：這批號碼已存在。', 'warn');
+  }
+}
+function addSeatItemFromInput(){
+  const input=$('seatSingleCode');
+  const code=cleanSeatCode(input&&input.value);
+  if(!code){ toast('請先輸入攤位代碼，例如 A1'); return; }
+  addSeatItem(code);
+  if(input) input.value='';
 }
 function addSeatItem(code=''){
-  const c=code||prompt('攤位代碼','A1'); if(!c) return;
-  if(seatItems.some(s=>s.code===c)){toast('攤位代碼重複');return;}
-  seatItems.push({code:c,type:'auto',price:0,x:0,y:0,active:true,note:''}); selectedSeatCode=c; renderSeatMapBuilder();
+  const c=cleanSeatCode(code||prompt('攤位代碼','A1')); if(!c) return;
+  if(seatItems.some(s=>String(s.code)===c)){toast('攤位代碼重複');seatBuilderStatus('攤位代碼重複：'+c,'warn');return;}
+  seatItems.push({code:c,type:'auto',price:0,x:0,y:0,active:true,note:'',order:seatItems.length+1});
+  selectedSeatCode=c;
+  renderSeatMapBuilder();
+  toast('已新增 '+c);
+  seatBuilderStatus(`已新增 ${c}，請點地圖放位置。`);
 }
 function updateSeatItem(code,key,val){
   const s=seatItems.find(x=>x.code===code); if(!s) return;
@@ -3276,49 +3357,67 @@ function updateSeatItem(code,key,val){
   if(s.type!=='paid') s.price=0;
   renderSeatMapBuilder(false);
 }
-function removeSeatItem(code){ if(!confirm('確定移除 '+code+'？已被占用的位置請勿移除。')) return; seatItems=seatItems.filter(s=>s.code!==code); if(selectedSeatCode===code) selectedSeatCode=''; renderSeatMapBuilder(); }
-function selectSeatForPlacement(code){ selectedSeatCode=code; renderSeatMapBuilder(false); }
+function removeSeatItem(code){ if(!confirm('確定移除 '+code+'？已被占用的位置請勿移除。')) return; seatItems=seatItems.filter(s=>s.code!==code); if(selectedSeatCode===code) selectedSeatCode=nextUnplacedSeatCode(); syncSeatOrders(); renderSeatMapBuilder(); }
+function selectSeatForPlacement(code){ selectedSeatCode=code; renderSeatMapBuilder(false); seatBuilderStatus(`目前選取 ${code}，請點地圖放位置或重新點圖移動。`); }
 function placeSelectedSeatOnMap(ev){
-  if(!selectedSeatCode) return;
   const box=$('seatMapCanvas'); if(!box) return;
-  const img=box.querySelector('img'); if(!img) return;
+  const img=box.querySelector('img');
+  if(!img){ toast('請先上傳或貼上場地圖'); seatBuilderStatus('請先上傳或貼上場地圖，再放位置。','warn'); return; }
+  if(!seatItems.length){ toast('請先批次產生號碼或新增單號'); seatBuilderStatus('請先批次產生號碼，例如 A1～A20，再點地圖放位置。','warn'); return; }
+  if(!selectedSeatCode){ selectedSeatCode=nextUnplacedSeatCode(); }
+  const s=seatItems.find(x=>x.code===selectedSeatCode);
+  if(!s){ toast('請先選取要放置的攤位號碼'); seatBuilderStatus('請先選取要放置的攤位號碼。','warn'); return; }
   const rect=box.getBoundingClientRect();
   const x=((ev.clientX-rect.left)/rect.width)*100;
   const y=((ev.clientY-rect.top)/rect.height)*100;
-  const s=seatItems.find(x=>x.code===selectedSeatCode); if(!s) return;
-  s.x=Math.max(0,Math.min(100,x)); s.y=Math.max(0,Math.min(100,y));
+  s.x=Math.max(0.5,Math.min(99.5,x));
+  s.y=Math.max(0.5,Math.min(99.5,y));
+  const placedCode=s.code;
+  const next=seatItems.find(item=>item.code!==placedCode && !(Number(item.x)||0)&&!(Number(item.y)||0));
+  if(next) selectedSeatCode=next.code;
   renderSeatMapBuilder(false);
+  seatBuilderStatus(next ? `已放置 ${placedCode}。下一個選取 ${next.code}，可繼續點地圖。` : `已放置 ${placedCode}。全部號碼都已有位置，可點號碼再移動。`);
 }
 function seatTypeText(t){return t==='paid'?'加價選位':t==='service'?'服務台':t==='closed'?'不開放':'自動排位';}
 function renderSeatMapBuilder(updateList=true){
   const mapUrl=$('sm_seatMapUrl')?.value||'';
   const box=$('seatMapCanvas');
   if(box){
-    box.innerHTML=mapUrl?`<img src="${escHtml(mapUrl)}" style="width:100%;display:block;object-fit:contain">`:'請先上傳或貼上場地圖，再點圖放位置';
+    box.style.alignItems=mapUrl?'stretch':'center';
+    box.style.justifyContent=mapUrl?'stretch':'center';
+    box.innerHTML=mapUrl?`<img src="${escHtml(mapUrl)}" style="width:100%;display:block;object-fit:contain;user-select:none;pointer-events:none">`:'請先上傳或貼上場地圖，再點圖放位置';
     if(mapUrl){
       seatItems.forEach(s=>{
-        if(!s.x&&!s.y) return;
+        if(!(Number(s.x)||0)&&!(Number(s.y)||0)) return;
         const el=document.createElement('button');
         el.type='button'; el.textContent=s.type==='service'?'服務台':s.code;
         el.onclick=(e)=>{e.stopPropagation();selectSeatForPlacement(s.code)};
         const bg=s.type==='paid'?'#fff3cd':s.type==='service'?'#dbeafe':s.type==='closed'?'#eee':'#d8f3dc';
-        el.style.cssText=`position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);border:2px solid ${selectedSeatCode===s.code?'#2d6a4f':'#fff'};background:${bg};border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;box-shadow:0 1px 5px rgba(0,0,0,.18);cursor:pointer`;
+        el.style.cssText=`position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);border:2px solid ${selectedSeatCode===s.code?'#2d6a4f':'#fff'};background:${bg};border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;box-shadow:0 1px 5px rgba(0,0,0,.18);cursor:pointer;z-index:2`;
         box.appendChild(el);
       });
     }
   }
   const list=$('seatItemsList'); if(!list) return;
-  list.innerHTML=seatItems.map(s=>`<div style="display:grid;grid-template-columns:64px 1fr 72px 52px;gap:6px;align-items:center;background:#fff;border:1px solid #e0eee6;border-radius:9px;padding:6px;margin-bottom:5px;${selectedSeatCode===s.code?'outline:2px solid var(--g)':''}">
-    <button type="button" onclick="selectSeatForPlacement('${escHtml(s.code)}')" style="border:none;background:#f4faf6;border-radius:7px;padding:7px;font-weight:900">${escHtml(s.code)}</button>
-    <select onchange="updateSeatItem('${escHtml(s.code)}','type',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px">
+  const placedCount=seatItems.filter(s=>(Number(s.x)||0)||(Number(s.y)||0)).length;
+  if(!seatItems.length) seatBuilderStatus(mapUrl?'圖片已載入。請先批次產生號碼。':'請先上傳圖片，或直接批次產生號碼後再貼圖。','warn');
+  else seatBuilderStatus(`選位號碼 ${seatItems.length} 個，已放位置 ${placedCount} 個，目前選取：${selectedSeatCode||'未選取'}`);
+  list.innerHTML=seatItems.map(s=>{
+    const codeHtml=escHtml(s.code);
+    const codeArg=escJsArg(s.code);
+    const placed=(Number(s.x)||0)||(Number(s.y)||0);
+    return `<div style="display:grid;grid-template-columns:68px 1fr 76px 52px;gap:6px;align-items:center;background:#fff;border:1px solid #e0eee6;border-radius:9px;padding:6px;margin-bottom:5px;${selectedSeatCode===s.code?'outline:2px solid var(--g)':''}">
+    <button type="button" onclick="selectSeatForPlacement(${codeArg})" style="border:none;background:${placed?'#f4faf6':'#fff7ed'};border-radius:7px;padding:7px;font-weight:900">${codeHtml}${placed?'':' *'}</button>
+    <select onchange="updateSeatItem(${codeArg},'type',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px">
       <option value="auto" ${s.type==='auto'?'selected':''}>自動排位</option>
       <option value="paid" ${s.type==='paid'?'selected':''}>加價選位</option>
       <option value="service" ${s.type==='service'?'selected':''}>服務台</option>
       <option value="closed" ${s.type==='closed'?'selected':''}>不開放</option>
     </select>
-    <input type="number" value="${Number(s.price)||0}" ${s.type!=='paid'?'disabled':''} onchange="updateSeatItem('${escHtml(s.code)}','price',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px" placeholder="加價">
-    <button type="button" onclick="removeSeatItem('${escHtml(s.code)}')" style="border:none;background:#fdecea;color:#c0392b;border-radius:7px;padding:7px;font-size:12px;font-weight:900">刪</button>
-  </div>`).join('') || '<div style="font-size:12px;color:#777">尚未建立攤位，請用「批次新增」。</div>';
+    <input type="number" value="${Number(s.price)||0}" ${s.type!=='paid'?'disabled':''} onchange="updateSeatItem(${codeArg},'price',this.value)" style="padding:7px;border:1px solid #d0e8d8;border-radius:7px;font-size:12px" placeholder="加價">
+    <button type="button" onclick="removeSeatItem(${codeArg})" style="border:none;background:#fdecea;color:#c0392b;border-radius:7px;padding:7px;font-size:12px;font-weight:900">刪</button>
+  </div>`;
+  }).join('') || '<div style="font-size:12px;color:#777">尚未建立攤位，請用「批次產生號碼」或「新增單號」。</div>';
 }
 async function loadSeatMapForSession(sessionId){
   seatItems=[]; selectedSeatCode='';
@@ -3328,17 +3427,23 @@ async function loadSeatMapForSession(sessionId){
     if(res && !res.error){
       setSeatPricingEnabled(!!res.enabled);
       if($('sm_seatMapUrl')) $('sm_seatMapUrl').value=res.mapUrl||'';
-      seatItems=(res.seats||[]).map(normalizeSeatItem);
+      seatItems=(res.seats||[]).map(normalizeSeatItem).filter(s=>s.code);
+      selectedSeatCode=nextUnplacedSeatCode();
+      syncSeatOrders();
       renderSeatMapBuilder();
     }
   }catch(e){ console.warn('loadSeatMapForSession failed',e); }
 }
 async function saveSeatMapNow(){
-  const sessionId=String(getVal('sm_id','')).trim();
-  if(!sessionId){toast('請先儲存場次，再設定選位地圖');return;}
-  const res=await apiPost({action:'saveSeatMap',sessionId,enabled:getVal('sm_enableStalls',false)||String(getVal('sm_enableStalls','0'))==='1',mapUrl:getVal('sm_seatMapUrl',''),holdHours:24,seats:seatItems});
-  if(res.error){toast('❌ '+res.error);return;}
-  toast('✅ 選位設定已儲存');
+  const val=(id,def='')=>{const el=$(id); return el ? (el.type==='checkbox' ? el.checked : el.value) : def;};
+  const sessionId=String(val('sm_id','')).trim();
+  if(!sessionId){toast('新增場次請按底部「儲存場次」，系統會一起儲存選位設定');seatBuilderStatus('新增場次尚未有場次 ID，請按底部「儲存場次」一起保存。','warn');return;}
+  const enabled = String(val('sm_enableStalls','0'))==='1' || val('sm_enableStalls',false)===true;
+  syncSeatOrders();
+  const res=await apiPost({action:'saveSeatMap',sessionId,enabled,mapUrl:String(val('sm_seatMapUrl','')).trim(),holdHours:24,seats:seatItems});
+  if(res.error){toast('❌ '+res.error);seatBuilderStatus('儲存失敗：'+res.error,'error');return;}
+  toast(`✅ 選位設定已儲存（${seatItems.length} 個號碼）`);
+  seatBuilderStatus(`✅ 已儲存 ${seatItems.length} 個號碼。`);
 }
 function getEquipJson(){
   const obj={};EQUIP_LIST.forEach(eq=>{obj[eq.k]={open:!!$('eq_open_'+eq.k)?.checked,price:parseInt($('eq_price_'+eq.k)?.value)||0,incl:parseInt($('eq_incl_'+eq.k)?.value)||0,maxPerStall:parseInt($('eq_maxPerStall_'+eq.k)?.value)||0};});return obj;
@@ -3360,6 +3465,7 @@ function quickAddEvent(){
 function openSesModal(){
   resetSesModal();
   fillAssignStaff([]);
+  loadAgreementTemplate().catch(e=>console.warn('agreement template preload failed', e));
   openModal('sesModal');
 }
 function resetSesModal(){
@@ -3385,23 +3491,13 @@ function resetSesModal(){
   const agReq = document.getElementById('ses_agreement_required');
   if(agReq) agReq.checked = true;
   refreshAgreementSelectOptions();
+  if(!agreementTemplatesLoaded) loadAgreementTemplate().catch(e=>console.warn('agreement template preload failed', e));
   const agTitle = document.getElementById('ses_agreement_title');
-  // 自動帶入預設合約範本
-  try {
-    const tmplTitle = (document.getElementById('tmpl_agreement_title')||{}).value;
-    const tmplVersion = (document.getElementById('tmpl_agreement_version')||{}).value;
-    const tmplContent = (document.getElementById('tmpl_agreement_content')||{}).value;
-    if(agTitle) agTitle.value = tmplTitle || '報名合約／活動細則與攤商規範';
-    const agVersion = document.getElementById('ses_agreement_version');
-    if(agVersion) agVersion.value = tmplVersion || '';
-    const agContent = document.getElementById('ses_agreement_content');
-    if(agContent) agContent.value = tmplContent || '';
-  } catch(e) {
-    if(agTitle) agTitle.value = '報名合約／活動細則與攤商規範';
-  }
-  const agVer = document.getElementById('ses_agreement_version');
-  if(agVer) agVer.value = 'v1.0';
+  // 新增場次預設先保留標準標題；需要套用時由下拉選單帶入完整範本。
+  const agVersion = document.getElementById('ses_agreement_version');
   const agContent = document.getElementById('ses_agreement_content');
+  if(agTitle) agTitle.value = '報名合約／活動細則與攤商規範';
+  if(agVersion) agVersion.value = 'v1.0';
   if(agContent) agContent.value = '';
 }
 
@@ -3654,6 +3750,7 @@ async function editSes(id){
   } else {
     fillAssignStaff(assigned);
   }
+  loadAgreementTemplate().catch(e=>console.warn('agreement template preload failed', e));
   openModal('sesModal');
 }
 
@@ -4462,6 +4559,9 @@ async function loadSiteConfig(){
 }
 
 
+let agreementTemplatesCache=[];
+let agreementTemplatesLoaded=false;
+
 // 收合/展開合約範本
 function toggleAgrSlot(slot) {
   const body = document.getElementById('agr_body_'+slot);
@@ -4476,8 +4576,17 @@ function toggleAgrSlot(slot) {
 async function loadAgreementTemplate() {
   try {
     const res = await api({action:'getAgreementTemplate', email:ST.email, token:ST.token, tenant:TENANT_ID});
-    if (!res || res.error || !Array.isArray(res)) return;
-    res.forEach(t => {
+    const list = Array.isArray(res) ? res : (Array.isArray(res&&res.data) ? res.data : []);
+    if (!list.length) return;
+    agreementTemplatesCache = list.map(t=>({
+      slot_no:Number(t.slot_no)||1,
+      label:t.label||'',
+      title:t.title||'',
+      version:t.version||'',
+      content:t.content||''
+    }));
+    agreementTemplatesLoaded = true;
+    agreementTemplatesCache.forEach(t => {
       const s = t.slot_no;
       const li = document.getElementById('agr_label_input_'+s);
       const ti = document.getElementById('agr_title_'+s);
@@ -4490,6 +4599,7 @@ async function loadAgreementTemplate() {
       if (co) co.value = t.content || '';
       if (lb) lb.textContent = t.label || ('範本 '+s);
     });
+    refreshAgreementSelectOptions();
   } catch(e) { console.error('loadAgreementTemplate failed', e); }
 }
 
@@ -4523,37 +4633,41 @@ function refreshAgreementSelectOptions() {
   if (!sel) return;
   const current = sel.value;
   sel.innerHTML = '<option value="">不套用範本</option>';
-  [1,2,3].forEach(s => {
-    const label = (document.getElementById('agr_label_input_'+s)||{}).value || ('範本 '+s);
-    const title = (document.getElementById('agr_title_'+s)||{}).value || '';
-    if (title) {
+  [1,2,3].forEach(slot => {
+    const cached = agreementTemplatesCache.find(t=>String(t.slot_no)===String(slot)) || {};
+    const label = (document.getElementById('agr_label_input_'+slot)||{}).value || cached.label || ('範本 '+slot);
+    const title = (document.getElementById('agr_title_'+slot)||{}).value || cached.title || '';
+    const content = (document.getElementById('agr_content_'+slot)||{}).value || cached.content || '';
+    if (title || content) {
       const opt = document.createElement('option');
-      opt.value = s;
+      opt.value = slot;
       opt.textContent = label;
       sel.appendChild(opt);
     }
   });
-  if (current) sel.value = current;
+  if (current && Array.from(sel.options).some(o=>String(o.value)===String(current))) sel.value = current;
 }
 
 // 套用合約範本到場次
 async function applyAgreementTemplate(slot) {
   if (!slot) return;
-  // 優先從已載入的 DOM 讀（設定頁開著時）
+  // 優先從設定頁 DOM 或快取讀取；設定頁未開時也能帶出合約。
+  const cached = agreementTemplatesCache.find(t=>String(t.slot_no)===String(slot)) || {};
   const domTitle   = (document.getElementById('agr_title_'+slot)||{}).value || '';
   const domVersion = (document.getElementById('agr_version_'+slot)||{}).value || '';
   const domContent = (document.getElementById('agr_content_'+slot)||{}).value || '';
 
-  let title = domTitle, version = domVersion, content = domContent;
+  let title = domTitle || cached.title || '';
+  let version = domVersion || cached.version || '';
+  let content = domContent || cached.content || '';
 
-  // DOM 是空的（設定頁未開）→ 直接從 API 讀
+  // DOM/快取都空（設定頁未開、尚未載入）→ 直接從 API 讀
   if (!content && !title) {
     try {
       const res = await api({action:'getAgreementTemplate', email:ST.email, token:ST.token, tenant:TENANT_ID});
-      if (Array.isArray(res)) {
-        const tmpl = res.find(t => String(t.slot_no) === String(slot));
-        if (tmpl) { title = tmpl.title||''; version = tmpl.version||''; content = tmpl.content||''; }
-      }
+      const list = Array.isArray(res) ? res : (Array.isArray(res&&res.data) ? res.data : []);
+      const tmpl = list.find(t => String(t.slot_no) === String(slot));
+      if (tmpl) { title = tmpl.title||''; version = tmpl.version||''; content = tmpl.content||''; }
     } catch(e) { console.warn('applyAgreementTemplate API failed', e); }
   }
 
