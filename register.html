@@ -1406,7 +1406,7 @@ async function api(params){
   try{ const r=await fetch(API_BASE+'?'+qs,{cache:'no-store'}); if(!r.ok){toast&&toast('⚠️ 連線失敗，請稍後再試');return{error:'fail'};} return await r.json(); }
   catch(e){ toast&&toast('⚠️ 網路連線失敗'); return {error:'fail'}; }
 }
-async function apiPost(body, timeoutMs=15000){
+async function apiPost(body, timeoutMs=30000){
   if (!body.tenant && !body.tenantId) body.tenant = TENANT_ID;
   const ctrl = new AbortController();
   const timer = setTimeout(()=>ctrl.abort(), timeoutMs);
@@ -3524,13 +3524,38 @@ function onAgreementCheck(checked) {
   submitBtn.disabled = !checked;
 }
 
+
+function showSubmitOverlay(msg){
+  let ov=document.getElementById('submitOverlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='submitOverlay';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,.88);z-index:999999;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center';
+    ov.innerHTML='<div style="background:#fff;border:3px solid #DDEAD1;border-radius:22px;padding:28px 22px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.18)"><div id="submitOverlayIcon" style="font-size:46px;margin-bottom:12px">⏳</div><div id="submitOverlayText" style="font-size:22px;font-weight:950;line-height:1.6;color:#111"></div><div id="submitOverlaySub" style="font-size:15px;color:#666;margin-top:8px;line-height:1.6">請不要重複點擊或關閉頁面</div></div>';
+    document.body.appendChild(ov);
+  }
+  const t=document.getElementById('submitOverlayText');
+  if(t) t.textContent=msg||'報名送出中…';
+  ov.style.display='flex';
+}
+function hideSubmitOverlay(){ const ov=document.getElementById('submitOverlay'); if(ov) ov.style.display='none'; }
+function showSubmitSuccessOverlay(email){
+  let ov=document.getElementById('submitOverlay');
+  if(!ov){ showSubmitOverlay('報名成功！'); ov=document.getElementById('submitOverlay'); }
+  const icon=document.getElementById('submitOverlayIcon'); if(icon) icon.textContent='🎉';
+  const t=document.getElementById('submitOverlayText'); if(t) t.textContent='報名成功！';
+  const sub=document.getElementById('submitOverlaySub');
+  if(sub) sub.innerHTML='已收到您的報名申請。<br>日後可使用 Email + 手機查詢我的紀錄。';
+  ov.style.display='flex';
+}
+
 async function submitReg(ev){
   if(ev && ev.preventDefault) ev.preventDefault();
   const btn=$('submitBtn');
   if(ST.__submitting){ toast('報名送出中，請稍候…'); return false; }
   const showFormError=(msg)=>{const el=$('formError');if(el){el.style.display='block';el.innerHTML='❌ 錯誤：'+msg+'<br><span style="font-size:14px;font-weight:400;color:#666">（截圖此錯誤訊息，方便排查）</span>'; try{el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}}};
   const hideFormError=()=>{const el=$('formError');if(el)el.style.display='none';};
-  const restoreBtn=()=>{ ST.__submitting=false; if(btn){ btn.disabled=false; btn.textContent='送出報名'; btn.style.opacity='1'; } };
+  const restoreBtn=()=>{ ST.__submitting=false; hideSubmitOverlay(); if(btn){ btn.disabled=false; btn.textContent='送出報名'; btn.style.opacity='1'; } };
   // 按下按鈕立刻給回饋，確認 onclick 有觸發
   if(btn){ btn.textContent='確認中…'; btn.style.opacity='.7'; }
   try{
@@ -3582,6 +3607,7 @@ async function submitReg(ev){
     }
     ST.__submitting=true;
     if(btn){ btn.disabled=true; btn.textContent='送出中…'; }
+    showSubmitOverlay('報名送出中…');
     const M=ST.member||{};
     const body={
       action:'register',sessionId:s.id,email,name,phone,stallCount:ST.stallCount||1,invoiceType,
@@ -3621,14 +3647,15 @@ async function submitReg(ev){
     },0);
     const modalInner=$('regFormModal')?.querySelector('.modal-box');
     if(btn){ btn.disabled=true; btn.textContent='報名成功'; btn.style.display='none'; }
+    showSubmitSuccessOverlay(email);
     if(modalInner){
       modalInner.innerHTML = `<div class="success-screen" style="text-align:center;padding:52px 22px 64px;background:#fff;min-height:70vh;display:flex;flex-direction:column;justify-content:center">
         <div style="font-size:64px;margin-bottom:14px">🎉</div>
         <div style="font-size:28px;font-weight:950;color:#111;margin-bottom:12px">報名成功！</div>
         <div style="font-size:17px;line-height:1.8;color:#333;font-weight:800;margin-bottom:18px">已收到您的報名申請。<br>審核結果將寄送至<br><b>${esc(email)}</b></div>
         <div style="background:var(--c-green);border:2px solid #9fb59c;border-radius:16px;padding:14px 16px;font-size:16px;line-height:1.7;font-weight:900;margin-bottom:18px">日後可到「我的紀錄」使用 Email + 手機查詢報名狀態。</div>
-        <button type="button" onclick="closeRegFormModal();goMemberPage();scheduleMemberRecordsSync('after-register-success-button',100)" style="width:100%;border:none;background:var(--c-yellow);border-radius:16px;padding:15px;font-size:18px;font-weight:950;margin-bottom:10px">前往我的紀錄</button>
-        <button type="button" onclick="closeRegFormModal();window.scrollTo(0,0)" style="width:100%;border:2px solid #ddd;background:#fff;border-radius:16px;padding:14px;font-size:17px;font-weight:900">返回活動列表</button>
+        <button type="button" onclick="hideSubmitOverlay();closeRegFormModal();goMemberPage();scheduleMemberRecordsSync('after-register-success-button',100)" style="width:100%;border:none;background:var(--c-yellow);border-radius:16px;padding:15px;font-size:18px;font-weight:950;margin-bottom:10px">前往我的紀錄</button>
+        <button type="button" onclick="hideSubmitOverlay();closeRegFormModal();window.scrollTo(0,0)" style="width:100%;border:2px solid #ddd;background:#fff;border-radius:16px;padding:14px;font-size:17px;font-weight:900">返回活動列表</button>
       </div>`;
     }else{ alert('報名成功！'); }
     ST.__submitting=false;
