@@ -3559,6 +3559,13 @@ async function saveSeatMapNow(){
   if(res.error){toast('❌ '+res.error);seatBuilderStatus('儲存失敗：'+res.error,'error');return;}
   toast(`✅ 選位設定已儲存（${seatItems.length} 個號碼）`);
   seatBuilderStatus(`✅ 已儲存 ${seatItems.length} 個號碼；加價選位保留 ${seatHoldHoursValue()} 小時。`);
+  // 儲存後回到場次設定表單，避免使用者以為還停在選位工具內。
+  closeSeatDrawer();
+  setSeatPricingEnabled(enabled);
+  setTimeout(()=>{
+    const target=$('sm_stallsConfig') || $('seatBuilderMiniSummary') || $('sessionModal');
+    if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth', block:'center'});
+  },80);
 }
 
 function getEquipJson(){
