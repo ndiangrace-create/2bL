@@ -778,6 +778,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
         <option value="已繳費">已繳費</option>
         <option value="申請退費">申請退費</option>
         <option value="已退費">已退費</option>
+        <option value="金額異常">金額異常</option>
         <option value="已取消">已取消</option>
         <option value="全部">全部</option>
       </select>
@@ -862,7 +863,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
         <label>合約正文</label>
         <textarea id="agr_content_1" rows="8" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
         <button class="btn btn-g btn-sm" onclick="saveAgreementTemplate(1)">💾 儲存範本 1</button>
-        <span id="agr_msg_1" style="display:none;font-size:13px;color:var(--g);margin-left:10px">✓ 已儲存</span>
+        <span id="agr_msg_1" style="display:none;font-size:16px;color:#111;background:#DDEAD1;border:1.5px solid #B8D49A;border-radius:999px;padding:7px 12px;margin-left:10px;font-weight:900">✓ 已儲存</span>
       </div>
     </div>
     <!-- 範本2 -->
@@ -881,7 +882,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
         <label>合約正文</label>
         <textarea id="agr_content_2" rows="8" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
         <button class="btn btn-g btn-sm" onclick="saveAgreementTemplate(2)">💾 儲存範本 2</button>
-        <span id="agr_msg_2" style="display:none;font-size:13px;color:var(--g);margin-left:10px">✓ 已儲存</span>
+        <span id="agr_msg_2" style="display:none;font-size:16px;color:#111;background:#DDEAD1;border:1.5px solid #B8D49A;border-radius:999px;padding:7px 12px;margin-left:10px;font-weight:900">✓ 已儲存</span>
       </div>
     </div>
     <!-- 範本3 -->
@@ -900,7 +901,7 @@ input[type=date],input[type=time],input[type=password],textarea,select{
         <label>合約正文</label>
         <textarea id="agr_content_3" rows="8" placeholder="請貼上完整合約正文…" style="font-size:12px;font-family:inherit;white-space:pre-wrap;margin-bottom:10px"></textarea>
         <button class="btn btn-g btn-sm" onclick="saveAgreementTemplate(3)">💾 儲存範本 3</button>
-        <span id="agr_msg_3" style="display:none;font-size:13px;color:var(--g);margin-left:10px">✓ 已儲存</span>
+        <span id="agr_msg_3" style="display:none;font-size:16px;color:#111;background:#DDEAD1;border:1.5px solid #B8D49A;border-radius:999px;padding:7px 12px;margin-left:10px;font-weight:900">✓ 已儲存</span>
       </div>
     </div>
   </div>
@@ -1898,14 +1899,17 @@ async function loadBusinessOverview(){
   if(cards) cards.innerHTML='<div style="padding:18px;color:#aaa">統計載入中…</div>';
   if(tasks) tasks.innerHTML='';
   const money=v=>'NT$ '+safeN(v).toLocaleString();
-  const card=(label,val,sub='',tone='')=>`<div style="background:#fff;border:1px solid var(--ov-border);border-radius:14px;padding:12px;box-shadow:var(--sh)">
+  const card=(label,val,sub='',tone='',onclick='')=>`<div ${onclick?`onclick="${onclick}" role="button" tabindex="0"`:''} style="background:#fff;border:1px solid var(--ov-border);border-radius:14px;padding:12px;box-shadow:var(--sh);${onclick?'cursor:pointer;':''}">
     <div style="font-size:12px;color:var(--md);font-weight:800">${label}</div>
     <div style="font-size:23px;font-weight:900;margin-top:4px;color:${tone||'var(--ov-txt)'}">${val}</div>
     ${sub?`<div style="font-size:11px;color:var(--lt);margin-top:3px;line-height:1.35">${sub}</div>`:''}
   </div>`;
   const section=(title,html)=>`<div style="background:#fff;border-radius:14px;box-shadow:var(--sh);padding:12px 14px;border:1px solid var(--ov-border);margin-bottom:12px">
     <div style="font-size:15px;font-weight:900;color:var(--ov-txt);margin-bottom:8px">${title}</div>${html}</div>`;
-  const chip=(label,val,cls='btn-s',page='')=>`<button class="btn ${cls}" ${page?`onclick="goPage('${page}')"`:''}>${label} ${safeN(val)}</button>`;
+  const chip=(label,val,cls='btn-s',page='')=>{
+    const click = page==='financeAnomalies' ? `goPage('payments');setTimeout(()=>goPaymentsList('all','全場次','金額異常'),120)` : (page?`goPage('${page}')`:'');
+    return `<button class="btn ${cls}" ${click?`onclick="${click}"`:''}>${label} ${safeN(val)}</button>`;
+  };
   const miniRows=(rows,empty='目前沒有資料')=>{
     rows=Array.isArray(rows)?rows:[];
     if(!rows.length) return `<div style="font-size:13px;color:var(--lt);padding:6px 0">${empty}</div>`;
@@ -1923,7 +1927,7 @@ async function loadBusinessOverview(){
         card('本月錄取',safeN(m.approved),'待審核 '+safeN(reg.pendingReview)+'｜備取 '+safeN(reg.waitlist)),
         card('本月收入',money(m.netRevenue),'今年 '+money(y.netRevenue)),
         card('累計品牌',safeN(a.brands),'會員 '+safeN(db.members)+'｜場域 '+safeN(a.venues)),
-        card('金額異常',safeN(fin.anomalies),'點財務查看明細',safeN(fin.anomalies)>0?'#A32D2D':''),
+        card('金額異常',safeN(fin.anomalies),'點擊查看異常明細',safeN(fin.anomalies)>0?'#A32D2D':'', safeN(fin.anomalies)>0?`goPage('payments');setTimeout(()=>goPaymentsList('all','全場次','金額異常'),120)`:''),
       ].join('');
     }
     if(tasks){
@@ -1933,7 +1937,7 @@ async function loadBusinessOverview(){
           ${chip('付款待確認',res.tasks?.pendingPayment,'btn-y','payments')}
           ${chip('未繳費',res.tasks?.unpaid,'btn-s','payments')}
           ${chip('退款待處理',res.tasks?.refundPending,'btn-r','payments')}
-          ${chip('金額異常',res.tasks?.financeAnomalies,'btn-r','payments')}
+          ${chip('金額異常',res.tasks?.financeAnomalies,'btn-r','financeAnomalies')}
           ${chip('未報到',res.tasks?.checkinNotYet,'btn-s','regs')}
         </div>`),
         section('報名狀態數據',`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">
@@ -2753,7 +2757,10 @@ function goPaymentsList(sesId, sesName, filter) {
   // 設定篩選狀態
   if(filter) {
     const sel=$('paymentStatusFilter');
-    if(sel) sel.value=filter;
+    if(sel) {
+      if(!Array.from(sel.options).some(o=>o.value===filter)) sel.add(new Option(filter, filter));
+      sel.value=filter;
+    }
   }
   renderPaymentManagement();
 }
@@ -4217,11 +4224,47 @@ function regEquipText(r){
   const eq=(r.actualEquip&&typeof r.actualEquip==='object')?r.actualEquip:(()=>{try{return JSON.parse(r.equip||'{}')}catch(e){return {}}})();
   return Object.entries(eq||{}).filter(([k,v])=>Number(v)>0).map(([k,v])=>`${k} ${v} 張`).join('、');
 }
-function renderPaymentManagement(targetId){
+
+async function renderFinanceAnomalyList(el, kw){
+  if(!el) return;
+  el.innerHTML='<div style="color:#888;text-align:center;padding:22px;font-size:14px;background:#fff;border-radius:12px;box-shadow:var(--sh)">金額異常明細載入中…</div>';
+  try{
+    const rows=await api({action:'adminFinanceAnomalies', email:ST.email, token:ST.token, tenant:TENANT_ID, _t:Date.now()});
+    if(rows && rows.error){ el.innerHTML='<div style="color:#c0392b;text-align:center;padding:22px;background:#fff;border-radius:12px;box-shadow:var(--sh)">'+adminEsc(rows.error)+'</div>'; return; }
+    let list=Array.isArray(rows)?rows:[];
+    const q=String(kw||'').toLowerCase().trim();
+    if(q) list=list.filter(r=>[r.name,r.brand_name,r.brand,r.email,r.issue,r.session_id,r.payment_status,r.review_status].join(' ').toLowerCase().includes(q));
+    if(!list.length){ el.innerHTML='<div style="color:#aaa;text-align:center;padding:22px;font-size:14px;background:#fff;border-radius:12px;box-shadow:var(--sh)">目前沒有金額異常資料</div>'; return; }
+    el.innerHTML=list.map(r=>`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:9px;box-shadow:var(--sh);border-left:5px solid #A32D2D">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div style="line-height:1.6;min-width:0;flex:1">
+          <div style="font-size:16px;font-weight:900;color:#A32D2D">金額異常｜${adminEsc(r.issue||'未標示異常原因')}</div>
+          <div style="font-size:18px;font-weight:900;color:var(--dk)">${adminEsc(r.name||r.brand_name||r.brand||r.email||'未命名')}</div>
+          <div style="font-size:15px;color:var(--md)">Email：${adminEsc(r.email||'-')}</div>
+          <div style="font-size:15px;color:var(--md)">付款：${adminEsc(r.payment_status||'-')}｜審核：${adminEsc(r.review_status||'-')}</div>
+          <div style="font-size:17px;font-weight:900;color:#111">amount：NT$${Number(r.amount||0).toLocaleString()}｜total_amount：NT$${Number(r.total_amount||0).toLocaleString()}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn btn-b btn-sm" onclick="openRegDetail('${adminEsc(r.id)}')">看明細</button>
+          <button class="btn btn-g btn-sm" onclick="goPaymentsList('all','全場次','全部')">回全部</button>
+        </div>
+      </div>
+    </div>`).join('');
+  }catch(e){
+    console.error('renderFinanceAnomalyList failed', e);
+    el.innerHTML='<div style="color:#c0392b;text-align:center;padding:22px;background:#fff;border-radius:12px;box-shadow:var(--sh)">金額異常明細載入失敗，請重新整理。</div>';
+  }
+}
+
+async function renderPaymentManagement(targetId){
   const el=$(targetId||'paymentsBody');
   if(!el) return;
   const kw=($('paymentSearch')?.value||'').toLowerCase().trim();
   const filter=$('paymentStatusFilter')?.value || '待確認';
+  if(filter==='金額異常'){
+    await renderFinanceAnomalyList(el, kw);
+    return;
+  }
   const sesFilter = ST._payFilterSesId || '';
   if(sesFilter) ST._payFilterSesId = null;
   const regs=(ST.allRegs||[]).slice().sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
@@ -4240,6 +4283,7 @@ function renderPaymentManagement(targetId){
       <button type="button" onclick="setPaymentFilter('已繳費')" style="background:var(--s-ok-bg);border:1px solid #A8CEB8;border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--sh);cursor:pointer"><div style="font-size:20px;font-weight:800;color:var(--s-ok)">${paid.length}</div><div style="font-size:11px;color:var(--s-ok)">已繳費</div></button>
       <button type="button" onclick="setPaymentFilter('申請退費')" style="background:var(--s-err-bg);border:1px solid #DDB8A8;border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--sh);cursor:pointer"><div style="font-size:20px;font-weight:800;color:var(--s-err)">${refundReq.length}</div><div style="font-size:11px;color:var(--s-err)">申請退費</div></button>
       <button type="button" onclick="setPaymentFilter('已退費')" style="background:var(--s-ok-bg);border:1px solid #A8CEB8;border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--sh);cursor:pointer"><div style="font-size:20px;font-weight:800;color:var(--s-ok)">${refundedPay.length}</div><div style="font-size:11px;color:var(--s-ok)">已退費</div></button>
+      <button type="button" onclick="setPaymentFilter('金額異常')" style="background:#FDE2E2;border:1px solid #F5A3A3;border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--sh);cursor:pointer"><div style="font-size:20px;font-weight:800;color:#A32D2D">!</div><div style="font-size:11px;color:#A32D2D">金額異常</div></button>
       <button type="button" onclick="setPaymentFilter('已取消')" style="background:var(--s-grey-bg);border:1px solid #D0CCC8;border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--sh);cursor:pointer"><div style="font-size:20px;font-weight:800;color:var(--s-grey)">${cancelled.length}</div><div style="font-size:11px;color:var(--s-grey)">已取消</div></button>
       <div style="background:var(--py-bg);border:1px solid var(--py-border);border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--sh)"><div style="font-size:20px;font-weight:800;color:var(--py-txt)">NT$${totalPendingAmt.toLocaleString()}</div><div style="font-size:11px;color:var(--py-txt)">待核金額</div></div>`;
   }
@@ -4298,6 +4342,7 @@ function renderPaymentManagement(targetId){
           <div style="font-size:18px;color:var(--g);font-weight:900">${adminEsc(r.payMethod||'未填方式')}　NT$${Number(r.amount||0).toLocaleString()}${last5?'　末五碼 '+adminEsc(last5):''}</div>
           ${isCancelled?`<div style="font-size:14px;color:#666;background:#f3f4f6;border-radius:8px;padding:7px 8px;margin-top:6px;line-height:1.5;font-weight:900">未繳費取消：此筆報名紀錄保留，不進退款流程。</div>`:''}
           ${note?`<div style="font-size:14px;color:#8a6d3b;background:#fff8dc;border-radius:8px;padding:7px 8px;margin-top:6px;line-height:1.5;white-space:pre-wrap;max-height:96px;overflow:auto">${note}</div>`:''}
+          ${(r.paymentScreenshotStatus||r.payment_screenshot_status||'')==='已回報客服'||note.includes('已回報客服')?`<div style="display:inline-block;margin-top:6px;background:#E8F4FD;color:#1E4060;border:1px solid #B8D9F0;border-radius:999px;padding:5px 10px;font-size:14px;font-weight:900">已回報客服／截圖已收</div>`:''}
           <div style="font-size:12px;color:#aaa;margin-top:5px">報名：${String(r.createdAt||'').slice(0,16)}${r.paidAt?'　付款：'+String(r.paidAt).slice(0,16):''}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">

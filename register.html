@@ -897,7 +897,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <div style="font-size:15px;font-weight:700;color:#2a6a10;margin-top:3px" id="memberBrandShow"></div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0">
-        <button onclick="openMemberEditModal()" style="background:#fff;border:1.5px solid #b8d4a0;color:#2a6a10;padding:10px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">編輯</button>
+        <button onclick="switchMemberMode('profile')" style="background:#fff;border:1.5px solid #b8d4a0;color:#2a6a10;padding:10px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">編輯</button>
         <button onclick="memberLogout()" style="background:#FAE1DD;border:none;color:#8b1c1c;padding:10px 14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">登出</button>
       </div>
     </div>
@@ -1690,26 +1690,126 @@ function switchMemberMode(mode){
   }
 }
 
+function memberVal(m, ...keys){
+  for(const k of keys){
+    const v=m && m[k];
+    if(v!==undefined && v!==null && String(v).trim()!=='') return String(v);
+  }
+  return '';
+}
+
 function renderMemberProfile(){
   const m = ST.member || {};
+  const email = String(m.email || ST.memberEmail || memberSafeEmail() || '').trim();
   const el = $('memberProfileContent');
   if(!el) return;
+  const hasName   = !!memberVal(m,'name','displayName');
+  const hasBrand  = !!memberVal(m,'brand','brandName','brand_name');
+  const hasSocial = !!(memberVal(m,'fb','fb_url') || memberVal(m,'ig','ig_url'));
+  const warn = (!hasName || !hasBrand || !hasSocial) ? `
+    <div style="background:#fff3cd;border:1.5px solid #f0d37a;color:#6b4e00;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:15px;font-weight:800;line-height:1.6">
+      請補齊會員資料：${!hasName?'姓名 ':''}${!hasBrand?'品牌名稱 ':''}${!hasSocial?'FB 或 IG ':''}<br>
+      補齊並儲存後，報名表會自動帶入資料。
+    </div>` : '';
   el.innerHTML = `
-    <div style="background:#fff;border-radius:14px;border:1.5px solid #DDEAD1;padding:20px;margin-bottom:12px">
-      <div style="font-size:18px;font-weight:900;margin-bottom:16px;color:#111">個人基本資料</div>
-      <div style="display:grid;gap:12px">
-        ${profileRow('姓名', m.name)}
-        ${profileRow('Email', m.email||ST.memberEmail)}
-        ${profileRow('手機', m.phone)}
-        ${profileRow('品牌名稱', m.brand)}
-        ${profileRow('品牌簡介', m.brandDesc)}
-        ${profileRow('Facebook', m.fb)}
-        ${profileRow('Instagram', m.ig)}
-        ${profileRow('LINE ID', m.lineId)}
+    ${warn}
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #DDEAD1;padding:18px;margin-bottom:12px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:14px;color:#111">會員資料修改</div>
+      <div style="font-size:14px;color:#666;background:#f7fbf4;border-radius:10px;padding:9px 12px;margin-bottom:14px;line-height:1.6">資料儲存後，下次報名會自動帶入，不需要重填。</div>
+
+      <div style="background:#e8f4fd;border:1px solid #b8d9f0;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:900;color:#1E4060;margin-bottom:10px">👤 基本聯絡資訊</div>
+        <label>姓名</label><input type="text" id="profileEditName" value="${esc(memberVal(m,'name','displayName'))}">
+        <label>手機</label><input type="tel" id="profileEditPhone" inputmode="tel" value="${esc(memberVal(m,'phone'))}">
+        <label>LINE ID</label><input type="text" id="profileEditLineId" value="${esc(memberVal(m,'lineId','line_id'))}">
+        <label>Email</label><input type="email" id="profileEditEmail" value="${esc(email)}" disabled style="background:#f5f5f5;color:#777">
       </div>
-      <button onclick="openMemberEditModal()" style="margin-top:18px;width:100%;background:#DDEAD1;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:900;color:#2a6a10;cursor:pointer;font-family:inherit">編輯資料</button>
+
+      <div style="background:#fde8f0;border:1px solid #f0b8d0;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:900;color:#8B2C1C;margin-bottom:10px">🏷️ 品牌資訊</div>
+        <label>品牌名稱</label><input type="text" id="profileEditBrand" value="${esc(memberVal(m,'brand','brandName','brand_name'))}">
+        <label>品牌介紹</label><textarea id="profileEditBrandIntro" placeholder="簡短介紹您的品牌…" style="min-height:72px">${esc(memberVal(m,'brandIntro','brand_intro','brandDesc'))}</textarea>
+        <label>出攤照（連結）</label><input type="url" id="profileEditPhoto" placeholder="https://..." value="${esc(memberVal(m,'photo','photo_url'))}">
+      </div>
+
+      <div style="background:#e8fdf0;border:1px solid #b8f0d0;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:900;color:#2C6E2C;margin-bottom:4px">🔗 社群連結</div>
+        <div style="font-size:13px;color:#c0392b;margin-bottom:10px;font-weight:800">審核必要，FB 或 IG 至少填一項</div>
+        <label>FB</label><input type="url" id="profileEditFb" placeholder="https://facebook.com/..." value="${esc(memberVal(m,'fb','fb_url'))}">
+        <label>IG</label><input type="url" id="profileEditIg" placeholder="https://instagram.com/..." value="${esc(memberVal(m,'ig','ig_url'))}">
+        <label>官網</label><input type="url" id="profileEditCollabUrl" placeholder="https://..." value="${esc(memberVal(m,'collabUrl','collab_url','website','web'))}">
+      </div>
+
+      <div style="background:#fdfbe8;border:1px solid #f0e8b8;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:900;color:#7A5C00;margin-bottom:10px">🧾 常用發票資訊</div>
+        <label>手機載具</label><input type="text" id="profileEditInvoiceCarrier" placeholder="/ABC-1234" value="${esc(memberVal(m,'invoiceCarrier','invoice_carrier'))}">
+        <label>統一編號</label><input type="text" id="profileEditTaxId" inputmode="numeric" maxlength="8" value="${esc(memberVal(m,'taxId','tax_id'))}">
+        <label>公司抬頭</label><input type="text" id="profileEditCompany" value="${esc(memberVal(m,'company','invoiceTitle','invoice_title'))}">
+        <label>收發票 Email</label><input type="email" id="profileEditInvoiceEmail" inputmode="email" value="${esc(memberVal(m,'invoiceEmail','invoice_email') || email)}">
+      </div>
+
+      <button id="saveMemberProfileBtn" class="btn-p" onclick="saveMemberProfileInline()" style="width:100%;margin-top:8px;font-size:18px;padding:14px;border-radius:12px">儲存會員資料</button>
+      <div id="saveMemberProfileMsg" style="display:none;text-align:center;color:var(--g);font-weight:900;padding:10px;font-size:15px">✓ 更新完成！</div>
     </div>
   `;
+}
+
+async function saveMemberProfileInline(){
+  const btn=$('saveMemberProfileBtn');
+  if(btn){ btn.disabled=true; btn.textContent='儲存中…'; }
+  const restore=()=>{ if(btn){ btn.disabled=false; btn.textContent='儲存會員資料'; } };
+  const email = String(ST.memberEmail||memberSafeEmail()||$('profileEditEmail')?.value||'').trim();
+  if(!email){ toast('請先登入'); restore(); return; }
+  const body = {
+    action:'saveMember', email,
+    name:        ($('profileEditName')?.value||'').trim(),
+    phone:       ($('profileEditPhone')?.value||'').trim(),
+    brand:       ($('profileEditBrand')?.value||'').trim(),
+    brandIntro:  ($('profileEditBrandIntro')?.value||'').trim(),
+    fb:          ($('profileEditFb')?.value||'').trim(),
+    ig:          ($('profileEditIg')?.value||'').trim(),
+    collabUrl:   ($('profileEditCollabUrl')?.value||'').trim(),
+    photo:       ($('profileEditPhoto')?.value||'').trim(),
+    lineId:      ($('profileEditLineId')?.value||'').trim(),
+    invoiceCarrier:($('profileEditInvoiceCarrier')?.value||'').trim(),
+    taxId:       ($('profileEditTaxId')?.value||'').trim(),
+    company:     ($('profileEditCompany')?.value||'').trim(),
+    invoiceEmail:($('profileEditInvoiceEmail')?.value||'').trim(),
+  };
+  try{
+    const res=await apiPost(body);
+    if(!res || res.error){ toast('❌ 儲存失敗：'+(res?.error||'請稍後再試')); restore(); return; }
+    const fresh=await api({action:'getMember', email, _t:Date.now()});
+    ST.member = (fresh && !fresh.error) ? {...(ST.member||{}),...fresh,email:fresh.email||email} : {...(ST.member||{}),...body,email};
+    ST.memberEmail=email;
+    memberSaveEmail(email);
+    fillMemberCard(ST.member);
+    syncMemberIntoCurrentRegForm(ST.member);
+    const msg=$('saveMemberProfileMsg');
+    if(msg){ msg.style.display='block'; setTimeout(()=>msg.style.display='none',1800); }
+    toast('✅ 會員資料已更新');
+    renderMemberProfile();
+  }catch(e){
+    console.warn('[saveMemberProfileInline failed]',e);
+    toast('❌ 儲存失敗，請稍後再試');
+  }finally{ restore(); }
+}
+
+function syncMemberIntoCurrentRegForm(member){
+  const m=member||ST.member||{};
+  const setText=(id,val)=>{const el=$(id); if(el) el.textContent=val||'';};
+  const setVal=(id,val)=>{const el=$(id); if(el) el.value=val||'';};
+  const brand=memberVal(m,'brand','brandName','brand_name');
+  const name=memberVal(m,'name','displayName');
+  const phone=memberVal(m,'phone');
+  const fb=memberVal(m,'fb','fb_url');
+  const ig=memberVal(m,'ig','ig_url');
+  setText('disp_brand',brand); setText('disp_name',name); setText('disp_phone',phone);
+  setVal('f_brand',brand); setVal('f_name',name); setVal('f_phone',phone); setVal('f_fb',fb); setVal('f_ig',ig);
+  setVal('f_taxId',memberVal(m,'taxId','tax_id'));
+  setVal('f_company',memberVal(m,'company','invoiceTitle','invoice_title'));
+  setVal('f_invoiceCarrier',memberVal(m,'invoiceCarrier','invoice_carrier'));
+  setVal('f_invoiceEmail',memberVal(m,'invoiceEmail','invoice_email') || memberVal(m,'email') || ST.memberEmail || '');
 }
 
 function profileRow(label, val){
@@ -1794,7 +1894,8 @@ async function safeLoadMemberPage(email, opts={}){
           if(!hasBrand)  missing.push('品牌名稱');
           if(!hasSocial) missing.push('FB 或 Instagram（審核必要）');
           ST._profileIncomplete = true;
-          openMemberEditModal('請先完善以下資料才能使用報名功能：' + missing.join('、'));
+          switchMemberMode('profile');
+          toast('請先補齊會員資料：' + missing.join('、'));
         } else {
           ST._profileIncomplete = false;
         }
@@ -2389,6 +2490,7 @@ function renderDynFormFull(s, isNew=false){
 
   const dynEl=$('dynForm');
   if(dynEl) dynEl.innerHTML=html;
+  syncMemberIntoCurrentRegForm(ST.member||{});
 
   // 表單欄位變動時自動儲存（刷新還原用）
   setTimeout(()=>{
@@ -2698,6 +2800,7 @@ async function saveMemberEdit(){
       ST.member={...(ST.member||{}),...body,email};
     }
     fillMemberCard(ST.member);
+    syncMemberIntoCurrentRegForm(ST.member);
     const msg=$('saveSuccessMsg');
     if(msg){ msg.style.display='block'; setTimeout(()=>msg.style.display='none',1800); }
     toast('✅ 會員資料已更新');
@@ -3009,13 +3112,11 @@ function adjAddon(i,delta){
 }
 
 function frontEffectiveEquipIncl(name, def, basicEquipText){
-  const raw=String(basicEquipText||'').trim();
+  // A→Z 阻斷修正：後台設備設定只要有 incl，就代表該設備「本次內含」；
+  // 前台顯示「本次含 N」時，不可因 basicEquip 文字沒有寫到該品項而又把內含數量算錢。
+  // 若未來某場次不含，後台應把該設備 incl 設為 0，而不是依文字猜。
   const n=Number(def&&def.incl)||0;
-  if(!n) return 0;
-  const neg=/(不含|沒有|無提供|不提供|未提供|不附|無附|自備)/;
-  if(!raw || neg.test(raw)) return 0;
-  if(name && !raw.includes(name)) return 0;
-  return n;
+  return n>0 ? n : 0;
 }
 function adjEquip(k,delta){
   const cur=ST.equipQty[k]||0;
