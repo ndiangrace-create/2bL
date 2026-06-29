@@ -1406,6 +1406,7 @@ let ST = {
 
 function $(id){return document.getElementById(id);}
 function toast(msg,dur=2500){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v==='0' || String(v||'').toLowerCase()==='no' || String(v||'').toLowerCase()==='off'); }
 async function api(params){
   params = {...(params||{})};
   if (!params.tenant && !params.tenantId) params.tenant = TENANT_ID;
@@ -1808,6 +1809,9 @@ function syncMemberIntoCurrentRegForm(member){
   setVal('f_brand',brand); setVal('f_name',name); setVal('f_phone',phone); setVal('f_fb',fb); setVal('f_ig',ig);
   setVal('f_taxId',memberVal(m,'taxId','tax_id'));
   setVal('f_company',memberVal(m,'company','invoiceTitle','invoice_title'));
+  setVal('f_invoiceTitle',memberVal(m,'company','invoiceTitle','invoice_title'));
+  setVal('f_brandIntro',memberVal(m,'brandIntro','brand_intro','brandDesc'));
+  setVal('f_sellItem',memberVal(m,'sellItem','sell_items','sell_category','sellCat'));
   setVal('f_invoiceCarrier',memberVal(m,'invoiceCarrier','invoice_carrier'));
   setVal('f_invoiceEmail',memberVal(m,'invoiceEmail','invoice_email') || memberVal(m,'email') || ST.memberEmail || '');
 }
@@ -2328,7 +2332,7 @@ function renderDynFormFull(s, isNew=false){
     // 設備品項
     const equipIcons={'桌':'🪑','椅':'🪑','延長線':'🔌','燈':'💡','燈具':'💡','帳篷':'⛺','電':'⚡'};
     equipDefs.forEach(([k,v])=>{
-      ST.equipQty[k]=v.incl||0;
+      ST.equipQty[k]=frontEffectiveEquipIncl(k,v,s?.basicEquip||s?.basic_equip||'')*(ST.stallCount||1);
       const icon=Object.entries(equipIcons).find(([key])=>k.includes(key))?.[1]||'📦';
       const hasIncl=Number(v.incl)>0;
       const inclNote=hasIncl?`<span class="qty-name-incl">（本次含${v.incl}）</span>`:'';
@@ -2337,7 +2341,7 @@ function renderDynFormFull(s, isNew=false){
         <div class="qty-name-wrap"><span class="qty-icon">${icon}</span><span class="qty-name">${esc(k)}${priceTxt}</span>${inclNote}</div>
         <div class="qty-ctrl">
           <button type="button" class="qty-btn" onclick="adjEquip('${k}',-1)">−</button>
-          <span class="qty-num" id="eq_num_${k}">${v.incl||0}</span>
+          <span class="qty-num" id="eq_num_${k}">${ST.equipQty[k]||0}</span>
           <button type="button" class="qty-btn" onclick="adjEquip('${k}',1)">+</button>
         </div>
         <div class="qty-total qty-total" id="eqTotal_${k}">（NT$0）</div>
@@ -2426,6 +2430,9 @@ function renderDynFormFull(s, isNew=false){
   html+=`<input type="hidden" id="f_phone" value="${esc(V.phone||'')}">`;
   html+=`<input type="hidden" id="f_fb" value="${esc(vFb)}">`;
   html+=`<input type="hidden" id="f_ig" value="${esc(vIg)}">`;
+  html+=`<input type="hidden" id="f_brandIntro" value="${esc(V.brandIntro||V.brand_intro||'')}">`;
+  html+=`<input type="hidden" id="f_sellItem" value="${esc(V.sellItem||V.sell_items||V.sellCat||V.sell_category||'')}">`;
+  html+=`<input type="hidden" id="f_remark" value="">`;
 
   // ── ⑤ 發票資訊 ──
   const invTypeStr=isCompany?'公司戶（三聯式）':'個人（二聯式）';
@@ -2445,6 +2452,7 @@ function renderDynFormFull(s, isNew=false){
   // 發票隱藏欄位
   html+=`<input type="hidden" id="f_taxId" value="${esc(vTaxId)}">`;
   html+=`<input type="hidden" id="f_company" value="${esc(vCompany)}">`;
+  html+=`<input type="hidden" id="f_invoiceTitle" value="${esc(vCompany)}">`;
   html+=`<input type="hidden" id="f_invoiceCarrier" value="${esc(vCarrier)}">`;
   html+=`<input type="hidden" id="f_invoiceEmail" value="${esc(vInvEmail)}">`;
 
@@ -2543,6 +2551,7 @@ function adjStallDirect(val){
   if(el) el.textContent=ST.stallCount+' '+stallUnit;
   const inp=$('stallInput');
   if(inp) inp.value=ST.stallCount;
+  ensureIncludedEquipQty();
   updateFee();
 }
 
@@ -2619,6 +2628,7 @@ function adjStall(delta){
   if(el) el.textContent=ST.stallCount+' '+stallUnit;
   const inp=$('stallInput');
   if(inp) inp.value=ST.stallCount;
+  ensureIncludedEquipQty();
   updateFee();
 }
 
@@ -3111,6 +3121,24 @@ function adjAddon(i,delta){
   updateFee();
 }
 
+
+function frontEquipFreeTotal(k, def, session){
+  return Math.max(0, frontEffectiveEquipIncl(k, def, session?.basicEquip||session?.basic_equip||'') * (ST.stallCount||1));
+}
+function ensureIncludedEquipQty(){
+  const s=ST.currentSession||{};
+  if(!ST.equipQty) ST.equipQty={};
+  Object.entries(s.equip||{}).forEach(([k,v])=>{
+    if(!v || v.open===false || v.open==='false') return;
+    const free=frontEquipFreeTotal(k,v,s);
+    const cur=Number(ST.equipQty[k]||0);
+    if(cur < free) ST.equipQty[k]=free;
+    const elNum=document.getElementById('eq_num_'+k);
+    if(elNum) elNum.textContent=ST.equipQty[k]||0;
+    const elInput=document.getElementById('eq_'+k);
+    if(elInput) elInput.value=ST.equipQty[k]||0;
+  });
+}
 function frontEffectiveEquipIncl(name, def, basicEquipText){
   // A→Z 阻斷修正：後台設備設定只要有 incl，就代表該設備「本次內含」；
   // 前台顯示「本次含 N」時，不可因 basicEquip 文字沒有寫到該品項而又把內含數量算錢。
@@ -3156,6 +3184,7 @@ function adjEquip(k,delta){
 
 function updateFee(){
   const s=ST.currentSession; if(!s)return;
+  ensureIncludedEquipQty();
   const stalls=ST.stallCount||1;
   const dep=(s.deposit||0);  // 保證金固定，不乘攤數
   // 同步儲存最新狀態（刷新還原用）
@@ -3272,25 +3301,37 @@ function showSubmitError(msg){
 // 在 renderDynFormFull 完成後由外部呼叫，初始化合約區
 async function initAgreementArea(session) {
   // 合約 UI 只保留 dynForm 內的 contractCard；此函式保留為相容入口，不再產生第二個合約區。
-  if (session && session.agreementRequired === false) {
+  const submitBtn = $('submitBtn');
+  const badge = $('contractDoneBadge');
+  const setUnlocked = () => {
     ST._agreementRequired = false;
     ST._agreementViewed   = true;
     ST._agreementAccepted = true;
-    const submitBtn = $('submitBtn');
-    if (submitBtn) { submitBtn.style.display = 'block'; submitBtn.disabled = false; }
+    if (badge) badge.style.display = 'none';
+    if (submitBtn) { submitBtn.style.display = 'block'; submitBtn.disabled = false; submitBtn.textContent = '送出報名'; submitBtn.style.opacity = '1'; }
+  };
+  if (!agreementRequiredOn(session && session.agreementRequired)) {
+    setUnlocked();
     return;
   }
   ST._agreementRequired = true;
   ST._agreementViewed   = false;
   ST._agreementAccepted = false;
-  const submitBtn = $('submitBtn');
-  if (submitBtn) { submitBtn.style.display = 'block'; submitBtn.disabled = true; }
-  const badge = $('contractDoneBadge');
+  ST._agreementData = {
+    title: (session && session.agreementTitle) || '報名合約',
+    content: (session && session.agreementContent) || '',
+    version: (session && session.agreementVersion) || ''
+  };
+  if (submitBtn) { submitBtn.style.display = 'block'; submitBtn.disabled = true; submitBtn.textContent = '送出報名'; }
   if (badge) badge.style.display = 'none';
   if (session && session.id) {
     try {
       const ag = await api({ action:'getSessionAgreement', id: session.id });
       if (ag && !ag.error) {
+        if (!agreementRequiredOn(ag.agreementRequired)) {
+          setUnlocked();
+          return;
+        }
         ST._agreementData = ag;
         const titleEl = $('agreementModalTitle');
         if (titleEl) titleEl.textContent = '📋 ' + (ag.title || '報名合約');
@@ -3412,7 +3453,7 @@ async function submitReg(ev){
     const invoiceType=document.querySelector('input[name="f_invoiceType"]:checked')?.value||'個人';
     if(invoiceType==='公司／機關'){
       const tax=($('f_taxId')?.value||'').trim();
-      const title=($('f_invoiceTitle')?.value||'').trim();
+      const title=(($('f_invoiceTitle')?.value||'')||($('f_company')?.value||'')).trim();
       if(!/^\d{8}$/.test(tax)){ toast('請填寫正確 8 碼統一編號'); showFormError('請填寫正確 8 碼統一編號'); restoreBtn(); return false; }
       if(!title){ toast('請填寫公司抬頭'); showFormError('請填寫公司抬頭'); restoreBtn(); return false; }
     }
@@ -3436,11 +3477,13 @@ async function submitReg(ev){
     const M=ST.member||{};
     const body={
       action:'register',sessionId:s.id,email,name,phone,stallCount:ST.stallCount||1,invoiceType,
-      invoiceCarrier:($('f_invoiceCarrier')?.value||'').trim(),taxId:($('f_taxId')?.value||'').trim(),invoiceTitle:($('f_invoiceTitle')?.value||'').trim(),invoiceEmail:(($('f_invoiceEmail')?.value||'').trim()||($('f_personalInvoiceEmail')?.value||'').trim()||email),selectedDates,
-      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:M.fb||M.fb_url||'',ig:M.ig||M.ig_url||'',remark:($('f_remark')?.value||'').trim(),stallNumber:ST.selectedStall||'',seatChoiceIntent:(ST.seatChoiceIntent||'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
+      invoiceCarrier:($('f_invoiceCarrier')?.value||'').trim(),taxId:($('f_taxId')?.value||'').trim(),invoiceTitle:(($('f_invoiceTitle')?.value||'')||($('f_company')?.value||'')).trim(),invoiceEmail:(($('f_invoiceEmail')?.value||'').trim()||($('f_personalInvoiceEmail')?.value||'').trim()||email),selectedDates,
+      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:($('f_fb')?.value||M.fb||M.fb_url||'').trim(),ig:($('f_ig')?.value||M.ig||M.ig_url||'').trim(),remark:(($('f_note')?.value||'')||($('f_remark')?.value||'')).trim(),stallNumber:ST.selectedStall||'',seatChoiceIntent:(ST.seatChoiceIntent||'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
       // ── 合約同意（後端必須收到這兩個欄位才建立報名）──
       agreementViewed:   ST._agreementViewed   !== false,
       agreementAccepted: ST._agreementAccepted !== false,
+      agreementTitle: ST._agreementData?.title || '',
+      agreementVersion: ST._agreementData?.version || '',
     };
     const res=await apiPost(body);
     if(!res){ toast('❌ 後端沒有回傳資料'); restoreBtn(); return false; }
@@ -3452,7 +3495,7 @@ async function submitReg(ev){
     // 更新本地 member 資料（包含發票資訊，下次報名自動帶入）
     const _brand=($('f_brand')?.value||'').trim();
     const _taxId=($('f_taxId')?.value||'').trim();
-    const _company=($('f_invoiceTitle')?.value||'').trim();
+    const _company=(($('f_invoiceTitle')?.value||'')||($('f_company')?.value||'')).trim();
     const _carrier=($('f_invoiceCarrier')?.value||'').trim();
     const _invEmail=($('f_invoiceEmail')?.value||$('f_personalInvoiceEmail')?.value||'').trim();
     if(_brand||_taxId||_company){

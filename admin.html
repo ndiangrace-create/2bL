@@ -656,28 +656,9 @@ body,#adminPage,.layout,.main,.tab-page,.tab-page.active{
 
   <div id="businessOverviewCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px"></div>
   <div id="businessOverviewTasks" style="margin-bottom:16px"></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
-    <div style="font-size:16px;font-weight:800;color:var(--ov-txt)">場次快速入口</div>
-    <button class="btn btn-g btn-sm" onclick="openSessionCreateModal()">＋ 新增場次</button>
+  <div style="background:#fff;border:1px solid var(--ov-border);border-radius:14px;padding:12px 14px;box-shadow:var(--sh);font-size:13px;color:var(--md);line-height:1.7;margin-bottom:12px">
+    總覽只保留全系統統計與待辦提醒；跨場次操作請回到「跨場次」頁。
   </div>
-
-  <!-- 場次頁專屬快捷區 -->
-  <div id="overviewQuickBar" class="page-quick-bar ov-quick-bar">
-    <span class="quick-lbl">快捷篩選</span>
-    <button class="qb-btn qb-ov ov-qb-btn" onclick="setOvQuick('active')" id="ovqb-active">報名中</button>
-    <button class="qb-btn qb-ov ov-qb-btn" onclick="setOvQuick('upcoming')" id="ovqb-upcoming">即將開始</button>
-    <button class="qb-btn qb-ov ov-qb-btn" onclick="setOvQuick('ended')" id="ovqb-ended">已結束</button>
-    <button class="qb-btn qb-ov ov-qb-btn" onclick="setOvQuick('closed')" id="ovqb-closed">已關閉</button>
-    <button class="qb-btn qb-ov-danger ov-qb-btn" onclick="setOvQuick('force')" id="ovqb-force">🚨 不可抗力</button>
-  </div>
-
-  <!-- 活動卡片橫向滑動 -->
-  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:16px">
-    <div id="eventCardRow" style="display:flex;gap:10px;padding-bottom:8px;min-width:max-content"></div>
-  </div>
-
-  <!-- 全場次列表 -->
-  <div id="overviewSessionList"></div>
 </div>
 
 <div id="page-regs" class="tab-page active">
@@ -2172,12 +2153,13 @@ function adminCapacityNum(s){
   return `${used}/${lim||'不限'}`;
 }
 
-function renderOverviewSessionsFn(){
-  const el=$('overviewSessionList');
+function renderOverviewSessionsFn(targetId){
+  const el=$(targetId||'overviewSessionList');
   if(!el) return;
+  const isCrossSessionPage = targetId === 'regsSummaryList';
   let sessions=[...(ST.sdData||[])];
-  if(ST.activeEventId) sessions=sessions.filter(s=>s.eventId===ST.activeEventId);
-  const filter=ST.ovFilter||'current';
+  if(!isCrossSessionPage && ST.activeEventId) sessions=sessions.filter(s=>s.eventId===ST.activeEventId);
+  const filter=isCrossSessionPage ? 'current' : (ST.ovFilter||'current');
   if(filter==='current') sessions=sessions.filter(s=>!isArchivedSession(s));
   if(filter==='archived') sessions=sessions.filter(isArchivedSession);
   sessions.sort((a,b)=>getSessionFirstDateValue(a)-getSessionFirstDateValue(b));
@@ -2186,7 +2168,7 @@ function renderOverviewSessionsFn(){
     const msg=ST.activeEventId
       ? '<div style="color:#aaa;text-align:center;padding:20px;font-size:14px">此活動底下目前沒有場次。<br><button class="btn btn-g btn-sm" style="margin-top:10px" onclick="ST.activeEventId=null;renderOverviewCards()">查看</button></div>'
       : '<div style="color:#aaa;text-align:center;padding:20px;font-size:14px">無場次資料</div>';
-    el.innerHTML=renderOverviewStatusFilters()+msg;return;}
+    el.innerHTML=(isCrossSessionPage?'':renderOverviewStatusFilters())+msg;return;}
   const rowHtml=sessions.map(s=>{
     const ev=ev_map[s.eventId]||{}; const dateStr=fmtOverviewDateText(s);
     let equipStr='-'; const need=s.equipNeed||{}; const needItems=Object.entries(need).filter(([k,v])=>Number(v)>0);
@@ -2252,7 +2234,7 @@ function renderOverviewSessionsFn(){
       </div>
     </div>`;
   }).join('');
-  el.innerHTML=renderOverviewStatusFilters()+`<div class="overview-desktop-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100vw"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px"><thead><tr style="background:#f5f5f5;border-bottom:1.5px solid #e0e0e0"><th style="padding:6px 4px;text-align:left;width:36px"></th><th style="padding:9px 6px;text-align:left;white-space:nowrap">類型</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">場次名稱</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">活動日期</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">報名</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">待審核</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">繳費確認</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已繳費</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">正式攤位</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">設備</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">已收費用</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">押金</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已報到</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">操作</th></tr></thead><tbody>${rowHtml}</tbody></table></div><div class="overview-mobile-list">${cardHtml}</div>`;
+  el.innerHTML=(isCrossSessionPage?'':renderOverviewStatusFilters())+`<div class="overview-desktop-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100vw"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px"><thead><tr style="background:#f5f5f5;border-bottom:1.5px solid #e0e0e0"><th style="padding:6px 4px;text-align:left;width:36px"></th><th style="padding:9px 6px;text-align:left;white-space:nowrap">類型</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">場次名稱</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">活動日期</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">報名</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">待審核</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">繳費確認</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已繳費</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">正式攤位</th><th style="padding:9px 6px;text-align:left;white-space:nowrap">設備</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">已收費用</th><th style="padding:9px 6px;text-align:right;white-space:nowrap">押金</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">已報到</th><th style="padding:9px 6px;text-align:center;white-space:nowrap">操作</th></tr></thead><tbody>${rowHtml}</tbody></table></div><div class="overview-mobile-list">${cardHtml}</div>`;
 }
 
 function toggleMoreMenu(){
@@ -2392,33 +2374,7 @@ function goRegsList(sesId,sesName,statusFilter){
 function renderRegsSummary(){
   const el=$('regsSummaryList');
   if(!el) return;
-  const sessions=ST.sdData||[];
-  const regs=ST.allRegs||[];
-  if(!sessions.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa;font-size:14px">無場次資料。請先新增場次。</div>';return;}
-  const statusOf=(r)=>String(r.status||r.reviewStatus||'').trim();
-  const rows=sessions.filter(s=>!isArchivedSession(s)).map(s=>{
-    const sr=regs.filter(r=>String(r.sessionId||r.sesId||'')===String(s.id));
-    const total=sr.length;
-    const pending=sr.filter(r=>statusOf(r)==='待審核').length;
-    const approved=sr.filter(r=>['已錄取','approved'].includes(statusOf(r))).length;
-    const waitlist=sr.filter(r=>statusOf(r)==='備取').length;
-    const rejected=sr.filter(r=>['不錄取','rejected'].includes(statusOf(r))).length;
-    const cancelled=sr.filter(r=>isCancelledPaymentReg&&isCancelledPaymentReg(r)).length;
-    const dateStr=s.date||s.eventDate||'';
-    return {s,total,pending,approved,waitlist,rejected,cancelled,dateStr};
-  });
-  const tot={
-    all:rows.reduce((a,r)=>a+r.total,0),
-    pending:rows.reduce((a,r)=>a+r.pending,0),
-    approved:rows.reduce((a,r)=>a+r.approved,0),
-    waitlist:rows.reduce((a,r)=>a+r.waitlist,0),
-    rejected:rows.reduce((a,r)=>a+r.rejected,0),
-    cancelled:rows.reduce((a,r)=>a+r.cancelled,0),
-  };
-  const totalCard=`<div style="background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:2px solid #667eea;border-radius:14px;padding:14px 16px;margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div style="font-size:14px;font-weight:900;color:#5a67d8">📋 全場次加總</div><button class="enter-btn rg-enter" onclick="goRegsList('all','全場次','')" style="padding:6px 14px;font-size:12px">全部名單 →</button></div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px"><button onclick="goRegsList('all','全場次','')" style="background:#f7f7ff;border:1.5px solid #c3c8f5;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#4a5568">${tot.all}</div><div style="font-size:11px;color:#888;margin-top:2px">全部</div></button><button onclick="goRegsList('all','全場次','待審核')" style="background:#fff8e1;border:1.5px solid #f5c518;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#e6a800">${tot.pending}</div><div style="font-size:11px;color:#888;margin-top:2px">待審核</div></button><button onclick="goRegsList('all','全場次','已錄取')" style="background:#f0fdf4;border:1.5px solid #68d391;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#276749">${tot.approved}</div><div style="font-size:11px;color:#888;margin-top:2px">已錄取</div></button><button onclick="goRegsList('all','全場次','備取')" style="background:#f7fafc;border:1.5px solid #a0aec0;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#4a5568">${tot.waitlist}</div><div style="font-size:11px;color:#888;margin-top:2px">備取</div></button><button onclick="goRegsList('all','全場次','不錄取')" style="background:#fff5f5;border:1.5px solid #fc8181;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#c53030">${tot.rejected}</div><div style="font-size:11px;color:#888;margin-top:2px">不錄取</div></button><button onclick="goRegsList('all','全場次','已取消')" style="background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit"><div style="font-size:22px;font-weight:900;color:#718096">${tot.cancelled}</div><div style="font-size:11px;color:#888;margin-top:2px">已取消</div></button></div></div>`;
-  const desktopHtml=`<div class="summary-desktop"><table class="summary-table rg-theme" style="min-width:820px"><thead><tr><th style="text-align:left">場次名稱</th><th>日期</th><th>全部</th><th>待審核</th><th>已錄取</th><th>備取</th><th>不錄取</th><th>已取消</th><th>操作</th></tr></thead><tbody>${rows.map(r=>{const id=r.s.id,nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");return `<tr><td><span class="summary-card-title" style="font-size:14px">${r.s.title||r.s.name||'未命名'}</span></td><td><span class="summary-stat-lbl">${r.dateStr||'-'}</span></td><td><button onclick="goRegsList('${id}','${nm}','')" style="background:#f7f7ff;border:1.5px solid #c3c8f5;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;font-family:inherit;min-width:36px">${r.total}</button></td><td><button onclick="goRegsList('${id}','${nm}','待審核')" style="background:#fff8e1;border:1.5px solid #f5c518;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#e6a800;font-family:inherit;min-width:36px">${r.pending}</button></td><td><button onclick="goRegsList('${id}','${nm}','已錄取')" style="background:#f0fdf4;border:1.5px solid #68d391;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#276749;font-family:inherit;min-width:36px">${r.approved}</button></td><td><button onclick="goRegsList('${id}','${nm}','備取')" style="background:#f7fafc;border:1.5px solid #a0aec0;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;font-family:inherit;min-width:36px">${r.waitlist}</button></td><td><button onclick="goRegsList('${id}','${nm}','不錄取')" style="background:#fff5f5;border:1.5px solid #fc8181;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#c53030;font-family:inherit;min-width:36px">${r.rejected}</button></td><td><button onclick="goRegsList('${id}','${nm}','已取消')" style="background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:8px;padding:4px 10px;cursor:pointer;font-weight:800;font-size:15px;color:#718096;font-family:inherit;min-width:36px">${r.cancelled}</button></td><td><button class="enter-btn rg-enter" onclick="goRegsList('${id}','${nm}','')">進入 →</button></td></tr>`;}).join('')}</tbody></table></div>`;
-  const mobileHtml=`<div class="overview-mobile-list">${rows.map(r=>{const id=r.s.id,nm=(r.s.title||r.s.name||'未命名').replace(/'/g,"\'");return `<div class="summary-card rg-theme"><div class="summary-card-title">${r.s.title||r.s.name||'未命名'}</div><div class="summary-card-date">${r.dateStr||'日期未設定'}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0"><button onclick="goRegsList('${id}','${nm}','待審核')" style="background:#fff8e1;border:1.5px solid #f5c518;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#e6a800">${r.pending}</div><div style="font-size:11px;color:#888;margin-top:2px">待審核</div></button><button onclick="goRegsList('${id}','${nm}','已錄取')" style="background:#f0fdf4;border:1.5px solid #68d391;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#276749">${r.approved}</div><div style="font-size:11px;color:#888;margin-top:2px">已錄取</div></button><button onclick="goRegsList('${id}','${nm}','備取')" style="background:#f7fafc;border:1.5px solid #a0aec0;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#4a5568">${r.waitlist}</div><div style="font-size:11px;color:#888;margin-top:2px">備取</div></button><button onclick="goRegsList('${id}','${nm}','不錄取')" style="background:#fff5f5;border:1.5px solid #fc8181;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#c53030">${r.rejected}</div><div style="font-size:11px;color:#888;margin-top:2px">不錄取</div></button><button onclick="goRegsList('${id}','${nm}','已取消')" style="background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#718096">${r.cancelled}</div><div style="font-size:11px;color:#888;margin-top:2px">已取消</div></button><button onclick="goRegsList('${id}','${nm}','')" style="background:#f7f7ff;border:1.5px solid #c3c8f5;border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;text-align:center"><div style="font-size:20px;font-weight:900;color:#4a5568">${r.total}</div><div style="font-size:11px;color:#888;margin-top:2px">全部</div></button></div><button class="enter-btn rg-enter" style="width:100%;padding:10px" onclick="goRegsList('${id}','${nm}','')">進入此場名單 →</button></div>`;}).join('')}</div>`;
-  el.innerHTML=totalCard+desktopHtml+mobileHtml;
+  renderOverviewSessionsFn('regsSummaryList');
 }
 function setRegsQuick(type){
   const regs=ST.allRegs||[];
@@ -2464,16 +2420,26 @@ function backToCheckinSummary(){
 }
 function goCheckinList(sesId,sesName,filter){
   const s=$('checkinSummaryLayer'),d=$('checkinDetailLayer'),b=$('checkinBackBtn'),t=$('checkinTitle');
+  const cfFilter=filter||'';
   if(sesId==='all'){
-    // 全場次模式：直接進第二層，不篩場次
     if(s) s.style.display='none';
     if(d) d.style.display='block';
     if(b) b.style.display='inline-flex';
     if(t) t.textContent='現場 › 全場次';
     const sel=$('checkinSesFilter');
-    if(sel){ sel.value=''; loadCheckinRegs(); }
+    if(sel) sel.value='';
+    const filterSel=$('checkinStatusFilter');
+    if(filterSel) filterSel.value=cfFilter;
+    ST._checkinFilter=cfFilter;
+    loadCheckinRegs();
+  } else if(typeof showCheckinDetailLayerFiltered==='function'){
+    showCheckinDetailLayerFiltered(sesId,sesName,cfFilter);
   } else {
     showCheckinDetailLayer(sesId,sesName);
+    const filterSel=$('checkinStatusFilter');
+    if(filterSel) filterSel.value=cfFilter;
+    ST._checkinFilter=cfFilter;
+    setTimeout(()=>{ if(typeof filterCheckinList==='function') filterCheckinList(); },80);
   }
 }
 function renderCheckinSummary(){
@@ -5081,168 +5047,163 @@ function goToSesCheckin(sesId){
 }
 
 async function downloadSesData(sesId,sesName){
-  toast('準備下載最新財報資料...');
+  if(!sesId){toast('沒有可下載的場次');return;}
+  toast('⏳ 準備下載本場完整 Excel...');
 
-  // 先重新抓最新總覽，避免使用快取造成金額、場次名稱或設備統計不正確
-  // 單場模式：只撈這一場，不撈全部場次，效率直接
-  let ses={};
+  let ses=(ST.sdData||[]).find(x=>String(x.id)===String(sesId))||{};
   try{
-    const freshDash=await api({action:'getSessionDashboard', sessionId:sesId, email:ST.email, token:ST.token});
-    if(Array.isArray(freshDash) && freshDash.length) {
-      ses=freshDash[0];
-      // 同步更新 ST.sdData 裡的這場資料（保持總覽快取一致）
-      ST.sdData=(ST.sdData||[]).map(x=>x.id===sesId?ses:x);
+    const freshDash=await api({action:'getSessionDashboard', sessionId:sesId, email:ST.email, token:ST.token, _t:Date.now()});
+    if(Array.isArray(freshDash) && freshDash.length){
+      ses=freshDash[0]||ses;
+      ST.sdData=(ST.sdData||[]).map(x=>String(x.id)===String(sesId)?ses:x);
+      if(!(ST.sdData||[]).some(x=>String(x.id)===String(sesId))) ST.sdData=[...(ST.sdData||[]),ses];
     }
-  }catch(e){ console.warn('單場資料讀取失敗，改用快取', e); ses=(ST.sdData||[]).find(x=>x.id===sesId)||{}; }
-  let ev=(ST.events||[]).find(e=>e.id===ses.eventId)||{};
+  }catch(e){ console.warn('單場資料讀取失敗，改用快取', e); }
+
+  let ev=(ST.events||[]).find(e=>String(e.id)===String(ses.eventId||ses.event_id||''))||{};
   if(!(ST.events||[]).length){
-    try{ const evs=await api({action:'getEventsAdmin', email:ST.email, token:ST.token}); if(Array.isArray(evs)){ST.events=evs; ev=(ST.events||[]).find(e=>e.id===ses.eventId)||ev;} }catch(e){}
+    try{ const evs=await api({action:'getEventsAdmin', email:ST.email, token:ST.token}); if(Array.isArray(evs)){ST.events=evs; ev=(ST.events||[]).find(e=>String(e.id)===String(ses.eventId||ses.event_id||''))||ev;} }catch(e){}
   }
 
-  const finalSesName=sesName || ses.name || sesId || '場次';
   let regs=[];
   let finItems=[];
-  try{
-    regs=await apiPost({action:'getRegsBySession', sessionId:sesId, email:ST.email, token:ST.token});
-  }catch(e){ console.error(e); toast('下載失敗：報名資料讀取失敗'); return; }
+  try{ regs=await apiPost({action:'getRegsBySession', sessionId:sesId, email:ST.email, token:ST.token}); }
+  catch(e){ console.error(e); toast('下載失敗：報名資料讀取失敗'); return; }
   if(!Array.isArray(regs)){ toast('下載失敗：報名資料讀取失敗'); return; }
-  try{
-    finItems=await apiPost({action:'getFinance', sessionId:sesId, email:ST.email, token:ST.token});
-    if(!Array.isArray(finItems)) finItems=[];
-  }catch(e){ console.warn('財報明細讀取失敗，仍下載報名與設備資料', e); finItems=[]; }
+  try{ finItems=await apiPost({action:'getFinance', sessionId:sesId, email:ST.email, token:ST.token}); if(!Array.isArray(finItems)) finItems=[]; }
+  catch(e){ console.warn('財報明細讀取失敗，仍下載名單、金流、設備與狀態', e); finItems=[]; }
 
   function n(v){const x=Number(v);return Number.isFinite(x)?x:0;}
   function clean(v){return String(v??'').trim();}
-  function equipEntries(r){
-    try{
-      const obj=typeof r.equip==='string'?JSON.parse(r.equip||'{}'):(r.equip||{});
-      return Object.entries(obj).map(([name,qty])=>[clean(name),n(qty)]).filter(([name,qty])=>name&&qty>0);
-    }catch(e){return [];}
+  function reviewOf(r){return clean(r.status||r.reviewStatus||r.review_status||'待審核');}
+  function payOf(r){return clean(r.payStatus||r.payment_status||r.pay_status||'未繳費');}
+  function isPaidLocal(r){try{return isPaidText(payOf(r));}catch(e){return /已繳費|已付款|免費/.test(payOf(r));}}
+  function isPendingPayLocal(r){try{return isPendingPayText(payOf(r));}catch(e){return /待確認|待核|回報/.test(payOf(r));}}
+  function isCancelledLocal(r){try{return isCancelledPaymentReg(r);}catch(e){return /取消/.test(reviewOf(r))||/取消/.test(payOf(r));}}
+  function isRefundReqLocal(r){try{return isRefundRequestReg(r);}catch(e){return /退費/.test(payOf(r))&&!/已退/.test(payOf(r));}}
+  function stallCount(r){return n(r.stallCount||r.stall_count)||1;}
+  function moneyOf(r){return n(r.amount||r.totalAmount||r.total_amount||r.payAmount||r.payment_amount);}
+  function reportAmountOf(r){return n(r.paymentReportAmount||r.payment_report_amount||r.reportAmount||r.report_amount||r.payReportAmount);}
+  function depositOf(r){const direct=n(r.deposit||r.depositAmount||r.deposit_amount); if(direct) return direct; return n(ses.deposit||ses.depositAmount)*stallCount(r);}
+  function created(r){return clean(r.createdAt||r.created_at||r.created).slice(0,19);}
+  function participantSafe(r){try{return participantText(r.participants);}catch(e){return clean(r.participants||'');}}
+  function parseObj(v){
+    if(!v) return {};
+    if(typeof v==='object') return v;
+    try{return JSON.parse(v||'{}');}catch(e){return {};}
   }
+  function equipSource(r){return parseObj(r.actualEquip||r.actual_equip||r.equip||r.equip_json||r.equipment_json||r.equipmentJson||r.equipment);}
+  function equipEntries(r){return Object.entries(equipSource(r)).map(([name,qty])=>[clean(name),n(qty)]).filter(([name,qty])=>name&&qty>0);}
+  function equipDefs(){return parseObj(ses.equip||ses.equipment||ses.equipment_json);}
   function equipDef(name){
-    const defs=ses.equip||{};
-    const def=defs[name]||{};
-    const fallback=(EQUIP_LIST||[]).find(x=>x.k===name)||{};
-    return {price:n(def.price||fallback.price), incl:n(def.incl)};
+    const defs=equipDefs(); const def=defs[name]||{};
+    const fallback=(typeof EQUIP_LIST!=='undefined'?(EQUIP_LIST||[]):[]).find(x=>x.k===name||x.name===name)||{};
+    return {price:n(def.price||def.unitPrice||fallback.price), incl:n(def.incl||def.included||def.free||fallback.incl||fallback.included)};
   }
-  function stallCount(r){return n(r.stallCount)||1;}
-  function payAmount(r){return n(r.amount||r.totalAmount||r.payAmount);}
-  function depAmount(r){
-    const direct=n(r.deposit||r.depositAmount);
-    if(direct) return direct;
-    return n(ses.deposit)*stallCount(r);
+  function equipmentSummaryText(r){return equipEntries(r).map(([item,qty])=>`${item}×${qty}`).join('；');}
+  function paymentLast5(r){return clean(r.payLast5||r.paymentLast5||r.payment_last5||(String(r.adminNote||r.note||'').match(/末五碼[:：]?\s*([^｜\s]+)/)||[])[1]||'');}
+  function reportStatus(r){return clean(r.paymentScreenshotStatus||r.payment_screenshot_status||r.paymentReportStatus||r.payment_report_status||(r.paymentScreenshotReceivedAt||r.payment_screenshot_received_at?'已回報客服':''));}
+  function paidRefunded(r){return /已退/.test(clean(r.depositRefunded||r.deposit_refunded||''));}
+  function financeIssue(r){
+    const amt=moneyOf(r), rep=reportAmountOf(r), total=n(r.totalAmount||r.total_amount||r.amount);
+    if(r.finance_issue||r.financeIssue||r.amount_issue) return clean(r.finance_issue||r.financeIssue||r.amount_issue);
+    if(rep && amt && Math.abs(rep-amt)>1) return '回報金額與已收金額不一致';
+    if(isPaidLocal(r) && total>0 && amt<=0) return '已繳費但金額為 0';
+    if(isPendingPayLocal(r) && rep && total && Math.abs(rep-total)>1) return '待確認回報金額與應收金額不一致';
+    return '';
   }
-  function created(r){return clean(r.createdAt).slice(0,16);}
-  const paidRegs=regs.filter(r=>isPaidText(r.payStatus));
-  const pendingPay=regs.filter(r=>isPendingPayText(r.payStatus));
-  const approvedRegs=regs.filter(r=>clean(r.status)==='已錄取' || isPaidText(r.payStatus));
-  function equipChargeAmount(r){
-    return equipEntries(r).reduce((sum,[item,qty])=>{
-      const def=equipDef(item);
-      const included=def.incl*stallCount(r);
-      const chargeQty=Math.max(qty-included,0);
-      return sum+(chargeQty*def.price);
-    },0);
-  }
-  const totalReceived=paidRegs.reduce((sum,r)=>sum+payAmount(r),0);
-  const depositTotal=paidRegs.reduce((sum,r)=>sum+depAmount(r),0);
-  const refundedTotal=paidRegs.filter(r=>clean(r.depositRefunded).includes('已退')).reduce((sum,r)=>sum+depAmount(r),0);
-  const businessIncome=Math.max(0,totalReceived-depositTotal);
-  const equipmentIncome=paidRegs.reduce((sum,r)=>sum+equipChargeAmount(r),0);
-  const activityIncome=Math.max(0,businessIncome-equipmentIncome);
-  const manualIncome=finItems.filter(i=>clean(i['類型']||i.type)==='income' || clean(i['類型']||i.type)==='收入').reduce((sum,i)=>sum+n(i['金額']||i.amount),0);
-  const manualExpense=finItems.filter(i=>clean(i['類型']||i.type)==='expense' || clean(i['類型']||i.type)==='支出').reduce((sum,i)=>sum+n(i['金額']||i.amount),0);
-  const totalIncome=businessIncome+manualIncome;
-  const totalExpense=manualExpense;
-  const netProfit=totalIncome-totalExpense;
-
-  function buildEquipRows(sourceRegs, label){
+  function buildEquipRows(sourceRegs,label){
     const rows=[];
     sourceRegs.forEach(r=>{
       equipEntries(r).forEach(([item,qty])=>{
-        const def=equipDef(item);
-        const included=def.incl*stallCount(r);
-        const chargeQty=Math.max(qty-included,0);
-        const subtotal=chargeQty*def.price;
-        rows.push([label,finalSesName,r.id,r.name,r.brand,r.phone,r.email,item,qty,def.incl,included,def.price,chargeQty,subtotal,r.status,r.payStatus,r.stallNo||'',created(r)]);
+        const def=equipDef(item); const included=def.incl*stallCount(r); const chargeQty=Math.max(qty-included,0); const subtotal=chargeQty*def.price;
+        rows.push([label,finalSesName,r.id||'',r.brand||'',r.name||'',r.phone||'',r.email||'',item,qty,def.incl,included,def.price,chargeQty,subtotal,reviewOf(r),payOf(r),r.stallNo||r.stall_no||r.seatCode||'',created(r)]);
       });
     });
     return rows;
   }
-  function totalByItem(sourceRegs){
+  function totalByItem(sourceRegs,label){
     const totals={};
     sourceRegs.forEach(r=>equipEntries(r).forEach(([item,qty])=>{totals[item]=(totals[item]||0)+qty;}));
-    return Object.entries(totals).map(([item,qty])=>[finalSesName,item,qty]);
+    return Object.entries(totals).map(([item,qty])=>[finalSesName,label,item,qty]);
   }
-  function equipSummaryText(r){return equipEntries(r).map(([item,qty])=>`${item}×${qty}`).join('；');}
+  function safeSheetName(name){return clean(name||'Sheet').replace(/[\\\/\?\*\[\]:]/g,'_').slice(0,31)||'Sheet';}
+  function xmlEsc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function xcell(v){
+    const isNum=typeof v==='number' && Number.isFinite(v);
+    return `<Cell><Data ss:Type="${isNum?'Number':'String'}">${xmlEsc(isNum?v:String(v??''))}</Data></Cell>`;
+  }
+  function worksheet(name,headers,rows){
+    const all=[headers,...rows];
+    return `<Worksheet ss:Name="${xmlEsc(safeSheetName(name))}"><Table>${all.map(row=>`<Row>${row.map(xcell).join('')}</Row>`).join('')}</Table></Worksheet>`;
+  }
+  function downloadWorkbook(fileName,sheets){
+    const xml=`<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><DocumentProperties xmlns="urn:schemas-microsoft-com:office:office"><Author>2BL V8</Author><Created>${new Date().toISOString()}</Created></DocumentProperties><ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel"><ProtectStructure>False</ProtectStructure><ProtectWindows>False</ProtectWindows></ExcelWorkbook>${sheets.map(s=>worksheet(s.name,s.headers,s.rows)).join('')}</Workbook>`;
+    const blob=new Blob(['\uFEFF'+xml],{type:'application/vnd.ms-excel;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
 
+  const finalSesName=sesName || ses.name || ses.title || ses.sessionName || sesId || '場次';
   const dateText=Array.isArray(ses.dates)&&ses.dates.length
     ? ses.dates.map(d=>[d.date,d.startTime&&d.endTime?`${d.startTime}-${d.endTime}`:''].filter(Boolean).join(' ')).join(' / ')
-    : (ses.date||'');
+    : (ses.date||ses.eventDate||'');
+  const approvedRegs=regs.filter(r=>(reviewOf(r)==='已錄取'||reviewOf(r)==='approved'||isPaidLocal(r)||isPendingPayLocal(r))&&!isCancelledLocal(r));
+  const paidRegs=regs.filter(r=>isPaidLocal(r)&&!isCancelledLocal(r));
+  const pendingPayRegs=regs.filter(r=>isPendingPayLocal(r)&&!isCancelledLocal(r));
+  const unpaidRegs=approvedRegs.filter(r=>!isPaidLocal(r)&&!isPendingPayLocal(r));
+  const anomalyRegs=regs.filter(r=>financeIssue(r));
+  const refundReqRegs=regs.filter(isRefundReqLocal);
+  const checkinRegs=regs.filter(r=>/已報到/.test(clean(r.checkin||r.checkinStatus||r.checkin_status)));
+  const depositPendingRegs=paidRegs.filter(r=>depositOf(r)>0&&!paidRefunded(r));
+  const totalReceived=paidRegs.reduce((sum,r)=>sum+moneyOf(r),0);
+  const pendingAmount=pendingPayRegs.reduce((sum,r)=>sum+(reportAmountOf(r)||moneyOf(r)),0);
+  const unpaidAmount=unpaidRegs.reduce((sum,r)=>sum+moneyOf(r),0);
+  const depositTotal=paidRegs.reduce((sum,r)=>sum+depositOf(r),0);
+  const depositRefunded=paidRegs.filter(paidRefunded).reduce((sum,r)=>sum+depositOf(r),0);
+  const businessIncome=Math.max(0,totalReceived-depositTotal);
+  const manualIncome=finItems.filter(i=>['income','收入'].includes(clean(i['類型']||i.type))).reduce((sum,i)=>sum+n(i['金額']||i.amount),0);
+  const manualExpense=finItems.filter(i=>['expense','支出'].includes(clean(i['類型']||i.type))).reduce((sum,i)=>sum+n(i['金額']||i.amount),0);
+  const totalIncome=businessIncome+manualIncome;
+  const totalExpense=manualExpense;
+  const capacity=n(ses.capacity||ses.maxStalls||ses.stallCapacity||ses.quota||ses.boothCount||ses.totalStalls)||approvedRegs.reduce((sum,r)=>sum+stallCount(r),0);
+  const assigned=approvedRegs.reduce((sum,r)=>sum+stallCount(r),0);
+  const empty=Math.max(0,capacity-assigned);
 
   const infoRows=[
-    ['場次名稱',finalSesName],
-    ['活動名稱',ev.title||ses.eventName||''],
-    ['場地',ses.venue||ses.location||ev.location||''],
-    ['活動日期',dateText],
-    ['場次ID',sesId],
-    ['下載時間',new Date().toLocaleString('zh-TW')]
+    ['場次名稱',finalSesName],['活動名稱',ev.title||ses.eventName||ses.event||''],['場地',ses.venue||ses.location||ev.location||''],['活動日期',dateText],['場次ID',sesId],['下載時間',new Date().toLocaleString('zh-TW')]
   ];
-  const summaryRows=[
-    ['總報名筆數',regs.length,'該場次所有報名'],
-    ['已錄取/已繳費筆數',approvedRegs.length,'設備統計主要參考'],
-    ['已繳費筆數',paidRegs.length,'列入已收費用'],
-    ['待確認繳費',pendingPay.length,'付款狀態為待確認/待核款'],
-    ['前台已收總額',totalReceived,'活動費／設備／加購與押金合計'],
-    ['活動／攤位收入',activityIncome,'已收總額扣除押金與設備後'],
-    ['設備租金收入',equipmentIncome,'依設備設定扣除每攤內含後計算'],
-    ['列入損益收入',businessIncome,'前台已收總額扣除押金'],
-    ['手動收入',manualIncome,'財報明細收入項目'],
-    ['手動支出',manualExpense,'財報明細支出項目'],
-    ['收入合計',totalIncome,'列入損益收入＋手動收入'],
-    ['支出合計',totalExpense,'手動支出'],
-    ['試算淨額',netProfit,'收入合計－支出合計'],
-    ['押金收取',depositTotal,'不列入損益'],
-    ['押金已退',refundedTotal,'不列入損益'],
-    ['押金未退',depositTotal-refundedTotal,'不列入損益']
+  const statusRows=[
+    ['報名總筆數',regs.length,'全部報名'],['待審核',regs.filter(r=>reviewOf(r)==='待審核').length,'需人工審核'],['已錄取',approvedRegs.length,'含已繳費／待確認'],['已繳費',paidRegs.length,`已收 NT$${totalReceived.toLocaleString()}`],['待確認',pendingPayRegs.length,`待確認 NT$${pendingAmount.toLocaleString()}`],['未繳費',unpaidRegs.length,`未收 NT$${unpaidAmount.toLocaleString()}`],['金額異常',anomalyRegs.length,'請看「金額異常」工作表'],['退款待處理',refundReqRegs.length,'付款／退費狀態'],['已報到',checkinRegs.length,'現場狀態'],['押金待退',depositPendingRegs.length,`押金未退 NT$${(depositTotal-depositRefunded).toLocaleString()}`],['開放攤位',capacity,'場次容量'],['已分配攤位',assigned,'已錄取攤位數'],['空攤',empty,'容量扣除已分配']
   ];
-  const regRows=regs.map(r=>[
-    finalSesName,r.id,r.name,r.brand,r.phone,r.email,participantText(r.participants),stallCount(r),r.status,r.payStatus,payAmount(r),depAmount(r),r.payMethod||'',r.checkin||'',r.clearStatus||'',r.depositRefunded||'',r.stallNo||'',r.taxId||'',r.invoiceTitle||'',r.invoiceEmail||'',r.invoiceStatus||'',equipSummaryText(r),created(r),r.adminNote||''
-  ]);
-  const equipAllRows=buildEquipRows(regs,'全部報名');
-  const equipApprovedRows=buildEquipRows(approvedRegs,'已錄取/已繳費');
-  const equipPaidRows=buildEquipRows(paidRegs,'已繳費');
-  const finRows=finItems.map(i=>[
-    finalSesName,
-    clean(i['類型']||i.type)==='income'?'收入':(clean(i['類型']||i.type)==='expense'?'支出':clean(i['類型']||i.type)),
-    i['品項']||i.name||'',
-    n(i['金額']||i.amount),
-    (i['自動']==='TRUE'||i.auto===true)?'自動':'手動',
-    i['備註']||i.note||'',
-    i['建立時間']||i.createdAt||''
-  ]);
+  const financeSummaryRows=[
+    ['前台已收總額',totalReceived,'活動費／設備／加購與押金合計'],['列入損益收入',businessIncome,'前台已收總額扣除押金'],['手動收入',manualIncome,'本場財報收入項目'],['手動支出',manualExpense,'本場財報支出項目'],['收入合計',totalIncome,'列入損益收入＋手動收入'],['支出合計',totalExpense,'手動支出'],['試算淨額',totalIncome-totalExpense,'收入合計－支出合計'],['押金收取',depositTotal,'不列入損益'],['押金已退',depositRefunded,'不列入損益'],['押金未退',depositTotal-depositRefunded,'不列入損益']
+  ];
+  const regRows=regs.map(r=>[finalSesName,r.id||'',r.brand||'',r.name||'',r.phone||'',r.email||'',participantSafe(r),stallCount(r),reviewOf(r),payOf(r),moneyOf(r),depositOf(r),r.payMethod||r.payment_method||'',r.checkin||r.checkinStatus||'',r.clearStatus||r.clear_status||'',r.depositRefunded||r.deposit_refunded||'',r.stallNo||r.stall_no||r.seatCode||'',r.taxId||r.tax_id||'',r.invoiceTitle||r.invoice_title||'',r.invoiceEmail||r.invoice_email||'',r.invoiceStatus||r.invoice_status||'',equipmentSummaryText(r),created(r),r.adminNote||r.note||'']);
+  const paymentRows=regs.map(r=>[finalSesName,r.id||'',r.brand||'',r.name||'',r.email||'',r.phone||'',reviewOf(r),payOf(r),n(r.totalAmount||r.total_amount||r.amount),reportAmountOf(r),moneyOf(r),depositOf(r),r.payMethod||r.payment_method||'',paymentLast5(r),reportStatus(r),r.refundStatus||r.refund_status||'',n(r.refundAmount||r.refund_amount),n(r.refundAdminFee||r.refund_admin_fee),n(r.refundTransferFee||r.refund_transfer_fee),r.refundNote||r.refund_note||'',financeIssue(r)]);
+  const equipRows=[...buildEquipRows(regs,'全部報名')];
+  const equipTotalRows=[...totalByItem(regs,'全部報名'),...totalByItem(approvedRegs,'已錄取/待確認/已繳費'),...totalByItem(paidRegs,'已繳費')];
+  const financeRows=finItems.map(i=>[finalSesName,clean(i['類型']||i.type)==='income'?'收入':(clean(i['類型']||i.type)==='expense'?'支出':clean(i['類型']||i.type)),i['品項']||i.name||'',n(i['金額']||i.amount),(i['自動']==='TRUE'||i.auto===true)?'自動':'手動',i['備註']||i.note||'',i['建立時間']||i.createdAt||i.created_at||'']);
+  const anomalyRows=anomalyRegs.map(r=>[finalSesName,r.id||'',r.brand||'',r.name||'',r.email||'',r.phone||'',reviewOf(r),payOf(r),n(r.totalAmount||r.total_amount||r.amount),reportAmountOf(r),moneyOf(r),financeIssue(r),created(r)]);
 
-  const toCSV=(hdrs,rows)=>[hdrs,...rows].map(row=>row.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(',')).join('\n');
-  const csv='場次資訊\n'+toCSV(['欄位','內容'],infoRows)
-    +'\n\n財報摘要（該場次最新資料）\n'+toCSV(['項目','金額/數量','備註'],summaryRows)
-    +'\n\n報名明細（每位報名一列）\n'+toCSV(['場次名稱','報名ID','姓名','品牌','手機','Email','參加者','攤位數','審核狀態','付款狀態','應繳/已收金額','押金','付款方式','已報到','已清場','退押金','攤位號碼','統編','發票抬頭','發票Email','發票狀態','設備摘要','報名時間','管理員備註'],regRows)
-    +'\n\n設備明細（全部報名，每項設備一列）\n'+toCSV(['統計範圍','場次名稱','報名ID','姓名','品牌','手機','Email','設備品項','需求數量','每攤內含','內含總數','超過單價','計費數量','計費小計','審核狀態','付款狀態','攤位號碼','報名時間'],equipAllRows)
-    +'\n\n設備明細（已錄取/已繳費，每項設備一列）\n'+toCSV(['統計範圍','場次名稱','報名ID','姓名','品牌','手機','Email','設備品項','需求數量','每攤內含','內含總數','超過單價','計費數量','計費小計','審核狀態','付款狀態','攤位號碼','報名時間'],equipApprovedRows)
-    +'\n\n設備明細（已繳費，每項設備一列）\n'+toCSV(['統計範圍','場次名稱','報名ID','姓名','品牌','手機','Email','設備品項','需求數量','每攤內含','內含總數','超過單價','計費數量','計費小計','審核狀態','付款狀態','攤位號碼','報名時間'],equipPaidRows)
-    +'\n\n設備總計（全部報名）\n'+toCSV(['場次名稱','設備品項','總數量'],totalByItem(regs))
-    +'\n\n設備總計（已錄取/已繳費）\n'+toCSV(['場次名稱','設備品項','總數量'],totalByItem(approvedRegs))
-    +'\n\n設備總計（已繳費）\n'+toCSV(['場次名稱','設備品項','總數量'],totalByItem(paidRegs))
-    +'\n\n財報明細（手動收入/支出）\n'+toCSV(['場次名稱','類型','品項','金額','自動/手動','備註','建立時間'],finRows);
-
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
   const safeName=finalSesName.replace(/[\\/:*?"<>|]/g,'_');
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=safeName+'_最新財報完整資料.csv';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-  toast('下載完成');
+  downloadWorkbook(`${safeName}_本場完整Excel_${new Date().toISOString().slice(0,10)}.xls`,[
+    {name:'場次資訊',headers:['欄位','內容'],rows:infoRows},
+    {name:'狀態總表',headers:['項目','數量/金額','備註'],rows:statusRows},
+    {name:'本場財報摘要',headers:['項目','金額/數量','備註'],rows:financeSummaryRows},
+    {name:'名單',headers:['場次名稱','報名ID','品牌','姓名','手機','Email','參加者','攤位數','審核狀態','付款狀態','應繳/已收金額','押金','付款方式','已報到','已清場','退押金','攤位號碼','統編','發票抬頭','發票Email','發票狀態','設備摘要','報名時間','管理員備註'],rows:regRows},
+    {name:'金流',headers:['場次名稱','報名ID','品牌','姓名','Email','手機','審核狀態','付款狀態','應收金額','回報金額','已收金額','押金','付款方式','末五碼','回報狀態','退款狀態','退款金額','行政費','手續費','退款備註','異常原因'],rows:paymentRows},
+    {name:'設備明細',headers:['統計範圍','場次名稱','報名ID','品牌','姓名','手機','Email','設備品項','需求數量','每攤內含','內含總數','超過單價','計費數量','計費小計','審核狀態','付款狀態','攤位號碼','報名時間'],rows:equipRows},
+    {name:'設備總計',headers:['場次名稱','統計範圍','設備品項','總數量'],rows:equipTotalRows},
+    {name:'財報明細',headers:['場次名稱','類型','品項','金額','自動/手動','備註','建立時間'],rows:financeRows},
+    {name:'金額異常',headers:['場次名稱','報名ID','品牌','姓名','Email','手機','審核狀態','付款狀態','應收金額','回報金額','已收金額','異常原因','報名時間'],rows:anomalyRows}
+  ]);
+  toast('✅ 本場完整 Excel 已下載');
 }
+
 
 function downloadCurrentFinanceData(){
   if(!ST_finSesId){toast('沒有可下載的場次');return;}
@@ -5782,6 +5743,8 @@ function downloadInvoiceList(){
   function n(v){const x=Number(v);return Number.isFinite(x)?x:0;}
   function txt(v){return String(v??'').trim();}
   function esc(v){return (typeof adminEsc==='function'?adminEsc(v):String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])));}
+  function attr(v){return (typeof escAttr==='function'?escAttr(v):esc(v));}
+  function jsq(v){return attr(String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/[\r\n]+/g,' '));}
   function sidOf(r){return String(r.sessionId||r.sesId||r.session_id||'');}
   function reviewOf(r){return txt(r.status||r.reviewStatus||r.review_status||'待審核');}
   function payOf(r){return txt(r.payStatus||r.payment_status||r.pay_status||'未繳費');}
@@ -5790,38 +5753,36 @@ function downloadInvoiceList(){
   function isCancelled(r){try{return isCancelledPaymentReg(r);}catch(e){return /取消/.test(reviewOf(r))||/取消/.test(payOf(r));}}
   function isRefundReq(r){try{return isRefundRequestReg(r);}catch(e){return /退費/.test(payOf(r))&&!/已退/.test(payOf(r));}}
   function amountOf(r){return n(r.amount||r.totalAmount||r.total_amount||r.payAmount||r.payment_report_amount||r.paymentReportAmount);}
-  function reportAmtOf(r){return n(r.paymentReportAmount||r.payment_report_amount||r.reportAmount||r.amount);}
-  function depositOf(r,ses){const direct=n(r.deposit||r.depositAmount); if(direct) return direct; return n(ses&&ses.deposit)*(n(r.stallCount||r.stall_count)||1);}
+  function reportAmtOf(r){return n(r.paymentReportAmount||r.payment_report_amount||r.reportAmount||r.report_amount||r.amount);}
+  function depositOf(r,ses){const direct=n(r.deposit||r.depositAmount||r.deposit_amount); if(direct) return direct; return n(ses&&ses.deposit)*(n(r.stallCount||r.stall_count)||1);}
   function approved(r){const st=reviewOf(r);return st==='已錄取'||st==='approved'||isPaid(r)||isPendingPay(r);}
   function reported(r){return !!(r.paymentScreenshotStatus||r.payment_screenshot_status||r.paymentScreenshotReceivedAt||r.payment_screenshot_received_at||/已回報客服|截圖已收|匯款回報|繳費通知/.test(txt(r.adminNote||r.note||r.payment_line_card_text)));}
   function stallCount(r){return n(r.stallCount||r.stall_count)||1;}
-  function equipObj(r){
-    const candidates=[r.actualEquip,r.equip,r.equip_json,r.equipment_json,r.equipmentJson,r.equipment];
-    for(const c of candidates){
-      if(!c) continue;
-      if(typeof c==='object') return c;
-      try{return JSON.parse(c||'{}');}catch(e){}
-    }
-    return {};
-  }
-  function equipDefs(ses){return (ses&&typeof ses.equip==='object')?ses.equip:{};}
-  function equipDef(ses,name){const defs=equipDefs(ses); const def=defs[name]||{}; const fb=(typeof EQUIP_LIST!=='undefined'?(EQUIP_LIST||[]):[]).find(x=>x.k===name||x.name===name)||{}; return {incl:n(def.incl||def.included||fb.incl||fb.included), price:n(def.price||fb.price)};}
+  function parseObj(v){if(!v) return {}; if(typeof v==='object') return v; try{return JSON.parse(v||'{}');}catch(e){return {};}}
+  function equipObj(r){return parseObj(r.actualEquip||r.actual_equip||r.equip||r.equip_json||r.equipment_json||r.equipmentJson||r.equipment);}
+  function equipDefs(ses){return parseObj(ses&& (ses.equip||ses.equipment||ses.equipment_json));}
+  function equipDef(ses,name){const defs=equipDefs(ses); const def=defs[name]||{}; const fb=(typeof EQUIP_LIST!=='undefined'?(EQUIP_LIST||[]):[]).find(x=>x.k===name||x.name===name)||{}; return {incl:n(def.incl||def.included||def.free||fb.incl||fb.included), price:n(def.price||def.unitPrice||fb.price)};}
   function dateText(ses){try{return fmtOverviewDateRangeText(ses);}catch(e){return ses.date||ses.eventDate||'';}}
   function nameOfSes(ses){return ses.title||ses.name||ses.sessionName||ses.id||'場次';}
   function sessionOf(sesId){return (ST.sdData||[]).find(s=>String(s.id)===String(sesId))||{};}
-  function safePercent(part,total){return total>0?Math.max(0,Math.round(part/total*100)):0;}
-  function metric(label,num,sub,cls,onclick,ico){return `<button type="button" class="ssd-stat ${cls||''}" onclick="${onclick||''}"><div class="ico">${ico||''}</div><div class="lbl">${esc(label)}</div><div class="num">${esc(num)}</div>${sub?`<div class="sub">${esc(sub)}</div>`:''}</button>`;}
   function getSessionRegs(sesId){return (ST.allRegs||[]).filter(r=>sidOf(r)===String(sesId));}
-  function financeAnomalyRows(sesId){
-    return getSessionRegs(sesId).filter(r=>{
-      const amt=amountOf(r), rep=reportAmtOf(r), total=n(r.totalAmount||r.total_amount||r.amount);
-      if(rep && amt && Math.abs(rep-amt)>1) return true;
-      if(isPaid(r) && total>0 && amt<=0) return true;
-      if(isPendingPay(r) && rep && total && Math.abs(rep-total)>1) return true;
-      if(r.finance_issue||r.financeIssue||r.amount_issue) return true;
-      return false;
-    });
+  function safePercent(part,total){return total>0?Math.max(0,Math.round(part/total*100)):0;}
+  function seatCodeOf(r){return txt(r.stallNo||r.stall_no||r.seatCode||r.seat_code||r.boothNo||r.booth_no);}
+  function seatStatusOf(r){return txt(r.seat_choice_status||r.seatChoiceStatus||r.seatStatus||r.seat_status);}
+  function seatList(ses){
+    const raw=parseObj(ses.seats||ses.seatItems||ses.seat_items||ses.seatMap||ses.seat_map||ses.seat_map_json);
+    const arr=Array.isArray(raw)?raw:(Array.isArray(raw.seats)?raw.seats:[]);
+    return arr.map(s=>({code:txt(s.code||s.seatCode||s.stallNo),type:txt(s.type||s.seatType||'auto'),price:n(s.price||s.priceDelta),active:s.active!==false,note:txt(s.note)})).filter(s=>s.code);
   }
+  function financeIssue(r){
+    const amt=amountOf(r), rep=reportAmtOf(r), total=n(r.totalAmount||r.total_amount||r.amount);
+    if(r.finance_issue||r.financeIssue||r.amount_issue) return txt(r.finance_issue||r.financeIssue||r.amount_issue);
+    if(rep && amt && Math.abs(rep-amt)>1) return '回報金額與已收金額不一致';
+    if(isPaid(r) && total>0 && amt<=0) return '已繳費但金額為 0';
+    if(isPendingPay(r) && rep && total && Math.abs(rep-total)>1) return '待確認回報金額與應收金額不一致';
+    return '';
+  }
+  function financeAnomalyRows(sesId){return getSessionRegs(sesId).filter(r=>!!financeIssue(r));}
   function equipmentRows(ses,sr){
     const src=sr.filter(r=>approved(r)&&!isCancelled(r));
     const totals={};
@@ -5837,10 +5798,53 @@ function downloadInvoiceList(){
     const arr=Object.values(totals);
     return arr.length?arr:[{name:'桌子',demand:0,included:0,addon:0},{name:'椅子',demand:0,included:0,addon:0},{name:'電力',demand:0,included:0,addon:0}];
   }
+  function metric(label,num,sub,cls,onclick,ico){return `<button type="button" class="ssd-stat ${cls||''}" onclick="${onclick||''}"><div class="ico">${ico||''}</div><div class="lbl">${esc(label)}</div><div class="num">${esc(num)}</div>${sub?`<div class="sub">${esc(sub)}</div>`:''}</button>`;}
+  window.ssdOpenRegs=function(sesId,sesName,status){
+    goPage('regs');
+    setTimeout(()=>{ if(typeof goRegsList==='function') goRegsList(sesId,sesName,status||''); },180);
+  };
+  window.ssdOpenPayments=function(sesId,sesName,filter){
+    goPage('payments');
+    setTimeout(()=>{ if(typeof goPaymentsList==='function') goPaymentsList(sesId,sesName,filter||''); },220);
+  };
+  window.ssdOpenCheckin=function(sesId,sesName,filter){
+    goPage('checkin');
+    setTimeout(()=>{
+      if(typeof showCheckinDetailLayerFiltered==='function') showCheckinDetailLayerFiltered(sesId,sesName,filter||'');
+      else if(typeof goCheckinList==='function') goCheckinList(sesId,sesName,filter||'');
+    },220);
+  };
+  function detailRowsFor(sesId,type){
+    const ses=sessionOf(sesId); const sr=getSessionRegs(sesId); const seats=seatList(ses); const approvedRows=sr.filter(r=>approved(r)&&!isCancelled(r)); const paidRows=sr.filter(r=>isPaid(r)&&!isCancelled(r));
+    const usedCodes=new Set(approvedRows.map(seatCodeOf).filter(Boolean));
+    const baseHeaders=['品牌','姓名','Email','狀態','付款','攤位','金額'];
+    const regRow=r=>[r.brand||'',r.name||'',r.email||'',reviewOf(r),payOf(r),seatCodeOf(r)||'-',amountOf(r)];
+    if(type==='reported') return {title:'已回報客服明細',headers:baseHeaders,rows:approvedRows.filter(reported).map(regRow),note:'列出本場已收到付款回報／客服回報的報名。'};
+    if(type==='unreported') return {title:'尚未回報明細',headers:baseHeaders,rows:approvedRows.filter(r=>!reported(r)).map(regRow),note:'列出已錄取但尚未回報付款／客服資訊的報名。'};
+    if(type==='cancelTodo') return {title:'取消待處理明細',headers:baseHeaders,rows:sr.filter(r=>/取消/.test(reviewOf(r))&&!/已取消/.test(reviewOf(r))).map(regRow),note:'列出狀態含取消但尚未完成已取消歸檔的資料。'};
+    if(type==='assigned') return {title:'已分配攤位明細',headers:baseHeaders,rows:approvedRows.map(regRow),note:'以已錄取／待確認／已繳費且未取消資料為準。'};
+    if(type==='locked') return {title:'加價鎖定明細',headers:baseHeaders,rows:sr.filter(r=>/locked|已鎖定|鎖定/.test(seatStatusOf(r))).map(regRow),note:'列出選位狀態為鎖定的報名。'};
+    if(type==='reserved') return {title:'保留中／選位即將逾期明細',headers:baseHeaders,rows:sr.filter(r=>/reserved|保留/.test(seatStatusOf(r))).map(regRow),note:'列出選位保留中的報名，供主辦追蹤逾期處理。'};
+    if(type==='depositPending') return {title:'押金待退明細',headers:baseHeaders,rows:paidRows.filter(r=>depositOf(r,ses)>0&&!/已退/.test(txt(r.depositRefunded||r.deposit_refunded))).map(regRow),note:'列出已繳費且押金尚未退還的報名。'};
+    if(type==='service') return {title:'服務台明細',headers:['攤位代碼','類型','加價','啟用','備註'],rows:seats.filter(s=>s.type==='service').map(s=>[s.code,s.type,s.price,s.active?'是':'否',s.note]),note:seats.length?'來自選位地圖設定。':'目前快取沒有服務台攤位明細，請至場次設定查看選位地圖。'};
+    if(type==='openBooths') return {title:'開放攤位明細',headers:['攤位代碼','類型','加價','狀態','備註'],rows:seats.filter(s=>s.active).map(s=>[s.code,s.type,s.price,usedCodes.has(s.code)?'已分配':'可用',s.note]),note:seats.length?'來自選位地圖設定。':'目前未載入選位地圖明細；此數字依場次容量欄位計算。'};
+    if(type==='empty') return {title:'空攤明細',headers:['攤位代碼','類型','加價','狀態','備註'],rows:seats.length?seats.filter(s=>s.active&&!usedCodes.has(s.code)&&s.type!=='service').map(s=>[s.code,s.type,s.price,'空攤',s.note]):[['-', '-', 0, '空攤數：'+Math.max(0,(n(ses.capacity||ses.maxStalls||ses.stallCapacity||ses.quota||ses.boothCount||ses.totalStalls)||approvedRows.reduce((a,r)=>a+stallCount(r),0))-approvedRows.reduce((a,r)=>a+stallCount(r),0)), '未載入攤位代碼']],note:seats.length?'扣除已分配與服務台後的可用攤位。':'目前未載入攤位代碼，因此顯示容量試算明細。'};
+    return {title:'明細',headers:baseHeaders,rows:sr.map(regRow),note:''};
+  }
+  window.ssdOpenDetail=function(sesId,type){
+    const d=detailRowsFor(sesId,type);
+    const rows=d.rows&&d.rows.length?d.rows:[[...Array(d.headers.length)].map((_,i)=>i===0?'目前沒有對應資料':'')];
+    const table=`<div style="overflow:auto;max-height:60vh;border:1px solid #E5E7EB;border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:640px"><thead><tr style="background:#F8FAFC">${d.headers.map(h=>`<th style="text-align:left;padding:8px;border-bottom:1px solid #E5E7EB;white-space:nowrap">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(c=>`<td style="padding:8px;border-bottom:1px solid #F1F5F9;white-space:nowrap">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    const modal=document.createElement('div');
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:14px';
+    modal.innerHTML=`<div style="background:#fff;border-radius:16px;width:100%;max-width:860px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.22);color:#111"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px"><div style="font-size:20px;font-weight:950">${esc(d.title)}</div><button type="button" style="border:none;background:#F1F5F9;border-radius:9px;padding:8px 12px;font-weight:900;cursor:pointer" onclick="this.closest('div[style*=fixed]').remove()">關閉</button></div>${d.note?`<div style="font-size:13px;color:#555;font-weight:700;margin-bottom:8px">${esc(d.note)}</div>`:''}${table}</div>`;
+    document.body.appendChild(modal);
+  };
   window.renderSingleSessionDashboard=function(sesId, sesName){
     const holder=document.getElementById('singleSessionDashboard'); if(!holder) return;
     if(!sesId || sesId==='all'){holder.innerHTML=''; return;}
     const ses=sessionOf(sesId); const sr=getSessionRegs(sesId); const sName=sesName||nameOfSes(ses);
+    const sid=jsq(sesId), nm=jsq(sName);
     const total=sr.length;
     const pending=sr.filter(r=>reviewOf(r)==='待審核').length;
     const approvedRows=sr.filter(r=>approved(r)&&!isCancelled(r));
@@ -5860,42 +5864,43 @@ function downloadInvoiceList(){
     const paidAmt=paidRows.reduce((a,r)=>a+amountOf(r),0);
     const pendingAmt=pendingPayRows.reduce((a,r)=>a+amountOf(r),0);
     const unpaidAmt=unpaidRows.reduce((a,r)=>a+amountOf(r),0);
-    const openCap=n(ses.capacity||ses.maxStalls||ses.stallCapacity||ses.quota||ses.boothCount||ses.totalStalls)||Math.max(approvedRows.reduce((a,r)=>a+stallCount(r),0),0);
-    const assigned=paidRows.reduce((a,r)=>a+stallCount(r),0);
-    const locked=sr.filter(r=>/locked|已鎖定|鎖定/.test(txt(r.seat_choice_status||r.seatChoiceStatus))).length;
-    const reserved=sr.filter(r=>/reserved|保留/.test(txt(r.seat_choice_status||r.seatChoiceStatus))).length;
-    const service=n(ses.serviceDeskCount||ses.service_count||ses.serviceStalls)||0;
+    const seats=seatList(ses);
+    const openCap=seats.length?seats.filter(s=>s.active&&s.type!=='service').length:(n(ses.capacity||ses.maxStalls||ses.stallCapacity||ses.quota||ses.boothCount||ses.totalStalls)||Math.max(approvedRows.reduce((a,r)=>a+stallCount(r),0),0));
+    const assigned=approvedRows.reduce((a,r)=>a+stallCount(r),0);
+    const locked=sr.filter(r=>/locked|已鎖定|鎖定/.test(seatStatusOf(r))).length;
+    const reserved=sr.filter(r=>/reserved|保留/.test(seatStatusOf(r))).length;
+    const service=seats.length?seats.filter(s=>s.type==='service').length:(n(ses.serviceDeskCount||ses.service_count||ses.serviceStalls)||0);
     const checkedIn=sr.filter(r=>/已報到/.test(txt(r.checkin||r.checkinStatus||r.checkin_status))).length;
-    const depPending=paidRows.filter(r=>!/已退/.test(txt(r.depositRefunded||r.deposit_refunded))).length;
+    const depPending=paidRows.filter(r=>depositOf(r,ses)>0&&!/已退/.test(txt(r.depositRefunded||r.deposit_refunded))).length;
     const empty=Math.max(0,openCap-approvedRows.reduce((a,r)=>a+stallCount(r),0));
     const eRows=equipmentRows(ses,sr);
     const colors=['#FB923C','#22C55E','#14B8A6','#8B5CF6','#EF4444','#6B7280'];
     const statusParts=[pending,approvedCount,paid,pendingPay,unpaid,empty]; const denom=Math.max(1,total+empty);
     const bar=statusParts.map((v,i)=>`<span style="width:${safePercent(v,denom)}%;background:${colors[i]}"></span>`).join('');
-    const ev=(ST.events||[]).find(e=>String(e.id)===String(ses.eventId))||{};
+    const ev=(ST.events||[]).find(e=>String(e.id)===String(ses.eventId||ses.event_id||''))||{};
     holder.innerHTML=`<div class="ssd-wrap">
-      <div class="ssd-head"><div><div class="ssd-title">${esc(sName)}</div><div class="ssd-meta"><span>📅 ${esc(dateText(ses)||'-')}</span><span>📍 ${esc(ses.venue||ses.location||ev.location||'-')}</span><span>報名期間：${esc(ses.regStart||ses.reg_start||'-')} ~ ${esc(ses.regEnd||ses.reg_end||'-')}</span><span>場次編號：${esc(ses.code||ses.sessionCode||ses.id||'')}</span></div></div><div class="ssd-actions"><button onclick="downloadSesData('${escAttr(String(sesId))}','${escAttr(String(sName))}')">⬇ 下載本場完整 Excel（含名單＋金流）</button><button onclick="openFinanceModal('${escAttr(String(sesId))}','${escAttr(String(sName))}','${escAttr(String(ev.title||ev.name||''))}')">📊 查看本場財報</button><button onclick="backToRegsSummary()">← 返回跨場次</button></div></div>
+      <div class="ssd-head"><div><div class="ssd-title">${esc(sName)}</div><div class="ssd-meta"><span>📅 ${esc(dateText(ses)||'-')}</span><span>📍 ${esc(ses.venue||ses.location||ev.location||'-')}</span><span>報名期間：${esc(ses.regStart||ses.reg_start||'-')} ~ ${esc(ses.regEnd||ses.reg_end||'-')}</span><span>場次編號：${esc(ses.code||ses.sessionCode||ses.id||'')}</span></div></div><div class="ssd-actions"><button onclick="downloadSesData('${sid}','${nm}')">⬇ 下載本場完整 Excel（名單＋金流＋設備＋狀態）</button><button onclick="openFinanceModal('${sid}','${nm}','${jsq(ev.title||ev.name||'')}')">📊 查看本場財報</button><button onclick="backToRegsSummary()">← 返回跨場次</button></div></div>
       <div class="ssd-sec"><div class="ssd-sec-title">1 本場概況</div><div class="ssd-grid">
-        ${metric('報名',total,'名單總數','blue',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','')`,'👥')}
-        ${metric('待審核',pending,'待人工審核','warn',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','待審核')`,'🕘')}
-        ${metric('已錄取',approvedCount,'應收 NT$'+approvedAmt.toLocaleString(),'green',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已錄取')`,'✅')}
-        ${metric('已繳費',paid,'已收 NT$'+paidAmt.toLocaleString(),'green',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已繳費')`,'💵')}
-        ${metric('待確認',pendingPay,'待確認 NT$'+pendingAmt.toLocaleString(),'purple',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','待確認')`,'🛡️')}
-        ${metric('未繳費',unpaid,'未收 NT$'+unpaidAmt.toLocaleString(),'red',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','未繳費')`,'⚠️')}
-        ${metric('空攤',empty,'可供分配','gray','','🏪')}
+        ${metric('報名',total,'名單總數','blue',`ssdOpenRegs('${sid}','${nm}','')`,'👥')}
+        ${metric('待審核',pending,'待人工審核','warn',`ssdOpenRegs('${sid}','${nm}','待審核')`,'🕘')}
+        ${metric('已錄取',approvedCount,'應收 NT$'+approvedAmt.toLocaleString(),'green',`ssdOpenRegs('${sid}','${nm}','已錄取')`,'✅')}
+        ${metric('已繳費',paid,'已收 NT$'+paidAmt.toLocaleString(),'green',`ssdOpenPayments('${sid}','${nm}','已繳費')`,'💵')}
+        ${metric('待確認',pendingPay,'待確認 NT$'+pendingAmt.toLocaleString(),'purple',`ssdOpenPayments('${sid}','${nm}','待確認')`,'🛡️')}
+        ${metric('未繳費',unpaid,'未收 NT$'+unpaidAmt.toLocaleString(),'red',`ssdOpenPayments('${sid}','${nm}','未繳費')`,'⚠️')}
+        ${metric('空攤',empty,'查看空攤明細','gray',`ssdOpenDetail('${sid}','empty')`,'🏪')}
       </div><div style="margin-top:8px;font-size:12px;font-weight:900;color:#111">狀態分布（依名單狀態）</div><div class="ssd-bar">${bar}</div><div class="ssd-bar-labels"><span>待審核 ${pending}（${safePercent(pending,denom)}%）</span><span>已錄取 ${approvedCount}（${safePercent(approvedCount,denom)}%）</span><span>已繳費 ${paid}（${safePercent(paid,denom)}%）</span><span>待確認 ${pendingPay}（${safePercent(pendingPay,denom)}%）</span><span>未繳費 ${unpaid}（${safePercent(unpaid,denom)}%）</span><span>空攤 ${empty}（${safePercent(empty,denom)}%）</span></div></div>
       <div class="ssd-sec"><div class="ssd-sec-title">2 待處理提醒</div><div class="ssd-grid todo">
-        ${metric('已回報客服',reportedRows.length,'待處理','blue',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','待確認')`,'🎧')}
-        ${metric('尚未回報',unreportedRows.length,'待回報','gray',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已錄取')`,'✉️')}
-        ${metric('金額異常',anomalies.length,'待確認',anomalies.length?'red':'gray',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','金額異常')`,'🔺')}
-        ${metric('退款待處理',refundReq,'待處理','red',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','申請退費')`,'↩️')}
-        ${metric('取消待處理',cancelTodo,'待處理','purple',`goRegsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已取消')`,'✖️')}
-        ${metric('選位即將逾期',reserved,'保留中','blue',`goPaymentsList('${escAttr(String(sesId))}','${escAttr(String(sName))}','全部')`,'📅')}
+        ${metric('已回報客服',reportedRows.length,'查看明細','blue',`ssdOpenDetail('${sid}','reported')`,'🎧')}
+        ${metric('尚未回報',unreportedRows.length,'查看明細','gray',`ssdOpenDetail('${sid}','unreported')`,'✉️')}
+        ${metric('金額異常',anomalies.length,'查看異常明細',anomalies.length?'red':'gray',`ssdOpenPayments('${sid}','${nm}','金額異常')`,'🔺')}
+        ${metric('退款待處理',refundReq,'待處理','red',`ssdOpenPayments('${sid}','${nm}','申請退費')`,'↩️')}
+        ${metric('取消待處理',cancelTodo,'查看明細','purple',`ssdOpenDetail('${sid}','cancelTodo')`,'✖️')}
+        ${metric('選位即將逾期',reserved,'保留中','blue',`ssdOpenDetail('${sid}','reserved')`,'📅')}
       </div></div>
-      <div class="ssd-mid"><div class="ssd-sec" style="margin:0"><div class="ssd-sec-title">3 設備總覽 <small>僅顯示數量</small><button class="btn btn-s btn-xs" style="margin-left:auto" onclick="downloadSesData('${escAttr(String(sesId))}','${escAttr(String(sName))}')">查看設備明細 ›</button></div><div class="ssd-equip-card">${eRows.map((r,i)=>`<div class="ssd-equip-row"><div class="ssd-equip-name">${i===0?'▰':i===1?'▟':'⚡'} ${esc(r.name)}</div><div class="ssd-equip-line"><span class="ssd-eq-pill">需求 <strong>${r.demand}</strong></span><span>|</span><span class="ssd-eq-pill">內含 <strong>${r.included}</strong></span><span>|</span><span class="ssd-eq-pill">加購 <strong>${r.addon}</strong></span></div></div>`).join('')}</div><div class="ssd-note">內含不計收入；加購收入與設備租借成本統一放在「本場財報」。</div></div>
-      <div class="ssd-sec" style="margin:0"><div class="ssd-sec-title">4 收支 / 財報入口</div><div class="ssd-fin-entry" onclick="openFinanceModal('${escAttr(String(sesId))}','${escAttr(String(sName))}','${escAttr(String(ev.title||ev.name||''))}')"><div class="ssd-fin-main"><div class="ssd-fin-ico">📈</div><div><div class="ssd-fin-title">查看本場財報</div><div class="ssd-fin-sub">收入 / 支出 / 押金 / 額外收支 / 退款</div></div></div><div style="display:flex;align-items:center;gap:14px"><div class="ssd-fin-ring"></div><div class="ssd-arrow">→</div></div></div><div class="ssd-xlsx-note">下載內容：名單＋金流＋設備＋狀態（整場資料）</div></div></div>
+      <div class="ssd-mid"><div class="ssd-sec" style="margin:0"><div class="ssd-sec-title">3 設備總覽 <small>僅顯示數量</small><button class="btn btn-s btn-xs" style="margin-left:auto" onclick="downloadSesData('${sid}','${nm}')">查看設備明細 ›</button></div><div class="ssd-equip-card">${eRows.map((r,i)=>`<div class="ssd-equip-row"><div class="ssd-equip-name">${i===0?'▰':i===1?'▟':'⚡'} ${esc(r.name)}</div><div class="ssd-equip-line"><span class="ssd-eq-pill">需求 <strong>${r.demand}</strong></span><span>|</span><span class="ssd-eq-pill">內含 <strong>${r.included}</strong></span><span>|</span><span class="ssd-eq-pill">加購 <strong>${r.addon}</strong></span></div></div>`).join('')}</div><div class="ssd-note">設備金額請至「本場財報」查看。</div></div>
+      <div class="ssd-sec" style="margin:0"><div class="ssd-sec-title">4 本場財報</div><div class="ssd-fin-entry" onclick="openFinanceModal('${sid}','${nm}','${jsq(ev.title||ev.name||'')}')"><div class="ssd-fin-main"><div class="ssd-fin-ico">📈</div><div><div class="ssd-fin-title">查看本場財報</div><div class="ssd-fin-sub">收入 / 支出 / 押金 / 額外收支 / 退款</div></div></div><div style="display:flex;align-items:center;gap:14px"><div class="ssd-fin-ring"></div><div class="ssd-arrow">→</div></div></div><div class="ssd-xlsx-note">下載內容：名單＋金流＋設備＋狀態（整場資料）</div></div></div>
       <div class="ssd-sec"><div class="ssd-sec-title">5 攤位 / 現場 <small>場地使用率 ${openCap?safePercent(assigned+locked+reserved,openCap):0}%</small></div><div class="ssd-grid booth">
-        ${metric('開放',openCap,'','blue','','🏬')}${metric('已分配',assigned,'','green','','✅')}${metric('加價鎖定',locked,'','purple','','🔒')}${metric('保留中',reserved,'','warn','','🕘')}${metric('服務台',service,'','blue','','👤')}${metric('已報到',checkedIn,'','green',`goCheckinList('${escAttr(String(sesId))}','${escAttr(String(sName))}','已報到')`,'🙋')}${metric('押金待退',depPending,'','red',`goCheckinList('${escAttr(String(sesId))}','${escAttr(String(sName))}','押金')`,'↩️')}
+        ${metric('開放',openCap,'查看明細','blue',`ssdOpenDetail('${sid}','openBooths')`,'🏬')}${metric('已分配',assigned,'查看明細','green',`ssdOpenDetail('${sid}','assigned')`,'✅')}${metric('加價鎖定',locked,'查看明細','purple',`ssdOpenDetail('${sid}','locked')`,'🔒')}${metric('保留中',reserved,'查看明細','warn',`ssdOpenDetail('${sid}','reserved')`,'🕘')}${metric('服務台',service,'查看明細','blue',`ssdOpenDetail('${sid}','service')`,'👤')}${metric('已報到',checkedIn,'查看名單','green',`ssdOpenCheckin('${sid}','${nm}','已報到')`,'🙋')}${metric('押金待退',depPending,'查看名單','red',`ssdOpenCheckin('${sid}','${nm}','押金')`,'↩️')}
       </div></div>
     </div>`;
   };
@@ -5916,13 +5921,14 @@ function downloadInvoiceList(){
     let list=[];
     try{const rows=await api({action:'adminFinanceAnomalies',email:ST.email,token:ST.token,tenant:TENANT_ID,_t:Date.now()}); if(Array.isArray(rows)) list=rows;}catch(e){list=[];}
     const sesFilter=ST._payFilterSesId||''; if(sesFilter) list=list.filter(r=>String(r.session_id||r.sessionId||r.sesId||'')===String(sesFilter));
-    if(!list.length && sesFilter) list=financeAnomalyRows(sesFilter).map(r=>({id:r.id,name:r.name,brand_name:r.brand,brand:r.brand,email:r.email,issue:'前台金額與回報/應收金額不一致',payment_status:payOf(r),review_status:reviewOf(r),amount:amountOf(r),total_amount:n(r.totalAmount||r.total_amount||r.amount)}));
+    if(!list.length && sesFilter) list=financeAnomalyRows(sesFilter).map(r=>({id:r.id,name:r.name,brand_name:r.brand,brand:r.brand,email:r.email,issue:financeIssue(r)||'前台金額與回報/應收金額不一致',payment_status:payOf(r),review_status:reviewOf(r),amount:amountOf(r),reported_amount:reportAmtOf(r),total_amount:n(r.totalAmount||r.total_amount||r.amount)}));
     const q=String(kw||'').toLowerCase().trim(); if(q) list=list.filter(r=>[r.name,r.brand_name,r.brand,r.email,r.issue,r.session_id,r.payment_status,r.review_status].join(' ').toLowerCase().includes(q));
     if(!list.length){el.innerHTML='<div style="color:#aaa;text-align:center;padding:22px;font-size:14px;background:#fff;border-radius:12px;box-shadow:var(--sh)">目前沒有金額異常資料</div>';return;}
-    el.innerHTML=list.map(r=>`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:9px;box-shadow:var(--sh);border-left:5px solid #A32D2D"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="line-height:1.6;min-width:0;flex:1"><div style="font-size:16px;font-weight:900;color:#A32D2D">金額異常｜${esc(r.issue||'未標示異常原因')}</div><div style="font-size:18px;font-weight:900;color:#111">${esc(r.brand_name||r.brand||r.name||r.email||'未命名')}</div><div style="font-size:15px;color:#333">Email：${esc(r.email||'-')}</div><div style="font-size:15px;color:#333">付款：${esc(r.payment_status||'-')}｜審核：${esc(r.review_status||'-')}</div><div style="font-size:17px;font-weight:900;color:#111">amount：NT$${n(r.amount).toLocaleString()}｜total_amount：NT$${n(r.total_amount).toLocaleString()}</div></div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0"><button class="btn btn-b btn-sm" onclick="openRegDetail('${escAttr(String(r.id||''))}')">看明細</button><button class="btn btn-g btn-sm" onclick="setPaymentFilter('全部')">回全部</button></div></div></div>`).join('');
+    el.innerHTML=list.map(r=>`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:9px;box-shadow:var(--sh);border-left:5px solid #A32D2D"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="line-height:1.6;min-width:0;flex:1"><div style="font-size:16px;font-weight:900;color:#A32D2D">金額異常｜${esc(r.issue||'未標示異常原因')}</div><div style="font-size:18px;font-weight:900;color:#111">${esc(r.brand_name||r.brand||r.name||r.email||'未命名')}</div><div style="font-size:15px;color:#333">Email：${esc(r.email||'-')}</div><div style="font-size:15px;color:#333">付款：${esc(r.payment_status||'-')}｜審核：${esc(r.review_status||'-')}</div><div style="font-size:17px;font-weight:900;color:#111">應收：NT$${n(r.total_amount).toLocaleString()}｜回報：NT$${n(r.reported_amount||r.report_amount).toLocaleString()}｜已收：NT$${n(r.amount).toLocaleString()}</div></div><div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0"><button class="btn btn-b btn-sm" onclick="openRegDetail('${jsq(String(r.id||''))}')">看明細</button><button class="btn btn-g btn-sm" onclick="setPaymentFilter('全部')">回全部</button></div></div></div>`).join('');
   };
   document.addEventListener('DOMContentLoaded',()=>setTimeout(ensureSingleSessionDashboard,80));
 })();
+
 
 </script>
 
