@@ -541,6 +541,29 @@ input[type=date],input[type=time],input[type=password],textarea,select{
 @media(min-width:1025px){
   .finance-card-body{padding:16px 18px 96px}
 }
+
+
+/* ── V8 admin white-background fix 20260629 ──
+   主頁面底色固定白色；頁面差異只用按鈕、邊框、卡片標籤區分。
+   避免整頁粉紅／綠／紫底造成閱讀壓力。 */
+body,#adminPage,.layout,.main,.tab-page,.tab-page.active{
+  background:#FFFFFF!important;
+  color:#111111!important;
+}
+.page-title,.card-hd h3,.summary-card-title,.topbar-logo,
+#page-overview,#page-regs,#page-payments,#page-staff,#page-settings,#page-checkin{
+  color:#111111!important;
+}
+/* 保留分頁色系：用左框／上框做辨識，不用整頁底色 */
+#page-regs.active{border-top:4px solid var(--rg-border);padding-top:12px;}
+#page-payments.active{border-top:4px solid var(--py-border);padding-top:12px;}
+#page-overview.active{border-top:4px solid var(--ov-border);padding-top:12px;}
+#page-staff.active,#page-settings.active{border-top:4px solid var(--st-border);padding-top:12px;}
+#page-checkin.active{border-top:4px solid var(--ck-border);padding-top:12px;}
+/* 表格與列表底色改白，hover 只保留很淡提示 */
+.ses-table td,.reg-table td,.summary-table td{background:#FFFFFF;color:#111111;}
+.ses-table tr:hover td,.reg-table tr:hover td,.summary-table tr:hover td{background:#FAFAFA!important;}
+
 </style>
 <!-- db-driven-20260618 -->
 <!-- build: finance-card-invoice-footer-187 -->
@@ -2249,11 +2272,11 @@ function goPage(name, opts){
   if (_navEl) _navEl.classList.add('active');
   // UI: 設定 data-page 供 CSS 做各頁 active tab 色
   const ap=$('adminPage'); if(ap) ap.setAttribute('data-page',name);
-  // UI: 設定 main 背景色依分頁
+  // UI: 主內容底色固定白色；只用邊框、按鈕、標籤區分分頁色系
   const mainEl=document.querySelector('.main');
   if(mainEl){
-    const bgMap={regs:'var(--rg-bg)',payments:'var(--py-bg)',overview:'var(--ov-bg)',staff:'var(--st-bg)',settings:'var(--st-bg)',checkin:'var(--ck-bg)'};
-    mainEl.style.background=bgMap[name]||'var(--bg)';
+    mainEl.style.background='#FFFFFF';
+    mainEl.style.color='#111111';
   }
   const skipHistory=opts&&opts.skipHistory;
   if(!skipHistory && window.__adminHistoryReady && window.history){
@@ -4346,6 +4369,7 @@ async function renderPaymentManagement(targetId){
           <div style="font-size:12px;color:#aaa;margin-top:5px">報名：${String(r.createdAt||'').slice(0,16)}${r.paidAt?'　付款：'+String(r.paidAt).slice(0,16):''}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          ${(!isPending && (((r.paymentScreenshotStatus||r.payment_screenshot_status||'')==='已回報客服') || note.includes('已回報客服')))?`<button class="btn btn-y btn-sm" disabled style="opacity:1;cursor:default">已回報客服</button>`:''}
           ${isPending?`<button class="btn btn-y btn-sm" onclick="markPaymentScreenshotById('${r.id}')">已回報客服</button>`:''}
           ${isPending?`<button class="btn btn-g btn-sm" onclick="confirmPayById('${r.id}')">確認付款</button>`:''}
           ${isPending?`<button class="btn btn-r btn-sm" onclick="adminCancelRegById('${r.id}')">取消報名</button>`:''}
