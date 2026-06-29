@@ -10,6 +10,7 @@
 <style>
 :root{
   --c1:#DDEAD1;--c2:#FAEEC7;--c3:#D9E5EE;--c4:#FAE1DD;--c5:#DCD7ED;
+  --c-green:#DDEAD1;--c-yellow:#FAEEC7;--c-blue:#D9E5EE;--c-pink:#FAE1DD;--c-purple:#DCD7ED;
   --wh:#ffffff;--txt:#111111;--muted:#666666;--border:#e8e8e4;
   --r:14px;--r-sm:10px;
   --g:var(--c1);--gp:var(--c1);--gl:#b8d4a0;
@@ -164,17 +165,17 @@ button,a,[onclick]{touch-action:manipulation}
 .fcard-body{padding:12px 14px}
 .fee-box{background:var(--c2);border-radius:var(--r-sm);padding:12px;margin:8px 0}
 .reg-actions{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5000;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal-overlay.show{display:flex}
 .modal-box{background:var(--wh);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 16px 32px}
-.seat-preview-box{max-width:760px!important;max-height:92dvh!important;height:min(92dvh,760px);padding:0!important;overflow:hidden!important;display:flex;flex-direction:column;border-radius:20px 20px 0 0}
+.seat-preview-box{max-width:760px!important;max-height:92dvh!important;height:min(92dvh,760px);padding:0!important;overflow:hidden!important;display:flex;flex-direction:column;border-radius:20px 20px 0 0;position:relative}
 .seat-preview-header{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:16px 18px 12px;background:#fff;border-bottom:1px solid var(--border)}
 .seat-preview-header-title{font-size:20px;font-weight:950;line-height:1.25;flex:1}
 .seat-preview-close{width:42px;height:42px;border:none;border-radius:14px;background:var(--c-pink);color:#111;font-size:26px;font-weight:950;line-height:1;cursor:pointer}
-.seat-preview-scroll{flex:1;overflow-y:auto;padding:14px 16px 16px;-webkit-overflow-scrolling:touch}
-.seat-preview-footer{flex-shrink:0;background:#fff;border-top:1px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.06)}
-.seat-preview-footer button{width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950}
+.seat-preview-scroll{flex:1;overflow-y:auto;padding:14px 16px calc(120px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.seat-preview-footer{flex-shrink:0;background:#fff;border-top:1px solid var(--border);padding:10px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.06);position:sticky;bottom:0;z-index:10}
+.seat-preview-footer button{width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:15px;font-size:18px;font-weight:950;min-height:54px}
 @media(min-width:600px){.seat-preview-box{border-radius:20px;height:min(92dvh,820px)}}
 .modal-title{font-size:18px;font-weight:900;margin-bottom:16px}
 .modal-actions{display:flex;gap:10px;margin-top:16px}
@@ -1072,7 +1073,9 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:10px">
         此畫面僅供報名前查看位置配置；正式加價選位將於錄取後 24 小時內，在「我的紀錄」完成選位與付款。
       </div>
+      <button type="button" onclick="closeModal('seatPreviewModal')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;margin:0 0 12px">返回報名表</button>
       <div id="seatPreviewBody" style="min-height:180px"></div>
+      <button type="button" onclick="closeModal('seatPreviewModal')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;margin:18px 0 0">返回報名表</button>
     </div>
     <div class="seat-preview-footer">
       <button type="button" onclick="closeModal('seatPreviewModal')">關閉，返回報名表</button>
@@ -1426,8 +1429,8 @@ async function apiPost(body, timeoutMs=15000){
     clearTimeout(timer);
   }
 }
-function openModal(id){const el=$(id);if(el)el.classList.add('show');}
-function closeModal(id){const el=$(id);if(el)el.classList.remove('show');}
+function openModal(id){const el=$(id);if(el){el.classList.add('show');el.classList.add('open');}}
+function closeModal(id){const el=$(id);if(el){el.classList.remove('show');el.classList.remove('open');}}
 function openLine(){ if(!LINE_URL){ toast('此主辦尚未設定 LINE，請聯繫主辦'); return; } window.open(LINE_URL,'_blank'); }
 
 function esc(v){return String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -2421,7 +2424,7 @@ function renderDynFormFull(s, isNew=false){
     // 設備品項
     const equipIcons={'桌':'🪑','椅':'🪑','延長線':'🔌','燈':'💡','燈具':'💡','帳篷':'⛺','電':'⚡'};
     equipDefs.forEach(([k,v])=>{
-      ST.equipQty[k]=frontEffectiveEquipIncl(k,v,s?.basicEquip||s?.basic_equip||'')*(ST.stallCount||1);
+      ST.equipQty[k]=frontEquipFreeTotal(k,v,s);
       const icon=Object.entries(equipIcons).find(([key])=>k.includes(key))?.[1]||'📦';
       const hasIncl=Number(v.incl)>0;
       const inclNote=hasIncl?`<span class="qty-name-incl">（本次含${v.incl}）</span>`:'';
@@ -2670,7 +2673,7 @@ function adjEquipDirect(k,val){
   // 更新提示
   const _ed=(s?.equip||{})[k]||{};
   const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
-  const inclFree=inclPerStall*stalls;
+  const inclFree=inclPerStall;
   const extra=Math.max(0,next-inclFree);
   const price=Number(_ed.price)||0;
   const hintId='eq_hint_'+k.replace(/[^a-zA-Z0-9]/g,'_');
@@ -2696,7 +2699,7 @@ function updateEquipRowTotal(k){
   if(!v) return;
   const want=ST.equipQty[k]||0;
   const stalls=ST.stallCount||1;
-  const incl=frontEffectiveEquipIncl(k,v,s.basicEquip||s.basic_equip||'')*stalls;
+  const incl=frontEffectiveEquipIncl(k,v,s.basicEquip||s.basic_equip||'');
   const extra=Math.max(0,want-incl);
   const subtotal=(v.price||0)*extra;
   const el=$('eqTotal_'+k);
@@ -3224,7 +3227,7 @@ function adjAddon(i,delta){
 
 
 function frontEquipFreeTotal(k, def, session){
-  return Math.max(0, frontEffectiveEquipIncl(k, def, session?.basicEquip||session?.basic_equip||'') * (ST.stallCount||1));
+  return Math.max(0, frontEffectiveEquipIncl(k, def, session?.basicEquip||session?.basic_equip||''));
 }
 function ensureIncludedEquipQty(){
   const s=ST.currentSession||{};
@@ -3269,7 +3272,7 @@ function adjEquip(k,delta){
   // 動態更新說明：已含幾件、額外幾件
   const _ed=(s?.equip||{})[k]||{};
   const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
-  const inclFree=inclPerStall*(ST.stallCount||1);
+  const inclFree=inclPerStall;
   const extra=Math.max(0,next-inclFree);
   const price=Number(_ed.price)||0;
   const hintId='eq_hint_'+k.replace(/[^a-zA-Z0-9]/g,'_');
@@ -3324,7 +3327,7 @@ function updateFee(){
   let equipTotal=0;
   Object.entries(s.equip||{}).forEach(([k,v])=>{
     if(v&&v.open){
-      const incl=frontEffectiveEquipIncl(k,v,s?.basicEquip||s?.basic_equip||'')*stalls;
+      const incl=frontEffectiveEquipIncl(k,v,s?.basicEquip||s?.basic_equip||'');
       const want=ST.equipQty[k]||0;
       const extra=Math.max(0, want-incl);  // 只算超過內含的部分
       equipTotal+=(v.price||0)*extra;
@@ -3361,7 +3364,7 @@ function updateFee(){
   Object.entries(_s.equip||{}).forEach(([k,v])=>{
     if(!v||!v.open) return;
     const _stalls=ST.stallCount||1;
-    const _incl=frontEffectiveEquipIncl(k,v,_s.basicEquip||_s.basic_equip||'')*_stalls;
+    const _incl=frontEffectiveEquipIncl(k,v,_s.basicEquip||_s.basic_equip||'');
     const _want=ST.equipQty[k]||0;
     const _extra=Math.max(0,_want-_incl);
     const _sub=(Number(v.price)||0)*_extra;
@@ -3591,7 +3594,7 @@ async function submitReg(ev){
       agreementVersion: ST._agreementData?.version || '',
     };
     const res=await apiPost(body);
-    if(!res){ toast('❌ 後端沒有回傳資料'); restoreBtn(); return false; }
+    if(!res){ toast('❌ 後端沒有回傳資料',8000); showFormError('後端沒有回傳資料，請稍後到我的紀錄確認是否已建立報名。'); restoreBtn(); return false; }
     if(res.error){ toast('❌ '+res.error, 8000); showFormError(res.error); restoreBtn(); return false; }
     hideFormError();
     ST.memberEmail=email;
@@ -3616,20 +3619,20 @@ async function submitReg(ev){
         }
       }).catch(e=>console.warn('[background getMember failed]', e));
     },0);
-    const dynForm=$('dynForm');
-    const outerFeeBox=document.querySelector('#regFormModal .form-wrap > #feeBox');
-    if(dynForm) dynForm.style.display='none'; if(outerFeeBox) outerFeeBox.style.display='none'; if(btn) btn.style.display='none';
     const modalInner=$('regFormModal')?.querySelector('.modal-box');
+    if(btn){ btn.disabled=true; btn.textContent='報名成功'; btn.style.display='none'; }
     if(modalInner){
-      const old=modalInner.querySelector('.success-screen'); if(old) old.remove();
-      const div=document.createElement('div'); div.className='success-screen'; div.style.cssText='text-align:center;padding:48px 20px';
-      div.innerHTML=`<div style="font-size:60px;margin-bottom:12px">🎉</div><div style="font-size:22px;font-weight:900;color:var(--g);margin-bottom:8px">報名成功！</div><div style="font-size:14px;color:var(--md);margin-bottom:4px">已收到您的報名申請</div><div style="font-size:13px;color:var(--lt);margin-bottom:24px">審核結果將寄送至 ${email}</div><div style="font-size:15px;color:var(--lt)">3 秒後自動返回...</div>`;
-      const scrollArea=modalInner.querySelector('[style*="overflow-y:auto"]') || modalInner;
-      scrollArea.appendChild(div);
-      if(scrollArea.scrollTo) scrollArea.scrollTo(0,9999);
+      modalInner.innerHTML = `<div class="success-screen" style="text-align:center;padding:52px 22px 64px;background:#fff;min-height:70vh;display:flex;flex-direction:column;justify-content:center">
+        <div style="font-size:64px;margin-bottom:14px">🎉</div>
+        <div style="font-size:28px;font-weight:950;color:#111;margin-bottom:12px">報名成功！</div>
+        <div style="font-size:17px;line-height:1.8;color:#333;font-weight:800;margin-bottom:18px">已收到您的報名申請。<br>審核結果將寄送至<br><b>${esc(email)}</b></div>
+        <div style="background:var(--c-green);border:2px solid #9fb59c;border-radius:16px;padding:14px 16px;font-size:16px;line-height:1.7;font-weight:900;margin-bottom:18px">日後可到「我的紀錄」使用 Email + 手機查詢報名狀態。</div>
+        <button type="button" onclick="closeRegFormModal();goMemberPage();scheduleMemberRecordsSync('after-register-success-button',100)" style="width:100%;border:none;background:var(--c-yellow);border-radius:16px;padding:15px;font-size:18px;font-weight:950;margin-bottom:10px">前往我的紀錄</button>
+        <button type="button" onclick="closeRegFormModal();window.scrollTo(0,0)" style="width:100%;border:2px solid #ddd;background:#fff;border-radius:16px;padding:14px;font-size:17px;font-weight:900">返回活動列表</button>
+      </div>`;
     }else{ alert('報名成功！'); }
     ST.__submitting=false;
-    setTimeout(()=>{ closeRegFormModal(); scheduleMemberRecordsSync('after-register-close',150); window.scrollTo(0,0); },3000);
+    scheduleMemberRecordsSync('after-register-success',150);
     return false;
   }catch(e){
     console.error('[submitReg fatal]', e);
