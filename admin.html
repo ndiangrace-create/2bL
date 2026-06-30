@@ -54,7 +54,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260701-todo-equipmentText-fix-002';
+const ADMIN_BUILD = '20260701-time-sort-003';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -79,13 +79,88 @@ function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classLi
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
-async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜0701待辦設備修正版'; await refreshSessionsOverview(); }
+async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜0701時間排序修正版'; await refreshSessionsOverview(); }
 function switchPage(page){ AdminState.currentPage=page; ['sessions','todos','members','settings'].forEach(p=>{ $('page-'+p).classList.toggle('hidden',p!==page); $('tab-'+p).classList.toggle('active',p===page); }); if(page==='sessions') renderSessions(); if(page==='todos') loadTodos(); if(page==='members') loadMembers(); }
 async function refreshCurrentPage(){ if(AdminState.currentLayer !== 'root' && AdminState.currentSessionId){ await refreshCurrentSessionOnly(); return; } if(AdminState.currentPage==='sessions') await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); if(AdminState.currentPage==='members') await loadMembers(); }
 function sessionId(s){return String(s.id||s.sessionId||s.session_id||'');}
 function sessionName(s){return s.name||s.title||s.sessionName||'未命名場次';}
 function regSessionId(r){ return String(r.sessionId||r.session_id||r.sessionID||r.session_id_text||''); } // 報名所屬場次 ID 相容函式
 function sessionById(id){ for(const s of AdminState.sessions){ if(sessionId(s)===String(id)) return s; } return {}; }
+
+function parseDateMillis(v){
+  if(v===undefined||v===null) return NaN;
+  if(v instanceof Date) return v.getTime();
+  let s=String(v).trim();
+  if(!s) return NaN;
+  const m=s.match(/(20\d{2})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})/);
+  if(m) return new Date(Number(m[1]), Number(m[2])-1, Number(m[3])).getTime();
+  const md=s.match(/(?:^|\D)(\d{1,2})[\/\-.月](\d{1,2})(?:\D|$)/);
+  if(md){
+    const y=(new Date()).getFullYear();
+    return new Date(y, Number(md[1])-1, Number(md[2])).getTime();
+  }
+  const t=Date.parse(s.replace(/年|月/g,'/').replace(/日/g,''));
+  return Number.isFinite(t)?t:NaN;
+}
+function collectDateMillisFromValue(v,out=[]){
+  if(v===undefined||v===null||v==='') return out;
+  const parsed=safeJson(v,v);
+  if(Array.isArray(parsed)){
+    parsed.forEach(x=>collectDateMillisFromValue(x,out));
+    return out;
+  }
+  if(typeof parsed==='object'){
+    ['date','value','label','start','startDate','start_at','dateText'].forEach(k=>{ if(parsed[k]) collectDateMillisFromValue(parsed[k],out); });
+    if(!Object.keys(parsed).some(k=>['date','value','label','start','startDate','start_at','dateText'].includes(k))){
+      Object.values(parsed).forEach(x=>collectDateMillisFromValue(x,out));
+    }
+    return out;
+  }
+  const s=String(parsed);
+  const re=/(20\d{2}[\/\-.年]\d{1,2}[\/\-.月]\d{1,2}|\d{1,2}[\/\-.月]\d{1,2})/g;
+  let m, hit=false;
+  while((m=re.exec(s))){ const t=parseDateMillis(m[1]); if(Number.isFinite(t)){out.push(t); hit=true;} }
+  if(!hit){ const t=parseDateMillis(s); if(Number.isFinite(t)) out.push(t); }
+  return out;
+}
+function nearestSortKey(times){
+  const clean=(times||[]).filter(Number.isFinite).map(t=>new Date(t).setHours(0,0,0,0));
+  if(!clean.length) return {group:2, key:Number.MAX_SAFE_INTEGER};
+  const today=new Date(); today.setHours(0,0,0,0); const now=today.getTime();
+  const future=clean.filter(t=>t>=now).sort((a,b)=>a-b);
+  if(future.length) return {group:0, key:future[0]};
+  const past=clean.sort((a,b)=>b-a);
+  return {group:1, key:-past[0]};
+}
+function sessionDateTimes(s){
+  const out=[];
+  collectDateMillisFromValue(s.dates,out);
+  collectDateMillisFromValue(s.dates_json,out);
+  collectDateMillisFromValue(s.date,out);
+  collectDateMillisFromValue(s.dateText,out);
+  collectDateMillisFromValue(s.startDate||s.start_date||s.start_at,out);
+  return out;
+}
+function sessionSortKey(s){ return nearestSortKey(sessionDateTimes(s)); }
+function regDateTimes(r){
+  const out=[];
+  collectDateMillisFromValue(r.selectedDatesText||r.selected_dates_text||r.registrationDateText||r.dateText,out);
+  collectDateMillisFromValue(r.selectedDates||r.selected_dates||r.selected_dates_json||r.dates||r.dates_json||r.date,out);
+  return out;
+}
+function todoSortKey(r){
+  const times=regDateTimes(r);
+  if(times.length) return nearestSortKey(times);
+  const sid=r.sessionId||r.session_id||regSessionId(r);
+  return sessionSortKey(sessionById(sid));
+}
+function compareDateSort(a,b,kind){
+  const ka=kind==='todo'?todoSortKey(a):sessionSortKey(a);
+  const kb=kind==='todo'?todoSortKey(b):sessionSortKey(b);
+  if(ka.group!==kb.group) return ka.group-kb.group;
+  if(ka.key!==kb.key) return ka.key-kb.key;
+  return String((kind==='todo'?(a.sessionName||a.brandName||a.brand||a.name||''):(sessionName(a)||''))).localeCompare(String((kind==='todo'?(b.sessionName||b.brandName||b.brand||b.name||''):(sessionName(b)||''))),'zh-Hant');
+}
 function isArchived(s){ return ['封存','隱藏','已封存'].includes(String(s.status||'')); }
 function isClosed(s){ return ['關閉','已關閉','停用','已截止'].includes(String(s.status||'')); }
 function formatDate(s){ if(s.dateText) return s.dateText; if(s.date) return String(s.date); if(Array.isArray(s.dates)){ const arr=[]; for(const d of s.dates){ arr.push(typeof d==='object' ? (d.date||'') : d); } return arr.join('、')||'未設定日期'; } return '未設定日期'; }
@@ -120,7 +195,7 @@ function qualityHtml(r){
   const issues=Array.isArray(r.dataQualityIssues)?r.dataQualityIssues:[];
   return issues.length?'<div class="quality-warn">⚠️ '+issues.map(safe).join('<br>⚠️ ')+'</div>':'';
 }
-function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current'; const list=[]; for(const s of AdminState.sessions){ if(mode==='current' && isArchived(s)) continue; if(mode==='archived' && !isArchived(s)) continue; if(kw && ![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw)) continue; list.push(s); } if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;} let out=''; for(const s of list) out += renderSessionCard(s); box.innerHTML=out; }
+function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current'; const list=[]; for(const s of AdminState.sessions){ if(mode==='current' && isArchived(s)) continue; if(mode==='archived' && !isArchived(s)) continue; if(kw && ![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw)) continue; list.push(s); } list.sort((a,b)=>compareDateSort(a,b,'session')); if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;} let out=''; for(const s of list) out += renderSessionCard(s); box.innerHTML=out; }
 function statButton(label,value,kind,sid,filter){ const disabled = value===undefined || value===null || value===''; const shown = disabled ? '—' : safe(value); return '<button class="stat click '+kind+'" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'\')"><b>'+shown+'</b><span>'+safe(label)+'</span></button>'; }
 
 function renderSessionCard(s){
@@ -325,11 +400,12 @@ async function buildTodoRowsFromSessions(){
       }
     }
   }
+  out.sort((a,b)=>compareDateSort(a,b,'todo'));
   return out;
 }
 function renderTodoRows(rows){
   let out='';
-  const list=(Array.isArray(rows)?rows:[]).map(normalizeTodoRow).filter(r=>hasTodoRegId(r));
+  const list=(Array.isArray(rows)?rows:[]).map(normalizeTodoRow).filter(r=>hasTodoRegId(r)).sort((a,b)=>compareDateSort(a,b,'todo'));
   for(const r of list){
     const sid=r.sessionId||'';
     const title=r.sessionName||sessionName(sessionById(sid))||'場次';
