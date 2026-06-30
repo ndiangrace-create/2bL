@@ -875,24 +875,28 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
 <!-- ══ 會員 / 我的報名 ══ -->
 <div id="pageMember" class="page">
-  <div class="back-bar" onclick="navTo('home')">
-    <span class="arrow">←</span>
-    <span class="title">會員專區</span>
+  <div class="m-topbar">
+    <button type="button" class="m-topbar-back" onclick="navTo('home')">←</button>
+    <div class="m-topbar-title">會員專區</div>
   </div>
 
   <!-- 登入區 -->
-  <div id="memberLoginArea" style="padding:20px 16px">
-    <div class="mcard">
-      <div style="font-size:18px;font-weight:900;margin-bottom:8px">會員登入／我的紀錄</div>
-      <div style="font-size:14px;color:var(--md);margin-bottom:14px;line-height:1.65">請使用 Email＋手機查詢我的紀錄。資料會依會員 Email 與手機綁定，不需另外跳轉登入。</div>
-      <div style="background:#fff;border:2px solid #DDEAD1;border-radius:16px;padding:14px;margin-bottom:14px">
-        <div style="font-size:16px;font-weight:950;color:#111;margin-bottom:8px">Email＋手機查詢</div>
+  <div id="memberLoginArea" style="padding:0 16px 100px;display:none">
+    <div class="m-hero m-hero-record" style="grid-template-columns:86px 1fr">
+      <div class="m-hero-ip"><img src="IP會員.png" alt="會員" onerror="this.style.display='none'"></div>
+      <div class="m-hero-info">
+        <h2>查詢我的紀錄</h2>
+        <p class="m-hero-mail">請輸入報名時使用的 Email 與手機</p>
+        <p class="m-hero-brand">資料會依會員與報名資料比對</p>
+      </div>
+    </div>
+    <div class="mcard" style="border-radius:22px;border:1px solid #d8e8cf;box-shadow:0 4px 14px rgba(79,122,51,.08)">
+      <div style="background:#fff;border:1.5px solid #DDEAD1;border-radius:16px;padding:14px;margin-bottom:14px">
         <label style="font-size:14px;font-weight:900;color:#333">Email</label>
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:14px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
-        <div style="font-size:13px;color:#666;line-height:1.55;margin-top:8px">需 Email 與手機符合會員或報名資料，才會顯示紀錄。</div>
       </div>
       <div id="memberLoginErr" style="font-size:13px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -900,44 +904,41 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
   <!-- 已登入區 -->
   <div id="memberArea" style="display:none;padding:0 0 100px">
-
-    <!-- 頂部會員卡（登入狀態共用）-->
-    <div style="margin:14px 16px;background:#DDEAD1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:18px;font-weight:900;color:#111" id="memberName"></div>
-        <div style="font-size:15px;color:#444;margin-top:3px" id="memberEmail2"></div>
-        <div style="font-size:15px;font-weight:700;color:#2a6a10;margin-top:3px" id="memberBrandShow"></div>
+    <div class="m-hero m-hero-record">
+      <div class="m-hero-ip"><img src="IP會員.png" alt="會員" onerror="this.style.display='none'"></div>
+      <div class="m-hero-info">
+        <h2 id="memberName">會員</h2>
+        <p class="m-hero-mail" id="memberEmail2"></p>
+        <p class="m-hero-brand" id="memberBrandShow"></p>
       </div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
-        <button onclick="switchMemberMode('profile')" style="background:#fff;border:1.5px solid #b8d4a0;color:#2a6a10;padding:10px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">編輯</button>
-        <button onclick="memberLogout()" style="background:#FAE1DD;border:none;color:#8b1c1c;padding:10px 14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">登出</button>
+      <div class="m-hero-actions">
+        <button type="button" class="m-btn-edit-green" onclick="switchMemberMode('profile')">編輯</button>
+        <button type="button" class="m-btn-logout" onclick="memberLogout()">登出</button>
       </div>
     </div>
 
-    <!-- 模式切換頁籤 -->
-    <div style="display:flex;gap:0;margin:0 16px 16px;border-radius:12px;overflow:hidden;border:1.5px solid #DDEAD1">
-      <button id="tabMyRegs" onclick="switchMemberMode('regs')"
-        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#DDEAD1;color:#2a6a10;font-family:inherit">
-        我的報名
-      </button>
-      <button id="tabProfile" onclick="switchMemberMode('profile')"
-        style="flex:1;padding:12px;font-size:16px;font-weight:900;border:none;cursor:pointer;background:#fff;color:#666;font-family:inherit">
-        會員資料
-      </button>
+    <div class="m-tabs">
+      <button id="tabMyRegs" class="m-tab active-record" onclick="switchMemberMode('regs')">我的報名 🌿</button>
+      <button id="tabProfile" class="m-tab" onclick="switchMemberMode('profile')">會員資料</button>
     </div>
 
-    <!-- 我的報名紀錄 -->
-    <div id="myRegsMode" style="padding:0 16px">
-      <div id="myRegsList"></div>
+    <div id="myRegsMode">
+      <div id="myRegsList" class="m-record-list"></div>
+      <div id="memberRecordHelper" class="m-helper-record">
+        <img class="m-helper-record-ip" src="IP客服.png" alt="客服" onerror="this.style.display='none'">
+        <div>
+          <h3 class="m-helper-record-title">找不到報名紀錄嗎？</h3>
+          <p class="m-helper-record-text">我們可以幫你查找遺漏的報名紀錄，或協助解決任何報名問題！</p>
+          <button type="button" class="m-helper-record-btn" onclick="openLine()">🎧 聯絡客服小幫手</button>
+        </div>
+      </div>
     </div>
 
-    <!-- 會員個人資料 -->
-    <div id="profileMode" style="display:none;padding:0 16px">
+    <div id="profileMode" class="m-profile-section" style="display:none">
       <div id="memberProfileContent">
         <div style="text-align:center;padding:30px;color:#aaa">載入中…</div>
       </div>
     </div>
-
   </div>
 
   <!-- 會員資料編輯 Modal -->
@@ -1443,7 +1444,7 @@ function goBack(){
 }
 
 // ── UI v2：底部五分類導覽 ──
-function navToTab(tab){
+async function navToTab(tab){
   try{
     localStorage.setItem('2bl_current_tab', tab);
     localStorage.setItem('2bl_page_state', JSON.stringify({tab}));
@@ -1455,25 +1456,33 @@ function navToTab(tab){
   const tabMap={home:'botHome',member:'botMember',support:'botSupport'};
   const activeBtn=document.getElementById(tabMap[tab]);
   if(activeBtn) activeBtn.classList.add('active');
+
   if(tab==='home'){
     navTo('home');
-  } else if(tab==='member'){
-    // 我的紀錄 → 進會員頁，預設顯示「我的報名」頁籤
-    const email=ST.memberEmail||memberSafeEmail();
+    return;
+  }
+  if(tab==='member'){
+    const email=String(ST.memberEmail||memberSafeEmail()||'').trim();
+    const phone=String(memberSafePhone()||(ST.member&&ST.member.phone)||'').trim();
+    navTo('member');
     if(email){
       memberShowArea('regs');
-      navTo('member');
-    } else {
-      navTo('member');
+      await safeLoadMemberPage(email,{phone,forceRegs:true,navOptions:{noPush:true}});
+    }else{
       memberShowLogin();
+      const mailInput=$('memberLookupEmail');
+      const phoneInput=$('memberLookupPhone');
+      if(mailInput) mailInput.value=memberSafeEmail()||'';
+      if(phoneInput) phoneInput.value=memberSafePhone()||'';
     }
-  } else if(tab==='support'){
+    return;
+  }
+  if(tab==='support'){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('pageSupport');
     if(pg) pg.classList.add('active');
   }
 }
-
 // ── 探索頁篩選 ──
 function exploreFilter(type, el){
   document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
@@ -1660,7 +1669,6 @@ function memberShowArea(mode){
   if(loginArea) loginArea.style.display='none';
   if(memberArea) memberArea.style.display='block';
   switchMemberMode(mode||'regs');
-  // 更新底部按鈕 active
   ['botHome','botMember','botSupport'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.classList.remove('active');
@@ -1673,19 +1681,18 @@ function switchMemberMode(mode){
   const profileDiv = $('profileMode');
   const tabRegs = $('tabMyRegs');
   const tabProfile = $('tabProfile');
-  if(mode === 'regs'){
-    if(regsDiv) regsDiv.style.display = 'block';
-    if(profileDiv) profileDiv.style.display = 'none';
-    if(tabRegs){ tabRegs.style.background='#DDEAD1'; tabRegs.style.color='#2a6a10'; }
-    if(tabProfile){ tabProfile.style.background='#fff'; tabProfile.style.color='#666'; }
-  } else {
-    if(regsDiv) regsDiv.style.display = 'none';
-    if(profileDiv) profileDiv.style.display = 'block';
-    if(tabRegs){ tabRegs.style.background='#fff'; tabRegs.style.color='#666'; }
-    if(tabProfile){ tabProfile.style.background='#DDEAD1'; tabProfile.style.color='#2a6a10'; }
-    // 填入會員資料
-    renderMemberProfile();
+  const isRegs = mode === 'regs';
+  if(regsDiv) regsDiv.style.display = isRegs ? 'block' : 'none';
+  if(profileDiv) profileDiv.style.display = isRegs ? 'none' : 'block';
+  if(tabRegs){
+    tabRegs.classList.toggle('active-record', isRegs);
+    tabRegs.classList.toggle('active-profile', false);
   }
+  if(tabProfile){
+    tabProfile.classList.toggle('active-profile', !isRegs);
+    tabProfile.classList.toggle('active-record', false);
+  }
+  if(!isRegs) renderMemberProfile();
 }
 
 function memberVal(m, ...keys){
@@ -1846,9 +1853,19 @@ function fillMemberCard(member){
 }
 async function safeGetMyRegs(email, phone){
   const el=$('myRegsList');
-  if(el) el.innerHTML='<div style="color:#999;font-size:16px;text-align:center;padding:20px">報名紀錄載入中…</div>';
+  const helper=$('memberRecordHelper');
+  if(helper) helper.classList.remove('show');
+  if(el) el.innerHTML='<div style="color:#999;font-size:16px;text-align:center;padding:22px">報名紀錄載入中…</div>';
   try{
     const regs=await api({action:'getMyRegs',email,phone:phone||'',_t:Date.now()});
+    if(regs && regs.error){
+      ST.regs=[];
+      if(el){
+        el.innerHTML=`<div style="color:#c0392b;font-size:15px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #f2c7c7;border-radius:18px;margin:0 16px">${escHtml(regs.error)}<br>請確認 Email 與手機是否與報名時一致。</div>`;
+      }
+      if(helper) helper.classList.add('show');
+      return [];
+    }
     const list=Array.isArray(regs)?regs:[];
     ST.regs=list;
     renderMyRegs(list);
@@ -1856,13 +1873,14 @@ async function safeGetMyRegs(email, phone){
   }catch(e){
     console.warn('[getMyRegs failed]',e);
     if(el) el.innerHTML='<div style="color:#c0392b;font-size:16px;text-align:center;padding:20px;line-height:1.7">報名紀錄暫時載入失敗，請稍後再試。<br>資料沒有消失，請截圖給官方 LINE。</div>';
+    if(helper) helper.classList.add('show');
     return [];
   }
 }
 async function safeLoadMemberPage(email, opts={}){
   navTo('member', opts.navOptions||{});
   email=String(email||ST.memberEmail||memberSafeEmail()||'').trim();
-  const lookupPhone=String((opts&&opts.phone)||memberSafePhone()||'').trim();
+  let lookupPhone=String((opts&&opts.phone)||memberSafePhone()||(ST.member&&ST.member.phone)||'').trim();
   if(!email){
     memberShowLogin();
     const el=$('myRegsList'); if(el) el.innerHTML='';
@@ -1873,49 +1891,58 @@ async function safeLoadMemberPage(email, opts={}){
     memberShowLogin();
     return;
   }
+
   ST.memberEmail=email;
   memberSaveEmail(email);
   if($('loginEmail')) $('loginEmail').value=email;
-  memberShowArea();
+  if($('memberLookupEmail')) $('memberLookupEmail').value=email;
+  if($('memberLookupPhone')) $('memberLookupPhone').value=lookupPhone||memberSafePhone()||'';
+  memberShowArea('regs');
   fillMemberCard(ST.member && (ST.member.email||ST.memberEmail) ? ST.member : {email});
 
-  const memberPromise=(async()=>{
-    try{
-      const member=await api({action:'getMember',email,_t:Date.now()});
-      if(member && !member.error){
-        ST.member={...(ST.member||{}),...member,email:member.email||email};
-        fillMemberCard(ST.member);
-        // 檢查資料完整性：姓名、品牌名稱、FB 或 IG 至少一個
-        const m = ST.member;
-        const hasName   = !!(m.name||m.displayName||'').trim();
-        const hasBrand  = !!(m.brand||m.brand_name||'').trim();
-        const hasSocial = !!(m.fb||m.fb_url||m.ig||m.ig_url||'').trim();
-        if(!hasName || !hasBrand || !hasSocial){
-          const missing=[];
-          if(!hasName)   missing.push('姓名');
-          if(!hasBrand)  missing.push('品牌名稱');
-          if(!hasSocial) missing.push('FB 或 Instagram（審核必要）');
-          ST._profileIncomplete = true;
-          switchMemberMode('profile');
-          toast('請先補齊會員資料：' + missing.join('、'));
-        } else {
-          ST._profileIncomplete = false;
-        }
-      }else{
-        if(!ST.member) ST.member={email};
-        fillMemberCard(ST.member);
-        toast('會員資料暫時載入失敗，已先顯示 Email');
-      }
-    }catch(e){
-      console.warn('[getMember failed]',e);
-      if(!ST.member) ST.member={email};
+  try{
+    const member=await api({action:'getMember',email,phone:lookupPhone,_t:Date.now()});
+    if(member && !member.error){
+      ST.member={...(ST.member||{}),...member,email:member.email||email};
+      lookupPhone=String(lookupPhone||member.phone||'').trim();
+      if(lookupPhone) memberSavePhone(lookupPhone);
+      if($('memberLookupPhone')) $('memberLookupPhone').value=lookupPhone;
       fillMemberCard(ST.member);
-      toast('會員資料暫時載入失敗，報名紀錄會繼續載入');
-    }
-  })();
 
-  const regsPromise=safeGetMyRegs(email, lookupPhone);
-  await Promise.allSettled([memberPromise, regsPromise]);
+      const m = ST.member;
+      const hasName   = !!(m.name||m.displayName||'').trim();
+      const hasBrand  = !!(m.brand||m.brand_name||'').trim();
+      const hasSocial = !!(m.fb||m.fb_url||m.ig||m.ig_url||'').trim();
+      ST._profileIncomplete = !hasName || !hasBrand || !hasSocial;
+      if(ST._profileIncomplete && !opts.forceRegs){
+        const missing=[];
+        if(!hasName)   missing.push('姓名');
+        if(!hasBrand)  missing.push('品牌名稱');
+        if(!hasSocial) missing.push('FB 或 Instagram（審核必要）');
+        switchMemberMode('profile');
+        toast('請先補齊會員資料：' + missing.join('、'));
+      }
+    }else{
+      if(!ST.member) ST.member={email,phone:lookupPhone};
+      fillMemberCard(ST.member);
+    }
+  }catch(e){
+    console.warn('[getMember failed]',e);
+    if(!ST.member) ST.member={email,phone:lookupPhone};
+    fillMemberCard(ST.member);
+    toast('會員資料暫時載入失敗，報名紀錄會繼續載入');
+  }
+
+  if(!lookupPhone){
+    const el=$('myRegsList');
+    if(el) el.innerHTML='<div style="color:#777;font-size:15px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #dfead8;border-radius:18px;margin:0 16px">請補上手機號碼查詢報名紀錄。<br>系統需要 Email＋手機比對，避免資料被其他人看到。</div>';
+    const helper=$('memberRecordHelper'); if(helper) helper.classList.add('show');
+    memberShowArea('regs');
+    return [];
+  }
+  const list=await safeGetMyRegs(email, lookupPhone);
+  if(opts.forceRegs) switchMemberMode('regs');
+  return list;
 }
 async function memberLogin(){
   const btn=$('loginBtn');
@@ -3844,69 +3871,104 @@ function payBadge(reg){
 }
 function escHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+function mFirstVal(obj, keys, fallback=''){
+  for(const k of keys){
+    const v=obj && obj[k];
+    if(v!==undefined && v!==null && String(v).trim()!=='') return v;
+  }
+  return fallback;
+}
+function mFormatDateTime(v){
+  if(!v) return '';
+  const s=String(v);
+  const d=new Date(s);
+  if(Number.isNaN(d.getTime())) return s;
+  return d.toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\//g,'/');
+}
+function mSessionForReg(r){
+  const sid=String(r?.sessionId||r?.session_id||'');
+  const list=[...(Array.isArray(ST.allSessionsData)?ST.allSessionsData:[]), ...(Array.isArray(ST.sessions)?ST.sessions:[])];
+  return list.find(s=>String(s.id||s.sessionId||'')===sid) || {};
+}
+function mSessionDateLine(d){
+  if(!d) return '';
+  const date=String(d.date||d.day||'').replace(/-/g,'/');
+  const start=d.start||d.startTime||'';
+  const end=d.end||d.endTime||'';
+  return [date, (start||end)?`${start}${end?' - '+end:''}`:''].filter(Boolean).join(' ');
+}
+function mRecordDateText(r){
+  const s=mSessionForReg(r);
+  const dates=Array.isArray(s.dates)?s.dates:[];
+  const selected=Array.isArray(r.selectedDates)?r.selectedDates.map(String).filter(Boolean):[];
+  if(dates.length){
+    const chosen=selected.length ? dates.filter(d=>selected.includes(String(d.date||d.day||''))) : dates.slice(0,1);
+    const lines=(chosen.length?chosen:dates.slice(0,1)).map(mSessionDateLine).filter(Boolean);
+    if(lines.length) return lines.join('、');
+  }
+  const sessionRaw=s.date||s.startDate||s.eventDate||s.sessionDate||'';
+  const sessionTime=s.startTime||s.time||'';
+  if(sessionRaw) return [String(sessionRaw).replace(/-/g,'/'), sessionTime].filter(Boolean).join(' ');
+  const selectedText=selected.length ? selected.join('、') : '';
+  return selectedText || mFirstVal(r,['dateText','sessionDateText','timeText','eventTime','date','sessionDate'], '') || (r.createdAt ? '報名日期：'+mFormatDateTime(r.createdAt) : '時間請見活動公告');
+}
+function mRecordLocationText(r){
+  const s=mSessionForReg(r);
+  return mFirstVal(r,['location','sessionLocation','venue','place','address'], '') || mFirstVal(s,['location','sessionLocation','venue','place','address'], '活動地點請見公告');
+}
+function mRecordCover(r){
+  const s=mSessionForReg(r);
+  return mFirstVal(r,['coverUrl','cover','image','imageUrl','sessionCover','eventCover'], '') || mFirstVal(s,['coverUrl','cover','imageUrl','imgUrl','sessionCover','eventCover'], '') || 'IP指引.png';
+}
+function mReviewPill(r){
+  if(isCancelledReg(r)) return {text:'已取消', icon:'✕', bg:'#f3f4f6', color:'#777', border:'#e5e7eb', note:'此筆報名已取消'};
+  const st=String(r.status||r.reviewStatus||'待審核').trim();
+  const ps=String(r.payStatus||'').trim();
+  if(isPaidText(ps) || ps==='免費') return {text:ps==='免費'?'免費':'已完成', icon:'✓', bg:'#e8f7ee', color:'#2a6a10', border:'#b9d3a5', note:'感謝參與，期待下次見面！'};
+  if(isPendingPayText(ps)) return {text:'待確認', icon:'⏱', bg:'#fff8ed', color:'#b45309', border:'#f5d7a1', note:'已回報，等待主辦確認'};
+  if(st==='已錄取') return {text:'待付款', icon:'＄', bg:'#fff8ed', color:'#d97706', border:'#f5d7a1', note:r.paymentDeadline?('請於 '+escHtml(r.paymentDeadline)+' 前完成付款'):'請依錄取通知完成付款'};
+  if(st==='待審核') return {text:'審核中', icon:'⏱', bg:'#eef6e6', color:'#2a6a10', border:'#b9d3a5', note:'主辦單位審核中，請耐心等候'};
+  if(st==='不錄取') return {text:'未錄取', icon:'–', bg:'#fdecea', color:'#c0392b', border:'#f3b5b5', note:'可提前報名其他場次'};
+  return {text:st||'處理中', icon:'•', bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe', note:''};
+}
 function renderMyRegs(regs){
   ST.regs = Array.isArray(regs) ? regs : [];
   const el=$('myRegsList');
+  const helper=$('memberRecordHelper');
   if(!el) return;
   if(!ST.regs.length){
-    el.innerHTML='<div style="color:#aaa;font-size:16px;text-align:center;padding:20px">目前無報名紀錄</div>';
+    el.innerHTML='<div style="background:#fff;border:1px solid #dfead8;border-radius:22px;padding:24px 18px;text-align:center;color:#777;font-size:16px;line-height:1.8;margin:0 16px">目前沒有報名紀錄。<br>若剛完成報名，請稍候幾秒後再點一次「我的紀錄」。</div>';
+    if(helper) helper.classList.add('show');
     handlePendingPayLink(ST.regs);
     return;
   }
-  const statusColor={'待審核':'#f5a623','已錄取':'#9fb59c','不錄取':'#d94f4f','已取消':'#aaa','已報到':'#1a7f5a'};
+  if(helper) helper.classList.add('show');
   el.innerHTML=ST.regs.map(r=>{
-    const color=statusColor[r.status]||'#888';
-    const pb=payBadge(r);
-    const cancelled=isCancelledReg(r);
-    const payBtn=canPayReg(r)?`<button onclick="event.stopPropagation();showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${escHtml(r.sessionName||r.sesName||'場次')}" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px;margin-top:10px;font-size:18px;font-weight:900">前往繳費</button>`:'';
-    const waitMsg=(!cancelled && isPendingPayText(r.payStatus))?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:17px;font-weight:800">已回報，等待主辦確認</div>`:'';
-    const cancelMsg=cancelled?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:17px;font-weight:800">已取消，報名紀錄保留</div>`:'';
-    const refundBtn=canRefundReg(r)?`<button onclick="event.stopPropagation();cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${escHtml(r.sessionName||r.sesName||'')}" style="width:100%;background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd);border-radius:10px;padding:11px;margin-top:9px;font-size:17px;font-weight:900">申請取消／退款</button>`:'';
-    const transfer=(!cancelled && r.transferStatus)?`<div style="font-size:16px;color:#b45309;font-weight:800;margin-top:6px">退款狀態：${escHtml(r.transferStatus)}</div>`:'';
-    const stallHtml=stallSelectionHtml(r);
-    const autoSeatInfo=(!cancelled && String(r.status||'')==='已錄取' && String(r.seatChoiceIntent||'auto')!=='paid' && !r.stallNumber && !isPaidText(r.payStatus))?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:9px 10px;margin-top:10px;font-size:15px;font-weight:800">不加價選位，依付款確認順序安排位置。付款後不可再加購加價選位。</div>`:'';
-
-    // ── 不可抗力狀態顯示（後端 API 回傳，前台只顯示）──
-    const fs = String(r.forceStatus||'');
-    let forceBanner = '';
-    if (fs === 'pending_force_choice') {
-      const dlText = r.forceChoiceDeadline ? new Date(r.forceChoiceDeadline).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false}) : '';
-      const hasTransfer = r.forceMode === 'transfer_or_refund';
-      forceBanner = `<div style="background:#fff1f2;border:1.5px solid #fda4af;border-radius:10px;padding:12px;margin-top:10px">
-        <div style="font-size:15px;font-weight:900;color:#be123c;margin-bottom:6px">🚨 選擇處理方式</div>
-        <div style="font-size:12px;color:#9f1239;margin-bottom:8px">此場次因不可抗力取消。${dlText?'請於 '+dlText+' 前選擇':''}</div>
-        <div style="display:flex;gap:8px">
-          ${hasTransfer?`<button onclick="event.stopPropagation();agreeForceTransferFn('${r.id}',this)" style="flex:1;background:var(--c-green);color:#111;border:none;border-radius:9px;padding:11px;font-size:16px;font-weight:900">同意延期</button>`:''}
-          <button onclick="event.stopPropagation();applyForceRefundFn('${r.id}',this)" style="flex:1;background:#be123c;color:#fff;border:none;border-radius:9px;padding:11px;font-size:16px;font-weight:900">申請退費</button>
+    const pill=mReviewPill(r);
+    const title=escHtml(r.sessionName||r.sesName||'場次');
+    const dateText=escHtml(mRecordDateText(r));
+    const locationText=escHtml(mRecordLocationText(r));
+    const cover=escHtml(mRecordCover(r));
+    const note=escHtml(pill.note||'');
+    const payBtn=canPayReg(r)?`<button class="m-action-btn" onclick="event.stopPropagation();showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:#fff8ed;color:#d97706;border:1.5px solid #f5d7a1">前往繳費</button>`:`<button class="m-action-btn" onclick="event.stopPropagation();openRegDetail('${r.id}')" style="background:#eef6e6;color:#2a6a10;border:1.5px solid #b9d3a5">查看詳情</button>`;
+    const money=(Number(r.total||0)>0 && !isCancelledReg(r))?`<span style="font-size:14px;color:#2a6a10;font-weight:900;margin-left:4px">NT$ ${Number(r.total||0).toLocaleString()}</span>`:'';
+    const stall=(r.stallCount?`<span style="font-size:14px;color:#777;margin-left:4px">${Number(r.stallCount||1)} 攤</span>`:'');
+    return `<div class="m-record-card" onclick="openRegDetail('${r.id}')">
+      <div class="m-record-top">
+        <div class="m-record-thumb"><img src="${cover}" alt="" onerror="this.src='IP指引.png'"></div>
+        <div>
+          <div class="m-record-name">${title}</div>
+          <div class="m-record-meta">▣　${dateText}</div>
+          <div class="m-record-meta">◎　${locationText}</div>
         </div>
-      </div>`;
-    } else if (fs === 'transferred') {
-      forceBanner = `<div style="background:#f0fdf4;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#9fb59c">✅ 已同意延期至新場次</div>`;
-    } else if (fs === 'refund_requested') {
-      forceBanner = `<div style="background:#fff8ed;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#92400e">📋 已申請退費，等待主辦退款</div>`;
-    } else if (fs === 'auto_refund_requested') {
-      forceBanner = `<div style="background:#f3f4f6;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#374151">⏰ 逾期未選擇，系統已自動申請退費</div>`;
-    } else if (fs === 'refunded') {
-      forceBanner = `<div style="background:#f0fdf4;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#9fb59c">✅ 已退費完成</div>`;
-    } else if (fs === 'cancel_notice_only') {
-      const cancelNoticeMsg = r.status==='待審核' ?
-        '此場次因不可抗力取消，審核流程已中止。' : '此場次因不可抗力取消，繳費流程已停止。';
-      forceBanner = `<div style="background:#f3f4f6;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#374151">📌 ${cancelNoticeMsg}</div>`;
-    } else if (fs === 'refund_only_auto') {
-      forceBanner = `<div style="background:#fff8ed;border-radius:10px;padding:10px;margin-top:10px;font-size:15px;font-weight:800;color:#92400e">📋 此場次因不可抗力取消，已進入退費流程，等待主辦退款</div>`;
-    }
-
-    return `<div onclick="openRegDetail('${r.id}')" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:15px;margin-bottom:12px;cursor:pointer;border-left:4px solid ${color}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
-        <div style="font-size:20px;font-weight:900;color:var(--dk);flex:1;line-height:1.35">${escHtml(r.sessionName||r.sesName||'場次')}</div>
-        <span style="background:${pb.bg};color:${pb.c};padding:5px 10px;border-radius:20px;font-size:17px;font-weight:900;white-space:nowrap">${pb.t}</span>
+        <div class="m-record-arrow">›</div>
       </div>
-      <div style="font-size:17px;color:var(--md);font-weight:700">審核：${escHtml(r.status||'')}　攤位數：${r.stallCount||1} 攤</div>
-      <div style="font-size:18px;color:var(--g);font-weight:900;margin-top:3px">${r.total>0?'NT$ '+Number(r.total||0).toLocaleString():r.payStatus==='免費'?'免費':''}</div>
-      ${r.equipmentText?`<div style="font-size:16px;color:var(--md);margin-top:3px">設備：${escHtml(r.equipmentText)}</div>`:''}
-      ${participantTextFromData(r.participants)?`<div style="font-size:16px;color:var(--md);margin-top:3px">參加者：${escHtml(participantTextFromData(r.participants))}</div>`:''}
-      ${r.agreementAccepted?`<div style="font-size:12px;color:#9fb59c;margin-top:5px">✅ 已同意報名合約${r.agreementVersion?' ('+r.agreementVersion+')':''}</div>`:''}
-      ${forceBanner||cancelMsg}${!forceBanner?waitMsg:''}${stallHtml}${autoSeatInfo}${!fs?refundBtn:''}${!fs?transfer:''}${!fs?payBtn:''}
+      <div class="m-record-bottom">
+        <span class="m-status-pill" style="background:${pill.bg};color:${pill.color};border:1.5px solid ${pill.border}">${pill.icon} ${pill.text}</span>
+        <span class="m-status-note">${note}${stall}${money}</span>
+        ${payBtn}
+      </div>
+      ${stallSelectionHtml(r)}
     </div>`;
   }).join('');
   handlePendingPayLink(ST.regs);
