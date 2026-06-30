@@ -2838,6 +2838,14 @@ function openRegFormModal(){
       showEmailStep(ST.currentSession);
     }
   }
+  // 記住開啟報名表前所在的列表頁，送出成功後回到場次列表，不再停留報名表。
+  const activePageBeforeReg = document.querySelector('.page.active');
+  ST._regFormReturnState = {
+    pageId: activePageBeforeReg ? activePageBeforeReg.id : '',
+    portalTitle: ($('portalTitle')?.textContent || '').trim(),
+    catFilter: ST.currentCatFilter || '',
+    eventId: ST.currentEvent ? (ST.currentEvent.id || '') : (ST.currentSession ? (ST.currentSession.eventId || ST.currentSession.event_id || '') : '')
+  };
   // 切換到報名表頁面
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const page=$('regFormModal');
@@ -3002,6 +3010,71 @@ function closeRegFormModal(){
     const btn=$('botHome'); if(btn){ ['botHome','botMember','botSupport'].forEach(id=>{const e=$(''+id);if(e)e.classList.remove('active');}); btn.classList.add('active'); }
   }
   window.scrollTo(0,0);
+}
+
+function closeRegFormToSessionListAfterSubmit(sessionSnapshot, email){
+  hideSubmitOverlay();
+  const s = sessionSnapshot || ST.currentSession || {};
+  const returnState = ST._regFormReturnState || {};
+  const page = $('regFormModal');
+  if(page){
+    page.classList.remove('active');
+    page.classList.remove('show');
+  }
+
+  resetRegFormState({keepContent:false});
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const portal = $('pagePortal');
+  if(portal) portal.classList.add('active');
+
+  const title = $('portalTitle');
+  const fallbackTitle = returnState.portalTitle || returnState.catFilter || ST.currentCatFilter || '場次列表';
+  if(title) title.textContent = fallbackTitle && fallbackTitle !== '報名表' ? fallbackTitle : '場次列表';
+
+  const listEl = $('portalSessionList');
+  const allRaw = [ ...(Array.isArray(ST.sessions) ? ST.sessions : []), ...(Array.isArray(ST.allSessionsData) ? ST.allSessionsData : []) ];
+  const seen = new Set();
+  const all = allRaw.filter(item=>{
+    if(!item || !item.id) return false;
+    const key = String(item.id);
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return typeof isOpenSession === 'function' ? isOpenSession(item) : true;
+  });
+  const eventId = String(s.eventId || s.event_id || returnState.eventId || '');
+  let sessions = [];
+  if(eventId){
+    sessions = all.filter(item=>String(item.eventId || item.event_id || '') === eventId);
+  }
+  if(!sessions.length && (returnState.catFilter || ST.currentCatFilter)){
+    const cat = returnState.catFilter || ST.currentCatFilter;
+    const typeMap = {'市集報名':['市集場次'],'體驗活動':['活動報名','體驗活動'],'通路寄賣':['通路寄賣'],'合作洽詢':['合作申請']};
+    const allow = typeMap[cat] || [];
+    sessions = all.filter(item=>{
+      const portals = Array.isArray(item.portals) ? item.portals : String(item.portals || '').split(',').map(x=>x.trim()).filter(Boolean);
+      return portals.includes(cat) || allow.includes(item.type);
+    });
+  }
+  if(!sessions.length){
+    sessions = (Array.isArray(ST.sessions) && ST.sessions.length ? ST.sessions : all).filter(item=>typeof isOpenSession === 'function' ? isOpenSession(item) : true);
+  }
+  if(typeof sortSessionsByUpcoming === 'function') sessions = sortSessionsByUpcoming(sessions);
+  if(listEl && sessions.length){
+    listEl.innerHTML = sessions.map(renderSessionCard).join('');
+  } else if(listEl && !(listEl.innerHTML || '').trim()){
+    listEl.innerHTML = '<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前無開放場次</div>';
+  }
+
+  ST.currentSession = null;
+  ST._regFormReturnState = null;
+  try{
+    localStorage.setItem('2bl_current_tab', 'portal');
+    localStorage.setItem('2bl_page_state', JSON.stringify({tab:'portal', catFilter:returnState.catFilter || ST.currentCatFilter || '', eventId:eventId || ''}));
+  }catch(e){}
+  ['botHome','botMember','botSupport'].forEach(id=>{ const el=$(id); if(el) el.classList.remove('active'); });
+  try{ history.replaceState({page:'portal', afterRegister:true}, '', location.href); }catch(e){}
+  window.scrollTo(0,0);
+  toast('✅ 報名成功，已回到場次列表');
 }
 
 // 返回鍵攔截：如果報名 modal 是開著的，關掉它；否則讓瀏覽器正常返回
@@ -3683,19 +3756,9 @@ async function submitReg(ev){
         }
       }).catch(e=>console.warn('[background getMember failed]', e));
     },0);
-    const modalInner=$('regFormModal')?.querySelector('.modal-box');
+    const sessionSnapshot = {...s};
     if(btn){ btn.disabled=true; btn.textContent='報名成功'; btn.style.display='none'; }
-    showSubmitSuccessOverlay(email);
-    if(modalInner){
-      modalInner.innerHTML = `<div class="success-screen" style="text-align:center;padding:52px 22px 64px;background:#fff;min-height:70vh;display:flex;flex-direction:column;justify-content:center">
-        <div style="font-size:64px;margin-bottom:14px">🎉</div>
-        <div style="font-size:28px;font-weight:950;color:#111;margin-bottom:12px">報名成功！</div>
-        <div style="font-size:17px;line-height:1.8;color:#333;font-weight:800;margin-bottom:18px">已收到您的報名申請。<br>審核結果將寄送至<br><b>${esc(email)}</b></div>
-        <div style="background:var(--c-green);border:2px solid #9fb59c;border-radius:16px;padding:14px 16px;font-size:16px;line-height:1.7;font-weight:900;margin-bottom:18px">日後可到「我的紀錄」使用 Email + 手機查詢報名狀態。</div>
-        <button type="button" onclick="hideSubmitOverlay();closeRegFormModal();safeLoadMemberPage(ST.memberEmail||email,{phone:memberSafePhone()});scheduleMemberRecordsSync('after-register-success-button',100)" style="width:100%;border:none;background:var(--c-yellow);border-radius:16px;padding:15px;font-size:18px;font-weight:950;margin-bottom:10px">前往我的紀錄</button>
-        <button type="button" onclick="hideSubmitOverlay();closeRegFormModal();window.scrollTo(0,0)" style="width:100%;border:2px solid #ddd;background:#fff;border-radius:16px;padding:14px;font-size:17px;font-weight:900">返回活動列表</button>
-      </div>`;
-    }else{ alert('報名成功！'); }
+    closeRegFormToSessionListAfterSubmit(sessionSnapshot, email);
     ST.__submitting=false;
     scheduleMemberRecordsSync('after-register-success',150);
     return false;
