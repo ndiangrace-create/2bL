@@ -1426,9 +1426,26 @@ body.seat-drawer-open{overflow:hidden}
       <div style="font-size:13px;font-weight:700;color:var(--md);margin-bottom:8px">開放權限</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="sf_perms_grid"></div>
     </div>
-    <div id="sf_sessions_area" style="margin-top:12px;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--md);margin-bottom:8px">限定場次（現場人員必須勾選；不勾=管理員可看全場次）</div>
-      <div style="display:grid;grid-template-columns:1fr;gap:6px;max-height:200px;overflow-y:auto" id="sf_sessions_grid"></div>
+    <div id="sf_scope_area" style="margin-top:12px;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--md);margin-bottom:8px">授權範圍</div>
+      <div style="display:flex;gap:14px;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:14px;cursor:pointer">
+          <input type="radio" name="sf_scope" value="all" onchange="toggleScopeArea('all')" checked>全部場次
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:14px;cursor:pointer">
+          <input type="radio" name="sf_scope" value="event" onchange="toggleScopeArea('event')">整個系列
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:14px;cursor:pointer">
+          <input type="radio" name="sf_scope" value="session" onchange="toggleScopeArea('session')">指定場次
+        </label>
+      </div>
+      <div id="sf_scope_event_wrap" style="display:none;margin-bottom:8px">
+        <label style="font-size:13px">選擇系列（活動）</label>
+        <select id="sf_scope_event" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px"></select>
+      </div>
+      <div id="sf_sessions_area" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr;gap:6px;max-height:200px;overflow-y:auto" id="sf_sessions_grid"></div>
+      </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn" style="flex:1;background:#eee;color:#333" onclick="closeModal('staffModal')">取消</button>
@@ -4933,6 +4950,31 @@ function toggleSuperAdminPerms(role){
   }else if(role==='活動夥伴'||role==='staff'||role==='organizer_admin'){
     perms.forEach(c=>{c.checked=true;});
   }
+  // superadmin 一定是全部範圍，鎖定授權範圍選項
+  const scopeArea=$('sf_scope_area');
+  if(scopeArea) scopeArea.style.display=role==='superadmin'?'none':'block';
+}
+
+// 切換授權範圍：全部 / 整個系列 / 指定場次
+function toggleScopeArea(scope){
+  const eventWrap=$('sf_scope_event_wrap');
+  const sessionsArea=$('sf_sessions_area');
+  if(eventWrap) eventWrap.style.display = scope==='event' ? 'block' : 'none';
+  if(sessionsArea) sessionsArea.style.display = scope==='session' ? 'block' : 'none';
+  if(scope==='event') fillScopeEventOptions();
+}
+
+// 填入活動系列下拉選單（從現有場次的 eventId 去重）
+function fillScopeEventOptions(){
+  const sel=$('sf_scope_event');
+  if(!sel || sel.children.length) return;
+  const events={};
+  (ST.sdData||[]).forEach(s=>{
+    const eid=s.eventId||s.event_id;
+    if(eid && !events[eid]) events[eid]=s.eventName||s.event_name||eid;
+  });
+  sel.innerHTML='<option value="">請選擇系列</option>'+
+    Object.entries(events).map(([id,name])=>`<option value="${escAttr(id)}">${esc(name)}</option>`).join('');
 }
 
 function initStaffModal(){
@@ -5013,12 +5055,18 @@ async function saveStaff(){
   if(role!=='superadmin' && !anyPerm){
     if(!confirm('你還沒勾選任何權限，這位管理員將無法操作任何功能。\n確定要這樣新增嗎？（建議至少勾一項）')) return;
   }
+  // 授權範圍：all / event / session
+  const scopeEl=document.querySelector('input[name="sf_scope"]:checked');
+  const scopeType = role==='superadmin' ? 'all' : (scopeEl?scopeEl.value:'all');
+  const scopeEventId = scopeType==='event' ? ($('sf_scope_event')?.value||'') : '';
   const limitSessions=[];
   document.querySelectorAll('#sf_sessions_grid input:checked').forEach(c=>{limitSessions.push(c.dataset.sesid);});
-  if(role==='onsite_staff' && !limitSessions.length){toast('現場人員必須至少指派一個場次');return;}
+  if(scopeType==='event' && !scopeEventId){toast('請選擇要授權的活動系列');return;}
+  if(scopeType==='session' && !limitSessions.length){toast('請至少勾選一個場次');return;}
+  if(role==='onsite_staff' && scopeType==='all'){toast('現場人員必須指定系列或場次，不可開放全部');return;}
   const btn=getClickBtn();
   return withBtnLock(btn,'新增中…',async()=>{
-    const res=await apiPost({action:'addStaff',targetEmail:email,targetName:name,role,perms,limitSessions});
+    const res=await apiPost({action:'addStaff',targetEmail:email,targetName:name,role,perms,limitSessions,scopeType,scopeEventId});
     if(res.error){toast('❌ '+res.error);return;}
     toast('✅ 已新增');closeModal('staffModal');loadStaff();
   });
