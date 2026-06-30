@@ -430,6 +430,72 @@ function renderTodoRows(rows){
   }
   $('todoList').innerHTML=out||'<div class="empty">目前沒有待辦</div>';
 }
+
+async function loadMembers(){
+  if(AdminState.currentPage!=='members') return;
+  $('memberList').innerHTML='<div class="loading">載入會員中…</div>';
+  try{
+    const rows=await api({action:'getMembers'}).catch(()=>null);
+    if(Array.isArray(rows)){
+      AdminState.members=rows;
+      renderMembers();
+      return;
+    }
+    $('memberList').innerHTML='<div class="notice warn">Worker 尚未提供 getMembers，會員頁不使用報名資料假合併，避免誤判。</div>';
+  }catch(e){
+    $('memberList').innerHTML='<div class="empty">會員載入失敗：'+safe(e.message)+'</div>';
+  }
+}
+function normalizeMemberLinkUrl(v){
+  const s=String(v||'').trim();
+  if(!s) return '';
+  if(/^https?:\/\//i.test(s)) return s;
+  if(/^www\./i.test(s)) return 'https://'+s;
+  if(/^(facebook\.com|fb\.com|instagram\.com|ig\.me|linktr\.ee|lin\.ee)/i.test(s)) return 'https://'+s;
+  return s;
+}
+function memberOfficialUrl(m){
+  return m.website||m.websiteUrl||m.website_url||m.web||m.homepage||m.officialUrl||m.official_url||m.official_site||m.site||m.url||'';
+}
+function memberLinkIcons(m){
+  const fb=normalizeMemberLinkUrl(m.fb||m.fbUrl||m.fb_url||m.facebook||m.facebook_url);
+  const ig=normalizeMemberLinkUrl(m.ig||m.igUrl||m.ig_url||m.instagram||m.instagram_url);
+  const web=normalizeMemberLinkUrl(memberOfficialUrl(m));
+  let h='';
+  if(fb) h+='<a class="tag info social-icon" target="_blank" rel="noopener" title="Facebook" href="'+attr(fb)+'">ⓕ</a>';
+  if(ig) h+='<a class="tag bad social-icon" target="_blank" rel="noopener" title="Instagram" href="'+attr(ig)+'">◎</a>';
+  if(web) h+='<a class="tag green social-icon" target="_blank" rel="noopener" title="官網" href="'+attr(web)+'">🌐</a>';
+  return h;
+}
+function renderMembers(){
+  const kw=($('memberSearch')?.value||'').toLowerCase();
+  const list=[];
+  for(const m of (AdminState.members||[])){
+    const hay=[m.brand,m.brandName,m.brand_name,m.name,m.phone,m.email,m.fb,m.fbUrl,m.fb_url,m.facebook,m.ig,m.igUrl,m.ig_url,m.instagram,memberOfficialUrl(m)].join(' ').toLowerCase();
+    if(kw && !hay.includes(kw)) continue;
+    list.push(m);
+  }
+  let out='';
+  for(const m of list){
+    const brand=m.brand||m.brandName||m.brand_name||'未填品牌';
+    const links=memberLinkIcons(m);
+    const key=m.id||m.email||m.phone||m.member_id||'';
+    out+='<article class="reg-card"><div><div class="reg-title">'+safe(brand)+'</div><div class="reg-sub">'+safe(m.name||'')+'｜'+safe(m.phone||'')+'｜'+safe(m.email||'')+'</div><div class="tag-row">'+(links||'<span class="tag">未填社群</span>')+'<span class="tag purple">歷史 '+safe(m.historyCount||m.history_count||'—')+' 場</span></div></div><div class="reg-actions"><button class="btn small secondary" onclick="openMemberHistory(\''+attr(key)+'\')">歷史紀錄</button></div></article>';
+  }
+  $('memberList').innerHTML=out||'<div class="empty">沒有會員 / 品牌資料</div>';
+}
+async function openMemberHistory(key){
+  openPanel('品牌歷史紀錄','每一場狀態獨立顯示','<div class="loading">載入中…</div>');
+  try{
+    const rows=await api({action:'getMemberHistory',memberKey:key});
+    let out='';
+    for(const r of (Array.isArray(rows)?rows:[])) out+=renderRegCard(r);
+    $('panelBody').innerHTML='<div class="cards">'+(out||'<div class="empty">沒有歷史紀錄</div>')+'</div>';
+  }catch(e){
+    $('panelBody').innerHTML='<div class="notice warn">Worker 尚未提供 getMemberHistory 或讀取失敗：'+safe(e.message)+'</div>';
+  }
+}
+
 async function openEmailTemplates(){ openPanel('信件模板','正式模板管理，不是測試信','<div class="loading">載入信件模板…</div>'); try{ const rows=await api({action:'getEmailTemplates'}); renderEmailTemplates(rows); }catch(e){$('panelBody').innerHTML='<div class="notice warn">Worker 尚未提供 getEmailTemplates。請後端接既有正式信件資料來源後再開放編輯。</div>'; } }
 function renderEmailTemplates(rows){ let out=''; for(const t of (Array.isArray(rows)?rows:[])){ out+='<div class="card" style="padding:14px"><b>'+safe(t.title||t.templateKey||'模板')+'</b><div class="form-grid"><div class="form-field full"><label>主旨</label><input id="sub_'+attr(t.templateKey)+'" value="'+attr(t.subject||'')+'"></div><div class="form-field full"><label>內容</label><textarea id="body_'+attr(t.templateKey)+'">'+safe(t.body||'')+'</textarea></div></div><div class="card-actions"><button class="btn small" onclick="saveEmailTemplate(\''+attr(t.templateKey)+'\',this)">儲存</button></div></div>'; } $('panelBody').innerHTML=out||'<div class="empty">目前沒有信件模板資料</div>'; }
 async function saveEmailTemplate(key,btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'saveEmailTemplate',templateKey:key,subject:$('sub_'+key).value,body:$('body_'+key).value}); toast('信件模板已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
