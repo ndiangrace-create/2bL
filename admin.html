@@ -6,7 +6,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>兔彼樂後台｜場次總覽管理</title>
+  <title>2BL 報名管理系統｜管理後台</title>
   <style>
     :root{
       --bg:#F8F6F0;
@@ -38,9 +38,9 @@
     .app-shell{max-width:1180px;margin:0 auto;padding:14px 14px calc(120px + var(--safe-bottom))}
     .login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#fff 0%,#F8F6F0 42%,#D9E5EE 100%)}
     .login-card{width:min(460px,100%);background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow2);padding:24px;text-align:center}
-    .login-mark{width:76px;height:76px;margin:0 auto 14px;border-radius:24px;background:linear-gradient(135deg,var(--green),var(--blue));display:grid;place-items:center;font-size:38px;border:1px solid rgba(0,0,0,.04)}
+    .login-mark{width:96px;height:96px;margin:0 auto 16px;border-radius:26px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 22px rgba(45,39,32,.10);display:grid;place-items:center;padding:10px;overflow:hidden}.login-mark img{width:100%;height:100%;object-fit:contain;display:block}
     h1,h2,h3{margin:0}
-    .login-card h1{font-size:28px;margin-bottom:8px}
+    .login-card h1{font-size:28px;margin-bottom:8px}.login-info{margin:16px 0 18px;padding:12px 14px;border-radius:18px;background:var(--mint);border:1px solid var(--line);text-align:left;color:#334;font-size:14px}.login-info b{display:block;margin-bottom:4px}.login-footnote{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
     .sub{color:var(--muted);font-size:14px}
     .btn{border:0;border-radius:999px;background:var(--main);color:#fff;padding:10px 15px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;min-height:42px;box-shadow:0 3px 0 rgba(0,0,0,.05)}
     .btn:hover{filter:brightness(.98);transform:translateY(-1px)}
@@ -49,7 +49,7 @@
     .btn.small{min-height:34px;padding:7px 11px;font-size:14px}.btn.block{width:100%}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
     .topbar{position:sticky;top:0;z-index:20;background:rgba(248,246,240,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
     .topbar-in{max-width:1180px;margin:0 auto;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .brand{display:flex;align-items:center;gap:10px;min-width:0}.brand-icon{width:44px;height:44px;border-radius:15px;background:var(--mint);display:grid;place-items:center;font-size:24px;border:1px solid var(--line);flex:0 0 auto}.brand-title{font-weight:950;font-size:20px;white-space:nowrap}.brand-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}.brand-icon{width:44px;height:44px;border-radius:15px;background:#fff;display:grid;place-items:center;border:1px solid var(--line);flex:0 0 auto;padding:5px;overflow:hidden}.brand-icon img{width:100%;height:100%;object-fit:contain;display:block}.brand-title{font-weight:950;font-size:20px;white-space:nowrap}.brand-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
     .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
     .tabs{position:fixed;left:50%;right:auto;bottom:14px;transform:translateX(-50%);z-index:30;width:min(760px,calc(100vw - 28px));display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:24px;padding:8px;box-shadow:var(--shadow2)}
     .tab{border:1px solid var(--line);background:#fff;border-radius:18px;padding:10px 8px;font-weight:950;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.03);display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px}.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -75,11 +75,15 @@
 <body>
   <section id="loginPage" class="login-wrap">
     <div class="login-card">
-      <div class="login-mark">🐰</div>
-      <h1>兔彼樂後台</h1>
-      <div class="sub">乾淨版後台｜場次總覽即場次管理</div>
-      <div style="height:18px"></div>
+      <div class="login-mark"><img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg" alt="2BL 報名管理系統 Logo"></div>
+      <h1>2BL 報名管理系統</h1>
+      <div class="sub">活動報名｜審核繳費｜場次管理｜現場報到</div>
+      <div class="login-info">
+        <b>系統服務資訊</b>
+        管理員請使用已授權的 Google 帳號登入。若無法登入或需要開通權限，請聯繫系統服務窗口。
+      </div>
       <button class="btn block" onclick="startGoogleLogin()">使用 Google 登入</button>
+      <div class="login-footnote">2BL Event Registration Management System</div>
       <div id="loginErr" class="notice hidden" style="margin-top:14px;border-left-color:#D97A73;text-align:left"></div>
     </div>
   </section>
@@ -88,9 +92,9 @@
     <header class="topbar">
       <div class="topbar-in">
         <div class="brand">
-          <div class="brand-icon">🐰</div>
+          <div class="brand-icon"><img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg" alt="2BL"></div>
           <div style="min-width:0">
-            <div class="brand-title">兔彼樂後台</div>
+            <div class="brand-title">2BL 報名管理系統</div>
             <div class="brand-sub" id="whoText">尚未登入</div>
           </div>
         </div>
