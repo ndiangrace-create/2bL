@@ -843,6 +843,129 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   .m-profile-display-title h3{font-size:20px}
 }
 
+
+/* ===== AA 修正：會員資料顯示與編輯視窗手機版一致化 ===== */
+.m-profile-display-card.has-ip .m-profile-info-box{
+  padding-right:14px !important;
+}
+.m-profile-card-ip{
+  position:relative !important;
+  right:auto !important;
+  bottom:auto !important;
+  display:block !important;
+  width:88px !important;
+  height:96px !important;
+  margin:-8px 10px -2px auto !important;
+  object-fit:contain !important;
+  z-index:1 !important;
+  pointer-events:none !important;
+}
+.m-profile-edit-small{
+  position:relative;
+  z-index:2;
+  max-width:100%;
+}
+.m-profile-info-row{
+  grid-template-columns:28px minmax(78px,96px) minmax(0,1fr) !important;
+}
+.m-profile-info-row .value{
+  min-width:0;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  line-height:1.45;
+}
+@media(max-width:430px){
+  .m-profile-info-box{padding:14px 12px !important;}
+  .m-profile-info-row{grid-template-columns:26px minmax(76px,88px) minmax(0,1fr) !important;gap:7px !important;}
+  .m-profile-info-row .label{font-size:15px !important;}
+  .m-profile-info-row .value{font-size:16px !important;}
+  .m-profile-card-ip{width:78px !important;height:86px !important;margin:-6px 8px -2px auto !important;}
+}
+
+/* 會員資料編輯 Modal：改為與會員專區一致的卡片式手機版 */
+#memberEditModal.member-edit-overlay{
+  align-items:flex-end !important;
+  background:rgba(35,32,42,.54);
+  z-index:6000;
+}
+#memberEditModal .member-edit-box{
+  width:100%;
+  max-width:560px;
+  max-height:88vh;
+  overflow-y:auto;
+  box-sizing:border-box;
+  padding:12px 16px 28px;
+  border-radius:28px 28px 0 0;
+  background:linear-gradient(180deg,#fff,#fcfbff);
+  box-shadow:0 -12px 30px rgba(30,20,60,.18);
+}
+.member-edit-grabber{
+  width:48px;height:5px;border-radius:999px;background:#d9d1ea;margin:2px auto 12px;
+}
+.member-edit-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;
+}
+.member-edit-title{
+  display:flex;align-items:center;gap:10px;font-size:21px;font-weight:950;color:#111;
+}
+.member-edit-title .bubble{
+  width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ede5fb;color:#7357bb;font-size:19px;
+}
+.member-edit-close{
+  width:42px;height:42px;border-radius:14px;border:1.5px solid #eadff8;background:#fff;color:#7357bb;font-size:24px;font-weight:900;line-height:1;cursor:pointer;
+}
+.member-edit-note{
+  background:#f4eefc;border:1px solid #dac9f4;color:#5c458e;border-radius:16px;padding:10px 12px;margin-bottom:12px;font-size:14px;font-weight:800;line-height:1.6;
+}
+.member-edit-hint{
+  display:none;background:#fff1f1;border:1.5px solid #f0b7b7;color:#b33333;border-radius:16px;padding:10px 12px;margin-bottom:12px;font-size:15px;font-weight:850;line-height:1.6;
+}
+.member-edit-card{
+  border-radius:22px;padding:15px;margin-bottom:12px;background:#fff;border:1.5px solid #e6ddf7;box-shadow:0 5px 14px rgba(65,45,105,.05);
+}
+.member-edit-card.basic{background:#fbf9ff;border-color:#d8c8f8;}
+.member-edit-card.brand{background:#fff7fb;border-color:#efc9dc;}
+.member-edit-card.social{background:#f4fff8;border-color:#bfe8d0;}
+.member-edit-card.invoice{background:#fbfdff;border-color:#cfe0f6;}
+.member-edit-card-title{
+  display:flex;align-items:center;gap:9px;margin-bottom:12px;font-size:17px;font-weight:950;color:#111;
+}
+.member-edit-card-title .dot{
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(0,0,0,.08);font-size:17px;
+}
+.member-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+.member-edit-grid.one{grid-template-columns:1fr;}
+.member-edit-field{min-width:0;}
+#memberEditModal label.member-edit-label{
+  display:block;font-size:14px;color:#666;font-weight:850;margin:0 0 6px;line-height:1.35;
+}
+#memberEditModal input,
+#memberEditModal textarea{
+  width:100%;box-sizing:border-box;border:1.5px solid #dfd8ea;border-radius:14px;background:#fff;padding:12px 13px;font-size:16px;font-family:inherit;color:#111;outline:none;line-height:1.4;
+}
+#memberEditModal textarea{min-height:82px;resize:vertical;}
+#memberEditModal input:focus,
+#memberEditModal textarea:focus{
+  border-color:#b49de8;box-shadow:0 0 0 3px rgba(180,157,232,.16);
+}
+.member-edit-required{
+  color:#b33333;font-size:13px;font-weight:850;margin:-4px 0 10px;line-height:1.5;
+}
+.member-edit-actions{
+  position:sticky;bottom:-28px;background:linear-gradient(180deg,rgba(252,251,255,0),#fcfbff 24%);padding:18px 0 2px;margin-top:6px;
+}
+#saveMemberBtn.member-edit-save{
+  width:100%;height:50px;border:none;border-radius:18px;background:#DCD7ED;color:#4e3c82;font-size:18px;font-weight:950;font-family:inherit;cursor:pointer;box-shadow:0 4px 10px rgba(80,60,120,.12);
+}
+#saveMemberBtn.member-edit-save:disabled{opacity:.65;cursor:not-allowed;}
+.member-edit-success{display:none;text-align:center;color:#2f7a35;font-weight:900;padding:9px;font-size:14px;}
+@media(max-width:430px){
+  #memberEditModal .member-edit-box{max-height:86vh;padding:12px 14px 26px;border-radius:26px 26px 0 0;}
+  .member-edit-grid{grid-template-columns:1fr;}
+  .member-edit-title{font-size:20px;}
+  .member-edit-card{padding:14px;}
+}
+
 </style>
 </head>
 <body>
@@ -1073,65 +1196,97 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   </div>
 
   <!-- 會員資料編輯 Modal -->
-  <div class="modal-overlay" id="memberEditModal" onclick="if(event.target===this)closeModal('memberEditModal')" style="align-items:flex-end">
-    <div class="modal-box" style="max-height:88vh;overflow-y:auto;padding:20px 18px 40px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:20px;font-weight:900;color:var(--dk)">編輯會員資料</div>
-        <button onclick="closeModal('memberEditModal')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--md)">×</button>
+  <div class="modal-overlay member-edit-overlay" id="memberEditModal" onclick="if(event.target===this)closeMemberEditModal()">
+    <div class="modal-box member-edit-box">
+      <div class="member-edit-grabber"></div>
+      <div class="member-edit-head">
+        <div class="member-edit-title"><span class="bubble">✎</span><span>編輯會員資料</span></div>
+        <button type="button" class="member-edit-close" onclick="closeMemberEditModal()" aria-label="關閉">×</button>
       </div>
-      <div style="font-size:14px;color:var(--g);background:var(--gp);border-radius:10px;padding:8px 12px;margin-bottom:14px">
-        💡 填寫後存檔，下次報名自動帶入，不需每場重填好方便
-      </div>
-      <div id="memberEditHint" style="display:none;font-size:15px;color:#c0392b;background:#fdecea;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-weight:800;line-height:1.6"></div>
+      <div class="member-edit-note">填寫後存檔，下次報名會自動帶入資料。</div>
+      <div id="memberEditHint" class="member-edit-hint"></div>
 
-      <!-- 卡片一：基本聯絡資訊 -->
-      <div style="background:#e8f4fd;border:1px solid #b8d9f0;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">👤 基本聯絡資訊</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">姓名</label><input type="text" id="editName"></div>
-          <div><label style="font-size:14px;color:var(--md)">手機</label><input type="tel" id="editPhone" inputmode="tel"></div>
+      <div class="member-edit-card basic">
+        <div class="member-edit-card-title"><span class="dot">👤</span><span>基本聯絡資訊</span></div>
+        <div class="member-edit-grid">
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editName">姓名</label>
+            <input type="text" id="editName" autocomplete="name">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editPhone">手機</label>
+            <input type="tel" id="editPhone" inputmode="tel" autocomplete="tel">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editLineId">LINE ID</label>
+            <input type="text" id="editLineId" autocomplete="off">
+          </div>
         </div>
-        <label style="font-size:14px;color:var(--md)">LINE ID</label>
-        <input type="text" id="editLineId">
       </div>
 
-      <!-- 卡片二：品牌資訊 -->
-      <div style="background:#fde8f0;border:1px solid #f0b8d0;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🏷️ 品牌資訊</div>
-        <label style="font-size:14px;color:var(--md)">品牌名稱</label>
-        <input type="text" id="editBrand" style="margin-bottom:8px">
-        <label style="font-size:14px;color:var(--md)">品牌介紹</label>
-        <textarea id="editBrandIntro" placeholder="簡短介紹您的品牌…" style="height:56px;margin-bottom:8px"></textarea>
-        <label style="font-size:14px;color:var(--md)">出攤照（連結）</label>
-        <input type="url" id="editPhoto" placeholder="https://...">
-      </div>
-
-      <!-- 卡片三：社群連結（審核必要）-->
-      <div style="background:#e8fdf0;border:1px solid #b8f0d0;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:4px">🔗 社群連結</div>
-        <div style="font-size:12px;color:#c0392b;margin-bottom:10px">審核必要，至少填一項</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">FB</label><input type="url" id="editFb" placeholder="https://facebook.com/..."></div>
-          <div><label style="font-size:14px;color:var(--md)">IG</label><input type="url" id="editIg" placeholder="https://instagram.com/..."></div>
+      <div class="member-edit-card brand">
+        <div class="member-edit-card-title"><span class="dot">🏷️</span><span>品牌資訊</span></div>
+        <div class="member-edit-grid one">
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editBrand">品牌名稱</label>
+            <input type="text" id="editBrand">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editBrandIntro">品牌介紹</label>
+            <textarea id="editBrandIntro" placeholder="簡短介紹您的品牌…"></textarea>
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editPhoto">出攤照（連結）</label>
+            <input type="url" id="editPhoto" placeholder="https://..." inputmode="url">
+          </div>
         </div>
-        <label style="font-size:14px;color:var(--md)">官網</label>
-        <input type="url" id="editCollabUrl" placeholder="https://...">
       </div>
 
-      <!-- 卡片四：常用發票資訊 -->
-      <div style="background:#fdfbe8;border:1px solid #f0e8b8;border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:10px">🧾 常用發票資訊</div>
-        <label style="font-size:14px;color:var(--md)">手機載具</label>
-        <input type="text" id="editInvoiceCarrier" placeholder="/ABC-1234" style="margin-bottom:8px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label style="font-size:14px;color:var(--md)">統一編號</label><input type="text" id="editTaxId" inputmode="numeric" maxlength="8"></div>
-          <div><label style="font-size:14px;color:var(--md)">公司抬頭</label><input type="text" id="editCompany"></div>
+      <div class="member-edit-card social">
+        <div class="member-edit-card-title"><span class="dot">🔗</span><span>社群連結</span></div>
+        <div class="member-edit-required">審核必要，FB 或 IG 至少填一項。</div>
+        <div class="member-edit-grid">
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editFb">FB</label>
+            <input type="url" id="editFb" placeholder="https://facebook.com/..." inputmode="url">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editIg">IG</label>
+            <input type="url" id="editIg" placeholder="https://instagram.com/..." inputmode="url">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editCollabUrl">官網</label>
+            <input type="url" id="editCollabUrl" placeholder="https://..." inputmode="url">
+          </div>
         </div>
-        <label style="font-size:14px;color:var(--md)">收發票 Email</label>
-        <input type="email" id="editInvoiceEmail" inputmode="email">
       </div>
-      <button id="saveMemberBtn" class="btn-p" onclick="saveMemberEdit()" style="width:100%;margin-top:16px">儲存資料</button>
-      <div id="saveSuccessMsg" style="display:none;text-align:center;color:var(--g);font-weight:700;padding:8px;font-size:14px">✓ 更新完成！</div>
+
+      <div class="member-edit-card invoice">
+        <div class="member-edit-card-title"><span class="dot">🧾</span><span>常用發票資訊</span></div>
+        <div class="member-edit-grid">
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editInvoiceCarrier">手機載具</label>
+            <input type="text" id="editInvoiceCarrier" placeholder="/ABC-1234">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editTaxId">統一編號</label>
+            <input type="text" id="editTaxId" inputmode="numeric" maxlength="8">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editCompany">公司抬頭</label>
+            <input type="text" id="editCompany">
+          </div>
+          <div class="member-edit-field">
+            <label class="member-edit-label" for="editInvoiceEmail">收發票 Email</label>
+            <input type="email" id="editInvoiceEmail" inputmode="email">
+          </div>
+        </div>
+      </div>
+
+      <div class="member-edit-actions">
+        <button id="saveMemberBtn" class="member-edit-save" onclick="saveMemberEdit()">儲存資料</button>
+        <div id="saveSuccessMsg" class="member-edit-success">✓ 更新完成！</div>
+      </div>
     </div>
   </div>
 </div>
