@@ -54,7 +54,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260701-time-sort-003';
+const ADMIN_BUILD = '20260701-members-sessions-recover-004';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -79,7 +79,7 @@ function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classLi
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
-async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜0701時間排序修正版'; await refreshSessionsOverview(); }
+async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜0701會員場次修正版'; await refreshSessionsOverview(); }
 function switchPage(page){ AdminState.currentPage=page; ['sessions','todos','members','settings'].forEach(p=>{ $('page-'+p).classList.toggle('hidden',p!==page); $('tab-'+p).classList.toggle('active',p===page); }); if(page==='sessions') renderSessions(); if(page==='todos') loadTodos(); if(page==='members') loadMembers(); }
 async function refreshCurrentPage(){ if(AdminState.currentLayer !== 'root' && AdminState.currentSessionId){ await refreshCurrentSessionOnly(); return; } if(AdminState.currentPage==='sessions') await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); if(AdminState.currentPage==='members') await loadMembers(); }
 function sessionId(s){return String(s.id||s.sessionId||s.session_id||'');}
@@ -433,17 +433,21 @@ function renderTodoRows(rows){
 
 async function loadMembers(){
   if(AdminState.currentPage!=='members') return;
-  $('memberList').innerHTML='<div class="loading">載入會員中…</div>';
+  const box=$('memberList');
+  box.innerHTML='<div class="loading">載入會員中…</div>';
   try{
-    const rows=await api({action:'getMembers'}).catch(()=>null);
-    if(Array.isArray(rows)){
-      AdminState.members=rows;
+    let rows=null;
+    try{ rows=await api({action:'getMembers'}); }catch(e){ rows=null; }
+    if(Array.isArray(rows) && rows.length){
+      AdminState.members=normalizeMembers(rows);
       renderMembers();
       return;
     }
-    $('memberList').innerHTML='<div class="notice warn">Worker 尚未提供 getMembers，會員頁不使用報名資料假合併，避免誤判。</div>';
+    // Worker 尚未提供 getMembers 時，不讓會員頁空白；改由各場報名資料建立會員/品牌索引。
+    AdminState.members=await buildMembersFromRegistrations();
+    renderMembers();
   }catch(e){
-    $('memberList').innerHTML='<div class="empty">會員載入失敗：'+safe(e.message)+'</div>';
+    box.innerHTML='<div class="empty">會員載入失敗：'+safe(e.message)+'</div>';
   }
 }
 function normalizeMemberLinkUrl(v){
@@ -452,6 +456,7 @@ function normalizeMemberLinkUrl(v){
   if(/^https?:\/\//i.test(s)) return s;
   if(/^www\./i.test(s)) return 'https://'+s;
   if(/^(facebook\.com|fb\.com|instagram\.com|ig\.me|linktr\.ee|lin\.ee)/i.test(s)) return 'https://'+s;
+  if(/^@/.test(s)) return 'https://instagram.com/'+encodeURIComponent(s.slice(1));
   return s;
 }
 function memberOfficialUrl(m){
@@ -467,6 +472,35 @@ function memberLinkIcons(m){
   if(web) h+='<a class="tag green social-icon" target="_blank" rel="noopener" title="官網" href="'+attr(web)+'">🌐</a>';
   return h;
 }
+function memberKeyOf(m){ return String(m.id||m.memberId||m.member_id||m.email||m.phone||m.brand||m.brandName||m.brand_name||'').trim(); }
+function normalizeMembers(rows){
+  return (Array.isArray(rows)?rows:[]).map(m=>({...m, _memberKey:memberKeyOf(m), _history:Array.isArray(m.history)?m.history:[]}));
+}
+function brandOfReg(r){ return r.brand||r.brandName||r.brand_name||r.shopName||r.shop_name||r.vendorName||r.vendor_name||r.name||r.email||'未填品牌'; }
+function mergeMemberField(dst,src,keys){ for(const k of keys){ if(!dst[k] && src[k]) dst[k]=src[k]; } }
+async function buildMembersFromRegistrations(){
+  if(!AdminState.sessions.length){
+    try{ const rows=await api({action:'getSessionDashboard'}); AdminState.sessions=Array.isArray(rows)?rows:[]; }catch(e){}
+  }
+  const map=new Map();
+  for(const s of (AdminState.sessions||[])){
+    const sid=sessionId(s); if(!sid) continue;
+    let regs=[];
+    try{ regs=await api({action:'getSessionRegistrations',sessionId:sid,filter:'all'}); }catch(e){ regs=[]; }
+    for(const r of (Array.isArray(regs)?regs:[])){
+      const email=String(r.email||'').trim().toLowerCase();
+      const phone=String(r.phone||r.mobile||'').trim();
+      const brand=String(brandOfReg(r)).trim();
+      const key=email || phone || brand;
+      if(!key) continue;
+      if(!map.has(key)) map.set(key,{_memberKey:key, brand, brandName:brand, brand_name:brand, name:r.name||r.contactName||r.contact_name||'', phone, email:r.email||'', fb:r.fb||r.fbUrl||r.fb_url||r.facebook||'', ig:r.ig||r.igUrl||r.ig_url||r.instagram||'', website:r.website||r.website_url||r.officialUrl||'', _history:[]});
+      const m=map.get(key);
+      mergeMemberField(m,r,['name','phone','email','fb','fbUrl','fb_url','facebook','ig','igUrl','ig_url','instagram','website','website_url','officialUrl','official_url']);
+      m._history.push({...r, sessionId:sid, sessionName:r.sessionName||sessionName(s)});
+    }
+  }
+  return Array.from(map.values()).map(m=>({...m, historyCount:m._history.length, history_count:m._history.length}));
+}
 function renderMembers(){
   const kw=($('memberSearch')?.value||'').toLowerCase();
   const list=[];
@@ -475,24 +509,30 @@ function renderMembers(){
     if(kw && !hay.includes(kw)) continue;
     list.push(m);
   }
+  list.sort((a,b)=>String(a.brand||a.brandName||a.brand_name||'').localeCompare(String(b.brand||b.brandName||b.brand_name||''),'zh-Hant'));
   let out='';
   for(const m of list){
     const brand=m.brand||m.brandName||m.brand_name||'未填品牌';
     const links=memberLinkIcons(m);
-    const key=m.id||m.email||m.phone||m.member_id||'';
-    out+='<article class="reg-card"><div><div class="reg-title">'+safe(brand)+'</div><div class="reg-sub">'+safe(m.name||'')+'｜'+safe(m.phone||'')+'｜'+safe(m.email||'')+'</div><div class="tag-row">'+(links||'<span class="tag">未填社群</span>')+'<span class="tag purple">歷史 '+safe(m.historyCount||m.history_count||'—')+' 場</span></div></div><div class="reg-actions"><button class="btn small secondary" onclick="openMemberHistory(\''+attr(key)+'\')">歷史紀錄</button></div></article>';
+    const key=m._memberKey||memberKeyOf(m);
+    out+='<article class="reg-card"><div><div class="reg-title">'+safe(brand)+'</div><div class="reg-sub">'+safe(m.name||'')+'｜'+safe(m.phone||'')+'｜'+safe(m.email||'')+'</div><div class="tag-row">'+(links||'<span class="tag">未填社群</span>')+'<span class="tag purple">歷史 '+safe(m.historyCount||m.history_count||((m._history||[]).length)||'—')+' 場</span></div></div><div class="reg-actions"><button class="btn small secondary" onclick="openMemberHistory(\''+attr(key)+'\')">歷史紀錄</button></div></article>';
   }
   $('memberList').innerHTML=out||'<div class="empty">沒有會員 / 品牌資料</div>';
 }
 async function openMemberHistory(key){
   openPanel('品牌歷史紀錄','每一場狀態獨立顯示','<div class="loading">載入中…</div>');
   try{
-    const rows=await api({action:'getMemberHistory',memberKey:key});
+    let rows=null;
+    try{ rows=await api({action:'getMemberHistory',memberKey:key}); }catch(e){ rows=null; }
+    if(!Array.isArray(rows)){
+      const m=(AdminState.members||[]).find(x=>String(x._memberKey||memberKeyOf(x))===String(key));
+      rows=(m&&Array.isArray(m._history))?m._history:[];
+    }
     let out='';
     for(const r of (Array.isArray(rows)?rows:[])) out+=renderRegCard(r);
     $('panelBody').innerHTML='<div class="cards">'+(out||'<div class="empty">沒有歷史紀錄</div>')+'</div>';
   }catch(e){
-    $('panelBody').innerHTML='<div class="notice warn">Worker 尚未提供 getMemberHistory 或讀取失敗：'+safe(e.message)+'</div>';
+    $('panelBody').innerHTML='<div class="empty">品牌歷史載入失敗：'+safe(e.message)+'</div>';
   }
 }
 
@@ -512,6 +552,10 @@ async function saveCompanySettings(btn){ const old=btn.textContent; btn.disabled
 function openHomepageSettings(){ openPanel('公告 / 首頁顯示','前台顯示內容必須由資料庫設定讀取','<div class="notice">此頁優先使用既有 getSiteConfig / saveSiteConfig。正式公告與首頁卡片若後端未提供，會阻斷不假存。</div><div class="form-grid"><div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div><div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div></div><div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div>'); loadHomepageSettings(); }
 async function loadHomepageSettings(){ try{ const c=await api({action:'getSiteConfig'}); $('home_hero').value=c.heroImg||''; $('home_info').value=c.infoText||''; }catch(e){toast('首頁設定載入失敗：'+e.message,6000)} }
 async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'saveSiteConfig',heroImg:$('home_hero').value,infoText:$('home_info').value}); toast('首頁顯示已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
+
+// 重要：將 inline onclick 會使用的函式明確掛到 window，避免後續壓縮/作用域調整造成按鈕失效。
+Object.assign(window,{refreshSessionsOverview,renderSessions,loadTodos,renderTodoRows,loadMembers,renderMembers,openMemberHistory,switchPage,refreshCurrentPage,openSessionList,openSessionDetail,openFinancePanel,openEquipmentPanel,downloadSessionExcel,openSessionSettings,openBusinessOverviewPanel});
+
 (async function boot(){ const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ saveSession(s); enterAdmin(); } })();
 </script>
 </body>
