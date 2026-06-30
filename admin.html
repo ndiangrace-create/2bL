@@ -43,7 +43,7 @@
       <button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
     </nav>
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn" onclick="openSessionCreatePanel()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
-    <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片都顯示場次名稱。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
+    <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
     <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button></div></section>
   </main>
@@ -54,6 +54,7 @@
 
 <script>
 'use strict';
+const ADMIN_BUILD = '20260701-todo-cache-guard-001';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -78,7 +79,7 @@ function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classLi
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
-async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員'); await refreshSessionsOverview(); }
+async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜0701待辦修正版'; await refreshSessionsOverview(); }
 function switchPage(page){ AdminState.currentPage=page; ['sessions','todos','members','settings'].forEach(p=>{ $('page-'+p).classList.toggle('hidden',p!==page); $('tab-'+p).classList.toggle('active',p===page); }); if(page==='sessions') renderSessions(); if(page==='todos') loadTodos(); if(page==='members') loadMembers(); }
 async function refreshCurrentPage(){ if(AdminState.currentLayer !== 'root' && AdminState.currentSessionId){ await refreshCurrentSessionOnly(); return; } if(AdminState.currentPage==='sessions') await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); if(AdminState.currentPage==='members') await loadMembers(); }
 function sessionId(s){return String(s.id||s.sessionId||s.session_id||'');}
@@ -176,6 +177,8 @@ function regDateText(r){
   }
   return String(raw || '未設定');
 }
+function regDatesText(r){ return regDateText(r); }
+try{ window.regDatesText = regDatesText; }catch(e){}
 function regCreatedText(r){ return r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '—'; }
 function regAmount(r){ return Number(r.amount ?? r.totalAmount ?? r.total_amount ?? r.receivableAmount ?? r.registration_total_amount ?? r.total ?? 0) || 0; }
 function invoiceBrief(r){ const parts=[]; if(r.taxId) parts.push('統編 '+r.taxId); if(r.invoiceTitle) parts.push(r.invoiceTitle); if(r.invoiceEmail) parts.push(r.invoiceEmail); return parts.join('｜') || '—'; }
@@ -276,7 +279,7 @@ async function loadTodos(){
     rows=await buildTodoRowsFromSessions();
     renderTodoRows(rows);
   }catch(e){
-    $('todoList').innerHTML='<div class="empty">待辦載入失敗：'+safe(e.message)+'</div>';
+    $('todoList').innerHTML='<div class="empty">待辦載入失敗：'+safe(e.message)+'<br><span class="sub">版本：'+safe(ADMIN_BUILD)+'</span></div>';
   }
 }
 function hasTodoRegId(r){ return !!(r && (r.id||r.regId||r.registrationId||r.registration_id)); }
