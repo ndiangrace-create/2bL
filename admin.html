@@ -70,6 +70,21 @@
       html,body{font-size:16px}.app-shell{padding:10px 10px calc(104px + var(--safe-bottom))}.topbar-in{padding:10px}.brand-title{font-size:17px}.brand-sub{max-width:45vw}.top-actions .hide-sm{display:none}.tabs{bottom:8px;width:calc(100vw - 16px);border-radius:22px;padding:7px}.tab{font-size:13px;min-height:44px;border-radius:16px;padding:7px 3px}.page-title{display:block}.page-actions{margin-top:10px;justify-content:flex-start}.session-head{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr);gap:7px}.stat{min-height:70px;padding:8px}.stat b{font-size:21px}.stat span{font-size:12px}.compact-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.reg-card{grid-template-columns:1fr}.reg-actions{flex-direction:row;flex-wrap:wrap}.reg-actions .btn{flex:1 1 auto}.settings-grid{grid-template-columns:1fr 1fr}.todo-grid{grid-template-columns:1fr 1fr}.panel-title{font-size:18px}.kv{grid-template-columns:82px 1fr}.session-name{font-size:20px}.card-actions .btn{flex:1 1 calc(50% - 8px)}
     }
     @media(max-width:430px){.stats{grid-template-columns:repeat(2,1fr)}.settings-grid,.todo-grid{grid-template-columns:1fr}.card-actions .btn{flex:1 1 100%}.top-actions{gap:5px}.btn.small{font-size:13px;padding:7px 9px}.brand-icon{width:40px;height:40px}.login-card{padding:20px}}
+
+    /* V10 CLEAN patch: bottom nav colors + clearer status/action feedback */
+    .tabs .tab:nth-child(1){background:var(--yellow);border-color:#E8D99A;color:#2B2514}
+    .tabs .tab:nth-child(2){background:var(--green);border-color:#BFD6AF;color:#23301F}
+    .tabs .tab:nth-child(3){background:var(--pink);border-color:#E8BCB7;color:#38211E}
+    .tabs .tab:nth-child(4){background:var(--blue);border-color:#BFD2DD;color:#1F2C34}
+    .tabs .tab.active{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important;box-shadow:0 7px 18px rgba(0,0,0,.22)}
+    .status-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;max-width:720px}
+    .status-chip{border-radius:15px;border:1px solid var(--line);padding:8px 9px;background:#fff;font-size:13px;font-weight:950;line-height:1.25;text-align:center}
+    .status-chip span{display:block;font-size:11px;color:var(--muted);font-weight:850;margin-bottom:2px}
+    .status-chip.ok{background:var(--green);border-color:#BDD8B1}.status-chip.warn{background:var(--yellow);border-color:#EAD68F}.status-chip.bad{background:var(--pink);border-color:#E8B8B2}.status-chip.info{background:var(--blue);border-color:#C4D5E0}.status-chip.purple{background:var(--purple);border-color:#C9C0E0}
+    .btn.done{background:var(--green);color:#23301F;border:1px solid #BCD5B0;box-shadow:none}.btn.done:disabled{opacity:1;color:#23301F}
+    .op-note{background:var(--blue);border:1px solid #BFD2DD;border-radius:16px;padding:10px 12px;margin:0 0 12px;font-weight:900;color:#20313C}
+    @media(max-width:680px){.status-summary{grid-template-columns:1fr}.reg-card{grid-template-columns:1fr}.reg-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.reg-actions .btn{width:100%}}
+
   </style>
 </head>
 <body>
@@ -598,6 +613,174 @@ async function downloadSessionExcel(sid){
   const html=`<html><head><meta charset="UTF-8"></head><body><table border="1"><thead><tr>${headers.map(h=>`<th>${excelEscape(h)}</th>`).join('')}</tr></thead><tbody>${body.map(row=>`<tr>${row.map(c=>`<td>${excelEscape(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;
   const blob=new Blob(['﻿',html],{type:'application/vnd.ms-excel;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(sessionName(s)||'場次')+'_完整名單.xls'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
 }
+
+
+/* === V10 CLEAN 0630 operator patch: payment fields, clear statuses, safer panel back === */
+function pageBackLabel(){
+  if(ST.panelStack&&ST.panelStack.length) return '← 返回上一層';
+  const map={sessions:'場次總覽',todos:'全部待辦',members:'會員品牌',settings:'系統設定'};
+  return '← 返回'+(map[ST.currentPage]||'上一頁');
+}
+function updatePanelBackLabel(){
+  const btn=document.querySelector('.panel-bottom .btn');
+  if(btn) btn.textContent=pageBackLabel();
+}
+function openPanel(title,sub,html,opts={}){
+  const panel=$('panel');
+  const wasOpen=panel.classList.contains('show');
+  if(wasOpen&&!opts.replace){
+    ST.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,panel:{...ST.panel},regs:[...(ST.panelRegs||[])]});
+  }
+  $('panelTitle').textContent=title;
+  $('panelSub').textContent=sub||'';
+  $('panelBody').innerHTML=html;
+  panel.classList.add('show');
+  document.body.style.overflow='hidden';
+  updatePanelBackLabel();
+  if(!opts.noHistory&&!opts.replace){
+    try{history.pushState({adminPanel:true},'',location.pathname+location.search+'#admin-panel');}catch(e){}
+  }
+}
+function closePanel(opts={}){
+  const prev=ST.panelStack.pop();
+  if(prev){
+    $('panelTitle').textContent=prev.title;
+    $('panelSub').textContent=prev.sub;
+    $('panelBody').innerHTML=prev.html;
+    ST.panel=prev.panel||ST.panel;
+    ST.panelRegs=prev.regs||[];
+    updatePanelBackLabel();
+    if(!opts.fromPop&&location.hash==='#admin-panel'){
+      ST._ignoreNextPop=true;
+      try{history.back();}catch(e){}
+    }
+    return;
+  }
+  $('panel').classList.remove('show');
+  $('panelBody').innerHTML='';
+  document.body.style.overflow='';
+  ST.panel={type:'',sessionId:'',filter:''};
+  ST.panelRegs=[];
+  updatePanelBackLabel();
+  if(!opts.fromPop&&location.hash==='#admin-panel'){
+    ST._ignoreNextPop=true;
+    try{history.back();}catch(e){}
+  }
+}
+window.addEventListener('popstate',()=>{
+  if(ST._ignoreNextPop){ST._ignoreNextPop=false;return;}
+  if($('panel')&&$('panel').classList.contains('show')) closePanel({fromPop:true});
+});
+function statusClassReview(r){return isApproved(r)?'ok':isPendingReview(r)?'warn':isRejected(r)?'bad':isWait(r)?'purple':'info';}
+function statusClassPay(r){return isPaid(r)||isFree(r)?'ok':isPaymentPending(r)?'warn':isRefund(r)?'bad':'bad';}
+function statusClassCheckin(r){return isChecked(r)?'ok':'purple';}
+function statusSummary(r){
+  return `<div class="status-summary"><div class="status-chip ${statusClassReview(r)}"><span>審核</span>${safe(r.status||r.reviewStatus||'待審核')}</div><div class="status-chip ${statusClassPay(r)}"><span>付款</span>${safe(payText(r))}</div><div class="status-chip ${statusClassCheckin(r)}"><span>報到</span>${safe(r.checkin||r.checkinStatus||'未報到')}</div></div>`;
+}
+function renderRegCard(r){
+  const brand=r.brand||r.brandName||r.brand_name||'未填品牌'; const id=r.id||r.regId||'';
+  return `<article class="reg-card"><div><div class="reg-title">${safe(brand)}</div><div class="reg-sub">${safe(r.sessionName||sessionName(sessionById(regSessionId(r)))||'')}｜${safe(r.createdAt?new Date(r.createdAt).toLocaleString('zh-TW',{hour12:false}):'未記錄日期')}</div><div class="tag-row">${socialLinks(r)}</div>${statusSummary(r)}<div class="kv"><div class="k">聯絡人</div><div>${safe(r.name||'—')}｜${safe(r.phone||'—')}</div><div class="k">Email</div><div>${safe(r.email||'—')}</div><div class="k">攤位數</div><div>${safe(r.stallCount||r.qty||1)}</div><div class="k">設備</div><div>${safe(equipText(r.equip||r.equipment||r.equipJson))}</div><div class="k">金額</div><div>${money(regAmount(r))}</div><div class="k">備註</div><div>${safe(r.adminNote||r.remark||'—')}</div></div></div><div class="reg-actions">${renderRegActions(id,r)}</div></article>`;
+}
+function renderRegActions(id,r){
+  const b=[];
+  if(isPendingReview(r)){
+    b.push(`<button class="btn small green" onclick="regAction('${attr(id)}','approve',this)">錄取</button>`);
+    b.push(`<button class="btn small danger" onclick="regAction('${attr(id)}','reject',this)">不錄取</button>`);
+    b.push(`<button class="btn small secondary" onclick="regAction('${attr(id)}','waitlist',this)">備取</button>`);
+  }
+  if(isPaymentPending(r)){
+    b.push(`<button class="btn small yellow" onclick="regAction('${attr(id)}','confirmPay',this)">確認付款</button>`);
+    b.push(`<button class="btn small done" disabled>已回報 ✓</button>`);
+  }else if(isUnpaid(r)){
+    b.push(`<button class="btn small blue" onclick="regAction('${attr(id)}','reported',this)">標記已回報</button>`);
+    b.push(`<button class="btn small danger" onclick="regAction('${attr(id)}','cancelUnpaid',this)">未繳費取消</button>`);
+  }
+  if((isPaid(r)||isFree(r))&&!isChecked(r)){b.push(`<button class="btn small purple" onclick="regAction('${attr(id)}','checkin',this)">報到</button>`);}
+  if(isChecked(r)){b.push(`<button class="btn small secondary" onclick="regAction('${attr(id)}','undoCheckin',this)">取消報到</button>`);}
+  b.push(`<button class="btn small secondary" onclick="openRegDetail('${attr(id)}')">完整資料</button>`); return b.join('');
+}
+function findRegRefs(id){
+  const matches=[];
+  [ST.regs,ST.panelRegs].forEach(arr=>{(arr||[]).forEach(r=>{if(String(r.id||r.regId)===String(id))matches.push(r);});});
+  return matches;
+}
+function applyLocalRegStatus(id,mode){
+  findRegRefs(id).forEach(r=>{
+    if(mode==='approve') r.status=r.reviewStatus='已錄取';
+    if(mode==='reject') r.status=r.reviewStatus='不錄取';
+    if(mode==='waitlist') r.status=r.reviewStatus='備取';
+    if(mode==='reported') r.payStatus=r.paymentStatus='已回報 / 付款待確認';
+    if(mode==='confirmPay') r.payStatus=r.paymentStatus='已繳費';
+    if(mode==='cancelUnpaid') {r.status='已取消'; r.payStatus=r.paymentStatus='未繳費取消';}
+    if(mode==='checkin') r.checkin=r.checkinStatus='已報到';
+    if(mode==='undoCheckin') r.checkin=r.checkinStatus='未報到';
+  });
+}
+function insertPanelNote(msg){
+  const body=$('panelBody'); if(!body||!body.innerHTML)return;
+  const old=body.querySelector('.op-note'); if(old) old.remove();
+  body.insertAdjacentHTML('afterbegin',`<div class="op-note">${safe(msg)}</div>`);
+}
+async function regAction(id,mode,btn){
+  if(!id){toast('找不到報名 ID');return;}
+  const confirmText={reject:'確定標記為不錄取？',waitlist:'確定標記為備取？',confirmPay:'確定確認付款？',cancelUnpaid:'確定取消此未繳費報名？紀錄會保留。',undoCheckin:'確定取消報到？'}[mode];
+  if(confirmText&&!confirm(confirmText))return;
+  const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
+  try{
+    if(mode==='approve')await apiPost({action:'approveReg',regId:id,approved:true});
+    if(mode==='reject')await apiPost({action:'approveReg',regId:id,approved:false});
+    if(mode==='waitlist')await apiPost({action:'approveReg',regId:id,status:'備取'});
+    if(mode==='reported')await apiPost({action:'markPaymentScreenshot',regId:id});
+    if(mode==='cancelUnpaid')await apiPost({action:'adminCancelReg',regId:id});
+    if(mode==='confirmPay')await apiPost({action:'confirmPayment',regId:id});
+    if(mode==='checkin')await apiPost({action:'checkin',regId:id});
+    if(mode==='undoCheckin')await apiPost({action:'checkin',regId:id,undo:true});
+    applyLocalRegStatus(id,mode);
+    const msg={reported:'已標記已回報，卡片付款狀態已更新為「已回報 / 付款待確認」。',confirmPay:'已確認付款，卡片付款狀態已更新。',approve:'已錄取，卡片審核狀態已更新。',reject:'已標記不錄取。',waitlist:'已標記備取。',cancelUnpaid:'已取消未繳費報名。',checkin:'已報到。',undoCheckin:'已取消報到。'}[mode]||'已更新';
+    toast(msg,3600);
+    if($('panel')?.classList.contains('show')){renderPanelRegCards(); insertPanelNote(msg);} else {renderMembers(); renderSessions(); renderTodos();}
+    await reloadAll();
+    if(ST.panel?.type==='list') await openListPanel(ST.panel.sessionId,ST.panel.filter,$('panelTitle').textContent.split('｜').pop()||'名單');
+    if(ST.currentPage==='members') renderMembers();
+  }catch(e){toast('操作失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}
+}
+function openBrandHistory(key){
+  const rows=(ST.regs||[]).filter(r=>[r.email,r.phone,r.brand,r.brandName].map(v=>String(v||'')).includes(String(key)));
+  const title=(rows[0]?.brand||rows[0]?.brandName||'品牌')+'｜歷史紀錄';
+  const summary=`<div class="notice"><b>狀態說明：</b>每張卡都是一個獨立場次，會直接顯示「審核 / 付款 / 報到」三個目前狀態；右側按鈕只會依該筆報名狀態顯示。</div>`;
+  openPanel(title,'同品牌不同場次狀態各自獨立',`${summary}<div class="cards">${rows.map(renderRegCard).join('')||'<div class="empty">找不到歷史紀錄</div>'}</div>`);
+}
+function openPaymentSettings(){
+  const cfg=ST.siteConfig||{}; const pay=cfg.payment||cfg.payments||{};
+  const val=(...xs)=>xs.find(v=>v!==undefined&&v!==null&&String(v)!=='')||'';
+  openPanel('付款資訊','優先讀取資料庫 siteConfig；可存全域付款說明，單場費用仍以各場次卡設定為準。',`<div class="warn-box">單場費用仍以各場次卡設定為準；這裡放全域付款說明與帳戶資料。</div><div style="height:12px"></div><div class="form-grid"><div class="form-field full"><label>付款說明</label><textarea id="payInfoText" style="min-height:120px">${safe(val(cfg.paymentText,cfg.payInfo,pay.info))}</textarea></div><div class="form-field"><label>銀行</label><input id="payBank" value="${attr(val(cfg.bankName,pay.bankName,pay.bank))}"></div><div class="form-field"><label>分行</label><input id="payBranch" value="${attr(val(cfg.bankBranch,pay.bankBranch,pay.branch))}"></div><div class="form-field"><label>戶名</label><input id="payAccountName" value="${attr(val(cfg.accountName,cfg.bankAccountName,pay.accountName,pay.accountHolder))}"></div><div class="form-field"><label>帳號</label><input id="payAccount" value="${attr(val(cfg.bankAccount,pay.bankAccount,pay.account))}"></div><div class="form-field full"><label>LINE Pay</label><input id="payLinePay" value="${attr(val(cfg.linePayLink,cfg.paymentLink,pay.linePay,pay.linePayLink,pay.link))}"></div><div class="form-field full"><label>刷卡</label><input id="payCard" value="${attr(val(cfg.creditCardInfo,cfg.cardPayment,pay.creditCard,pay.card))}" placeholder="刷卡連結或說明"></div><div class="form-field full"><label>其他付款備註</label><textarea id="payOtherNote">${safe(val(cfg.paymentOtherNote,pay.otherNote))}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveSiteSettings('payment',this)">儲存付款資訊</button><button class="btn secondary" onclick="closePanel();switchPage('sessions')">回場次卡設定</button></div>`,{replace:false});
+}
+async function saveSiteSettings(type,btn){
+  const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
+  try{
+    const payload={action:'saveSiteConfig'};
+    if(type==='payment'){
+      payload.paymentText=$('payInfoText')?.value||'';
+      payload.bankName=$('payBank')?.value||'';
+      payload.bankBranch=$('payBranch')?.value||'';
+      payload.accountName=$('payAccountName')?.value||'';
+      payload.bankAccount=$('payAccount')?.value||'';
+      payload.linePayLink=$('payLinePay')?.value||'';
+      payload.creditCardInfo=$('payCard')?.value||'';
+      payload.paymentOtherNote=$('payOtherNote')?.value||'';
+      payload.payment={info:payload.paymentText,bankName:payload.bankName,bank:payload.bankName,branch:payload.bankBranch,bankBranch:payload.bankBranch,accountName:payload.accountName,accountHolder:payload.accountName,bankAccount:payload.bankAccount,account:payload.bankAccount,linePay:payload.linePayLink,linePayLink:payload.linePayLink,link:payload.linePayLink,creditCard:payload.creditCardInfo,card:payload.creditCardInfo,otherNote:payload.paymentOtherNote};
+    }
+    if(type==='company'){
+      payload.companyName=$('companyName')?.value||'';
+      payload.companyEmail=$('companyEmail')?.value||'';
+      payload.companyContact=$('companyContact')?.value||'';
+      payload.companyNote=$('companyNote')?.value||'';
+      payload.company={name:payload.companyName,email:payload.companyEmail,contact:payload.companyContact,note:payload.companyNote};
+    }
+    await apiPost(payload); toast('已儲存'); ST.siteConfig={...(ST.siteConfig||{}),...payload};
+  }catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}
+}
+
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('panel').classList.contains('show'))closePanel();});
 (async function boot(){const did=await handleOAuthCallback(); if(did)return; const s=readSession(); if(s&&s.token&&s.email){saveSession(s); enterAdmin();} })();
 </script>
