@@ -54,7 +54,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260701-todo-cache-guard-001';
+const ADMIN_BUILD = '20260701-todo-equipmentText-fix-002';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -79,16 +79,18 @@ function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classLi
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
-async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜0701待辦修正版'; await refreshSessionsOverview(); }
+async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜0701待辦設備修正版'; await refreshSessionsOverview(); }
 function switchPage(page){ AdminState.currentPage=page; ['sessions','todos','members','settings'].forEach(p=>{ $('page-'+p).classList.toggle('hidden',p!==page); $('tab-'+p).classList.toggle('active',p===page); }); if(page==='sessions') renderSessions(); if(page==='todos') loadTodos(); if(page==='members') loadMembers(); }
 async function refreshCurrentPage(){ if(AdminState.currentLayer !== 'root' && AdminState.currentSessionId){ await refreshCurrentSessionOnly(); return; } if(AdminState.currentPage==='sessions') await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); if(AdminState.currentPage==='members') await loadMembers(); }
 function sessionId(s){return String(s.id||s.sessionId||s.session_id||'');}
 function sessionName(s){return s.name||s.title||s.sessionName||'未命名場次';}
+function regSessionId(r){ return String(r.sessionId||r.session_id||r.sessionID||r.session_id_text||''); } // 報名所屬場次 ID 相容函式
 function sessionById(id){ for(const s of AdminState.sessions){ if(sessionId(s)===String(id)) return s; } return {}; }
 function isArchived(s){ return ['封存','隱藏','已封存'].includes(String(s.status||'')); }
 function isClosed(s){ return ['關閉','已關閉','停用','已截止'].includes(String(s.status||'')); }
 function formatDate(s){ if(s.dateText) return s.dateText; if(s.date) return String(s.date); if(Array.isArray(s.dates)){ const arr=[]; for(const d of s.dates){ arr.push(typeof d==='object' ? (d.date||'') : d); } return arr.join('、')||'未設定日期'; } return '未設定日期'; }
 function textFromMap(v){ if(v===undefined||v===null||v==='') return '資料庫未提供'; if(typeof v === 'string') return safe(v); const parts=[]; for(const k in v){ if(Number(v[k])>0) parts.push(safe(k)+'×'+safe(v[k])); } return parts.join('、') || '無'; }
+function equipText(v){ return textFromMap(v); } // 設備文字格式化相容函式
 function equipDailyHtml(rows, fallback){ if(Array.isArray(rows)&&rows.length){ return rows.map(r=>safe(r.label||r.date||'日期')+'：攤數 '+safe(r.stallCount||0)+'，'+safe(r.equipmentText||textFromMap(r.equipmentMap))).join('<br>'); } return safe(fallback||'無'); }
 function equipDailyText(rows, fallback){ if(Array.isArray(rows)&&rows.length){ return rows.map(r=>(r.label||r.date||'日期')+'：攤數 '+(r.stallCount||0)+'，'+(r.equipmentText||textFromMap(r.equipmentMap))).join('｜'); } return String(fallback||'無'); }
 function nz(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
@@ -162,6 +164,7 @@ async function openEquipmentPanel(sid,dateKey='',dateLabel=''){
 function regMatchesEquipmentDate(r,dateKey,dateLabel){ const rows=Array.isArray(r.dailyEquipmentRows)?r.dailyEquipmentRows:[]; if(rows.length) return rows.some(x=>String(x.date||x.key||'')===String(dateKey) || (dateLabel && String(x.label||'')===String(dateLabel))); const txt=String(r.selectedDatesText||''); return txt.includes(dateKey)|| (dateLabel && txt.includes(dateLabel)); }
 
 function regEquipText(r){ return r.equipmentText || r.wholeEquipmentText || r.effectiveEquipmentText || equipText(r.equipmentMap||r.equipment||r.equip||r.equipment_json); }
+function equipmentText(r){ return regEquipText(r); } // 相容舊呼叫：待辦卡片曾呼叫 equipmentText
 function regDateText(r){
   const v = r.selectedDatesText || r.selected_dates_text || r.dateText || r.registrationDateText || r.appliedDateText || '';
   if (v) return String(v);
@@ -337,7 +340,7 @@ function renderTodoRows(rows){
     const dates=regDateText(r);
     const stalls=r.stallCount||r.stall_count||r.stalls||'';
     const amount=Number(r.amount||r.total||r.totalAmount||r.registration_total_amount||0);
-    const equip=equipmentText(r);
+    const equip=regEquipText(r);
     const sub=[];
     if(r.name && r.name!==who) sub.push('聯絡人：'+safe(r.name));
     if(phone) sub.push('電話：'+safe(phone));
