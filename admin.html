@@ -3,786 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
   <title>2BL 報名管理系統｜管理後台</title>
   <style>
     :root{
-      --bg:#F8F6F0;
-      --paper:#FFFFFF;
-      --ink:#1F1F1F;
-      --muted:#6F6F6F;
-      --line:#E8DFD4;
-      --blue:#D9E5EE;
-      --yellow:#FAEEC7;
-      --green:#DDEAD1;
-      --pink:#FAE1DD;
-      --purple:#DCD7ED;
-      --mint:#D4E3DD;
-      --main:#82ABA3;
-      --main2:#628E87;
-      --shadow:0 12px 30px rgba(45,39,32,.08);
-      --shadow2:0 18px 48px rgba(45,39,32,.16);
-      --radius:22px;
-      --radius2:16px;
-      --safe-bottom:env(safe-area-inset-bottom,0px);
+      --bg:#F8F6F0;--paper:#fff;--ink:#202020;--muted:#6f6f6f;--line:#E7DED2;
+      --green:#DDEAD1;--yellow:#FAEEC7;--pink:#FAE1DD;--blue:#D9E5EE;--purple:#DCD7ED;--main:#82ABA3;
+      --dark:#1f1f1f;--danger:#C95D58;--shadow:0 10px 26px rgba(42,35,24,.08);--safe-bottom:env(safe-area-inset-bottom,0px);
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Segoe UI",sans-serif;font-size:17px;line-height:1.55}
-    body{min-height:100vh}
-    a{color:inherit}
-    button,input,select,textarea{font:inherit}
-    button{cursor:pointer}
-    .hidden{display:none!important}
-    .app-shell{max-width:1180px;margin:0 auto;padding:14px 14px calc(120px + var(--safe-bottom))}
-    .login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#fff 0%,#F8F6F0 42%,#D9E5EE 100%)}
-    .login-card{width:min(460px,100%);background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow2);padding:24px;text-align:center}
-    .login-mark{width:96px;height:96px;margin:0 auto 16px;border-radius:26px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 22px rgba(45,39,32,.10);display:grid;place-items:center;padding:10px;overflow:hidden}.login-mark img{width:100%;height:100%;object-fit:contain;display:block}
-    h1,h2,h3{margin:0}
-    .login-card h1{font-size:28px;margin-bottom:8px}.login-info{margin:16px 0 18px;padding:12px 14px;border-radius:18px;background:var(--mint);border:1px solid var(--line);text-align:left;color:#334;font-size:14px}.login-info b{display:block;margin-bottom:4px}.login-footnote{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
-    .sub{color:var(--muted);font-size:14px}
-    .btn{border:0;border-radius:999px;background:var(--main);color:#fff;padding:10px 15px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;min-height:42px;box-shadow:0 3px 0 rgba(0,0,0,.05)}
-    .btn:hover{filter:brightness(.98);transform:translateY(-1px)}
-    .btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
-    .btn.blue{background:#86AFC9}.btn.green{background:#8BAF7A}.btn.yellow{background:#B99745}.btn.pink{background:#D97A73}.btn.purple{background:#8C7BB6}.btn.gray{background:#888}.btn.danger{background:#C8645D}
-    .btn.small{min-height:34px;padding:7px 11px;font-size:14px}.btn.block{width:100%}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-    .topbar{position:sticky;top:0;z-index:20;background:rgba(248,246,240,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-    .topbar-in{max-width:1180px;margin:0 auto;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .brand{display:flex;align-items:center;gap:10px;min-width:0}.brand-icon{width:44px;height:44px;border-radius:15px;background:#fff;display:grid;place-items:center;border:1px solid var(--line);flex:0 0 auto;padding:5px;overflow:hidden}.brand-icon img{width:100%;height:100%;object-fit:contain;display:block}.brand-title{font-weight:950;font-size:20px;white-space:nowrap}.brand-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
-    .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-    .tabs{position:fixed;left:50%;right:auto;bottom:14px;transform:translateX(-50%);z-index:30;width:min(760px,calc(100vw - 28px));display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:24px;padding:8px;box-shadow:var(--shadow2)}
-    .tab{border:1px solid var(--line);background:#fff;border-radius:18px;padding:10px 8px;font-weight:950;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.03);display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px}.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-    .notice{background:#fff;border:1px solid var(--line);border-left:7px solid var(--main);border-radius:18px;padding:14px;margin:12px 0;box-shadow:var(--shadow)}
-    .page-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:16px 0 10px}.page-title h2{font-size:26px}.page-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}.filter-row input,.filter-row select{border:1px solid var(--line);background:#fff;border-radius:999px;padding:11px 14px;min-height:42px}.filter-row input{flex:1;min-width:210px}.filter-row select{min-width:130px}
-    .session-list{display:grid;gap:14px}
-    .session-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-    .session-head{padding:16px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;background:linear-gradient(90deg,#fff 0%,#fff 55%,rgba(217,229,238,.45) 100%)}
-    .session-name{font-size:22px;font-weight:950;line-height:1.25}.session-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:5px 9px;background:#F4F0EA;border:1px solid var(--line);font-size:13px;font-weight:850;color:#333}.pill.blue{background:var(--blue)}.pill.green{background:var(--green)}.pill.yellow{background:var(--yellow)}.pill.pink{background:var(--pink)}.pill.purple{background:var(--purple)}
-    .session-body{padding:14px 16px 16px}.section-label{font-size:14px;font-weight:950;color:#333;margin:6px 0 8px;display:flex;align-items:center;gap:6px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.stat{border:1px solid var(--line);border-radius:17px;padding:10px;background:#fff;min-height:78px;display:flex;flex-direction:column;justify-content:center;text-align:center}.stat.click{cursor:pointer}.stat.click:hover{border-color:#9EB9B4;box-shadow:0 8px 20px rgba(0,0,0,.08);transform:translateY(-1px)}.stat b{font-size:24px;line-height:1;font-weight:950}.stat span{font-size:13px;color:var(--muted);font-weight:850;margin-top:5px}.stat.blue{background:rgba(217,229,238,.55)}.stat.green{background:rgba(221,234,209,.7)}.stat.yellow{background:rgba(250,238,199,.75)}.stat.pink{background:rgba(250,225,221,.75)}.stat.purple{background:rgba(220,215,237,.70)}
-    .compact-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.info-box{border:1px solid var(--line);background:#fff;border-radius:17px;padding:12px;min-height:86px}.info-box b{font-size:18px}.info-line{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px dashed #EEE4D8;padding:7px 0}.info-line:last-child{border-bottom:0}.info-line span:first-child{color:var(--muted);font-weight:850}.info-line span:last-child{font-weight:950;text-align:right}
-    .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.setting-box{margin-top:12px;border:1px solid var(--line);border-radius:18px;background:#FFFEFB;display:none}.setting-box.open{display:block}.setting-inner{padding:14px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-field{display:flex;flex-direction:column;gap:5px}.form-field.full{grid-column:1/-1}.form-field label{font-size:13px;color:var(--muted);font-weight:900}.form-field input,.form-field select,.form-field textarea{width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 12px}.form-field textarea{min-height:90px;resize:vertical}.field-note{font-size:12px;color:var(--muted)}
-    .panel{position:fixed;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column}.panel.show{display:flex}.panel-head{position:sticky;top:0;background:rgba(248,246,240,.95);backdrop-filter:blur(12px);z-index:2;border-bottom:1px solid var(--line);padding:10px 12px}.panel-head-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-title{font-size:20px;font-weight:950}.panel-sub{font-size:12px;color:var(--muted)}.xbtn{width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:20px;font-weight:950;color:#333}.panel-body{flex:1;overflow:auto;padding:14px 14px calc(92px + var(--safe-bottom));max-width:1180px;width:100%;margin:0 auto}.panel-bottom{position:sticky;bottom:0;background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:10px 14px calc(10px + var(--safe-bottom));display:flex;justify-content:center}
-    .cards{display:grid;gap:10px}.reg-card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px;display:grid;grid-template-columns:1fr auto;gap:12px}.reg-title{font-size:20px;font-weight:950}.reg-sub{font-size:13px;color:var(--muted);margin-top:2px}.kv{display:grid;grid-template-columns:92px 1fr;gap:4px 10px;margin-top:10px;font-size:14px}.kv .k{color:var(--muted);font-weight:850}.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.tag{border-radius:999px;background:#F4F0EA;border:1px solid var(--line);padding:4px 8px;font-size:12px;font-weight:900}.tag.ok{background:var(--green)}.tag.warn{background:var(--yellow)}.tag.bad{background:var(--pink)}.tag.info{background:var(--blue)}.tag.purple{background:var(--purple)}.reg-actions{display:flex;flex-direction:column;gap:7px;min-width:106px}.empty{background:#fff;border:1px dashed var(--line);border-radius:20px;padding:24px;text-align:center;color:var(--muted);font-weight:850}.loading{padding:28px;text-align:center;color:var(--muted);font-weight:900}.toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);background:#1f1f1f;color:#fff;padding:11px 15px;border-radius:999px;font-weight:850;box-shadow:var(--shadow2);opacity:0;pointer-events:none;transition:.22s;z-index:300;max-width:92vw;text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    .settings-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.settings-tile{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;text-align:center;box-shadow:var(--shadow);min-height:110px}.settings-tile .ico{font-size:28px}.settings-tile b{display:block;margin-top:6px}.settings-tile span{display:block;margin-top:2px;color:var(--muted);font-size:12px}.todo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.todo-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--shadow);cursor:pointer}.todo-card b{font-size:28px}.todo-card span{display:block;color:var(--muted);font-weight:850}.member-list{display:grid;gap:10px}.table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:18px}.mini-table{border-collapse:collapse;width:100%;min-width:720px}.mini-table th,.mini-table td{border-bottom:1px solid #EFE6DC;padding:9px 10px;text-align:left;font-size:14px}.mini-table th{background:#FBF8F1;font-weight:950}.warn-box{background:var(--yellow);border:1px solid #E6CE88;border-radius:16px;padding:12px;font-weight:850;color:#5B4720}.danger-zone{border:1px solid #E6AAA3;background:#FFF7F6;border-radius:16px;padding:12px}.sr-only{position:absolute;left:-9999px}
-    @media(max-width:860px){
-      html,body{font-size:16px}.app-shell{padding:10px 10px calc(104px + var(--safe-bottom))}.topbar-in{padding:10px}.brand-title{font-size:17px}.brand-sub{max-width:45vw}.top-actions .hide-sm{display:none}.tabs{bottom:8px;width:calc(100vw - 16px);border-radius:22px;padding:7px}.tab{font-size:13px;min-height:44px;border-radius:16px;padding:7px 3px}.page-title{display:block}.page-actions{margin-top:10px;justify-content:flex-start}.session-head{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr);gap:7px}.stat{min-height:70px;padding:8px}.stat b{font-size:21px}.stat span{font-size:12px}.compact-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.reg-card{grid-template-columns:1fr}.reg-actions{flex-direction:row;flex-wrap:wrap}.reg-actions .btn{flex:1 1 auto}.settings-grid{grid-template-columns:1fr 1fr}.todo-grid{grid-template-columns:1fr 1fr}.panel-title{font-size:18px}.kv{grid-template-columns:82px 1fr}.session-name{font-size:20px}.card-actions .btn{flex:1 1 calc(50% - 8px)}
-    }
-    @media(max-width:430px){.stats{grid-template-columns:repeat(2,1fr)}.settings-grid,.todo-grid{grid-template-columns:1fr}.card-actions .btn{flex:1 1 100%}.top-actions{gap:5px}.btn.small{font-size:13px;padding:7px 9px}.brand-icon{width:40px;height:40px}.login-card{padding:20px}}
-
-    /* V10 CLEAN patch: bottom nav colors + clearer status/action feedback */
-    .tabs .tab:nth-child(1){background:var(--yellow);border-color:#E8D99A;color:#2B2514}
-    .tabs .tab:nth-child(2){background:var(--green);border-color:#BFD6AF;color:#23301F}
-    .tabs .tab:nth-child(3){background:var(--pink);border-color:#E8BCB7;color:#38211E}
-    .tabs .tab:nth-child(4){background:var(--blue);border-color:#BFD2DD;color:#1F2C34}
-    .tabs .tab.active{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important;box-shadow:0 7px 18px rgba(0,0,0,.22)}
-    .status-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;max-width:720px}
-    .status-chip{border-radius:15px;border:1px solid var(--line);padding:8px 9px;background:#fff;font-size:13px;font-weight:950;line-height:1.25;text-align:center}
-    .status-chip span{display:block;font-size:11px;color:var(--muted);font-weight:850;margin-bottom:2px}
-    .status-chip.ok{background:var(--green);border-color:#BDD8B1}.status-chip.warn{background:var(--yellow);border-color:#EAD68F}.status-chip.bad{background:var(--pink);border-color:#E8B8B2}.status-chip.info{background:var(--blue);border-color:#C4D5E0}.status-chip.purple{background:var(--purple);border-color:#C9C0E0}
-    .btn.done{background:var(--green);color:#23301F;border:1px solid #BCD5B0;box-shadow:none}.btn.done:disabled{opacity:1;color:#23301F}
-    .op-note{background:var(--blue);border:1px solid #BFD2DD;border-radius:16px;padding:10px 12px;margin:0 0 12px;font-weight:900;color:#20313C}
-    @media(max-width:680px){.status-summary{grid-template-columns:1fr}.reg-card{grid-template-columns:1fr}.reg-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.reg-actions .btn{width:100%}}
-
+    *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Segoe UI",sans-serif;font-size:17px;line-height:1.55}
+    button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+    .login-wrap{min-height:100vh;display:grid;place-items:center;padding:28px;background:linear-gradient(130deg,#fff 0%,#F8F6F0 45%,#D9E5EE 100%)}
+    .login-card{width:min(560px,94vw);background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:32px;box-shadow:var(--shadow);padding:34px;text-align:center}.login-logo{width:92px;height:92px;border-radius:24px;object-fit:cover;border:1px solid var(--line)}.login-card h1{margin:16px 0 6px;font-size:32px}.login-card p{color:var(--muted);margin:6px 0}.login-info{margin-top:18px;text-align:left;background:#FFFCF4;border:1px solid var(--line);border-radius:20px;padding:14px}.login-info b{display:block;margin-bottom:4px}
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(248,246,240,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}.topbar-in{max-width:1240px;margin:0 auto;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:10px}.brand img{width:46px;height:46px;border-radius:14px;object-fit:cover;border:1px solid var(--line)}.brand-title{font-weight:950;font-size:20px}.brand-sub{font-size:13px;color:var(--muted)}.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .app-shell{max-width:1240px;margin:0 auto;padding:14px 14px calc(104px + var(--safe-bottom))}.page-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:12px 0}.page-title h2{font-size:28px;margin:0}.sub{color:var(--muted);font-size:14px}.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.filter-row input,.filter-row select{border:1px solid var(--line);border-radius:999px;background:#fff;padding:11px 14px;min-width:220px;flex:1}.btn{border:0;border-radius:999px;padding:10px 15px;background:var(--main);color:#fff;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}.btn.secondary{background:#fff;color:#222;border:1px solid var(--line)}.btn.danger{background:var(--danger)}.btn.dark{background:#222}.btn.small{font-size:14px;padding:7px 11px}.btn:disabled{opacity:.5;cursor:not-allowed}.notice,.warn-box{border-radius:18px;padding:12px 14px;margin:10px 0;border:1px solid var(--line);background:#fff}.warn-box{background:var(--yellow);border-color:#ead180}.notice{background:#fffdf8}
+    .tabs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:120;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:rgba(255,255,255,.92);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:26px;padding:8px;width:min(760px,calc(100vw - 24px));backdrop-filter:blur(10px)}.tab{border:0;border-radius:18px;min-height:50px;font-weight:950;color:#111}.tab.sessions{background:var(--green)}.tab.todos{background:var(--yellow)}.tab.members{background:var(--blue)}.tab.settings{background:var(--pink)}.tab.active{background:#1f1f1f;color:#fff}
+    .session-card,.card,.reg-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:16px;margin:12px 0}.session-head{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}.session-name,.reg-title{font-size:21px;font-weight:950}.session-meta,.tag-row,.card-actions{display:flex;gap:7px;flex-wrap:wrap}.pill,.tag{border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;background:#f4f0ea;border:1px solid var(--line)}.green{background:var(--green)!important}.yellow{background:var(--yellow)!important}.pink{background:var(--pink)!important}.blue{background:var(--blue)!important}.purple{background:var(--purple)!important}.gray{background:#eee!important;color:#222!important}.section-label{font-size:13px;color:var(--muted);font-weight:950;margin:14px 0 8px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{border:1px solid var(--line);border-radius:18px;padding:10px;background:#fff;text-align:left;min-height:76px}.stat.click{cursor:pointer}.stat b{display:block;font-size:24px}.stat span{font-size:13px;color:var(--muted);font-weight:900}.compact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.info-line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line)}
+    .setting-box{display:none;margin-top:12px;background:#fffdf9;border:1px solid var(--line);border-radius:20px;padding:14px}.setting-box.open{display:block}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-field{display:flex;flex-direction:column;gap:5px}.form-field.full{grid-column:1/-1}.form-field label{font-size:13px;color:var(--muted);font-weight:900}.form-field input,.form-field select,.form-field textarea{width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 12px}.form-field textarea{min-height:100px;resize:vertical}.check-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.check-item{border:1px solid var(--line);border-radius:14px;background:#fff;padding:8px 10px;display:flex;gap:8px;align-items:center}
+    .cards{display:grid;gap:10px}.reg-card{display:grid;grid-template-columns:1fr auto;gap:12px}.reg-sub{font-size:13px;color:var(--muted);margin-top:2px}.kv{display:grid;grid-template-columns:92px 1fr;gap:4px 10px;margin-top:10px;font-size:14px}.kv .k{color:var(--muted);font-weight:850}.reg-actions{display:flex;flex-direction:column;gap:7px;min-width:118px}.status-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.status-box{border:1px solid var(--line);border-radius:16px;padding:8px;background:#fff}.status-box span{display:block;color:var(--muted);font-size:12px;font-weight:900}.status-box b{font-size:15px}.empty{background:#fff;border:1px dashed var(--line);border-radius:20px;padding:24px;text-align:center;color:var(--muted);font-weight:850}.loading{padding:28px;text-align:center;color:var(--muted);font-weight:900}.table-wrap{overflow:auto}.mini-table{width:100%;border-collapse:collapse;background:#fff}.mini-table th,.mini-table td{border:1px solid var(--line);padding:8px;text-align:left;white-space:nowrap}.mini-table th{background:#faf7ee}
+    .panel{position:fixed;inset:0;z-index:200;background:var(--bg);display:none;overflow:auto}.panel.show{display:block}.panel-head{position:sticky;top:0;background:rgba(248,246,240,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:2}.panel-head-in{max-width:980px;margin:0 auto;padding:14px;display:flex;justify-content:space-between;gap:12px;align-items:center}.panel-title{font-size:22px;font-weight:950}.panel-body{max-width:980px;margin:0 auto;padding:14px 14px 96px}.panel-foot{position:sticky;bottom:0;background:rgba(248,246,240,.96);border-top:1px solid var(--line);padding:10px;text-align:center}.xbtn{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:#fff;font-weight:950;font-size:20px}.toast{position:fixed;left:50%;bottom:calc(92px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);background:#1f1f1f;color:#fff;padding:11px 15px;border-radius:999px;font-weight:850;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.22s;z-index:300;max-width:92vw;text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:720px){html,body{font-size:16px}.app-shell{padding:10px 10px calc(104px + var(--safe-bottom))}.brand-sub{max-width:48vw}.hide-sm{display:none}.stats{grid-template-columns:repeat(2,1fr)}.compact-grid,.form-grid,.check-list{grid-template-columns:1fr}.session-head,.reg-card{grid-template-columns:1fr}.reg-actions{display:grid;grid-template-columns:repeat(2,1fr);min-width:0}.reg-actions .btn{width:100%}.status-summary{grid-template-columns:1fr}.card-actions .btn{flex:1 1 calc(50% - 8px)}.tabs{bottom:8px;width:calc(100vw - 16px);border-radius:22px}.tab{font-size:13px;padding:7px 3px}.kv{grid-template-columns:82px 1fr}}
   </style>
 </head>
 <body>
-  <section id="loginPage" class="login-wrap">
-    <div class="login-card">
-      <div class="login-mark"><img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg" alt="2BL 報名管理系統 Logo"></div>
-      <h1>2BL 報名管理系統</h1>
-      <div class="sub">活動報名｜審核繳費｜場次管理｜現場報到</div>
-      <div class="login-info">
-        <b>系統服務資訊</b>
-        管理員請使用已授權的 Google 帳號登入。若無法登入或需要開通權限，請聯繫系統服務窗口。
-      </div>
-      <button class="btn block" onclick="startGoogleLogin()">使用 Google 登入</button>
-      <div class="login-footnote">2BL Event Registration Management System</div>
-      <div id="loginErr" class="notice hidden" style="margin-top:14px;border-left-color:#D97A73;text-align:left"></div>
-    </div>
-  </section>
-
-  <section id="adminPage" class="hidden">
-    <header class="topbar">
-      <div class="topbar-in">
-        <div class="brand">
-          <div class="brand-icon"><img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg" alt="2BL"></div>
-          <div style="min-width:0">
-            <div class="brand-title">2BL 報名管理系統</div>
-            <div class="brand-sub" id="whoText">尚未登入</div>
-          </div>
-        </div>
-        <div class="top-actions">
-          <button class="btn secondary small hide-sm" onclick="reloadAll()">重新整理</button>
-          <button class="btn secondary small" onclick="window.open('onsite.html','_blank')">現場入口</button>
-          <button class="btn gray small" onclick="logout()">登出</button>
-        </div>
-      </div>
-    </header>
-
-    <main class="app-shell">
-      <nav class="tabs" aria-label="後台主選單">
-        <button id="tab-sessions" class="tab active" onclick="switchPage('sessions')">場次</button>
-        <button id="tab-todos" class="tab" onclick="switchPage('todos')">待辦</button>
-        <button id="tab-members" class="tab" onclick="switchPage('members')">會員</button>
-        <button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
-      </nav>
-
-      <section id="page-sessions">
-        <div class="page-title">
-          <div>
-            <h2>場次總覽 / 場次管理</h2>
-            <div class="sub">每一場就是一張管理卡；點數字直接打開該場名單，全螢幕彈窗，不再堆疊舊頁面。</div>
-          </div>
-          <div class="page-actions">
-            <button class="btn secondary" onclick="reloadAll()">重新整理</button>
-            <button class="btn" onclick="openSessionCreatePanel()">＋ 新增場次</button>
-          </div>
-        </div>
-        <div class="filter-row">
-          <input id="sessionSearch" placeholder="搜尋場次、合作單位、地點" oninput="renderSessions()" />
-          <select id="sessionStatusFilter" onchange="renderSessions()">
-            <option value="current">進行中</option>
-            <option value="all">全部</option>
-            <option value="archived">封存</option>
-          </select>
-        </div>
-        <div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div>
-      </section>
-
-      <section id="page-todos" class="hidden">
-        <div class="page-title">
-          <div>
-            <h2>全部待辦</h2>
-            <div class="sub">跨場次快速處理中心。這裡只做快速審核與金流待辦，每張卡片都會標明場次。</div>
-          </div>
-        </div>
-        <div id="todoGrid" class="todo-grid"></div>
-      </section>
-
-      <section id="page-members" class="hidden">
-        <div class="page-title">
-          <div>
-            <h2>會員 / 品牌</h2>
-            <div class="sub">查品牌、會員、歷史報名。正式狀態仍以每一場的 registration 為準。</div>
-          </div>
-        </div>
-        <div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()" /></div>
-        <div id="memberList" class="member-list"></div>
-      </section>
-
-      <section id="page-settings" class="hidden">
-        <div class="page-title">
-          <div>
-            <h2>系統設定</h2>
-            <div class="sub">設定都以全螢幕彈窗開啟；不在主畫面堆內容。</div>
-          </div>
-        </div>
-        <div class="settings-grid">
-          <button class="settings-tile" onclick="openEmailSettings()"><div class="ico">✉️</div><b>信件模板</b><span>寄信診斷 / 模板狀態</span></button>
-          <button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>場次付款資料整理</span></button>
-          <button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button>
-          <button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>管理帳號 / 現場人員</span></button>
-          <button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>系統提供者資訊</span></button>
-        </div>
-      </section>
-    </main>
-  </section>
-
-  <section id="panel" class="panel" aria-modal="true" role="dialog">
-    <div class="panel-head">
-      <div class="panel-head-in">
-        <div style="min-width:0">
-          <div id="panelTitle" class="panel-title">彈窗</div>
-          <div id="panelSub" class="panel-sub"></div>
-        </div>
-        <button class="xbtn" onclick="closePanel()" aria-label="關閉">×</button>
-      </div>
-    </div>
-    <div id="panelBody" class="panel-body"></div>
-    <div class="panel-bottom"><button class="btn secondary" onclick="closePanel()">← 返回上一頁</button></div>
-  </section>
-
-  <div id="toast" class="toast"></div>
-
+<section id="loginPage" class="login-wrap">
+  <div class="login-card">
+    <img class="login-logo" src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg" alt="2BL Logo" />
+    <h1>2BL 報名管理系統</h1>
+    <p>活動報名｜審核繳費｜場次管理｜現場報到</p>
+    <div class="login-info"><b>系統服務資訊</b><div>管理員請使用已授權的 Google 帳號登入。</div><div>如需新增權限，請由主辦管理員於後台「設定 → 權限管理」調整。</div></div>
+    <div style="height:18px"></div><button class="btn" onclick="startGoogleLogin()">使用 Google 登入</button><div id="loginErr" class="notice hidden" style="color:#9b2e2e;margin-top:12px"></div>
+  </div>
+</section>
+<section id="adminPage" class="hidden">
+  <header class="topbar"><div class="topbar-in"><div class="brand"><img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg" alt="logo"><div><div class="brand-title">2BL 報名管理系統</div><div class="brand-sub" id="whoText">管理端</div></div></div><div class="top-actions"><button class="btn secondary small" onclick="reloadAll()">重新整理</button><button class="btn secondary small" onclick="logout()">登出</button></div></div></header>
+  <main class="app-shell">
+    <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；數字可直接打開該場名單。</div></div><div class="card-actions"><button class="btn" onclick="openSessionCreatePanel()">新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">目前場次</option><option value="all">全部場次</option><option value="archived">封存場次</option></select></div><div id="sessionList"></div></section>
+    <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理；卡片會標示所屬場次。</div></div></div><div id="todoGrid" class="stats"></div></section>
+    <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員品牌</h2><div class="sub">只讀資料庫會員 / 品牌資料，不以前端虛擬合併。</div></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderMembers()"></div><div id="memberList"></div></section>
+    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">信件、付款、合約、權限與公司資料皆從資料庫讀寫。</div></div></div><div class="compact-grid"><button class="stat click blue" onclick="openEmailSettings()"><b>信件</b><span>模板管理</span></button><button class="stat click green" onclick="openPaymentSettings()"><b>付款</b><span>金流資料</span></button><button class="stat click yellow" onclick="openAgreementSettings()"><b>合約</b><span>三組模板</span></button><button class="stat click purple" onclick="openStaffSettings()"><b>權限</b><span>系列 / 場次授權</span></button><button class="stat click pink" onclick="openCompanySettings()"><b>公司</b><span>系統商資訊</span></button><button class="stat click" onclick="openStorageCheck()"><b>檢測</b><span>資料表/串接</span></button></div></section>
+  </main>
+  <nav class="tabs"><button id="tab-sessions" class="tab sessions active" onclick="switchPage('sessions')">場次</button><button id="tab-todos" class="tab todos" onclick="switchPage('todos')">待辦</button><button id="tab-members" class="tab members" onclick="switchPage('members')">會員</button><button id="tab-settings" class="tab settings" onclick="switchPage('settings')">設定</button></nav>
+</section>
+<section id="panel" class="panel"><div class="panel-head"><div class="panel-head-in"><div><div class="panel-title" id="panelTitle"></div><div class="sub" id="panelSub"></div></div><button class="xbtn" onclick="closePanel()">×</button></div></div><div class="panel-body" id="panelBody"></div><div class="panel-foot"><button class="btn secondary" onclick="closePanel()" id="panelBackBtn">← 返回上一頁</button></div></section>
+<div id="toast" class="toast"></div>
 <script>
-'use strict';
 const API='https://2bl-v7.ndiangrace.workers.dev';
-const TENANT_KEY='2bl_tenant';
-const SESSION_KEY='tb_v3';
+const SESSION_KEY='2bl_admin_session'; const TENANT_KEY='2bl_admin_tenant';
 const urlParams=new URLSearchParams(location.search);
-(function bootstrapUrl(){
-  const tenant=urlParams.get('tenant')||urlParams.get('tenantId');
-  const token=urlParams.get('admin_token');
-  const err=urlParams.get('login_error');
-  if(tenant) sessionStorage.setItem(TENANT_KEY,tenant);
-  if(token) sessionStorage.setItem('2bl_admin_token_pending',token);
-  if(err) sessionStorage.setItem('2bl_login_error_pending',err);
-  if(tenant||token||err) history.replaceState({},'',location.pathname+(tenant?'?tenant='+encodeURIComponent(tenant):''));
-})();
+(function captureOAuth(){const token=urlParams.get('admin_token')||urlParams.get('token');const tenant=urlParams.get('tenant')||urlParams.get('tenantId');const err=urlParams.get('login_error');if(token) sessionStorage.setItem('2bl_admin_token_pending',token); if(err) sessionStorage.setItem('2bl_login_error_pending',err); if(tenant) sessionStorage.setItem(TENANT_KEY,tenant); if(tenant||token||err) history.replaceState({},'',location.pathname);})();
 let TENANT_ID=sessionStorage.getItem(TENANT_KEY)||urlParams.get('tenant')||urlParams.get('tenantId')||'tuibile';
-const ST={email:'',token:'',role:'',name:'',events:[],sessions:[],regs:[],staff:[],agreements:[],siteConfig:{},currentPage:'sessions',panel:{type:'',sessionId:'',filter:''},panelRegs:[],panelStack:[]};
-const $=id=>document.getElementById(id);
-const safe=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const attr=s=>safe(s).replace(/`/g,'&#96;');
-const money=n=>'NT$ '+(Number(n)||0).toLocaleString('zh-TW');
-const int=n=>Number(n||0)||0;
-const toast=(msg,dur=2600)=>{const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); clearTimeout(toast._timer); toast._timer=setTimeout(()=>t.classList.remove('show'),dur);};
-const unwrap=j=>Array.isArray(j)?j:(Array.isArray(j?.data)?j.data:(j?.data!==undefined?j.data:j));
-function endpoint(){return API.replace(/\/+$/,'');}
-async function api(params={}){
-  const p={...params,tenant:params.tenant||TENANT_ID,email:params.email||ST.email||'_',token:params.token||ST.token||'',_t:Date.now()};
-  const qs=new URLSearchParams(); Object.entries(p).forEach(([k,v])=>{if(v!==undefined&&v!==null)qs.set(k,typeof v==='object'?JSON.stringify(v):String(v));});
-  const r=await fetch(API+'?'+qs.toString(),{cache:'no-store'});
-  const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'}));
-  if(!r.ok||j?.error) throw new Error(j?.error||j?.message||('連線失敗 '+r.status));
-  return unwrap(j);
-}
-async function apiPost(body={}){
-  const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,tenant:body.tenant||TENANT_ID,email:body.email||ST.email,token:body.token||ST.token})});
-  const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'}));
-  if(!r.ok||j?.error) throw new Error(j?.error||j?.message||('連線失敗 '+r.status));
-  return unwrap(j);
-}
-function startGoogleLogin(){location.href=endpoint()+'/auth/google/start?tenant='+encodeURIComponent(TENANT_ID);}
-async function handleOAuthCallback(){
-  const token=sessionStorage.getItem('2bl_admin_token_pending');
-  const loginError=sessionStorage.getItem('2bl_login_error_pending');
-  sessionStorage.removeItem('2bl_admin_token_pending'); sessionStorage.removeItem('2bl_login_error_pending');
-  if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內，請聯繫系統管理員',staff_inactive:'此管理員帳號已停用，請聯繫系統管理員',id_token_verify_failed:'Google 身份驗證失敗，請重試',google_cancelled:'Google 登入已取消',token_exchange_failed:'Google 登入流程錯誤，請重試'}[loginError]||('登入失敗：'+loginError)); return false;}
-  if(!token) return false;
-  try{
-    const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json());
-    if(j.error||!j.email){showLoginError('無權限登入後台，請聯繫系統管理員');return false;}
-    TENANT_ID=j.tenant_id||TENANT_ID; sessionStorage.setItem(TENANT_KEY,TENANT_ID);
-    saveSession({email:j.email,token,role:j.role,name:j.display_name||j.email,tenantId:TENANT_ID});
-    enterAdmin();
-    return true;
-  }catch(e){showLoginError('登入驗證失敗：'+e.message); return false;}
-}
-function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classList.remove('hidden');}
-function saveSession(s){localStorage.setItem(SESSION_KEY,JSON.stringify(s)); ST.email=s.email; ST.token=s.token; ST.role=s.role||''; ST.name=s.name||s.email; if(s.tenantId) TENANT_ID=s.tenantId;}
-function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}}
-function logout(){if(ST.email&&ST.token)apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload();}
-function normalizeRole(role){const r=String(role||'').trim();return {'superadmin':'platform_super_admin','超級管理員':'platform_super_admin','活動夥伴':'organizer_admin','staff':'organizer_admin','共創夥伴':'organizer_admin','主辦':'organizer_owner','主辦者':'organizer_owner','場次管理員':'session_admin','財務管理員':'finance_admin','現場人員':'onsite_staff'}[r]||r||'organizer_admin';}
-function can(page){const r=normalizeRole(ST.role); if(['platform_super_admin','organizer_owner','organizer_admin'].includes(r))return true; if(r==='session_admin')return ['sessions','todos','members'].includes(page); if(r==='finance_admin')return ['sessions','todos'].includes(page); return page==='sessions';}
-async function enterAdmin(){
-  $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden');
-  $('whoText').textContent=(ST.name||ST.email)+'｜'+(ST.role||'管理員');
-  ['sessions','todos','members','settings'].forEach(p=>{const tab=$('tab-'+p); if(tab) tab.style.display=can(p)?'flex':'none';});
-  await reloadAll();
-}
-async function reloadAll(){
-  try{
-    toast('資料載入中…');
-    const [events,sessions,regs,siteConfig]=await Promise.all([
-      api({action:'getEventsAdmin'}).catch(()=>[]),
-      api({action:'getSessionDashboard'}).catch(()=>[]),
-      api({action:'getRegs'}).catch(()=>[]),
-      api({action:'getSiteConfig'}).catch(()=>({}))
-    ]);
-    ST.events=Array.isArray(events)?events:[];
-    ST.sessions=(Array.isArray(sessions)?sessions:[]).filter(s=>String(s.id||'')&&String(s.name||s.title||'')!=='未分類活動');
-    ST.regs=Array.isArray(regs)?regs:[];
-    ST.siteConfig=siteConfig||{};
-    renderAll(); toast('資料已更新');
-  }catch(e){toast('載入失敗：'+e.message,5000);}
-}
-function renderAll(){renderSessions(); renderTodos(); renderMembers();}
-function switchPage(page){if(!can(page)){toast('此帳號沒有權限');return;} ST.currentPage=page; ['sessions','todos','members','settings'].forEach(p=>{$('page-'+p).classList.toggle('hidden',p!==page); $('tab-'+p)?.classList.toggle('active',p===page);}); if(page==='todos')renderTodos(); if(page==='members')renderMembers();}
-function sessionId(s){return String(s.id||s.sessionId||s.sesId||'');}
-function regSessionId(r){return String(r.sessionId||r.sesId||r.session_id||'');}
-function sessionName(s){return s.name||s.title||s.sessionName||'未命名場次';}
-function sessionById(id){return ST.sessions.find(s=>sessionId(s)===String(id))||{};}
-function regsForSession(id){return ST.regs.filter(r=>regSessionId(r)===String(id));}
-function isArchived(s){return ['封存','隱藏','已封存'].includes(String(s.status||''));}
-function isClosed(s){return ['關閉','已關閉','停用','已截止'].includes(String(s.status||''));}
-function isPendingReview(r){const st=String(r.status||r.reviewStatus||''); return st.includes('待審')||st==='報名成功'||st==='審核中'||st==='';}
-function isApproved(r){const st=String(r.status||r.reviewStatus||''); return st.includes('錄取')&&!st.includes('不錄取');}
-function isRejected(r){const st=String(r.status||r.reviewStatus||''); return st.includes('不錄取')||st.includes('拒絕');}
-function isWait(r){const st=String(r.status||r.reviewStatus||''); return st.includes('備取');}
-function payText(r){return String(r.payStatus||r.paymentStatus||r.payment_status||'未繳費');}
-function isPaymentPending(r){const p=payText(r); return p.includes('待確認')||p.includes('已回報')||p.includes('回報');}
-function isPaid(r){const p=payText(r); return p.includes('已繳')||p.includes('已付款')||p==='免費';}
-function hasAmountField(r){return ['totalAmount','amount','registrationTotalAmount','registration_total_amount','invoice_total'].some(k=>r[k]!==undefined&&r[k]!==null&&r[k]!=='');}
-function isFree(r){const p=payText(r); return p==='免費'||p.includes('免費')||(hasAmountField(r)&&regAmount(r)===0&&String(r.status||r.reviewStatus||'').includes('錄取'));}
-function isUnpaid(r){const p=payText(r); return !isPaid(r)&&!isPaymentPending(r)&&!p.includes('取消')&&!p.includes('退款');}
-function isChecked(r){return String(r.checkin||r.checkinStatus||'').includes('已報到');}
-function isRefund(r){return [r.transferStatus,r.refundStatus,r.status,r.payStatus].some(v=>String(v||'').includes('退費')||String(v||'').includes('退款'));}
-function equipObj(v){let o=v||{}; if(typeof o==='string'){try{o=JSON.parse(o||'{}')}catch(e){o={}}} return o||{};}
-function equipText(v){const o=equipObj(v); const arr=[]; Object.entries(o).forEach(([k,v])=>{if(typeof v==='object'){const n=Number(v.qty||v.count||v.value||0); if(n>0)arr.push(`${k}×${n}`)}else{const n=Number(v)||0; if(n>0)arr.push(`${k}×${n}`)}}); return arr.join('、')||'—';}
-function equipTotals(regs){const totals={}; regs.forEach(r=>{const o=equipObj(r.equip||r.equipment||r.equipJson); Object.entries(o).forEach(([k,v])=>{let n=0; if(typeof v==='object')n=Number(v.qty||v.count||v.value||0); else n=Number(v)||0; if(n>0) totals[k]=(totals[k]||0)+n;});}); return totals;}
-function regAmount(r){return Number(r.totalAmount||r.amount||r.registrationTotalAmount||r.registration_total_amount||r.invoice_total||0)||0;}
-function paidAmount(r){return Number(r.paidAmount||r.amountPaid||r.paid_amount||r.amount||0)||0;}
-function sessionSummary(s){
-  const regs=regsForSession(sessionId(s));
-  const total=int(s.total||s.regTotal||regs.length);
-  const pending=int(s.pending||s.pendingReview||regs.filter(isPendingReview).length);
-  const approved=int(s.approved||regs.filter(isApproved).length);
-  const unpaid=int(s.unpaid||regs.filter(isUnpaid).length);
-  const paymentPending=int(s.paymentPending||s.pendingPayment||regs.filter(isPaymentPending).length);
-  const paid=int(s.paid||regs.filter(r=>isPaid(r)||isFree(r)).length);
-  const checked=int(s.checkedIn||s.checkinDone||regs.filter(isChecked).length);
-  const refund=int(s.refund||s.refundPending||regs.filter(isRefund).length);
-  const stallCount=int(s.stallCount||s.stalls||regs.reduce((sum,r)=>sum+int(r.stallCount||r.qty||1),0));
-  const deposit=int(s.depositTotal||regs.reduce((sum,r)=>sum+int(r.deposit||r.depositTotal||0),0));
-  const receivable=int(s.receivable||s.invoiceTotal||regs.reduce((sum,r)=>sum+regAmount(r),0));
-  const received=int(s.paidAmount||s.revenue||s.paidTotal||regs.reduce((sum,r)=>sum+(isPaid(r)||isFree(r)?regAmount(r):0),0));
-  return {regs,total,pending,approved,unpaid,paymentPending,paid,checked,refund,stallCount,deposit,receivable,received,unreceived:Math.max(receivable-received,0),equip:equipTotals(regs)};
-}
-function formatDate(s){
-  const dates=Array.isArray(s?.dates)?s.dates.map(d=>d?.date||d).filter(Boolean):[];
-  if(!dates.length&&s.date) dates.push(...String(s.date).split(/[、,，\s]+/).filter(Boolean));
-  if(!dates.length)return '未設定日期';
-  const short=v=>String(v).replace(/^\d{4}-/,'').replace(/-/g,'/');
-  return dates.length>1?short(dates[0])+'－'+short(dates[dates.length-1]):short(dates[0]);
-}
-function renderSessions(){
-  const box=$('sessionList'); if(!box)return;
-  const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current';
-  let list=[...ST.sessions];
-  if(mode==='current') list=list.filter(s=>!isArchived(s));
-  if(mode==='archived') list=list.filter(isArchived);
-  if(kw) list=list.filter(s=>[sessionName(s),s.organizer,s.coorg,s.venue,s.region,s.type].join(' ').toLowerCase().includes(kw));
-  list.sort((a,b)=>String(formatDate(a)).localeCompare(String(formatDate(b))));
-  if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;}
-  box.innerHTML=list.map(renderSessionCard).join('');
-}
+const ST={email:'',token:'',role:'',name:'',events:[],sessions:[],regs:[],members:[],staff:[],agreements:[],emailTemplates:[],settings:{},siteConfig:{},currentPage:'sessions',panel:{type:'',sessionId:'',filter:''},panelRegs:[],panelStack:[]};
+const $=id=>document.getElementById(id); const safe=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); const attr=s=>safe(s).replace(/`/g,'&#96;'); const int=n=>Number(n||0)||0; const money=n=>'NT$ '+(Number(n)||0).toLocaleString('zh-TW');
+const toast=(msg,dur=2600)=>{const t=$('toast'); if(!t)return; t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),dur)}; const unwrap=j=>Array.isArray(j)?j:(Array.isArray(j?.data)?j.data:(j?.data!==undefined?j.data:j)); const endpoint=()=>API.replace(/\/+$/,'');
+async function api(params={}){const p={...params,tenant:params.tenant||TENANT_ID,email:params.email||ST.email||'_',token:params.token||ST.token||'',_t:Date.now()};const qs=new URLSearchParams();Object.entries(p).forEach(([k,v])=>{if(v!==undefined&&v!==null)qs.set(k,typeof v==='object'?JSON.stringify(v):String(v))});const r=await fetch(API+'?'+qs,{cache:'no-store'});const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'}));if(!r.ok||j?.error||j?.ok===false)throw new Error(j?.error||j?.message||('連線失敗 '+r.status));return unwrap(j)}
+async function apiPost(body={}){const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,tenant:body.tenant||TENANT_ID,email:body.email||ST.email,token:body.token||ST.token})});const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'}));if(!r.ok||j?.error||j?.ok===false)throw new Error(j?.error||j?.message||('連線失敗 '+r.status));return unwrap(j)}
+async function tryGet(actions, params={}){let last;for(const action of actions){try{return await api({action,...params})}catch(e){last=e}}throw last||new Error('API 不存在')}
+async function tryPost(actions, body={}){let last;for(const action of actions){try{return await apiPost({action,...body})}catch(e){last=e}}throw last||new Error('API 不存在')}
+function startGoogleLogin(){location.href=endpoint()+'/auth/google/start?tenant='+encodeURIComponent(TENANT_ID)}
+async function handleOAuthCallback(){const token=sessionStorage.getItem('2bl_admin_token_pending');const loginError=sessionStorage.getItem('2bl_login_error_pending');sessionStorage.removeItem('2bl_admin_token_pending');sessionStorage.removeItem('2bl_login_error_pending');if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內，請聯繫系統管理員',staff_inactive:'此管理員帳號已停用，請聯繫系統管理員'}[loginError]||('登入失敗：'+loginError));return false} if(!token)return false; try{const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json()); if(j.error||!j.email){showLoginError('無權限登入後台，請聯繫系統管理員');return false} TENANT_ID=j.tenant_id||TENANT_ID;sessionStorage.setItem(TENANT_KEY,TENANT_ID);saveSession({email:j.email,token,role:j.role,name:j.display_name||j.email,tenantId:TENANT_ID});enterAdmin();return true}catch(e){showLoginError('登入驗證失敗：'+e.message);return false}}
+function showLoginError(msg){$('loginErr').textContent=msg;$('loginErr').classList.remove('hidden')} function saveSession(s){localStorage.setItem(SESSION_KEY,JSON.stringify(s));ST.email=s.email;ST.token=s.token;ST.role=s.role||'';ST.name=s.name||s.email;if(s.tenantId)TENANT_ID=s.tenantId} function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}} function logout(){if(ST.email&&ST.token)apiPost({action:'adminLogout'}).catch(()=>{});localStorage.removeItem(SESSION_KEY);location.reload()}
+function normalizeRole(role){const r=String(role||'').trim();return {'superadmin':'platform_super_admin','超級管理員':'platform_super_admin','活動夥伴':'organizer_admin','staff':'organizer_admin','共創夥伴':'organizer_admin','主辦':'organizer_owner','場次管理員':'session_admin','財務管理員':'finance_admin','現場人員':'onsite_staff'}[r]||r||'organizer_admin'}
+function can(page){const r=normalizeRole(ST.role);if(['platform_super_admin','organizer_owner','organizer_admin'].includes(r))return true;if(r==='session_admin')return ['sessions','todos','members'].includes(page);if(r==='finance_admin')return ['sessions','todos'].includes(page);return page==='sessions'}
+async function enterAdmin(){$('loginPage').classList.add('hidden');$('adminPage').classList.remove('hidden');$('whoText').textContent=(ST.name||ST.email)+'｜'+(ST.role||'管理員');['sessions','todos','members','settings'].forEach(p=>{const tab=$('tab-'+p);if(tab)tab.style.display=can(p)?'block':'none'});await reloadAll()}
+async function reloadAll(){try{toast('資料載入中…');const [events,sessions,regs,settings,members]=await Promise.all([api({action:'getEventsAdmin'}).catch(()=>[]),api({action:'getSessionDashboard'}).catch(()=>[]),api({action:'getRegs'}).catch(()=>[]),tryGet(['getSystemSettings','getSiteConfig']).catch(()=>({})),api({action:'getMembers'}).catch(e=>({__missing:true,error:e.message}))]);ST.events=Array.isArray(events)?events:[];ST.sessions=(Array.isArray(sessions)?sessions:[]).filter(s=>String(s.id||s.sessionId||'')&&String(s.name||s.title||'')!=='未分類活動');ST.regs=Array.isArray(regs)?regs:[];ST.settings=settings||{};ST.siteConfig=settings||{};ST.members=Array.isArray(members)?members:[];ST.membersMissing=members?.__missing?members.error:'';renderAll();toast('資料已更新')}catch(e){toast('載入失敗：'+e.message,5000)}}
+function renderAll(){renderSessions();renderTodos();renderMembers()} function switchPage(page){if(!can(page)){toast('此帳號沒有權限');return}ST.currentPage=page;['sessions','todos','members','settings'].forEach(p=>{$('page-'+p).classList.toggle('hidden',p!==page);$('tab-'+p)?.classList.toggle('active',p===page)});if(page==='todos')renderTodos();if(page==='members')renderMembers()}
+function sessionId(s){return String(s.id||s.sessionId||s.sesId||'')} function regSessionId(r){return String(r.sessionId||r.sesId||r.session_id||'')} function sessionName(s){return s.name||s.title||s.sessionName||'未命名場次'} function sessionById(id){return ST.sessions.find(s=>sessionId(s)===String(id))||{}} function regsForSession(id){return ST.regs.filter(r=>regSessionId(r)===String(id))} function formatDate(s){const d=s.date||s.dates||s.startDate||s.start_at||s.startAt||'';return Array.isArray(d)?d.join('、'):String(d||'未填日期')} function isArchived(s){return ['封存','隱藏','已封存'].includes(String(s.status||''))} function isClosed(s){return ['關閉','已關閉','停用','已截止'].includes(String(s.status||''))}
+function payText(r){return String(r.payStatus||r.paymentStatus||r.payment_status||'未繳費')} function isPendingReview(r){const st=String(r.status||r.reviewStatus||'');return st.includes('待審')||st==='報名成功'||st==='審核中'||st===''} function isApproved(r){const st=String(r.status||r.reviewStatus||'');return st.includes('錄取')&&!st.includes('不錄取')} function isPaymentPending(r){const p=payText(r);return p.includes('待確認')||p.includes('已回報')||p.includes('回報')} function isPaid(r){const p=payText(r);return p.includes('已繳')||p.includes('已付款')||p==='免費'} function isFree(r){return String(payText(r)).includes('免費')} function isUnpaid(r){const p=payText(r);return !isPaid(r)&&!isPaymentPending(r)&&!p.includes('取消')&&!p.includes('退款')} function isChecked(r){return String(r.checkin||r.checkinStatus||'').includes('已報到')} function isRefund(r){return [r.transferStatus,r.refundStatus,r.status,r.payStatus].some(v=>String(v||'').includes('退費')||String(v||'').includes('退款'))}
+function equipObj(v){let o=v||{};if(typeof o==='string'){try{o=JSON.parse(o||'{}')}catch(e){o={}}}return o||{}} function equipText(v){const o=equipObj(v);const arr=[];Object.entries(o).forEach(([k,v])=>{let n=typeof v==='object'?Number(v.qty||v.count||v.value||0):Number(v)||0;if(n>0)arr.push(`${k}×${n}`)});return arr.join('、')||'—'} function regAmount(r){return Number(r.totalAmount||r.amount||r.registrationTotalAmount||r.registration_total_amount||r.invoice_total||0)||0}
+function sessionSummary(s){const regs=regsForSession(sessionId(s));return {total:int(s.total||s.regTotal||regs.length),pending:int(s.pending||s.pendingReview||regs.filter(isPendingReview).length),approved:int(s.approved||regs.filter(isApproved).length),unpaid:int(s.unpaid||regs.filter(isUnpaid).length),paymentPending:int(s.paymentPending||s.pendingPayment||regs.filter(isPaymentPending).length),paid:int(s.paid||regs.filter(r=>isPaid(r)||isFree(r)).length),checked:int(s.checkedIn||s.checkinDone||regs.filter(isChecked).length),refund:int(s.refund||s.refundPending||regs.filter(isRefund).length),stallCount:int(s.stallCount||s.stalls||regs.reduce((sum,r)=>sum+int(r.stallCount||r.qty||1),0)),deposit:int(s.depositTotal||regs.reduce((sum,r)=>sum+int(r.deposit||r.depositTotal||0),0)),receivable:int(s.receivable||s.invoiceTotal||regs.reduce((sum,r)=>sum+regAmount(r),0)),received:int(s.received||s.paidAmount||0),unreceived:int(s.unreceived||0),equip:s.equipTotals||{}}}
+function renderSessions(){const box=$('sessionList');const kw=($('sessionSearch')?.value||'').trim().toLowerCase();const mode=$('sessionStatusFilter')?.value||'current';let list=[...ST.sessions];if(mode==='current')list=list.filter(s=>!isArchived(s));if(mode==='archived')list=list.filter(isArchived);if(kw)list=list.filter(s=>[sessionName(s),s.organizer,s.coorg,s.venue,s.type].join(' ').toLowerCase().includes(kw));if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return}box.innerHTML=list.map(renderSessionCard).join('')}
 function statHtml(label,num,kind,sid,filter){return `<button class="stat click ${kind||''}" onclick="openListPanel('${attr(sid)}','${attr(filter)}','${attr(label)}')"><b>${int(num)}</b><span>${safe(label)}</span></button>`}
-function renderSessionCard(s){
-  const sid=sessionId(s), sum=sessionSummary(s), name=sessionName(s);
-  const equipLines=Object.keys(sum.equip).length?Object.entries(sum.equip).map(([k,v])=>`<div class="info-line"><span>${safe(k)}</span><span>${int(v)}</span></div>`).join(''):'<div class="info-line"><span>設備</span><span>目前無加租</span></div>';
-  return `<article class="session-card" id="session-${attr(sid)}">
-    <div class="session-head">
-      <div>
-        <div class="session-name">${safe(name)}</div>
-        <div class="session-meta">
-          <span class="pill blue">${safe(formatDate(s))}</span>
-          <span class="pill green">${safe(s.venue||'未填地點')}</span>
-          <span class="pill yellow">合作：${safe(s.organizer||s.coorg||'未填')}</span>
-          <span class="pill ${isClosed(s)?'pink':'purple'}">${isArchived(s)?'封存':isClosed(s)?'已關閉':'報名中'}</span>
-        </div>
-      </div>
-      <div class="card-actions" style="margin-top:0;justify-content:flex-end">
-        <button class="btn secondary small" onclick="toggleSessionSetting('${attr(sid)}')">場次設定</button>
-        <button class="btn small" onclick="downloadSessionExcel('${attr(sid)}')">下載 Excel</button>
-      </div>
-    </div>
-    <div class="session-body">
-      <div class="section-label">本場進度</div>
-      <div class="stats">
-        ${statHtml('報名',sum.total,'blue',sid,'all')}
-        ${statHtml('待審核',sum.pending,'yellow',sid,'pending')}
-        ${statHtml('已錄取',sum.approved,'green',sid,'approved')}
-        ${statHtml('未繳費',sum.unpaid,'pink',sid,'unpaid')}
-        ${statHtml('付款待確認',sum.paymentPending,'yellow',sid,'paymentPending')}
-        ${statHtml('已繳費',sum.paid,'green',sid,'paid')}
-        ${statHtml('已報到',sum.checked,'purple',sid,'checked')}
-        ${statHtml('退款',sum.refund,'pink',sid,'refund')}
-      </div>
-      <div style="height:10px"></div>
-      <div class="compact-grid">
-        <div class="info-box"><div class="section-label" style="margin-top:0">設備 / 押金</div>${equipLines}<div class="info-line"><span>攤位數</span><span>${sum.stallCount}</span></div><div class="info-line"><span>押金合計</span><span>${money(sum.deposit)}</span></div></div>
-        <div class="info-box"><div class="section-label" style="margin-top:0">財務概況</div><div class="info-line"><span>應收</span><span>${money(sum.receivable)}</span></div><div class="info-line"><span>已收</span><span>${money(sum.received)}</span></div><div class="info-line"><span>未收</span><span>${money(sum.unreceived)}</span></div></div>
-      </div>
-      <div class="card-actions">
-        <button class="btn secondary" onclick="openListPanel('${attr(sid)}','all','全部名單')">全部名單</button>
-        <button class="btn secondary" onclick="openListPanel('${attr(sid)}','equipment','設備明細')">設備明細</button>
-        <button class="btn secondary" onclick="openFinancePanel('${attr(sid)}')">財務明細</button>
-        <button class="btn secondary" onclick="openListPanel('${attr(sid)}','checkin','後台報到')">後台報到</button>
-      </div>
-      ${renderSessionSetting(s)}
-    </div>
-  </article>`;
-}
-function renderSessionSetting(s){
-  const sid=sessionId(s); const dates=Array.isArray(s.dates)?s.dates.map(d=>d?.date||d).join('\n'):(s.date||'');
-  const needReview=!!(s.needReview!==false&&s.review!==false&&s.reviewRequired!==false);
-  return `<div id="setting-${attr(sid)}" class="setting-box"><div class="setting-inner"><div class="section-label" style="margin-top:0">場次設定｜保留在場次卡內</div>
-    <div class="form-grid">
-      <div class="form-field"><label>場次名稱</label><input id="set_${attr(sid)}_name" value="${attr(sessionName(s))}"></div>
-      <div class="form-field"><label>場次類型</label><input id="set_${attr(sid)}_type" value="${attr(s.type||'市集場次')}"></div>
-      <div class="form-field"><label>地點</label><input id="set_${attr(sid)}_venue" value="${attr(s.venue||'')}"></div>
-      <div class="form-field"><label>合作單位</label><input id="set_${attr(sid)}_organizer" value="${attr(s.organizer||s.coorg||'')}"></div>
-      <div class="form-field"><label>攤位費</label><input id="set_${attr(sid)}_fee" type="number" value="${attr(s.fee||0)}"></div>
-      <div class="form-field"><label>押金</label><input id="set_${attr(sid)}_deposit" type="number" value="${attr(s.deposit||0)}"></div>
-      <div class="form-field"><label>報名狀態</label><select id="set_${attr(sid)}_status"><option ${!isClosed(s)?'selected':''}>報名中</option><option ${isClosed(s)?'selected':''}>已關閉</option><option ${isArchived(s)?'selected':''}>封存</option></select></div>
-      <div class="form-field"><label>審核制</label><select id="set_${attr(sid)}_review"><option value="1" ${needReview?'selected':''}>開啟</option><option value="0" ${!needReview?'selected':''}>關閉</option></select></div>
-      <div class="form-field full"><label>日期（可多行）</label><textarea id="set_${attr(sid)}_dates">${safe(dates)}</textarea></div>
-      <div class="form-field full"><label>封面 / 主題圖 URL</label><input id="set_${attr(sid)}_cover" value="${attr(s.cover||s.coverUrl||'')}"></div>
-      <div class="form-field full"><label>報名說明 / 備註</label><textarea id="set_${attr(sid)}_desc">${safe(s.desc||s.description||'')}</textarea></div>
-    </div>
-    <div class="card-actions"><button class="btn" onclick="saveSessionSetting('${attr(sid)}',this)">儲存本場設定</button><button class="btn secondary" onclick="toggleSessionStatus('${attr(sid)}','${attr(isClosed(s)?'報名中':'已關閉')}',this)">${isClosed(s)?'重新開放報名':'關閉報名'}</button><button class="btn secondary" onclick="toggleSessionStatus('${attr(sid)}','封存',this)">封存</button><button class="btn secondary" onclick="duplicateSession('${attr(sid)}',this)">複製場次</button></div>
-  </div></div>`;
-}
-function toggleSessionSetting(sid){$('setting-'+sid)?.classList.toggle('open');}
-function parseDates(txt){return String(txt||'').split(/[\n,，、]+/).map(v=>v.trim()).filter(Boolean).map(date=>({date}));}
-async function saveSessionSetting(sid,btn){
-  const s=sessionById(sid); if(!s.id&&!s.sessionId){toast('找不到場次');return;}
-  const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
-  try{
-    const status=$(`set_${sid}_status`).value;
-    await apiPost({
-      action:'updateSession',
-      id:sid,
-      eventId:s.eventId||'',
-      name:$(`set_${sid}_name`).value.trim()||sessionName(s),
-      type:$(`set_${sid}_type`).value.trim()||s.type||'市集場次',
-      region:s.region||'',
-      venue:$(`set_${sid}_venue`).value.trim(),
-      organizer:$(`set_${sid}_organizer`).value.trim(),
-      coorg:s.coorg||'',
-      fee:int($(`set_${sid}_fee`).value),
-      deposit:int($(`set_${sid}_deposit`).value),
-      dates:parseDates($(`set_${sid}_dates`).value),
-      cover:$(`set_${sid}_cover`).value.trim(),
-      desc:$(`set_${sid}_desc`).value.trim(),
-      needReview:$(`set_${sid}_review`).value==='1',
-      status,
-      // 以下保留原場次既有設定，避免乾淨版儲存時把舊資料洗掉
-      portals:s.portals||[],
-      modules:s.modules||{},
-      equip:s.equip||{},
-      customFields:s.customFields||[],
-      addons:s.addons||[],
-      stallList:s.stallList||[],
-      seatPricingEnabled:!!s.seatPricingEnabled,
-      seatHoldHours:s.seatHoldHours||24,
-      seatMapUrl:s.seatMapUrl||'',
-      invoiceTax:s.invoiceTax||{enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false},
-      agreementRequired:s.agreementRequired!==false,
-      agreementTitle:s.agreementTitle||'報名合約／活動細則與攤商規範',
-      agreementVersion:s.agreementVersion||'',
-      agreementContent:s.agreementContent||''
-    });
-    toast('已儲存場次設定'); await reloadAll();
-  }catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}
-}
-async function toggleSessionStatus(sid,status,btn){if(!confirm('確定變更場次狀態為「'+status+'」？'))return; const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…'; try{await apiPost({action:'toggleSessionStatus',sessionId:sid,status}); toast('已更新狀態'); await reloadAll();}catch(e){toast('更新失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}}
-async function duplicateSession(sid,btn){if(!confirm('確定複製這個場次？'))return; const old=btn.textContent; btn.disabled=true; btn.textContent='複製中…'; try{await apiPost({action:'copySession',id:sid}); toast('已複製'); await reloadAll();}catch(e){toast('複製失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}}
-function openPanel(title,sub,html,opts={}){
-  const panel=$('panel');
-  if(panel.classList.contains('show')&&!opts.replace){
-    ST.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,panel:{...ST.panel},regs:[...(ST.panelRegs||[])]});
-  }
-  $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; panel.classList.add('show'); document.body.style.overflow='hidden';
-}
-function closePanel(){
-  const prev=ST.panelStack.pop();
-  if(prev){$('panelTitle').textContent=prev.title;$('panelSub').textContent=prev.sub;$('panelBody').innerHTML=prev.html;ST.panel=prev.panel||ST.panel;ST.panelRegs=prev.regs||[];return;}
-  $('panel').classList.remove('show');$('panelBody').innerHTML='';document.body.style.overflow='';ST.panel={type:'',sessionId:'',filter:''};ST.panelRegs=[];
-}
-function filterRegs(list,filter){return list.filter(r=>{if(filter==='pending')return isPendingReview(r); if(filter==='approved')return isApproved(r); if(filter==='unpaid')return isUnpaid(r); if(filter==='paymentPending')return isPaymentPending(r); if(filter==='paid')return isPaid(r)||isFree(r); if(filter==='checked')return isChecked(r); if(filter==='refund')return isRefund(r); if(filter==='checkin')return isApproved(r)&&(isPaid(r)||isFree(r)); if(filter==='equipment')return equipText(r.equip||r.equipment||r.equipJson)!=='—'; return true;});}
-async function openListPanel(sid,filter,label){
-  const s=sessionById(sid); ST.panel={type:'list',sessionId:sid,filter};
-  openPanel(sessionName(s)+'｜'+label,'右上角 X 或底部按鈕可返回場次總覽','<div class="loading">名單載入中…</div>',{replace:ST.panel?.type==='list'});
-  try{
-    let regs=regsForSession(sid); if(!regs.length){regs=await api({action:'getRegsBySession',sessionId:sid}).catch(()=>[]);} regs=Array.isArray(regs)?regs:[];
-    const list=filterRegs(regs,filter);
-    $('panelBody').innerHTML=`<div class="filter-row"><input id="panelSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderPanelRegCards()"><select id="panelSort" onchange="renderPanelRegCards()"><option value="new">最新報名</option><option value="brand">品牌名稱</option></select></div><div id="panelCards" class="cards"></div>`;
-    ST.panelRegs=list; renderPanelRegCards();
-  }catch(e){$('panelBody').innerHTML='<div class="empty">載入失敗：'+safe(e.message)+'</div>';}
-}
-function renderPanelRegCards(){
-  const box=$('panelCards'); if(!box)return; const kw=($('panelSearch')?.value||'').toLowerCase(); const sort=$('panelSort')?.value||'new';
-  let list=[...(ST.panelRegs||[])].filter(r=>!kw||[r.brand,r.brandName,r.name,r.phone,r.email,r.fb,r.ig].join(' ').toLowerCase().includes(kw));
-  if(sort==='brand')list.sort((a,b)=>String(a.brand||a.brandName||'').localeCompare(String(b.brand||b.brandName||''),'zh-Hant')); else list.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-  box.innerHTML=list.length?list.map(renderRegCard).join(''):'<div class="empty">沒有符合條件的名單</div>';
-}
-function socialLinks(r){const arr=[]; if(r.fb)arr.push(`<a class="tag info" target="_blank" href="${attr(r.fb)}">FB</a>`); if(r.ig)arr.push(`<a class="tag bad" target="_blank" href="${attr(r.ig)}">IG</a>`); return arr.join('')||'<span class="tag">未填社群</span>';}
-function statusTags(r){return `<span class="tag ${isApproved(r)?'ok':isPendingReview(r)?'warn':isRejected(r)?'bad':'info'}">審核：${safe(r.status||r.reviewStatus||'待審核')}</span><span class="tag ${isPaid(r)||isFree(r)?'ok':isPaymentPending(r)?'warn':'bad'}">付款：${safe(payText(r))}</span><span class="tag ${isChecked(r)?'ok':'purple'}">報到：${safe(r.checkin||r.checkinStatus||'未報到')}</span>`;}
-function renderRegCard(r){
-  const brand=r.brand||r.brandName||r.brand_name||'未填品牌'; const id=r.id||r.regId||'';
-  return `<article class="reg-card"><div><div class="reg-title">${safe(brand)}</div><div class="reg-sub">${safe(r.sessionName||sessionName(sessionById(regSessionId(r)))||'')}｜${safe(r.createdAt?new Date(r.createdAt).toLocaleString('zh-TW',{hour12:false}):'未記錄日期')}</div><div class="tag-row">${statusTags(r)}${socialLinks(r)}</div><div class="kv"><div class="k">聯絡人</div><div>${safe(r.name||'—')}｜${safe(r.phone||'—')}</div><div class="k">Email</div><div>${safe(r.email||'—')}</div><div class="k">攤位數</div><div>${safe(r.stallCount||r.qty||1)}</div><div class="k">設備</div><div>${safe(equipText(r.equip||r.equipment||r.equipJson))}</div><div class="k">金額</div><div>${money(regAmount(r))}</div><div class="k">備註</div><div>${safe(r.adminNote||r.remark||'—')}</div></div></div><div class="reg-actions">${renderRegActions(id,r)}</div></article>`;
-}
-function renderRegActions(id,r){
-  const b=[];
-  if(isPendingReview(r)){
-    b.push(`<button class="btn small green" onclick="regAction('${attr(id)}','approve',this)">錄取</button>`);
-    b.push(`<button class="btn small danger" onclick="regAction('${attr(id)}','reject',this)">不錄取</button>`);
-    b.push(`<button class="btn small secondary" onclick="regAction('${attr(id)}','waitlist',this)">備取</button>`);
-  }
-  if(isPaymentPending(r)){b.push(`<button class="btn small yellow" onclick="regAction('${attr(id)}','confirmPay',this)">確認付款</button>`);}
-  if(isUnpaid(r)||isPaymentPending(r)){b.push(`<button class="btn small secondary" onclick="regAction('${attr(id)}','reported',this)">已回報</button>`);}
-  if(isUnpaid(r)){b.push(`<button class="btn small danger" onclick="regAction('${attr(id)}','cancelUnpaid',this)">未繳費取消</button>`);}
-  if((isPaid(r)||isFree(r))&&!isChecked(r)){b.push(`<button class="btn small purple" onclick="regAction('${attr(id)}','checkin',this)">報到</button>`);}
-  if(isChecked(r)){b.push(`<button class="btn small secondary" onclick="regAction('${attr(id)}','undoCheckin',this)">取消報到</button>`);}
-  b.push(`<button class="btn small secondary" onclick="openRegDetail('${attr(id)}')">完整資料</button>`); return b.join('');
-}
-async function regAction(id,mode,btn){
-  if(!id){toast('找不到報名 ID');return;}
-  const confirmText={reject:'確定標記為不錄取？',waitlist:'確定標記為備取？',confirmPay:'確定確認付款？',cancelUnpaid:'確定取消此未繳費報名？紀錄會保留。',undoCheckin:'確定取消報到？'}[mode];
-  if(confirmText&&!confirm(confirmText))return;
-  const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
-  try{
-    if(mode==='approve')await apiPost({action:'approveReg',regId:id,approved:true});
-    if(mode==='reject')await apiPost({action:'approveReg',regId:id,approved:false});
-    if(mode==='waitlist')await apiPost({action:'approveReg',regId:id,status:'備取'});
-    if(mode==='reported')await apiPost({action:'markPaymentScreenshot',regId:id});
-    if(mode==='cancelUnpaid')await apiPost({action:'adminCancelReg',regId:id});
-    if(mode==='confirmPay')await apiPost({action:'confirmPayment',regId:id});
-    if(mode==='checkin')await apiPost({action:'checkin',regId:id});
-    if(mode==='undoCheckin')await apiPost({action:'checkin',regId:id,undo:true});
-    toast('已更新'); await reloadAll(); if(ST.panel?.type==='list') await openListPanel(ST.panel.sessionId,ST.panel.filter,$('panelTitle').textContent.split('｜').pop()||'名單');
-  }catch(e){toast('操作失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}
-}
-function openRegDetail(id){
-  const r=(ST.regs||[]).find(x=>String(x.id||x.regId)===String(id))||(ST.panelRegs||[]).find(x=>String(x.id||x.regId)===String(id));
-  if(!r){toast('找不到資料');return;}
-  const s=sessionById(regSessionId(r));
-  const rows=[
-    ['場次',r.sessionName||sessionName(s)],['品牌',r.brand||r.brandName||r.brand_name],['聯絡人',r.name],['手機',r.phone],['Email',r.email],['FB',r.fb],['IG',r.ig],
-    ['報名日期',r.createdAt||r.joined_at],['審核狀態',r.status||r.reviewStatus],['付款狀態',payText(r)],['報到狀態',r.checkin||r.checkinStatus||'未報到'],
-    ['攤位數',r.stallCount||r.qty||1],['設備',equipText(r.equip||r.equipment||r.equipJson)],['金額',money(regAmount(r))],['備註',r.adminNote||r.remark]
-  ];
-  const extra=Object.entries(r).filter(([k])=>!['sessionName','brand','brandName','brand_name','name','phone','email','fb','ig','createdAt','joined_at','status','reviewStatus','payStatus','paymentStatus','payment_status','checkin','checkinStatus','stallCount','qty','equip','equipment','equipJson','totalAmount','amount','registrationTotalAmount','registration_total_amount','invoice_total','adminNote','remark'].includes(k));
-  openPanel('完整資料｜'+safe(r.brand||r.brandName||'品牌'),'X 關閉可返回上一層；底部也有返回',`<div class="info-box">${rows.map(([k,v])=>`<div class="info-line"><span>${safe(k)}</span><span>${safe(v||'—')}</span></div>`).join('')}</div><div style="height:14px"></div><details class="info-box"><summary style="font-weight:950;cursor:pointer">其他原始欄位</summary><pre style="white-space:pre-wrap;font-size:13px">${safe(JSON.stringify(Object.fromEntries(extra),null,2))}</pre></details>`);
-}
-async function openFinancePanel(sid){
-  const s=sessionById(sid); openPanel(sessionName(s)+'｜財務明細','本場財務與發票資料','<div class="loading">財務載入中…</div>');
-  try{const [finance,invoices]=await Promise.all([api({action:'getFinance',sessionId:sid}).catch(()=>[]),api({action:'getInvoiceList',sessionId:sid}).catch(()=>[])]); const regs=regsForSession(sid); const sum=sessionSummary(s); $('panelBody').innerHTML=`<div class="stats"><div class="stat blue"><b>${money(sum.receivable)}</b><span>應收</span></div><div class="stat green"><b>${money(sum.received)}</b><span>已收</span></div><div class="stat pink"><b>${money(sum.unreceived)}</b><span>未收</span></div><div class="stat purple"><b>${money(sum.deposit)}</b><span>押金</span></div></div><div style="height:14px"></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel('${attr(sid)}')">下載本場完整 Excel</button></div><div style="height:14px"></div><h3>財務項目</h3>${renderFinanceList(finance)}<div style="height:14px"></div><h3>發票資料</h3>${renderInvoiceList(invoices,regs)}`;}catch(e){$('panelBody').innerHTML='<div class="empty">財務載入失敗：'+safe(e.message)+'</div>';}
-}
-function renderFinanceList(list){if(!Array.isArray(list)||!list.length)return '<div class="empty">目前無額外財務項目</div>'; return `<div class="table-wrap"><table class="mini-table"><thead><tr><th>類型</th><th>名稱</th><th>金額</th><th>備註</th></tr></thead><tbody>${list.map(x=>`<tr><td>${safe(x.type||'')}</td><td>${safe(x.name||'')}</td><td>${money(x.amount)}</td><td>${safe(x.note||'')}</td></tr>`).join('')}</tbody></table></div>`;}
-function renderInvoiceList(list,regs){const arr=Array.isArray(list)&&list.length?list:regs.filter(r=>r.invoiceTitle||r.taxId||r.invoiceEmail); if(!arr.length)return '<div class="empty">目前無發票資料</div>'; return `<div class="table-wrap"><table class="mini-table"><thead><tr><th>品牌</th><th>統編</th><th>抬頭</th><th>Email</th><th>狀態</th></tr></thead><tbody>${arr.map(x=>`<tr><td>${safe(x.brand||x.brandName||'')}</td><td>${safe(x.taxId||'')}</td><td>${safe(x.invoiceTitle||'')}</td><td>${safe(x.invoiceEmail||'')}</td><td>${safe(x.invoiceStatus||'')}</td></tr>`).join('')}</tbody></table></div>`;}
-function renderTodos(){
-  const all=ST.regs||[]; const data=[['全部待審核',all.filter(isPendingReview).length,'pending'],['付款待確認',all.filter(isPaymentPending).length,'paymentPending'],['未繳費',all.filter(isUnpaid).length,'unpaid'],['退款待處理',all.filter(isRefund).length,'refund']];
-  $('todoGrid').innerHTML=data.map(([label,num,filter],i)=>`<button class="todo-card" onclick="openTodoPanel('${filter}','${label}')"><b>${num}</b><span>${label}</span></button>`).join('');
-}
-function openTodoPanel(filter,label){ST.panelRegs=filterRegs(ST.regs||[],filter); openPanel('全部待辦｜'+label,'跨場次快速處理；每張卡片皆顯示所屬場次',`<div class="filter-row"><input id="panelSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderPanelRegCards()"></div><div id="panelCards" class="cards"></div>`); renderPanelRegCards();}
-function renderMembers(){
-  const kw=($('memberSearch')?.value||'').toLowerCase(); const map=new Map();
-  (ST.regs||[]).forEach(r=>{const key=(r.email||r.phone||r.brand||r.brandName||Math.random()).toString(); if(!map.has(key))map.set(key,{brand:r.brand||r.brandName||'未填品牌',name:r.name||'',phone:r.phone||'',email:r.email||'',fb:r.fb||'',ig:r.ig||'',regs:[]}); map.get(key).regs.push(r);});
-  let list=[...map.values()]; if(kw)list=list.filter(x=>[x.brand,x.name,x.phone,x.email,x.fb,x.ig].join(' ').toLowerCase().includes(kw));
-  $('memberList').innerHTML=list.length?list.map(m=>`<article class="reg-card"><div><div class="reg-title">${safe(m.brand)}</div><div class="reg-sub">${safe(m.name)}｜${safe(m.phone)}｜${safe(m.email)}</div><div class="tag-row">${m.fb?`<a class="tag info" target="_blank" href="${attr(m.fb)}">FB</a>`:''}${m.ig?`<a class="tag bad" target="_blank" href="${attr(m.ig)}">IG</a>`:''}<span class="tag purple">歷史 ${m.regs.length} 場</span></div></div><div class="reg-actions"><button class="btn small secondary" onclick="openBrandHistory('${attr(m.email||m.phone||m.brand)}')">歷史紀錄</button></div></article>`).join(''):'<div class="empty">沒有會員 / 品牌資料</div>';
-}
-function openBrandHistory(key){const rows=(ST.regs||[]).filter(r=>[r.email,r.phone,r.brand,r.brandName].map(String).includes(String(key))); openPanel('品牌歷史紀錄','同品牌不同場次狀態各自獨立',`<div class="cards">${rows.map(renderRegCard).join('')||'<div class="empty">找不到歷史紀錄</div>'}</div>`);}
-function openEmailSettings(){openPanel('信件模板','全螢幕彈窗',`<div class="warn-box">目前後端已提供寄信測試 API。本乾淨版不會把「信件模板」假存到資料庫，避免覆蓋正式信件內容。</div><div style="height:12px"></div><div class="form-grid"><div class="form-field full"><label>測試收件 Email</label><input id="testEmailInput" type="email" placeholder="輸入你的 Email"></div></div><div class="card-actions"><button class="btn" onclick="sendTestEmail(this)">寄出測試信</button></div><div id="emailResult" class="sub"></div>`)}
-async function sendTestEmail(btn){const to=$('testEmailInput').value.trim(); if(!to.includes('@')){toast('請輸入 Email');return;} const old=btn.textContent; btn.disabled=true; btn.textContent='寄送中…'; try{await apiPost({action:'testEmail',to}); $('emailResult').textContent='✅ 寄信成功，請檢查信箱與垃圾信件夾';}catch(e){$('emailResult').textContent='❌ 寄信失敗：'+e.message;}finally{btn.disabled=false;btn.textContent=old;}}
-function openPaymentSettings(){
-  const cfg=ST.siteConfig||{}; const pay=cfg.payment||cfg.payments||{};
-  openPanel('付款資訊','優先讀取資料庫 siteConfig；本頁只保存後端支援欄位。',`<div class="warn-box">單場費用仍以各場次卡設定為準；這裡放全域付款說明與帳戶資訊。</div><div style="height:12px"></div><div class="form-grid"><div class="form-field full"><label>付款說明</label><textarea id="payInfoText" style="min-height:150px">${safe(cfg.paymentText||cfg.payInfo||pay.info||'')}</textarea></div><div class="form-field"><label>銀行名稱</label><input id="payBank" value="${attr(cfg.bankName||pay.bankName||'')}"></div><div class="form-field"><label>帳號</label><input id="payAccount" value="${attr(cfg.bankAccount||pay.bankAccount||'')}"></div><div class="form-field full"><label>LINE Pay / 其他連結</label><input id="payLink" value="${attr(cfg.paymentLink||pay.link||'')}"></div></div><div class="card-actions"><button class="btn" onclick="saveSiteSettings('payment',this)">儲存付款資訊</button><button class="btn secondary" onclick="closePanel();switchPage('sessions')">回場次卡設定</button></div>`);
-}
-function openCompanySettings(){
-  const cfg=ST.siteConfig||{}; const company=cfg.company||{};
-  openPanel('公司資料','優先讀取資料庫 siteConfig，不用硬寫資料。',`<div class="form-grid"><div class="form-field full"><label>公司 / 主辦名稱</label><input id="companyName" value="${attr(cfg.companyName||company.name||'')}"></div><div class="form-field"><label>聯絡 Email</label><input id="companyEmail" value="${attr(cfg.companyEmail||company.email||'')}"></div><div class="form-field"><label>官方 LINE / 聯絡方式</label><input id="companyContact" value="${attr(cfg.companyContact||company.contact||'')}"></div><div class="form-field full"><label>公司備註</label><textarea id="companyNote">${safe(cfg.companyNote||company.note||'')}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveSiteSettings('company',this)">儲存公司資料</button></div>`);
-}
-
-async function saveSiteSettings(type,btn){
-  const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
-  try{
-    const payload={action:'saveSiteConfig'};
-    if(type==='payment'){
-      payload.paymentText=$('payInfoText')?.value||'';
-      payload.bankName=$('payBank')?.value||'';
-      payload.bankAccount=$('payAccount')?.value||'';
-      payload.paymentLink=$('payLink')?.value||'';
-      payload.payment={info:payload.paymentText,bankName:payload.bankName,bankAccount:payload.bankAccount,link:payload.paymentLink};
-    }
-    if(type==='company'){
-      payload.companyName=$('companyName')?.value||'';
-      payload.companyEmail=$('companyEmail')?.value||'';
-      payload.companyContact=$('companyContact')?.value||'';
-      payload.companyNote=$('companyNote')?.value||'';
-      payload.company={name:payload.companyName,email:payload.companyEmail,contact:payload.companyContact,note:payload.companyNote};
-    }
-    await apiPost(payload); toast('已儲存'); ST.siteConfig={...(ST.siteConfig||{}),...payload};
-  }catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}
-}
-
-async function openAgreementSettings(){openPanel('合約管理','三個模板可存；會讀取現有資料庫合約，不清空、不重置。','<div class="loading">載入合約中…</div>'); try{const list=await api({action:'getAgreementTemplate'}).catch(()=>[]); ST.agreements=Array.isArray(list)?list:[]; renderAgreementPanel();}catch(e){$('panelBody').innerHTML='<div class="empty">合約載入失敗：'+safe(e.message)+'</div>';}}
-function agr(slot){return ST.agreements.find(t=>String(t.slot_no)===String(slot))||{};}
-function renderAgreementPanel(){ $('panelBody').innerHTML=[1,2,3].map(slot=>{const t=agr(slot);return `<div class="session-card" style="margin-bottom:12px"><div class="session-body"><div class="section-label">合約範本 ${slot}</div><div class="form-grid"><div class="form-field"><label>範本名稱</label><input id="agr_${slot}_label" value="${attr(t.label||('範本 '+slot))}"></div><div class="form-field"><label>合約版本</label><input id="agr_${slot}_version" value="${attr(t.version||'')}"></div><div class="form-field full"><label>合約標題</label><input id="agr_${slot}_title" value="${attr(t.title||'')}"></div><div class="form-field full"><label>合約正文</label><textarea id="agr_${slot}_content" style="min-height:220px">${safe(t.content||'')}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveAgreement(${slot},this)">儲存範本 ${slot}</button></div></div></div>`}).join('');}
-async function saveAgreement(slot,btn){const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{await apiPost({action:'saveAgreementTemplate',slot_no:slot,label:$(`agr_${slot}_label`).value,title:$(`agr_${slot}_title`).value,version:$(`agr_${slot}_version`).value,content:$(`agr_${slot}_content`).value}); toast('合約範本已儲存'); await openAgreementSettings();}catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}}
-async function openStaffSettings(){openPanel('權限管理','讀取現有管理帳號；不清空、不重置。','<div class="loading">載入管理帳號中…</div>'); try{const staff=await api({action:'getStaff'}).catch(()=>[]); ST.staff=Array.isArray(staff)?staff:[]; renderStaffPanel();}catch(e){$('panelBody').innerHTML='<div class="empty">權限載入失敗：'+safe(e.message)+'</div>';}}
-function renderStaffPanel(){const roles=['platform_super_admin','organizer_owner','organizer_admin','session_admin','finance_admin','onsite_staff']; $('panelBody').innerHTML=`<div class="session-card"><div class="session-body"><div class="section-label">新增管理帳號 / 工作人員</div><div class="form-grid"><div class="form-field"><label>Email</label><input id="newStaffEmail" type="email"></div><div class="form-field"><label>姓名</label><input id="newStaffName"></div><div class="form-field full"><label>角色</label><select id="newStaffRole">${roles.map(r=>`<option value="${r}">${roleName(r)}</option>`).join('')}</select></div></div><div class="card-actions"><button class="btn" onclick="addStaffClean(this)">新增帳號</button></div></div></div><div style="height:12px"></div><div class="cards">${ST.staff.map(s=>`<article class="reg-card"><div><div class="reg-title">${safe(s.name||s.display_name||s.email)}</div><div class="reg-sub">${safe(s.email)}｜${safe(roleName(normalizeRole(s.role)))}｜${s.isActive===false?'停用':'啟用'}</div><div class="tag-row"><span class="tag ${s.isActive===false?'bad':'ok'}">${s.isActive===false?'停用':'啟用'}</span><span class="tag info">${safe((s.limitSessions||[]).length?('限定 '+s.limitSessions.length+' 場'):'全部 / 未限定')}</span></div></div><div class="reg-actions"><button class="btn small ${s.isActive===false?'green':'gray'}" onclick="setStaffActiveClean('${attr(s.email)}',${s.isActive===false},this)">${s.isActive===false?'啟用':'停用'}</button><button class="btn small danger" onclick="removeStaffClean('${attr(s.email)}',this)">刪除</button></div></article>`).join('')||'<div class="empty">尚無管理帳號</div>'}</div>`;}
-function roleName(r){return {platform_super_admin:'超級管理員',organizer_owner:'主辦者',organizer_admin:'共創夥伴',session_admin:'場次管理員',finance_admin:'財務管理員',onsite_staff:'現場人員'}[r]||r||'管理員'}
-async function addStaffClean(btn){const email=$('newStaffEmail').value.trim(), name=$('newStaffName').value.trim(), role=$('newStaffRole').value; if(!email||!name){toast('請填 Email 與姓名');return;} const old=btn.textContent; btn.disabled=true; btn.textContent='新增中…'; try{await apiPost({action:'addStaff',targetEmail:email,targetName:name,role,perms:{review:true,finance:role==='finance_admin',checkin:true,sessions:true},limitSessions:[],scopeType:'all'}); toast('已新增'); await openStaffSettings();}catch(e){toast('新增失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}}
-async function setStaffActiveClean(email,enable,btn){const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…'; try{await apiPost({action:'setStaffActive',targetEmail:email,active:enable}); toast('已更新'); await openStaffSettings();}catch(e){toast('更新失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}}
-async function removeStaffClean(email,btn){if(!confirm('確定刪除管理帳號 '+email+'？'))return; const old=btn.textContent; btn.disabled=true; btn.textContent='刪除中…'; try{await apiPost({action:'removeStaff',targetEmail:email}); toast('已刪除'); await openStaffSettings();}catch(e){toast('刪除失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}}
-function openSessionCreatePanel(){openPanel('新增場次','乾淨版只建立核心場次資料；進階選位與合約可儲存後再由場次卡補設定。',`<div class="form-grid"><div class="form-field full"><label>場次名稱</label><input id="newSesName"></div><div class="form-field"><label>類型</label><input id="newSesType" value="市集場次"></div><div class="form-field"><label>地點</label><input id="newSesVenue"></div><div class="form-field"><label>合作單位</label><input id="newSesOrganizer"></div><div class="form-field"><label>日期</label><input id="newSesDate" placeholder="2026-07-18"></div><div class="form-field"><label>攤位費</label><input id="newSesFee" type="number" value="0"></div><div class="form-field"><label>押金</label><input id="newSesDeposit" type="number" value="0"></div><div class="form-field"><label>審核制</label><select id="newSesReview"><option value="1">開啟</option><option value="0">關閉</option></select></div><div class="form-field full"><label>說明</label><textarea id="newSesDesc"></textarea></div></div><div class="card-actions"><button class="btn" onclick="createSessionClean(this)">建立場次</button></div>`)}
-async function createSessionClean(btn){const name=$('newSesName').value.trim(); if(!name){toast('請輸入場次名稱');return;} const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…'; try{await apiPost({action:'createSession',eventId:'',name,type:$('newSesType').value||'市集場次',venue:$('newSesVenue').value,organizer:$('newSesOrganizer').value,dates:parseDates($('newSesDate').value),fee:int($('newSesFee').value),deposit:int($('newSesDeposit').value),needReview:$('newSesReview').value==='1',desc:$('newSesDesc').value,status:'報名中'}); toast('已建立場次'); closePanel(); await reloadAll();}catch(e){toast('建立失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}}
-function excelEscape(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-async function downloadSessionExcel(sid){
-  const s=sessionById(sid); let rows=regsForSession(sid);
-  if(!rows.length){
-    try{const got=await api({action:'getRegsBySession',sessionId:sid}); rows=Array.isArray(got)?got:[];}catch(e){toast('下載資料載入失敗：'+e.message,5000);return;}
-  }
-  const headers=['場次名稱','合作單位','活動日期','地點','報名編號','報名日期','品牌名稱','聯絡人','手機','Email','FB','IG','審核狀態','付款狀態','報到狀態','攤位數','設備明細','押金','應收金額','已收金額','未收金額','發票統編','發票抬頭','發票Email','攤位號碼','備註'];
-  const body=rows.map(r=>[sessionName(s),s.organizer||s.coorg||'',formatDate(s),s.venue||'',r.id||'',r.createdAt||r.joined_at||'',r.brand||r.brandName||r.brand_name||'',r.name||'',r.phone||'',r.email||'',r.fb||'',r.ig||'',r.status||r.reviewStatus||'',payText(r),r.checkin||r.checkinStatus||'',r.stallCount||r.qty||1,equipText(r.equip||r.equipment||r.equipJson),r.deposit||r.depositTotal||0,regAmount(r),isPaid(r)||isFree(r)?regAmount(r):0,isPaid(r)||isFree(r)?0:regAmount(r),r.taxId||r.invoiceTaxId||'',r.invoiceTitle||'',r.invoiceEmail||'',r.stallNo||r.boothNo||'',r.adminNote||r.remark||'']);
-  const html=`<html><head><meta charset="UTF-8"></head><body><table border="1"><thead><tr>${headers.map(h=>`<th>${excelEscape(h)}</th>`).join('')}</tr></thead><tbody>${body.map(row=>`<tr>${row.map(c=>`<td>${excelEscape(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;
-  const blob=new Blob(['﻿',html],{type:'application/vnd.ms-excel;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(sessionName(s)||'場次')+'_完整名單.xls'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
-}
-
-
-/* === V10 CLEAN 0630 operator patch: payment fields, clear statuses, safer panel back === */
-function pageBackLabel(){
-  if(ST.panelStack&&ST.panelStack.length) return '← 返回上一層';
-  const map={sessions:'場次總覽',todos:'全部待辦',members:'會員品牌',settings:'系統設定'};
-  return '← 返回'+(map[ST.currentPage]||'上一頁');
-}
-function updatePanelBackLabel(){
-  const btn=document.querySelector('.panel-bottom .btn');
-  if(btn) btn.textContent=pageBackLabel();
-}
-function openPanel(title,sub,html,opts={}){
-  const panel=$('panel');
-  const wasOpen=panel.classList.contains('show');
-  if(wasOpen&&!opts.replace){
-    ST.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,panel:{...ST.panel},regs:[...(ST.panelRegs||[])]});
-  }
-  $('panelTitle').textContent=title;
-  $('panelSub').textContent=sub||'';
-  $('panelBody').innerHTML=html;
-  panel.classList.add('show');
-  document.body.style.overflow='hidden';
-  updatePanelBackLabel();
-  if(!opts.noHistory&&!opts.replace){
-    try{history.pushState({adminPanel:true},'',location.pathname+location.search+'#admin-panel');}catch(e){}
-  }
-}
-function closePanel(opts={}){
-  const prev=ST.panelStack.pop();
-  if(prev){
-    $('panelTitle').textContent=prev.title;
-    $('panelSub').textContent=prev.sub;
-    $('panelBody').innerHTML=prev.html;
-    ST.panel=prev.panel||ST.panel;
-    ST.panelRegs=prev.regs||[];
-    updatePanelBackLabel();
-    if(!opts.fromPop&&location.hash==='#admin-panel'){
-      ST._ignoreNextPop=true;
-      try{history.back();}catch(e){}
-    }
-    return;
-  }
-  $('panel').classList.remove('show');
-  $('panelBody').innerHTML='';
-  document.body.style.overflow='';
-  ST.panel={type:'',sessionId:'',filter:''};
-  ST.panelRegs=[];
-  updatePanelBackLabel();
-  if(!opts.fromPop&&location.hash==='#admin-panel'){
-    ST._ignoreNextPop=true;
-    try{history.back();}catch(e){}
-  }
-}
-window.addEventListener('popstate',()=>{
-  if(ST._ignoreNextPop){ST._ignoreNextPop=false;return;}
-  if($('panel')&&$('panel').classList.contains('show')) closePanel({fromPop:true});
-});
-function statusClassReview(r){return isApproved(r)?'ok':isPendingReview(r)?'warn':isRejected(r)?'bad':isWait(r)?'purple':'info';}
-function statusClassPay(r){return isPaid(r)||isFree(r)?'ok':isPaymentPending(r)?'warn':isRefund(r)?'bad':'bad';}
-function statusClassCheckin(r){return isChecked(r)?'ok':'purple';}
-function statusSummary(r){
-  return `<div class="status-summary"><div class="status-chip ${statusClassReview(r)}"><span>審核</span>${safe(r.status||r.reviewStatus||'待審核')}</div><div class="status-chip ${statusClassPay(r)}"><span>付款</span>${safe(payText(r))}</div><div class="status-chip ${statusClassCheckin(r)}"><span>報到</span>${safe(r.checkin||r.checkinStatus||'未報到')}</div></div>`;
-}
-function renderRegCard(r){
-  const brand=r.brand||r.brandName||r.brand_name||'未填品牌'; const id=r.id||r.regId||'';
-  return `<article class="reg-card"><div><div class="reg-title">${safe(brand)}</div><div class="reg-sub">${safe(r.sessionName||sessionName(sessionById(regSessionId(r)))||'')}｜${safe(r.createdAt?new Date(r.createdAt).toLocaleString('zh-TW',{hour12:false}):'未記錄日期')}</div><div class="tag-row">${socialLinks(r)}</div>${statusSummary(r)}<div class="kv"><div class="k">聯絡人</div><div>${safe(r.name||'—')}｜${safe(r.phone||'—')}</div><div class="k">Email</div><div>${safe(r.email||'—')}</div><div class="k">攤位數</div><div>${safe(r.stallCount||r.qty||1)}</div><div class="k">設備</div><div>${safe(equipText(r.equip||r.equipment||r.equipJson))}</div><div class="k">金額</div><div>${money(regAmount(r))}</div><div class="k">備註</div><div>${safe(r.adminNote||r.remark||'—')}</div></div></div><div class="reg-actions">${renderRegActions(id,r)}</div></article>`;
-}
-function renderRegActions(id,r){
-  const b=[];
-  if(isPendingReview(r)){
-    b.push(`<button class="btn small green" onclick="regAction('${attr(id)}','approve',this)">錄取</button>`);
-    b.push(`<button class="btn small danger" onclick="regAction('${attr(id)}','reject',this)">不錄取</button>`);
-    b.push(`<button class="btn small secondary" onclick="regAction('${attr(id)}','waitlist',this)">備取</button>`);
-  }
-  if(isPaymentPending(r)){
-    b.push(`<button class="btn small yellow" onclick="regAction('${attr(id)}','confirmPay',this)">確認付款</button>`);
-    b.push(`<button class="btn small done" disabled>已回報 ✓</button>`);
-  }else if(isUnpaid(r)){
-    b.push(`<button class="btn small blue" onclick="regAction('${attr(id)}','reported',this)">標記已回報</button>`);
-    b.push(`<button class="btn small danger" onclick="regAction('${attr(id)}','cancelUnpaid',this)">未繳費取消</button>`);
-  }
-  if((isPaid(r)||isFree(r))&&!isChecked(r)){b.push(`<button class="btn small purple" onclick="regAction('${attr(id)}','checkin',this)">報到</button>`);}
-  if(isChecked(r)){b.push(`<button class="btn small secondary" onclick="regAction('${attr(id)}','undoCheckin',this)">取消報到</button>`);}
-  b.push(`<button class="btn small secondary" onclick="openRegDetail('${attr(id)}')">完整資料</button>`); return b.join('');
-}
-function findRegRefs(id){
-  const matches=[];
-  [ST.regs,ST.panelRegs].forEach(arr=>{(arr||[]).forEach(r=>{if(String(r.id||r.regId)===String(id))matches.push(r);});});
-  return matches;
-}
-function applyLocalRegStatus(id,mode){
-  findRegRefs(id).forEach(r=>{
-    if(mode==='approve') r.status=r.reviewStatus='已錄取';
-    if(mode==='reject') r.status=r.reviewStatus='不錄取';
-    if(mode==='waitlist') r.status=r.reviewStatus='備取';
-    if(mode==='reported') r.payStatus=r.paymentStatus='已回報 / 付款待確認';
-    if(mode==='confirmPay') r.payStatus=r.paymentStatus='已繳費';
-    if(mode==='cancelUnpaid') {r.status='已取消'; r.payStatus=r.paymentStatus='未繳費取消';}
-    if(mode==='checkin') r.checkin=r.checkinStatus='已報到';
-    if(mode==='undoCheckin') r.checkin=r.checkinStatus='未報到';
-  });
-}
-function insertPanelNote(msg){
-  const body=$('panelBody'); if(!body||!body.innerHTML)return;
-  const old=body.querySelector('.op-note'); if(old) old.remove();
-  body.insertAdjacentHTML('afterbegin',`<div class="op-note">${safe(msg)}</div>`);
-}
-async function regAction(id,mode,btn){
-  if(!id){toast('找不到報名 ID');return;}
-  const confirmText={reject:'確定標記為不錄取？',waitlist:'確定標記為備取？',confirmPay:'確定確認付款？',cancelUnpaid:'確定取消此未繳費報名？紀錄會保留。',undoCheckin:'確定取消報到？'}[mode];
-  if(confirmText&&!confirm(confirmText))return;
-  const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
-  try{
-    if(mode==='approve')await apiPost({action:'approveReg',regId:id,approved:true});
-    if(mode==='reject')await apiPost({action:'approveReg',regId:id,approved:false});
-    if(mode==='waitlist')await apiPost({action:'approveReg',regId:id,status:'備取'});
-    if(mode==='reported')await apiPost({action:'markPaymentScreenshot',regId:id});
-    if(mode==='cancelUnpaid')await apiPost({action:'adminCancelReg',regId:id});
-    if(mode==='confirmPay')await apiPost({action:'confirmPayment',regId:id});
-    if(mode==='checkin')await apiPost({action:'checkin',regId:id});
-    if(mode==='undoCheckin')await apiPost({action:'checkin',regId:id,undo:true});
-    applyLocalRegStatus(id,mode);
-    const msg={reported:'已標記已回報，卡片付款狀態已更新為「已回報 / 付款待確認」。',confirmPay:'已確認付款，卡片付款狀態已更新。',approve:'已錄取，卡片審核狀態已更新。',reject:'已標記不錄取。',waitlist:'已標記備取。',cancelUnpaid:'已取消未繳費報名。',checkin:'已報到。',undoCheckin:'已取消報到。'}[mode]||'已更新';
-    toast(msg,3600);
-    if($('panel')?.classList.contains('show')){renderPanelRegCards(); insertPanelNote(msg);} else {renderMembers(); renderSessions(); renderTodos();}
-    await reloadAll();
-    if(ST.panel?.type==='list') await openListPanel(ST.panel.sessionId,ST.panel.filter,$('panelTitle').textContent.split('｜').pop()||'名單');
-    if(ST.currentPage==='members') renderMembers();
-  }catch(e){toast('操作失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}
-}
-function openBrandHistory(key){
-  const rows=(ST.regs||[]).filter(r=>[r.email,r.phone,r.brand,r.brandName].map(v=>String(v||'')).includes(String(key)));
-  const title=(rows[0]?.brand||rows[0]?.brandName||'品牌')+'｜歷史紀錄';
-  const summary=`<div class="notice"><b>狀態說明：</b>每張卡都是一個獨立場次，會直接顯示「審核 / 付款 / 報到」三個目前狀態；右側按鈕只會依該筆報名狀態顯示。</div>`;
-  openPanel(title,'同品牌不同場次狀態各自獨立',`${summary}<div class="cards">${rows.map(renderRegCard).join('')||'<div class="empty">找不到歷史紀錄</div>'}</div>`);
-}
-function openPaymentSettings(){
-  const cfg=ST.siteConfig||{}; const pay=cfg.payment||cfg.payments||{};
-  const val=(...xs)=>xs.find(v=>v!==undefined&&v!==null&&String(v)!=='')||'';
-  openPanel('付款資訊','優先讀取資料庫 siteConfig；可存全域付款說明，單場費用仍以各場次卡設定為準。',`<div class="warn-box">單場費用仍以各場次卡設定為準；這裡放全域付款說明與帳戶資料。</div><div style="height:12px"></div><div class="form-grid"><div class="form-field full"><label>付款說明</label><textarea id="payInfoText" style="min-height:120px">${safe(val(cfg.paymentText,cfg.payInfo,pay.info))}</textarea></div><div class="form-field"><label>銀行</label><input id="payBank" value="${attr(val(cfg.bankName,pay.bankName,pay.bank))}"></div><div class="form-field"><label>分行</label><input id="payBranch" value="${attr(val(cfg.bankBranch,pay.bankBranch,pay.branch))}"></div><div class="form-field"><label>戶名</label><input id="payAccountName" value="${attr(val(cfg.accountName,cfg.bankAccountName,pay.accountName,pay.accountHolder))}"></div><div class="form-field"><label>帳號</label><input id="payAccount" value="${attr(val(cfg.bankAccount,pay.bankAccount,pay.account))}"></div><div class="form-field full"><label>LINE Pay</label><input id="payLinePay" value="${attr(val(cfg.linePayLink,cfg.paymentLink,pay.linePay,pay.linePayLink,pay.link))}"></div><div class="form-field full"><label>刷卡</label><input id="payCard" value="${attr(val(cfg.creditCardInfo,cfg.cardPayment,pay.creditCard,pay.card))}" placeholder="刷卡連結或說明"></div><div class="form-field full"><label>其他付款備註</label><textarea id="payOtherNote">${safe(val(cfg.paymentOtherNote,pay.otherNote))}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveSiteSettings('payment',this)">儲存付款資訊</button><button class="btn secondary" onclick="closePanel();switchPage('sessions')">回場次卡設定</button></div>`,{replace:false});
-}
-async function saveSiteSettings(type,btn){
-  const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
-  try{
-    const payload={action:'saveSiteConfig'};
-    if(type==='payment'){
-      payload.paymentText=$('payInfoText')?.value||'';
-      payload.bankName=$('payBank')?.value||'';
-      payload.bankBranch=$('payBranch')?.value||'';
-      payload.accountName=$('payAccountName')?.value||'';
-      payload.bankAccount=$('payAccount')?.value||'';
-      payload.linePayLink=$('payLinePay')?.value||'';
-      payload.creditCardInfo=$('payCard')?.value||'';
-      payload.paymentOtherNote=$('payOtherNote')?.value||'';
-      payload.payment={info:payload.paymentText,bankName:payload.bankName,bank:payload.bankName,branch:payload.bankBranch,bankBranch:payload.bankBranch,accountName:payload.accountName,accountHolder:payload.accountName,bankAccount:payload.bankAccount,account:payload.bankAccount,linePay:payload.linePayLink,linePayLink:payload.linePayLink,link:payload.linePayLink,creditCard:payload.creditCardInfo,card:payload.creditCardInfo,otherNote:payload.paymentOtherNote};
-    }
-    if(type==='company'){
-      payload.companyName=$('companyName')?.value||'';
-      payload.companyEmail=$('companyEmail')?.value||'';
-      payload.companyContact=$('companyContact')?.value||'';
-      payload.companyNote=$('companyNote')?.value||'';
-      payload.company={name:payload.companyName,email:payload.companyEmail,contact:payload.companyContact,note:payload.companyNote};
-    }
-    await apiPost(payload); toast('已儲存'); ST.siteConfig={...(ST.siteConfig||{}),...payload};
-  }catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old;}
-}
-
-window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('panel').classList.contains('show'))closePanel();});
-(async function boot(){const did=await handleOAuthCallback(); if(did)return; const s=readSession(); if(s&&s.token&&s.email){saveSession(s); enterAdmin();} })();
+function renderSessionCard(s){const sid=sessionId(s),sum=sessionSummary(s);const settings=renderSessionSetting(s);return `<article class="session-card" id="session-${attr(sid)}"><div class="session-head"><div><div class="session-name">${safe(sessionName(s))}</div><div class="session-meta"><span class="pill blue">${safe(formatDate(s))}</span><span class="pill green">${safe(s.venue||'未填地點')}</span><span class="pill yellow">合作：${safe(s.organizer||s.coorg||'未填')}</span><span class="pill ${isClosed(s)?'pink':'purple'}">${isArchived(s)?'封存':isClosed(s)?'已關閉':'報名中'}</span></div></div><div class="card-actions"><button class="btn secondary small" onclick="toggleSessionSetting('${attr(sid)}')">場次設定</button><button class="btn small" onclick="downloadSessionExcel('${attr(sid)}')">下載 Excel</button></div></div><div class="section-label">本場進度</div><div class="stats">${statHtml('報名',sum.total,'blue',sid,'all')}${statHtml('待審核',sum.pending,'yellow',sid,'pending')}${statHtml('已錄取',sum.approved,'green',sid,'approved')}${statHtml('未繳費',sum.unpaid,'pink',sid,'unpaid')}${statHtml('付款待確認',sum.paymentPending,'yellow',sid,'paymentPending')}${statHtml('已繳費',sum.paid,'green',sid,'paid')}${statHtml('已報到',sum.checked,'purple',sid,'checked')}${statHtml('退款',sum.refund,'pink',sid,'refund')}</div><div class="section-label">設備 / 財務</div><div class="compact-grid"><div class="card" style="margin:0"><div class="info-line"><span>攤位</span><b>${sum.stallCount}</b></div><div class="info-line"><span>設備</span><b>${safe(Object.keys(sum.equip).length?JSON.stringify(sum.equip):'依名單明細')}</b></div><div class="info-line"><span>押金</span><b>${money(sum.deposit)}</b></div></div><div class="card" style="margin:0"><div class="info-line"><span>應收</span><b>${money(sum.receivable)}</b></div><div class="info-line"><span>已收</span><b>${money(sum.received)}</b></div><div class="info-line"><span>未收</span><b>${money(sum.unreceived)}</b></div></div></div><div class="card-actions"><button class="btn secondary" onclick="openFinancePanel('${attr(sid)}')">財務明細</button><button class="btn secondary" onclick="openListPanel('${attr(sid)}','equip','設備明細')">設備明細</button><button class="btn secondary" onclick="openListPanel('${attr(sid)}','checkin','後台報到')">後台報到</button></div>${settings}</article>`}
+function renderSessionSetting(s){const sid=sessionId(s);return `<div id="setting-${attr(sid)}" class="setting-box"><div class="form-grid"><div class="form-field full"><label>場次名稱</label><input id="ses_${attr(sid)}_name" value="${attr(sessionName(s))}"></div><div class="form-field"><label>合作單位</label><input id="ses_${attr(sid)}_organizer" value="${attr(s.organizer||s.coorg||'')}"></div><div class="form-field"><label>地點</label><input id="ses_${attr(sid)}_venue" value="${attr(s.venue||'')}"></div><div class="form-field"><label>日期</label><input id="ses_${attr(sid)}_date" value="${attr(formatDate(s))}"></div><div class="form-field"><label>攤位費</label><input id="ses_${attr(sid)}_fee" type="number" value="${attr(s.fee||s.price||0)}"></div><div class="form-field"><label>押金</label><input id="ses_${attr(sid)}_deposit" type="number" value="${attr(s.deposit||0)}"></div><div class="form-field"><label>審核制</label><select id="ses_${attr(sid)}_review"><option value="1" ${s.needReview!==false?'selected':''}>開啟</option><option value="0" ${s.needReview===false?'selected':''}>關閉</option></select></div><div class="form-field full"><label>說明</label><textarea id="ses_${attr(sid)}_desc">${safe(s.desc||s.description||'')}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveSessionSetting('${attr(sid)}',this)">儲存本場設定</button><button class="btn secondary" onclick="toggleSessionStatus('${attr(sid)}','${attr(isClosed(s)?'報名中':'已關閉')}',this)">${isClosed(s)?'重新開放報名':'關閉報名'}</button></div></div>`}
+function toggleSessionSetting(sid){$('setting-'+sid)?.classList.toggle('open')} async function saveSessionSetting(sid,btn){const old=btn.textContent;btn.disabled=true;btn.textContent='儲存中…';try{await apiPost({action:'updateSession',id:sid,sessionId:sid,name:$(`ses_${sid}_name`).value,organizer:$(`ses_${sid}_organizer`).value,venue:$(`ses_${sid}_venue`).value,dates:$(`ses_${sid}_date`).value,fee:int($(`ses_${sid}_fee`).value),deposit:int($(`ses_${sid}_deposit`).value),needReview:$(`ses_${sid}_review`).value==='1',desc:$(`ses_${sid}_desc`).value});toast('場次設定已儲存');await reloadAll()}catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+async function toggleSessionStatus(sid,status,btn){if(!confirm('確定變更場次狀態為「'+status+'」？'))return;const old=btn.textContent;btn.disabled=true;btn.textContent='處理中…';try{await apiPost({action:'toggleSessionStatus',sessionId:sid,status});toast('已更新');await reloadAll()}catch(e){toast('更新失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+function filterRegs(rows,filter){if(filter==='pending')return rows.filter(isPendingReview);if(filter==='approved')return rows.filter(isApproved);if(filter==='unpaid')return rows.filter(isUnpaid);if(filter==='paymentPending')return rows.filter(isPaymentPending);if(filter==='paid')return rows.filter(r=>isPaid(r)||isFree(r));if(filter==='checked')return rows.filter(isChecked);if(filter==='refund')return rows.filter(isRefund);if(filter==='checkin')return rows.filter(r=>isPaid(r)||isFree(r)||isChecked(r));if(filter==='equip')return rows.filter(r=>equipText(r.equip||r.equipment||r.equipJson)!=='—');return rows}
+function openPanel(title,sub,body,opt={}){if(opt.replace!==false&&$('panel').classList.contains('show'))ST.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,body:$('panelBody').innerHTML,panel:{...ST.panel},regs:[...ST.panelRegs]});$('panelTitle').textContent=title;$('panelSub').textContent=sub||'';$('panelBody').innerHTML=body||'';$('panel').classList.add('show');history.pushState({panel:true},'',location.href);window.scrollTo(0,0)} function closePanel(){if(ST.panelStack.length){const prev=ST.panelStack.pop();$('panelTitle').textContent=prev.title;$('panelSub').textContent=prev.sub;$('panelBody').innerHTML=prev.body;ST.panel=prev.panel;ST.panelRegs=prev.regs;return}$('panel').classList.remove('show');ST.panel={type:'',sessionId:'',filter:''};ST.panelRegs=[]}
+function openListPanel(sid,filter,label){const rows=filterRegs(regsForSession(sid),filter);ST.panel={type:'list',sessionId:sid,filter};ST.panelRegs=rows;openPanel(`${sessionName(sessionById(sid))}｜${label}`,'只顯示此場次資料','<div class="filter-row"><input id="panelSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderPanelRegCards()"></div><div id="panelCards" class="cards"></div>');renderPanelRegCards()}
+function renderPanelRegCards(){const kw=($('panelSearch')?.value||'').toLowerCase();let rows=[...ST.panelRegs];if(kw)rows=rows.filter(r=>[r.brand,r.brandName,r.name,r.phone,r.email].join(' ').toLowerCase().includes(kw));$('panelCards').innerHTML=rows.length?rows.map(renderRegCard).join(''):'<div class="empty">沒有符合條件的資料</div>'}
+function statusTags(r){const review=r.status||r.reviewStatus||'待審核';const pay=payText(r);const chk=r.checkin||r.checkinStatus||'未報到';return `<div class="status-summary"><div class="status-box yellow"><span>審核</span><b>${safe(review)}</b></div><div class="status-box ${isPaid(r)?'green':isPaymentPending(r)?'yellow':'pink'}"><span>付款</span><b>${safe(pay)}</b></div><div class="status-box ${isChecked(r)?'green':'blue'}"><span>報到</span><b>${safe(chk)}</b></div></div>`}
+function socialLinks(r){return `${r.fb?`<a class="tag info" target="_blank" href="${attr(r.fb)}">FB</a>`:''}${r.ig?`<a class="tag bad" target="_blank" href="${attr(r.ig)}">IG</a>`:''}`}
+function renderRegActions(id,r){let html='';if(isPendingReview(r)){html+=`<button class="btn small green" onclick="regAction('${attr(id)}','approve',this)">錄取</button><button class="btn small danger" onclick="regAction('${attr(id)}','reject',this)">不錄取</button><button class="btn small secondary" onclick="regAction('${attr(id)}','waitlist',this)">備取</button>`} if(isUnpaid(r)){html+=`<button class="btn small ${isPaymentPending(r)?'green':'secondary'}" ${isPaymentPending(r)?'disabled':''} onclick="regAction('${attr(id)}','reported',this)">${isPaymentPending(r)?'已回報 ✓':'標記已回報'}</button><button class="btn small danger" onclick="regAction('${attr(id)}','cancelUnpaid',this)">未繳費取消</button>`} if(isPaymentPending(r))html+=`<button class="btn small green" onclick="regAction('${attr(id)}','confirmPay',this)">確認付款</button>`; if(isPaid(r)||isFree(r))html+=`<button class="btn small purple" onclick="regAction('${attr(id)}','checkin',this)">報到</button>`; if(isChecked(r))html+=`<button class="btn small secondary" onclick="regAction('${attr(id)}','undoCheckin',this)">取消報到</button>`; html+=`<button class="btn small secondary" onclick="openRegDetail('${attr(id)}')">完整資料</button>`;return html}
+function renderRegCard(r){const id=r.id||r.regId||r.registration_id;return `<article class="reg-card"><div><div class="reg-title">${safe(r.brand||r.brandName||r.brand_name||'未填品牌')}</div><div class="reg-sub">${safe(r.sessionName||sessionName(sessionById(regSessionId(r))))}｜${safe(r.createdAt||r.joined_at||'未記錄日期')}</div><div class="tag-row">${socialLinks(r)}</div>${statusTags(r)}<div class="kv"><div class="k">聯絡人</div><div>${safe(r.name||'—')}｜${safe(r.phone||'—')}</div><div class="k">Email</div><div>${safe(r.email||'—')}</div><div class="k">攤位數</div><div>${safe(r.stallCount||r.qty||1)}</div><div class="k">設備</div><div>${safe(equipText(r.equip||r.equipment||r.equipJson))}</div><div class="k">金額</div><div>${money(regAmount(r))}</div></div></div><div class="reg-actions">${renderRegActions(id,r)}</div></article>`}
+async function regAction(id,mode,btn){if(mode==='cancelUnpaid'&&!confirm('確定取消這筆未繳費報名？'))return;const old=btn.textContent;btn.disabled=true;btn.textContent='處理中…';try{if(mode==='approve')await apiPost({action:'approveReg',regId:id,approved:true});if(mode==='reject')await apiPost({action:'approveReg',regId:id,approved:false});if(mode==='waitlist')await apiPost({action:'approveReg',regId:id,status:'備取'});if(mode==='reported')await apiPost({action:'markPaymentScreenshot',regId:id});if(mode==='cancelUnpaid')await apiPost({action:'adminCancelReg',regId:id});if(mode==='confirmPay')await apiPost({action:'confirmPayment',regId:id});if(mode==='checkin')await apiPost({action:'checkin',regId:id});if(mode==='undoCheckin')await apiPost({action:'checkin',regId:id,undo:true});toast('已更新');await reloadAll();if(ST.panel.type==='list')openListPanel(ST.panel.sessionId,ST.panel.filter,$('panelTitle').textContent.split('｜').pop()||'名單')}catch(e){toast('操作失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+function openRegDetail(id){const r=ST.regs.find(x=>String(x.id||x.regId||x.registration_id)===String(id));if(!r){toast('找不到資料');return}openPanel('完整資料｜'+safe(r.brand||r.brandName||'品牌'),'資料由後端回傳',`<pre style="white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px">${safe(JSON.stringify(r,null,2))}</pre>`)}
+function openFinancePanel(sid){const s=sessionById(sid);openPanel(sessionName(s)+'｜財務明細','財務與發票資料由後端 API 讀取','<div class="loading">財務載入中…</div>');Promise.all([api({action:'getFinance',sessionId:sid}).catch(()=>[]),api({action:'getInvoiceList',sessionId:sid}).catch(()=>[])]).then(([finance,invoices])=>{const sum=sessionSummary(s);$('panelBody').innerHTML=`<div class="stats"><div class="stat blue"><b>${money(sum.receivable)}</b><span>應收</span></div><div class="stat green"><b>${money(sum.received)}</b><span>已收</span></div><div class="stat pink"><b>${money(sum.unreceived)}</b><span>未收</span></div><div class="stat purple"><b>${money(sum.deposit)}</b><span>押金</span></div></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel('${attr(sid)}')">下載本場完整 Excel</button></div><h3>財務項目</h3>${renderFinanceList(finance)}<h3>發票資料</h3>${renderInvoiceList(invoices)}`}).catch(e=>$('panelBody').innerHTML='<div class="empty">財務載入失敗：'+safe(e.message)+'</div>')}
+function renderFinanceList(list){if(!Array.isArray(list)||!list.length)return '<div class="empty">目前無額外財務項目</div>';return `<div class="table-wrap"><table class="mini-table"><thead><tr><th>類型</th><th>名稱</th><th>金額</th><th>備註</th></tr></thead><tbody>${list.map(x=>`<tr><td>${safe(x.type||'')}</td><td>${safe(x.name||'')}</td><td>${money(x.amount)}</td><td>${safe(x.note||'')}</td></tr>`).join('')}</tbody></table></div>`} function renderInvoiceList(list){if(!Array.isArray(list)||!list.length)return '<div class="empty">目前無發票資料</div>';return `<div class="table-wrap"><table class="mini-table"><thead><tr><th>品牌</th><th>統編</th><th>抬頭</th><th>Email</th><th>狀態</th></tr></thead><tbody>${list.map(x=>`<tr><td>${safe(x.brand||x.brandName||'')}</td><td>${safe(x.taxId||'')}</td><td>${safe(x.invoiceTitle||'')}</td><td>${safe(x.invoiceEmail||'')}</td><td>${safe(x.invoiceStatus||'')}</td></tr>`).join('')}</tbody></table></div>`}
+function renderTodos(){const all=ST.regs||[];const data=[['全部待審核',all.filter(isPendingReview).length,'pending'],['付款待確認',all.filter(isPaymentPending).length,'paymentPending'],['未繳費',all.filter(isUnpaid).length,'unpaid'],['退款待處理',all.filter(isRefund).length,'refund']];$('todoGrid').innerHTML=data.map(([label,num,filter],i)=>`<button class="stat click ${['yellow','blue','pink','purple'][i]}" onclick="openTodoPanel('${filter}','${label}')"><b>${num}</b><span>${label}</span></button>`).join('')} function openTodoPanel(filter,label){ST.panelRegs=filterRegs(ST.regs||[],filter);ST.panel={type:'todo',sessionId:'',filter};openPanel('全部待辦｜'+label,'跨場次快速處理；每張卡片皆顯示所屬場次','<div class="filter-row"><input id="panelSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderPanelRegCards()"></div><div id="panelCards" class="cards"></div>');renderPanelRegCards()}
+function renderMembers(){const box=$('memberList');const kw=($('memberSearch')?.value||'').toLowerCase();if(ST.membersMissing){box.innerHTML=`<div class="empty">會員品牌資料庫串接未完成：${safe(ST.membersMissing)}<br>本版不以前端報名資料虛擬合併會員，請先套用 SQL 與 Worker 補丁。</div>`;return}let list=[...ST.members];if(kw)list=list.filter(m=>[m.brand,m.brandName,m.name,m.phone,m.email,m.fb,m.ig].join(' ').toLowerCase().includes(kw));box.innerHTML=list.length?list.map(m=>`<article class="reg-card"><div><div class="reg-title">${safe(m.brand||m.brandName||'未填品牌')}</div><div class="reg-sub">${safe(m.name||'')}｜${safe(m.phone||'')}｜${safe(m.email||'')}</div><div class="tag-row">${m.fb?`<a class="tag info" target="_blank" href="${attr(m.fb)}">FB</a>`:''}${m.ig?`<a class="tag bad" target="_blank" href="${attr(m.ig)}">IG</a>`:''}<span class="tag purple">歷史 ${int(m.regCount||m.historyCount||0)} 場</span></div></div><div class="reg-actions"><button class="btn small secondary" onclick="openMemberHistory('${attr(m.email||m.phone||m.brand||m.brandName)}')">歷史紀錄</button></div></article>`).join(''):'<div class="empty">沒有會員 / 品牌資料</div>'}
+async function openMemberHistory(key){openPanel('品牌歷史紀錄','資料由後端 getMemberHistory 讀取','<div class="loading">載入中…</div>');try{const rows=await tryGet(['getMemberHistory'],{key});ST.panelRegs=Array.isArray(rows)?rows:[];$('panelBody').innerHTML='<div class="cards">'+(ST.panelRegs.map(renderRegCard).join('')||'<div class="empty">找不到歷史紀錄</div>')+'</div>'}catch(e){$('panelBody').innerHTML='<div class="empty">歷史紀錄串接未完成：'+safe(e.message)+'</div>'}}
+function settingVal(key,def=''){const cfg=ST.settings||{};const site=ST.siteConfig||{};const parts=key.split('.');let v=cfg;for(const p of parts)v=v?.[p];if(v!==undefined&&v!==null&&String(v)!=='')return v;v=site;for(const p of parts)v=v?.[p];return v??def}
+async function saveSettingGroup(key,value){try{return await tryPost(['saveSystemSettings'],{settingKey:key,settingValue:value})}catch(e){const payload={action:'saveSiteConfig',[key]:value}; if(typeof value==='object')Object.assign(payload,value); return await apiPost(payload)}}
+function openPaymentSettings(){const pay=settingVal('payment',{});openPanel('付款資訊','銀行 / LINE Pay / 刷卡皆由資料庫讀寫',`<div class="form-grid"><div class="form-field full"><label>付款說明</label><textarea id="payInfoText">${safe(pay.info||settingVal('paymentText',''))}</textarea></div><div class="form-field"><label>銀行</label><input id="payBank" value="${attr(pay.bank||pay.bankName||settingVal('bankName',''))}"></div><div class="form-field"><label>分行</label><input id="payBranch" value="${attr(pay.branch||pay.bankBranch||settingVal('bankBranch',''))}"></div><div class="form-field"><label>戶名</label><input id="payAccountName" value="${attr(pay.accountName||pay.accountHolder||settingVal('accountName',''))}"></div><div class="form-field"><label>帳號</label><input id="payAccount" value="${attr(pay.account||pay.bankAccount||settingVal('bankAccount',''))}"></div><div class="form-field full"><label>LINE Pay</label><input id="payLinePay" value="${attr(pay.linePay||pay.linePayLink||settingVal('linePayLink',''))}"></div><div class="form-field full"><label>刷卡</label><input id="payCard" value="${attr(pay.creditCard||pay.card||settingVal('creditCardInfo',''))}"></div><div class="form-field full"><label>其他付款備註</label><textarea id="payOtherNote">${safe(pay.otherNote||settingVal('paymentOtherNote',''))}</textarea></div></div><div class="card-actions"><button class="btn" onclick="savePaymentSettings(this)">儲存付款資訊</button></div>`)}
+async function savePaymentSettings(btn){const old=btn.textContent;btn.disabled=true;btn.textContent='儲存中…';const payment={info:$('payInfoText').value,bank:$('payBank').value,bankName:$('payBank').value,branch:$('payBranch').value,bankBranch:$('payBranch').value,accountName:$('payAccountName').value,accountHolder:$('payAccountName').value,account:$('payAccount').value,bankAccount:$('payAccount').value,linePay:$('payLinePay').value,linePayLink:$('payLinePay').value,creditCard:$('payCard').value,card:$('payCard').value,otherNote:$('payOtherNote').value};try{await saveSettingGroup('payment',payment);ST.settings.payment=payment;toast('付款資訊已儲存');await reloadAll()}catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+const templateDefs=[['registration_received','報名確認信'],['approved','錄取信'],['rejected','不錄取信'],['waitlist','備取信'],['payment_completed','繳費完成通知'],['payment_reported','付款回報通知'],['pre_event_notice','行前通知'],['cancel_refund','取消 / 退費通知'],['force_majeure','不可抗力通知']];
+async function openEmailSettings(){openPanel('信件模板','每個系統指令對應一組正式模板，資料庫讀寫','<div class="loading">載入信件模板中…</div>');try{const list=await tryGet(['getEmailTemplates']);ST.emailTemplates=Array.isArray(list)?list:[];renderEmailTemplatePanel()}catch(e){$('panelBody').innerHTML='<div class="empty">信件模板資料庫串接未完成：'+safe(e.message)+'<br>請先套用 SQL 與 Worker 補丁。</div>'}}
+function tpl(key){return ST.emailTemplates.find(t=>String(t.template_key||t.key)===String(key))||{template_key:key,title:templateDefs.find(x=>x[0]===key)?.[1]||key,subject:'',body:''}} function renderEmailTemplatePanel(){$('panelBody').innerHTML=templateDefs.map(([key,label])=>{const t=tpl(key);return `<div class="session-card"><div class="section-label">${safe(label)}</div><div class="form-grid"><div class="form-field full"><label>信件主旨</label><input id="tpl_${key}_subject" value="${attr(t.subject||'')}"></div><div class="form-field full"><label>信件內容</label><textarea id="tpl_${key}_body" style="min-height:180px">${safe(t.body||t.content||'')}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveEmailTemplate('${key}',this)">儲存 ${safe(label)}</button></div></div>`}).join('')}
+async function saveEmailTemplate(key,btn){const old=btn.textContent;btn.disabled=true;btn.textContent='儲存中…';try{await tryPost(['saveEmailTemplate'],{templateKey:key,template_key:key,title:templateDefs.find(x=>x[0]===key)?.[1]||key,subject:$(`tpl_${key}_subject`).value,body:$(`tpl_${key}_body`).value,isActive:true});toast('信件模板已儲存');await openEmailSettings()}catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+function openCompanySettings(){const c=settingVal('company',{});openPanel('公司資料','系統商 / 主辦資訊由資料庫讀寫',`<div class="form-grid"><div class="form-field full"><label>公司 / 系統名稱</label><input id="companyName" value="${attr(c.name||settingVal('companyName',''))}"></div><div class="form-field"><label>聯絡 Email</label><input id="companyEmail" value="${attr(c.email||settingVal('companyEmail',''))}"></div><div class="form-field"><label>官方 LINE / 聯絡方式</label><input id="companyContact" value="${attr(c.contact||settingVal('companyContact',''))}"></div><div class="form-field full"><label>備註</label><textarea id="companyNote">${safe(c.note||settingVal('companyNote',''))}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveCompanySettings(this)">儲存公司資料</button></div>`)} async function saveCompanySettings(btn){const old=btn.textContent;btn.disabled=true;btn.textContent='儲存中…';const company={name:$('companyName').value,email:$('companyEmail').value,contact:$('companyContact').value,note:$('companyNote').value};try{await saveSettingGroup('company',company);ST.settings.company=company;toast('公司資料已儲存');await reloadAll()}catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+async function openAgreementSettings(){openPanel('合約管理','三個模板可存；讀取現有資料庫合約，不清空。','<div class="loading">載入合約中…</div>');try{const list=await api({action:'getAgreementTemplate'}).catch(()=>[]);ST.agreements=Array.isArray(list)?list:[];renderAgreementPanel()}catch(e){$('panelBody').innerHTML='<div class="empty">合約載入失敗：'+safe(e.message)+'</div>'}} function agr(slot){return ST.agreements.find(t=>String(t.slot_no||t.slotNo)===String(slot))||{}} function renderAgreementPanel(){$('panelBody').innerHTML=[1,2,3].map(slot=>{const t=agr(slot);return `<div class="session-card"><div class="section-label">合約範本 ${slot}</div><div class="form-grid"><div class="form-field"><label>範本名稱</label><input id="agr_${slot}_label" value="${attr(t.label||('範本 '+slot))}"></div><div class="form-field"><label>合約版本</label><input id="agr_${slot}_version" value="${attr(t.version||'')}"></div><div class="form-field full"><label>合約標題</label><input id="agr_${slot}_title" value="${attr(t.title||'')}"></div><div class="form-field full"><label>合約正文</label><textarea id="agr_${slot}_content" style="min-height:220px">${safe(t.content||'')}</textarea></div></div><div class="card-actions"><button class="btn" onclick="saveAgreement(${slot},this)">儲存範本 ${slot}</button></div></div>`}).join('')} async function saveAgreement(slot,btn){const old=btn.textContent;btn.disabled=true;btn.textContent='儲存中…';try{await apiPost({action:'saveAgreementTemplate',slot_no:slot,slotNo:slot,label:$(`agr_${slot}_label`).value,title:$(`agr_${slot}_title`).value,version:$(`agr_${slot}_version`).value,content:$(`agr_${slot}_content`).value});toast('合約範本已儲存');await openAgreementSettings()}catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+async function openStaffSettings(){openPanel('權限管理','管理帳號可設定整個系列或指定場次授權。','<div class="loading">載入管理帳號中…</div>');try{const staff=await api({action:'getStaff'}).catch(()=>[]);ST.staff=Array.isArray(staff)?staff:[];renderStaffPanel()}catch(e){$('panelBody').innerHTML='<div class="empty">權限載入失敗：'+safe(e.message)+'</div>'}}
+function eventOptions(){return ST.events.map(e=>`<option value="${attr(e.id||e.eventId)}">${safe(e.name||e.title||'未命名系列')}</option>`).join('')} function sessionChecks(selected=[]){const set=new Set((selected||[]).map(String));return ST.sessions.map(s=>`<label class="check-item"><input type="checkbox" name="staffSession" value="${attr(sessionId(s))}" ${set.has(sessionId(s))?'checked':''}> ${safe(sessionName(s))}</label>`).join('')} function scopeInputs(prefix,staff={}){const scope=staff.scopeType||staff.scope_type||'series';const selected=staff.limitSessions||staff.limit_sessions||staff.scope_session_ids||[];return `<div class="form-field full"><label>授權範圍</label><div class="tag-row"><label class="tag"><input type="radio" name="${prefix}_scope" value="series" ${scope!=='sessions'?'checked':''} onchange="toggleScopeUI('${prefix}')"> 整個系列</label><label class="tag"><input type="radio" name="${prefix}_scope" value="sessions" ${scope==='sessions'?'checked':''} onchange="toggleScopeUI('${prefix}')"> 指定場次</label></div></div><div id="${prefix}_seriesBox" class="form-field full"><label>選擇系列</label><select id="${prefix}_eventId">${eventOptions()}</select></div><div id="${prefix}_sessionsBox" class="form-field full"><label>指定場次</label><div class="check-list">${sessionChecks(selected)}</div></div>`}
+function renderStaffPanel(){const roles=['platform_super_admin','organizer_owner','organizer_admin','session_admin','finance_admin','onsite_staff'];$('panelBody').innerHTML=`<div class="session-card"><div class="section-label">新增管理帳號 / 工作人員</div><div class="form-grid"><div class="form-field"><label>Email</label><input id="newStaffEmail" type="email"></div><div class="form-field"><label>姓名</label><input id="newStaffName"></div><div class="form-field full"><label>角色</label><select id="newStaffRole">${roles.map(r=>`<option value="${r}">${roleName(r)}</option>`).join('')}</select></div>${scopeInputs('newStaff')}</div><div class="card-actions"><button class="btn" onclick="addStaffClean(this)">新增帳號</button></div></div><div class="cards">${ST.staff.map(renderStaffCard).join('')||'<div class="empty">尚無管理帳號</div>'}</div>`;toggleScopeUI('newStaff')}
+function roleName(r){return {platform_super_admin:'超級管理員',organizer_owner:'主辦者',organizer_admin:'共創夥伴',session_admin:'場次管理員',finance_admin:'財務管理員',onsite_staff:'現場人員'}[r]||r||'管理員'} function staffScopeText(s){const scope=s.scopeType||s.scope_type; if(scope==='sessions')return '指定場次 '+int((s.limitSessions||s.limit_sessions||s.scope_session_ids||[]).length)+' 場';return '整個系列 '+safe(s.eventName||s.event_name||'')} function renderStaffCard(s){const email=s.email||s.targetEmail;return `<article class="reg-card"><div><div class="reg-title">${safe(s.name||s.display_name||email)}</div><div class="reg-sub">${safe(email)}｜${safe(roleName(normalizeRole(s.role)))}｜${s.isActive===false?'停用':'啟用'}</div><div class="tag-row"><span class="tag ${s.isActive===false?'pink':'green'}">${s.isActive===false?'停用':'啟用'}</span><span class="tag info">${staffScopeText(s)}</span></div></div><div class="reg-actions"><button class="btn small secondary" onclick="openStaffScopeEditor('${attr(email)}')">編輯授權</button><button class="btn small ${s.isActive===false?'green':'gray'}" onclick="setStaffActiveClean('${attr(email)}',${s.isActive===false},this)">${s.isActive===false?'啟用':'停用'}</button><button class="btn small danger" onclick="removeStaffClean('${attr(email)}',this)">刪除</button></div></article>`}
+function toggleScopeUI(prefix){const val=document.querySelector(`input[name="${prefix}_scope"]:checked`)?.value||'series';$(`${prefix}_seriesBox`).style.display=val==='series'?'flex':'none';$(`${prefix}_sessionsBox`).style.display=val==='sessions'?'flex':'none'} function readScope(prefix){const scopeType=document.querySelector(`input[name="${prefix}_scope"]:checked`)?.value||'series';const eventId=$(`${prefix}_eventId`)?.value||'';const limitSessions=[...document.querySelectorAll(`#${prefix}_sessionsBox input[name="staffSession"]:checked`)].map(x=>x.value);return {scopeType,eventId,limitSessions,scope_session_ids:limitSessions,scope_event_id:eventId}}
+async function addStaffClean(btn){const email=$('newStaffEmail').value.trim(),name=$('newStaffName').value.trim(),role=$('newStaffRole').value;if(!email||!name){toast('請填 Email 與姓名');return}const old=btn.textContent;btn.disabled=true;btn.textContent='新增中…';try{await apiPost({action:'addStaff',targetEmail:email,targetName:name,role,perms:{review:true,finance:role==='finance_admin',checkin:true,sessions:true},...readScope('newStaff')});toast('已新增');await openStaffSettings()}catch(e){toast('新增失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+function openStaffScopeEditor(email){const s=ST.staff.find(x=>String(x.email||x.targetEmail)===String(email))||{};openPanel('編輯授權｜'+safe(email),'選擇整個系列或指定場次',`<div class="form-grid">${scopeInputs('editStaff',s)}</div><div class="card-actions"><button class="btn" onclick="saveStaffScope('${attr(email)}',this)">儲存授權</button></div>`);toggleScopeUI('editStaff')} async function saveStaffScope(email,btn){const old=btn.textContent;btn.disabled=true;btn.textContent='儲存中…';try{await tryPost(['updateStaffScope','setStaffScope','addStaff'],{targetEmail:email,...readScope('editStaff')});toast('授權已儲存');closePanel();await openStaffSettings()}catch(e){toast('儲存失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+async function setStaffActiveClean(email,enable,btn){const old=btn.textContent;btn.disabled=true;btn.textContent='處理中…';try{await apiPost({action:'setStaffActive',targetEmail:email,active:enable});toast('已更新');await openStaffSettings()}catch(e){toast('更新失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}} async function removeStaffClean(email,btn){if(!confirm('確定刪除管理帳號 '+email+'？'))return;const old=btn.textContent;btn.disabled=true;btn.textContent='刪除中…';try{await apiPost({action:'removeStaff',targetEmail:email});toast('已刪除');await openStaffSettings()}catch(e){toast('刪除失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+function openSessionCreatePanel(){openPanel('新增場次','建立核心場次資料',`<div class="form-grid"><div class="form-field full"><label>場次名稱</label><input id="newSesName"></div><div class="form-field"><label>類型</label><input id="newSesType" value="市集場次"></div><div class="form-field"><label>地點</label><input id="newSesVenue"></div><div class="form-field"><label>合作單位</label><input id="newSesOrganizer"></div><div class="form-field"><label>日期</label><input id="newSesDate" placeholder="2026-07-18"></div><div class="form-field"><label>攤位費</label><input id="newSesFee" type="number" value="0"></div><div class="form-field"><label>押金</label><input id="newSesDeposit" type="number" value="0"></div><div class="form-field"><label>審核制</label><select id="newSesReview"><option value="1">開啟</option><option value="0">關閉</option></select></div><div class="form-field full"><label>說明</label><textarea id="newSesDesc"></textarea></div></div><div class="card-actions"><button class="btn" onclick="createSessionClean(this)">建立場次</button></div>`)} async function createSessionClean(btn){const name=$('newSesName').value.trim();if(!name){toast('請輸入場次名稱');return}const old=btn.textContent;btn.disabled=true;btn.textContent='建立中…';try{await apiPost({action:'createSession',eventId:'',name,type:$('newSesType').value||'市集場次',venue:$('newSesVenue').value,organizer:$('newSesOrganizer').value,dates:$('newSesDate').value,fee:int($('newSesFee').value),deposit:int($('newSesDeposit').value),needReview:$('newSesReview').value==='1',desc:$('newSesDesc').value,status:'報名中'});toast('已建立場次');closePanel();await reloadAll()}catch(e){toast('建立失敗：'+e.message,5000)}finally{btn.disabled=false;btn.textContent=old}}
+function excelEscape(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')} async function downloadSessionExcel(sid){let rows=regsForSession(sid);if(!rows.length){try{rows=await api({action:'getRegsBySession',sessionId:sid})}catch(e){toast('下載資料載入失敗：'+e.message,5000);return}}const s=sessionById(sid);const headers=['場次名稱','合作單位','活動日期','地點','報名編號','報名日期','品牌名稱','聯絡人','手機','Email','FB','IG','審核狀態','付款狀態','報到狀態','攤位數','設備明細','押金','應收金額','已收金額','未收金額','發票統編','發票抬頭','發票Email','攤位號碼','備註'];const body=(Array.isArray(rows)?rows:[]).map(r=>[sessionName(s),s.organizer||s.coorg||'',formatDate(s),s.venue||'',r.id||'',r.createdAt||r.joined_at||'',r.brand||r.brandName||r.brand_name||'',r.name||'',r.phone||'',r.email||'',r.fb||'',r.ig||'',r.status||r.reviewStatus||'',payText(r),r.checkin||r.checkinStatus||'',r.stallCount||r.qty||1,equipText(r.equip||r.equipment||r.equipJson),r.deposit||r.depositTotal||0,regAmount(r),isPaid(r)||isFree(r)?regAmount(r):0,isPaid(r)||isFree(r)?0:regAmount(r),r.taxId||r.invoiceTaxId||'',r.invoiceTitle||'',r.invoiceEmail||'',r.stallNo||r.boothNo||'',r.adminNote||r.remark||'']);const html=`<html><head><meta charset="UTF-8"></head><body><table border="1"><thead><tr>${headers.map(h=>`<th>${excelEscape(h)}</th>`).join('')}</tr></thead><tbody>${body.map(row=>`<tr>${row.map(c=>`<td>${excelEscape(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;const blob=new Blob(['﻿',html],{type:'application/vnd.ms-excel;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(sessionName(s)||'場次')+'_完整名單.xls';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function openStorageCheck(){openPanel('資料庫 / 串接檢測','確認設定、信件、權限、會員是否有正式後端',`<div class="cards"><div class="notice">前端已禁止會員頁使用報名資料虛擬合併；若 getMembers 尚未套用，會明確顯示缺少後端，而不是顯示假資料。</div><button class="btn" onclick="runStorageCheck(this)">執行後端檢測</button><div id="storageCheckResult"></div></div>`)} async function runStorageCheck(btn){const old=btn.textContent;btn.disabled=true;btn.textContent='檢測中…';const checks=[['系統設定','getSystemSettings'],['信件模板','getEmailTemplates'],['會員品牌','getMembers'],['管理權限','getStaff'],['合約模板','getAgreementTemplate']];let html='<div class="table-wrap"><table class="mini-table"><tr><th>項目</th><th>結果</th></tr>';for(const [label,action] of checks){try{await api({action});html+=`<tr><td>${label}</td><td>✅ 可讀取</td></tr>`}catch(e){html+=`<tr><td>${label}</td><td>❌ ${safe(e.message)}</td></tr>`}}html+='</table></div>';$('storageCheckResult').innerHTML=html;btn.disabled=false;btn.textContent=old}
+window.addEventListener('popstate',e=>{if($('panel').classList.contains('show')){closePanel();history.pushState({panel:false},'',location.href)}});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('panel').classList.contains('show'))closePanel()});(async function boot(){const did=await handleOAuthCallback();if(did)return;const s=readSession();if(s&&s.token&&s.email){saveSession(s);enterAdmin()}})();
 </script>
 </body>
 </html>
