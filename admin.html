@@ -176,8 +176,6 @@ function regDateText(r){
   }
   return String(raw || '未設定');
 }
-function regDatesText(r){ return regDateText(r); }
-if (typeof window !== 'undefined') window.regDatesText = regDatesText;
 function regCreatedText(r){ return r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '—'; }
 function regAmount(r){ return Number(r.amount ?? r.totalAmount ?? r.total_amount ?? r.receivableAmount ?? r.registration_total_amount ?? r.total ?? 0) || 0; }
 function invoiceBrief(r){ const parts=[]; if(r.taxId) parts.push('統編 '+r.taxId); if(r.invoiceTitle) parts.push(r.invoiceTitle); if(r.invoiceEmail) parts.push(r.invoiceEmail); return parts.join('｜') || '—'; }
@@ -333,7 +331,7 @@ function renderTodoRows(rows){
     const who=r.brandName||r.brand||r.brand_name||r.name||r.email||'未填品牌';
     const phone=r.phone||r.mobile||'';
     const email=r.email||'';
-    const dates=(typeof regDatesText==='function'?regDatesText(r):(typeof regDateText==='function'?regDateText(r):(r.selectedDatesText||r.selected_dates_text||'未設定')));
+    const dates=regDateText(r);
     const stalls=r.stallCount||r.stall_count||r.stalls||'';
     const amount=Number(r.amount||r.total||r.totalAmount||r.registration_total_amount||0);
     const equip=equipmentText(r);
