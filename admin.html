@@ -169,6 +169,211 @@
   .coorg-row{grid-template-columns:1fr;}
 }
 
+
+
+/* 20260701 equipment-table-align-final：設備表格欄位對齊，不動資料來源與功能 */
+.tight-session-settings .equip-table-box{
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+.tight-session-settings .equip-table-head,
+.tight-session-settings .equip-table-row{
+  display:grid!important;
+  grid-template-columns:120px 82px 82px 82px 86px!important;
+  gap:8px!important;
+  align-items:center!important;
+  min-width:500px!important;
+  padding:7px 9px!important;
+}
+.tight-session-settings .equip-table-head span{
+  display:block!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+.tight-session-settings .equip-table-row input[type=number]{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+.tight-session-settings .equip-table-row .tight-check{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:6px!important;
+  margin:0!important;
+}
+.tight-session-settings .equip-table-row .tight-check input{
+  width:16px!important;
+  height:16px!important;
+  min-height:16px!important;
+  flex:0 0 auto!important;
+}
+@media(max-width:760px){
+  .tight-session-settings .equip-table-head{display:grid!important;}
+  .tight-session-settings .equip-table-row{grid-template-columns:120px 82px 82px 82px 86px!important;}
+  .tight-session-settings .equip-table-row .eq-max{grid-column:auto!important;}
+  .tight-session-settings .equip-table-row .tight-check{grid-column:auto!important;}
+}
+
+
+/* 20260701 equipment-table-hard-align：設備欄位強制同一套欄寬，避免表頭與輸入框左右錯位 */
+.equip-table-box{
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+.equip-table-box .equip-table-head,
+.equip-table-box .equip-table-row{
+  display:grid!important;
+  grid-template-columns:120px 88px 88px 88px 88px!important;
+  justify-content:start!important;
+  align-items:center!important;
+  column-gap:8px!important;
+  min-width:520px!important;
+  max-width:560px!important;
+  padding:7px 10px!important;
+}
+.equip-table-box .equip-table-head span{
+  display:block!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+.equip-table-box .equip-table-name{
+  min-width:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.equip-table-box .equip-table-row input[type=number]{
+  width:88px!important;
+  max-width:88px!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+.equip-table-box .equip-table-row .tight-check{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:6px!important;
+  margin:0!important;
+  white-space:nowrap!important;
+}
+.equip-table-box .equip-table-row .tight-check input{
+  width:16px!important;
+  height:16px!important;
+  min-height:16px!important;
+  flex:0 0 auto!important;
+}
+@media(max-width:760px){
+  .equip-table-box .equip-table-head,
+  .equip-table-box .equip-table-row{
+    grid-template-columns:110px 80px 80px 80px 82px!important;
+    min-width:476px!important;
+    max-width:476px!important;
+  }
+  .equip-table-box .equip-table-row input[type=number]{
+    width:80px!important;
+    max-width:80px!important;
+  }
+}
+
+
+
+/* 20260701 equipment-align-fix-v2：設備表格強制對齊，不動資料來源與儲存邏輯 */
+.tight-session-settings .equip-table-box{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:hidden!important;
+  border:1px solid var(--line)!important;
+  border-radius:14px!important;
+  background:#fff!important;
+}
+.tight-session-settings .equip-table-head,
+.tight-session-settings .equip-table-row{
+  display:grid!important;
+  grid-template-columns:minmax(92px,1.15fr) minmax(76px,.75fr) minmax(76px,.75fr) minmax(76px,.75fr) minmax(78px,.7fr)!important;
+  column-gap:8px!important;
+  row-gap:4px!important;
+  align-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:7px 10px!important;
+  box-sizing:border-box!important;
+}
+.tight-session-settings .equip-table-head{
+  background:#faf8f4!important;
+  border-bottom:1px solid #f0e8de!important;
+}
+.tight-session-settings .equip-table-head span{
+  display:block!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  color:#666!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.tight-session-settings .equip-table-row{
+  border-bottom:1px solid #f0e8de!important;
+}
+.tight-session-settings .equip-table-row:last-child{
+  border-bottom:0!important;
+}
+.tight-session-settings .equip-table-name{
+  min-width:0!important;
+  font-size:16px!important;
+  font-weight:950!important;
+  color:#111!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.tight-session-settings .equip-table-row input[type="number"]{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:34px!important;
+  height:34px!important;
+  padding:5px 8px!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+  border-radius:9px!important;
+  box-sizing:border-box!important;
+}
+.tight-session-settings .equip-table-row .tight-check{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:5px!important;
+  margin:0!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+  font-size:15px!important;
+  font-weight:950!important;
+  line-height:1.2!important;
+}
+.tight-session-settings .equip-table-row .tight-check input{
+  width:16px!important;
+  height:16px!important;
+  min-width:16px!important;
+  min-height:16px!important;
+  flex:0 0 16px!important;
+  margin:0!important;
+}
+@media(max-width:760px){
+  .tight-session-settings .equip-table-head,
+  .tight-session-settings .equip-table-row{
+    grid-template-columns:minmax(64px,1fr) minmax(62px,.85fr) minmax(62px,.85fr) minmax(62px,.85fr) minmax(68px,.8fr)!important;
+    column-gap:5px!important;
+    padding:7px 7px!important;
+  }
+  .tight-session-settings .equip-table-head span{font-size:11px!important;}
+  .tight-session-settings .equip-table-name{font-size:15px!important;}
+  .tight-session-settings .equip-table-row input[type="number"]{font-size:14px!important;padding:4px 6px!important;}
+  .tight-session-settings .equip-table-row .tight-check{font-size:14px!important;gap:4px!important;}
+}
+
 </style>
 </head>
 <body>
