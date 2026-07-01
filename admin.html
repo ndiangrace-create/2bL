@@ -92,6 +92,24 @@
   .session-upload-line{grid-template-columns:1fr!important;}
 }
 
+
+/* 20260701 場次設定細節修正：日期更緊密、加購/發票不顯示 JSON、選位需先存圖 */
+.date-head-row,.date-line-row{grid-template-columns:145px minmax(72px,96px) 120px 120px 92px 82px 52px!important;gap:6px!important;}
+.date-line-row input[id^="set_date_label_"]{max-width:96px!important;}
+.addon-line-row{display:grid;grid-template-columns:minmax(160px,1fr) 110px 88px 56px;gap:7px;align-items:center;border-top:1px solid #eee;padding:6px 0;}
+.addon-head-row{display:grid;grid-template-columns:minmax(160px,1fr) 110px 88px 56px;gap:7px;align-items:center;color:var(--muted);font-size:13px;font-weight:950;margin-top:6px;}
+.invoice-compact-row{display:grid;grid-template-columns:120px 110px repeat(4,auto);gap:8px;align-items:center;}
+.session-seat-disabled{opacity:.55;pointer-events:none;}
+.seat-map-save-note{margin-top:8px;padding:8px 10px;border:1px dashed var(--line);border-radius:12px;background:#fff;color:var(--muted);font-weight:850;}
+@media(max-width:760px){
+  .date-head-row{display:none!important;}
+  .date-line-row{grid-template-columns:1fr 1fr!important;}
+  .addon-head-row{display:none;}
+  .addon-line-row{grid-template-columns:1fr 1fr;}
+  .addon-line-row input:first-child{grid-column:1/-1;}
+  .invoice-compact-row{grid-template-columns:1fr 1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -130,7 +148,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260701-admin-payment-reminder-state-012';
+const ADMIN_BUILD = '20260701-session-setting-addon-contract-seat-013';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -530,24 +548,31 @@ function moduleCheckHtml(key,label,mods){
 function agreementTemplateOptionsHtml(templates, s){
   const currentVersion = String(s.agreementVersion||s.agreement_version||'').trim();
   const currentTitle = String(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範').trim();
-  let html = '<option value="" data-version="'+attr(currentVersion)+'" data-title="'+attr(currentTitle)+'">'+safe(currentVersion ? ('目前套用：'+currentVersion) : '不指定版本')+'</option>';
-  const arr = Array.isArray(templates) ? templates : [];
+  const arr = Array.isArray(templates) ? templates.filter(t=>String(t.version||t.agreement_version||'').trim() || String(t.title||t.agreement_title||'').trim()) : [];
+  let html = '';
+  if(currentVersion && !arr.some(t=>String(t.version||t.agreement_version||'').trim()===currentVersion)){
+    html += '<option value="current" data-version="'+attr(currentVersion)+'" data-title="'+attr(currentTitle)+'" selected>目前套用｜'+safe(currentVersion)+'</option>';
+  }
+  if(!currentVersion){
+    html += '<option value="" data-version="" data-title="" selected disabled>請選擇合約版本</option>';
+  }
   for(const t of arr){
     const version = String(t.version||t.agreement_version||'').trim();
     const title = String(t.title||t.agreement_title||'報名合約／活動細則與攤商規範').trim();
     const label = String(t.label||t.name||('範本 '+(t.slot_no||''))).trim();
     const selected = version && currentVersion && version===currentVersion ? 'selected' : '';
-    html += '<option value="'+attr(t.id||t.slot_no||version||label)+'" data-version="'+attr(version)+'" data-title="'+attr(title)+'" '+selected+'>'+safe(label+(version?'｜'+version:''))+'</option>';
+    html += '<option value="'+attr(t.id||t.slot_no||version||label)+'" data-version="'+attr(version)+'" data-title="'+attr(title)+'" '+selected+'>'+safe((label||'合約')+(version?'｜'+version:''))+'</option>';
   }
-  return html;
+  return html || '<option value="" data-version="" data-title="" selected disabled>請先新增合約版本</option>';
 }
+
 function syncAgreementTemplateSelection(){
   const sel=$('set_agreementTemplate'); if(!sel) return;
   const opt=sel.selectedOptions && sel.selectedOptions[0]; if(!opt) return;
   const ver=opt.dataset.version||''; const title=opt.dataset.title||'';
   if($('set_agreementVersion')) $('set_agreementVersion').value=ver;
   if($('set_agreementTitle')) $('set_agreementTitle').value=title||'報名合約／活動細則與攤商規範';
-  if($('agreementVersionPreview')) $('agreementVersionPreview').textContent=ver||'未指定';
+  if($('agreementVersionPreview')) $('agreementVersionPreview').textContent=ver||'請選擇版本';
 }
 
 let sessionDateRowIdx=0;
@@ -639,9 +664,11 @@ function updateSessionSeatRow(i,key,val){
 function removeSessionSeatRow(i){ AdminSessionSeatItems.splice(i,1); renderSessionSeatRows(AdminSessionSeatItems); }
 function addSessionSeatRow(){ AdminSessionSeatItems.push({code:'',type:'auto',price:0,active:true,note:'',order:AdminSessionSeatItems.length+1}); renderSessionSeatRows(AdminSessionSeatItems); }
 function batchCreateSessionSeats(){
+  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
+  if(!mapUrl || AdminSessionSeatMapDirty){ toast('請先儲存已編號場地圖後，再建立號碼'); return; }
   const prefix=String($('set_seatPrefix')?.value||'').trim().toUpperCase();
   const start=Math.max(1,Number($('set_seatStart')?.value||1)||1);
-  const count=Math.max(1,Number($('set_seatCount')?.value||40)||40);
+  const count=Math.max(1,Number($('set_seatCount')?.value||0)||0);
   let added=0;
   for(let i=0;i<count;i++){
     const code=prefix+String(start+i);
@@ -661,33 +688,55 @@ function toggleSessionFeatureSections(){
 }
 function toggleSessionSeatSettings(){
   const moduleOn = $('mod_seats') ? !!$('mod_seats').checked : true;
-  const on=moduleOn && !!$('set_seatPricingEnabled')?.checked;
+  const enabled = !!$('set_seatPricingEnabled')?.checked;
+  const on=moduleOn && enabled;
   const box=$('set_seatTools');
   if(box) box.style.display=on?'block':'none';
+  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
+  const canEditSeats=on && mapUrl && !AdminSessionSeatMapDirty;
+  const batch=$('set_seatBatchBox');
+  if(batch) batch.classList.toggle('session-seat-disabled', !canEditSeats);
+  const rows=$('set_seatRows');
+  const note=$('set_seatMapNote');
+  if(note){
+    if(!on) note.textContent='選位功能未啟用。';
+    else if(!mapUrl) note.textContent='請先上傳已編號場地圖並儲存，再建立號碼清單。';
+    else if(AdminSessionSeatMapDirty) note.textContent='已載入新地圖，請先按「儲存場次設定」保存地圖，再建立或修改號碼。';
+    else note.textContent='已可依已編號場地圖建立號碼清單。';
+  }
+  if(rows && on && (!mapUrl || AdminSessionSeatMapDirty)){
+    rows.innerHTML='<div class="sub">請先儲存已編號場地圖後，再建立號碼清單。</div>';
+  }
 }
+
 function loadSessionSeatMapFile(input){
   const file=input && input.files && input.files[0];
   if(!file) return;
   if(!/^image\//.test(file.type||'')){ toast('請選擇圖片檔'); input.value=''; return; }
   const reader=new FileReader();
-  reader.onload=()=>{ const url=reader.result||''; if($('set_seatMapUrl')) $('set_seatMapUrl').value=url; toast('已載入場地圖，儲存後會寫入資料庫'); };
+  reader.onload=()=>{ const url=reader.result||''; if($('set_seatMapUrl')) $('set_seatMapUrl').value=url; AdminSessionSeatMapDirty=true; toggleSessionSeatSettings(); toast('已載入場地圖，請先按「儲存場次設定」保存'); };
   reader.onerror=()=>toast('場地圖讀取失敗');
   reader.readAsDataURL(file);
 }
 
+
 async function loadSessionSeatSettings(sid,s){
-  const fallback=sessionStallList(s).map((code,i)=>({code,type:'auto',price:0,active:true,note:'',order:i+1}));
+  AdminSessionSeatMapDirty=false;
   try{
     const data=await api({action:'getSeatMap',sessionId:sid});
     if(data && !data.error){
       if($('set_seatMapUrl') && data.mapUrl) $('set_seatMapUrl').value=data.mapUrl;
       if($('set_seatHoldHours') && data.holdHours) $('set_seatHoldHours').value=data.holdHours;
-      renderSessionSeatRows((data.seats&&data.seats.length)?data.seats:fallback);
+      renderSessionSeatRows((data.seats&&data.seats.length)?data.seats:[]);
+      toggleSessionSeatSettings();
       return;
     }
   }catch(e){ console.warn('getSeatMap skipped',e); }
-  renderSessionSeatRows(fallback);
+  // 不再從 stallList 自動產生錯誤編號；選位號碼只讀 getSeatMap / stalls 資料庫資料，或由主辦手動建立。
+  renderSessionSeatRows([]);
+  toggleSessionSeatSettings();
 }
+
 async function saveSessionSeatSettings(sid){
   if(!$('set_seatPricingEnabled')) return;
   const moduleOn = $('mod_seats') ? !!$('mod_seats').checked : true;
@@ -709,32 +758,106 @@ async function openSessionSettings(sid){
     const ag=await api({action:'getAgreementTemplate'}).catch(()=>[]);
     $('panelBody').innerHTML=sessionSettingsForm(d, Array.isArray(ag)?ag:[]);
     renderSessionDateRows(sessionDates(d));
+    renderSessionAddonRows(sessionAddons(d));
     toggleSessionFeatureSections();
     await loadSessionSeatSettings(sid,d);
   }catch(e){
     $('panelBody').innerHTML=sessionSettingsForm(s, [])+'<div class="notice warn">完整設定載入失敗：'+safe(e.message)+'</div>';
     renderSessionDateRows(sessionDates(s));
+    renderSessionAddonRows(sessionAddons(s));
     toggleSessionFeatureSections();
-    await loadSessionSeatSettings(sid,s).catch(()=>renderSessionSeatRows(sessionStallList(s).map(code=>({code,type:'auto',active:true}))));
+    await loadSessionSeatSettings(sid,s).catch(()=>{ renderSessionSeatRows([]); toggleSessionSeatSettings(); });
   }
 }
 function featureSectionHtml(key,label,mods,bodyHtml,extraTitle=''){
   const on = !(mods && mods[key]===false);
   return '<div class="report-card feature-card"><div class="feature-head"><label class="feature-title"><input type="checkbox" id="mod_'+key+'" onchange="toggleSessionFeatureSections()" '+(on?'checked':'')+'> '+safe(label)+'</label>'+extraTitle+'</div><div id="sec_'+key+'_body" class="feature-body '+(on?'':'off')+'">'+bodyHtml+'</div></div>';
 }
+
+let AdminSessionAddonItems=[];
+let AdminSessionSeatMapDirty=false;
+function normalizeSessionAddonItem(x={},i=0){
+  if(typeof x === 'string') x={name:x};
+  return {
+    ...x,
+    name:String(x.name||x.title||x.label||'').trim(),
+    price:Number(x.price||x.amount||x.fee||0)||0,
+    open: x.open!==false && x.enabled!==false && x.active!==false,
+    order:Number(x.order||i+1)||i+1
+  };
+}
+function sessionAddonsFormHtml(addons){
+  AdminSessionAddonItems=(Array.isArray(addons)?addons:[]).map((x,i)=>normalizeSessionAddonItem(x,i)).filter(x=>x.name);
+  return '<div class="compact-actions"><button type="button" class="btn secondary small" onclick="addSessionAddonRow()">＋ 新增加購</button></div><div class="addon-head-row"><span>項目名稱</span><span>單價</span><span>開放</span><span></span></div><div id="set_addonRows"></div><div class="sub">沒有加購就保持空白；不顯示 JSON 語法，不自動帶預設項目。</div>';
+}
+function renderSessionAddonRows(items){
+  AdminSessionAddonItems=(Array.isArray(items)?items:[]).map((x,i)=>normalizeSessionAddonItem(x,i)).filter(x=>x.name || x._new);
+  const box=$('set_addonRows'); if(!box) return;
+  if(!AdminSessionAddonItems.length){ box.innerHTML='<div class="addon-empty-note">目前沒有加購項目。需要時按「＋ 新增加購」。</div>'; return; }
+  box.innerHTML=AdminSessionAddonItems.map((a,i)=>'<div class="addon-line-row">'
+    +'<input value="'+attr(a.name)+'" onchange="updateSessionAddonRow('+i+',\'name\',this.value)" placeholder="加購名稱">'
+    +'<input type="number" min="0" value="'+attr(a.price)+'" onchange="updateSessionAddonRow('+i+',\'price\',this.value)" placeholder="單價">'
+    +'<label class="tight-check"><input type="checkbox" '+(a.open?'checked':'')+' onchange="updateSessionAddonRow('+i+',\'open\',this.checked)"> 開放</label>'
+    +'<button type="button" class="btn secondary small" onclick="removeSessionAddonRow('+i+')">刪</button>'
+    +'</div>').join('');
+}
+function updateSessionAddonRow(i,key,val){
+  const row=AdminSessionAddonItems[i]; if(!row) return;
+  if(key==='price') row.price=Number(val||0)||0;
+  else if(key==='open') row.open=!!val;
+  else row[key]=String(val||'').trim();
+  renderSessionAddonRows(AdminSessionAddonItems);
+}
+function addSessionAddonRow(){
+  AdminSessionAddonItems.push({_new:true,name:'',price:0,open:true,order:AdminSessionAddonItems.length+1});
+  renderSessionAddonRows(AdminSessionAddonItems);
+}
+function removeSessionAddonRow(i){ AdminSessionAddonItems.splice(i,1); renderSessionAddonRows(AdminSessionAddonItems); }
+function collectSessionAddons(){
+  return AdminSessionAddonItems.map((x,i)=>{
+    const row=normalizeSessionAddonItem(x,i);
+    return {...x, name:row.name, price:row.price, open:row.open, enabled:row.open, order:i+1};
+  }).filter(x=>String(x.name||'').trim());
+}
+function sessionInvoiceFormHtml(tax){
+  const t=tax&&typeof tax==='object'?tax:{};
+  return '<div class="invoice-compact-row">'
+    +'<label class="tight-check"><input type="checkbox" id="set_invoiceEnabled" '+(t.enabled===false?'':'checked')+'> 啟用發票</label>'
+    +'<label>稅率 <input id="set_invoiceRate" type="number" min="0" value="'+attr(t.rate??5)+'" style="width:82px"></label>'
+    +'<label class="tight-check"><input type="checkbox" id="set_taxStall" '+(t.stall===false?'':'checked')+'> 攤位費</label>'
+    +'<label class="tight-check"><input type="checkbox" id="set_taxEquip" '+(t.equip?'checked':'')+'> 設備費</label>'
+    +'<label class="tight-check"><input type="checkbox" id="set_taxAddon" '+(t.addon?'checked':'')+'> 加購</label>'
+    +'<label class="tight-check"><input type="checkbox" id="set_taxExtra" '+(t.extra?'checked':'')+'> 額外收入</label>'
+    +'</div>';
+}
+function collectSessionInvoiceTax(){
+  return {
+    enabled: !!$('set_invoiceEnabled')?.checked,
+    rate: Number($('set_invoiceRate')?.value||5)||5,
+    stall: !!$('set_taxStall')?.checked,
+    equip: !!$('set_taxEquip')?.checked,
+    addon: !!$('set_taxAddon')?.checked,
+    extra: !!$('set_taxExtra')?.checked
+  };
+}
+function openInlineAgreementCreate(){
+  openAgreementSettings();
+  setTimeout(()=>toast('請在合約管理新增/修改版本，完成後回到場次設定選用',5200),150);
+}
+
+
 function sessionSettingsForm(s, agreementTemplates=[]){
   const sid=sessionId(s)||AdminState.currentSessionId;
   const mods=sessionModules(s), equip=sessionEquip(s), addons=sessionAddons(s), tax=sessionInvoiceTax(s), portals=sessionPortalList(s);
   const needReview = s.needReview!==undefined ? s.needReview : (s.need_review!==undefined ? s.need_review : true);
   const agreementRequired = s.agreementRequired!==undefined ? s.agreementRequired : (s.agreement_required!==undefined ? s.agreement_required : true);
   const seatPricing = s.seatPricingEnabled!==undefined ? s.seatPricingEnabled : s.seat_pricing_enabled;
-  const addonText = (Array.isArray(addons)&&addons.length) ? sessionJsonPretty(addons,[]) : '';
-  const invoiceText = tax && Object.keys(tax||{}).length ? sessionJsonPretty(tax,{enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false}) : '';
+  const currentAgreementVersion = String(s.agreementVersion||s.agreement_version||'').trim();
   const equipmentBody = '<div class="form-field full"><label>基本配備說明</label><input id="set_basicEquip" value="'+attr(s.basicEquip||s.basic_equip||'')+'"><div class="sub">文字只做顯示說明；正式設備項目只讀資料庫 equip_json，不自動新增名稱。</div></div>'+sessionEquipFormHtml(equip);
-  const addonsBody = '<div class="form-grid"><div class="form-field full"><label>加購項目 JSON</label><textarea id="set_addons" style="font-family:monospace;min-height:68px" placeholder="沒有加購請保持空白">'+safe(addonText)+'</textarea><div class="sub">不預設任何加購；只有資料庫原本有資料才會帶出。</div></div></div>';
-  const invoiceBody = '<div class="form-grid"><div class="form-field full"><label>發票稅務 JSON</label><textarea id="set_invoiceTax" style="font-family:monospace;min-height:68px" placeholder="空白則保留既有設定">'+safe(invoiceText)+'</textarea></div></div>';
-  const agreementBody = '<div class="form-grid"><div class="form-field"><label>合約同意</label><label class="tight-check"><input type="checkbox" id="set_agreementRequired" '+(sessionBool(agreementRequired,true)?'checked':'')+'> 報名時要求同意合約</label></div><div class="form-field"><label>套用後台設定版本</label><select id="set_agreementTemplate" onchange="syncAgreementTemplateSelection()">'+agreementTemplateOptionsHtml(agreementTemplates,s)+'</select><div class="sub">目前版本：<span id="agreementVersionPreview">'+safe(s.agreementVersion||s.agreement_version||'未指定')+'</span></div></div><input type="hidden" id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"><input type="hidden" id="set_agreementVersion" value="'+attr(s.agreementVersion||s.agreement_version||'')+'"></div><div class="notice">合約正文只在「後台設定 → 合約管理」修改；場次設定只選套用版本。</div>';
-  const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field full"><label>已編號場地圖 URL / 上傳</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="貼上已編號場地圖 URL，或用右側上傳圖片"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div></div></div><div id="set_seatTools" style="display:none"><div class="seat-batch-inline"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1"><input id="set_seatCount" type="number" value="40"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>狀態</span><span>加價</span><span>啟用</span><span>備註</span><span></span></div><div id="set_seatRows"><div class="sub">載入號碼清單中…</div></div></div><div class="sub">V8 穩定版採「已編號場地圖＋號碼狀態清單」。</div>';
+  const addonsBody = sessionAddonsFormHtml(addons);
+  const invoiceBody = sessionInvoiceFormHtml(tax);
+  const agreementBody = '<div class="form-grid"><div class="form-field"><label>合約同意</label><label class="tight-check"><input type="checkbox" id="set_agreementRequired" '+(sessionBool(agreementRequired,true)?'checked':'')+'> 報名時要求同意合約</label></div><div class="form-field"><label>套用後台設定版本</label><select id="set_agreementTemplate" onchange="syncAgreementTemplateSelection()">'+agreementTemplateOptionsHtml(agreementTemplates,s)+'</select><div class="sub">目前版本：<span id="agreementVersionPreview">'+safe(currentAgreementVersion || '請選擇版本')+'</span></div></div><input type="hidden" id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"><input type="hidden" id="set_agreementVersion" value="'+attr(currentAgreementVersion)+'"></div><div class="compact-actions"><button type="button" class="btn secondary small" onclick="openInlineAgreementCreate()">＋ 新增本場次合約</button></div><div class="notice">合約正文在「後台設定 → 合約管理」新增或修改；場次設定只選套用版本。</div>';
+  const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field full"><label>已編號場地圖</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="請上傳或貼上已編號場地圖 URL"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div><div class="sub">上傳新地圖後請先按「儲存場次設定」，再建立或修改號碼清單。</div></div></div><div id="set_seatTools" style="display:none"><div class="seat-map-save-note" id="set_seatMapNote"></div><div class="seat-batch-inline" id="set_seatBatchBox"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1" placeholder="起始"><input id="set_seatCount" type="number" value="" placeholder="數量"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>狀態</span><span>加價</span><span>啟用</span><span>備註</span><span></span></div><div id="set_seatRows"><div class="sub">尚未讀取號碼清單。</div></div></div><div class="sub">選位使用「已編號場地圖＋號碼狀態清單」，不使用拖拉點位。</div>';
   return '<div class="readable-detail tight-session-settings">'
   +'<div class="report-card"><div class="report-title">基本資料</div><div class="form-grid">'
   +'<div class="form-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div>'
@@ -749,7 +872,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field full"><label>封面 / 主題圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
   +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:74px">'+safe(s.desc||s.description||'')+'</textarea></div>'
   +'</div></div>'
-  +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">每個日期可分別設定費用；顯示名可空白，避免壓縮時間欄位。</div></div>'
+  +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
   +'<div class="report-card"><div class="report-title">費用與入口</div><div class="form-grid">'
   +'<div class="form-field"><label>多日優惠總價</label><input id="set_fee" type="number" value="'+attr(s.fee||0)+'"><div class="sub">0＝不設優惠</div></div>'
   +'<div class="form-field"><label>保證金 / 押金</label><input id="set_deposit" type="number" value="'+attr(s.deposit||0)+'"></div>'
@@ -765,6 +888,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="notice">儲存只送明確欄位；未啟用的功能資料會保留在資料庫，不由前端清空。</div><div class="card-actions"><button class="btn" onclick="saveSessionSettings(\''+attr(sid)+'\',this)">儲存場次設定</button></div>'
   +'</div>';
 }
+
 async function saveSessionSettings(sid,btn){
   const old=btn.textContent; btn.disabled=true; btn.textContent='檢查中…';
   try{
@@ -773,12 +897,15 @@ async function saveSessionSettings(sid,btn){
     syncAgreementTemplateSelection();
     btn.textContent='儲存中…';
     const modules={equipment:!!$('mod_equipment')?.checked,addons:!!$('mod_addons')?.checked,agreement:!!$('mod_agreement')?.checked,seats:!!$('mod_seats')?.checked,invoice:!!$('mod_invoice')?.checked};
-    const body={action:'updateSession',id:sid,sessionId:sid,eventId:$('set_eventId').value.trim(),name,type:$('set_type').value.trim(),region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:$('set_coorg').value.trim(),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:collectSessionPortals(),dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:$('set_agreementVersion')?.value.trim()||'',seatPricingEnabled:modules.seats ? !!$('set_seatPricingEnabled')?.checked : false,seatHoldHours:$('set_seatHoldHours')?.value,seatMapUrl:$('set_seatMapUrl')?.value.trim()||'',stallList:collectSessionSeatItems().map(x=>x.code)};
+    const agreementVersion = $('set_agreementVersion')?.value.trim() || '';
+    if(modules.agreement && $('set_agreementRequired')?.checked && !agreementVersion) throw new Error('請先選擇合約版本，或按「＋ 新增本場次合約」建立後再選用');
+    const body={action:'updateSession',id:sid,sessionId:sid,eventId:$('set_eventId').value.trim(),name,type:$('set_type').value.trim(),region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:$('set_coorg').value.trim(),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:collectSessionPortals(),dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,seatPricingEnabled:modules.seats ? !!$('set_seatPricingEnabled')?.checked : false,seatHoldHours:$('set_seatHoldHours')?.value,seatMapUrl:$('set_seatMapUrl')?.value.trim()||'',stallList:collectSessionSeatItems().map(x=>x.code)};
     if(modules.equipment) body.equip=collectSessionEquip();
-    if(modules.addons) body.addons=parseJsonField('set_addons',[],'加購項目');
-    if(modules.invoice) body.invoiceTax=parseJsonField('set_invoiceTax',{},'發票稅務');
+    if(modules.addons) body.addons=collectSessionAddons();
+    if(modules.invoice) body.invoiceTax=collectSessionInvoiceTax();
     await apiPost(body);
     if(modules.seats || $('set_seatPricingEnabled')) await saveSessionSeatSettings(sid);
+    AdminSessionSeatMapDirty=false;
     toast('已儲存場次設定'); await refreshCurrentSessionOnly();
   }catch(e){toast('儲存失敗：'+e.message,8000)}finally{btn.disabled=false;btn.textContent=old;}
 }
