@@ -139,6 +139,135 @@ button,a,[onclick]{touch-action:manipulation}
 .faq-a{font-size:12px;color:var(--muted);margin-top:6px;display:none;line-height:1.6}
 .faq-item.open .faq-a{display:block}
 
+
+/* ── 客服 FAQ 大卡片彈窗 ── */
+.support-modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:8000;
+  background:rgba(25,24,28,.54);
+  padding:18px;
+  align-items:center;
+  justify-content:center;
+}
+.support-modal-overlay.open{display:flex}
+.support-modal-card{
+  width:min(100%,640px);
+  max-height:86vh;
+  background:#fff;
+  border-radius:24px;
+  box-shadow:0 16px 42px rgba(0,0,0,.20);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(0,0,0,.08);
+}
+.support-modal-head{
+  flex-shrink:0;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:18px 18px 14px;
+  background:linear-gradient(135deg,#fff,var(--c5));
+  border-bottom:1px solid var(--border);
+}
+.support-modal-icon{
+  width:46px;
+  height:46px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  flex-shrink:0;
+}
+.support-modal-title-wrap{flex:1;min-width:0}
+.support-modal-title{
+  font-size:22px;
+  font-weight:950;
+  line-height:1.25;
+  color:#111;
+}
+.support-modal-sub{
+  font-size:14px;
+  color:#666;
+  margin-top:4px;
+  line-height:1.5;
+}
+.support-modal-close{
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:15px;
+  background:var(--c4);
+  color:#111;
+  font-size:26px;
+  font-weight:950;
+  line-height:1;
+  cursor:pointer;
+  font-family:inherit;
+  flex-shrink:0;
+}
+.support-modal-body{
+  overflow-y:auto;
+  padding:16px 18px 18px;
+  -webkit-overflow-scrolling:touch;
+}
+.support-modal-qa{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px 16px;
+  margin-bottom:12px;
+}
+.support-modal-qa:last-child{margin-bottom:0}
+.support-modal-q{
+  font-size:17px;
+  font-weight:950;
+  color:#111;
+  line-height:1.45;
+  margin-bottom:8px;
+}
+.support-modal-a{
+  font-size:15px;
+  color:#555;
+  line-height:1.75;
+  font-weight:650;
+}
+.support-modal-footer{
+  flex-shrink:0;
+  padding:12px 18px calc(16px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);
+  background:#fff;
+}
+.support-modal-footer button{
+  width:100%;
+  min-height:50px;
+  border:0;
+  border-radius:16px;
+  background:var(--c1);
+  color:#111;
+  font-size:17px;
+  font-weight:950;
+  font-family:inherit;
+  cursor:pointer;
+}
+@media(max-width:520px){
+  .support-modal-overlay{
+    align-items:flex-end;
+    padding:0;
+  }
+  .support-modal-card{
+    width:100%;
+    max-height:88vh;
+    border-radius:24px 24px 0 0;
+  }
+  .support-modal-title{font-size:21px}
+}
+
 /* ── 底部導覽（四顆）── */
 .bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
 @media(min-width:600px){}
@@ -1419,7 +1548,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
   <!-- LINE 官方客服 -->
   <div style="padding:14px 16px 0">
-    <button class="support-line-btn" onclick="window.open('https://line.me/ti/p/@2bl','_blank')">
+    <button class="support-line-btn" onclick="openLine()">
       <div class="line-icon">L</div>
       <div class="line-text">
         <strong>LINE 官方客服</strong>
@@ -1428,89 +1557,199 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     </button>
   </div>
 
-  <!-- 客服項目 -->
+  <!-- 客服項目：固定攤商客服 SOP（點擊後以大卡片顯示） -->
   <div class="support-list">
     <div class="support-item" onclick="toggleFaqSection('faqCommon')">
-      <div class="support-item-icon" style="background:var(--c2)">❓</div>
-      <div class="support-item-text"><h4>常見問題</h4><p>報名、場次常見疑問</p></div>
+      <div class="support-item-icon" style="background:var(--c2)">📝</div>
+      <div class="support-item-text"><h4>報名前必看</h4><p>審核資料、照片、社群連結</p></div>
       <span class="support-arrow">›</span>
     </div>
     <div class="support-item" onclick="toggleFaqSection('faqPay')">
       <div class="support-item-icon" style="background:var(--c3)">💳</div>
-      <div class="support-item-text"><h4>付款問題</h4><p>繳費方式與確認流程</p></div>
-      <span class="support-arrow">›</span>
-    </div>
-    <div class="support-item" onclick="toggleFaqSection('faqRefund')">
-      <div class="support-item-icon" style="background:var(--c4)">↩</div>
-      <div class="support-item-text"><h4>退費問題</h4><p>退款規則與申請方式</p></div>
+      <div class="support-item-text"><h4>審核／錄取／付款</h4><p>進度查詢、錄取通知、付款回報</p></div>
       <span class="support-arrow">›</span>
     </div>
     <div class="support-item" onclick="toggleFaqSection('faqEvent')">
       <div class="support-item-icon" style="background:var(--c1)">🎪</div>
-      <div class="support-item-text"><h4>活動問題</h4><p>活動規則與注意事項</p></div>
+      <div class="support-item-text"><h4>設備／攤位／選位</h4><p>桌椅設備、選位、現場配置</p></div>
       <span class="support-arrow">›</span>
     </div>
-    <div class="support-item" id="forceNotifBtn" style="display:none" onclick="toggleFaqSection('faqForce')">
-      <div class="support-item-icon" style="background:var(--c5)">⚠️</div>
-      <div class="support-item-text"><h4>不可抗力公告</h4><p>天災、疫情相關說明</p></div>
+    <div class="support-item" onclick="toggleFaqSection('faqCheckin')">
+      <div class="support-item-icon" style="background:var(--c5)">📸</div>
+      <div class="support-item-text"><h4>報到／撤場／保證金</h4><p>開攤照、清場照、押金退還</p></div>
       <span class="support-arrow">›</span>
     </div>
-    <div class="support-item" onclick="window.open('mailto:hello@ndian.live','_blank')">
-      <div class="support-item-icon" style="background:var(--c3)">📬</div>
-      <div class="support-item-text"><h4>聯絡主辦</h4><p>hello@ndian.live</p></div>
+    <div class="support-item" onclick="toggleFaqSection('faqRefund')">
+      <div class="support-item-icon" style="background:var(--c4)">↩</div>
+      <div class="support-item-text"><h4>取消／退費／現場規範</h4><p>退費規則、搬運、現場秩序</p></div>
+      <span class="support-arrow">›</span>
+    </div>
+    <div class="support-item" onclick="toggleFaqSection('faqNotice')">
+      <div class="support-item-icon" style="background:var(--c3)">📣</div>
+      <div class="support-item-text"><h4>寄放／寄賣／公告</h4><p>寄物、百貨寄賣、抽獎、大群組</p></div>
+      <span class="support-arrow">›</span>
+    </div>
+    <div class="support-item" onclick="openLine()">
+      <div class="support-item-icon" style="background:var(--c1)">💬</div>
+      <div class="support-item-text"><h4>聯絡該場次官方 LINE</h4><p>付款、異動、退費、設備、現場問題</p></div>
       <span class="support-arrow">›</span>
     </div>
   </div>
 
-  <!-- FAQ 展開區塊 -->
+  <!-- FAQ 內容來源：點客服項目後會讀取這裡並顯示為大卡片；本區塊維持隱藏，不在下方展開 -->
   <div id="faqCommon" class="support-faq" style="display:none;margin-bottom:12px">
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">如何報名活動？</div>
-      <div class="faq-a">在首頁找到想參加的場次，點擊「立即報名」，填寫報名資料後送出即可。審核結果將以 Email 通知。</div>
+      <div class="faq-q">報名前需要準備哪些資料？</div>
+      <div class="faq-a">請先準備品牌名稱、聯絡人資料、商品內容、攤位照片或商品照片，以及 FB／IG／官網／作品連結等可供主辦審核的資料。</div>
     </div>
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">報名後何時知道結果？</div>
-      <div class="faq-a">主辦通常在報名截止後 3～7 天內審核，結果將寄送至您的 Email。</div>
+      <div class="faq-q">沒有 FB、IG 或官網連結可以報名嗎？</div>
+      <div class="faq-a">可以送出報名，但會影響審核。主辦需要確認品牌、商品與擺攤內容，若資料不足，較不容易通過審核。</div>
     </div>
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">如何查看我的報名狀態？</div>
-      <div class="faq-a">點擊底部「我的報名」，登入後即可查看所有報名記錄與狀態。</div>
+      <div class="faq-q">送出報名後就代表錄取嗎？</div>
+      <div class="faq-a">不是。送出報名只代表主辦已收到申請，是否錄取仍需等待主辦審核。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">商品內容可以和報名資料不同嗎？</div>
+      <div class="faq-a">不可以。現場展示與販售內容須與報名資料一致，禁止擅自更換商品、併攤、分租或代售未審核品牌商品。</div>
     </div>
   </div>
+
   <div id="faqPay" class="support-faq" style="display:none;margin-bottom:12px">
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">繳費方式有哪些？</div>
-      <div class="faq-a">依各主辦設定，通常提供 ATM 轉帳、LINE Pay 等方式，詳見各場次說明。</div>
+      <div class="faq-q">我要去哪裡看目前報名進度？</div>
+      <div class="faq-a">登入報名系統後，進入「我的紀錄」即可查詢目前進度與報名狀態。</div>
     </div>
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">繳費後如何確認？</div>
-      <div class="faq-a">繳費後請在「我的報名」點擊「付款回報」，上傳轉帳截圖，主辦確認後狀態會更新為「已繳費」。</div>
+      <div class="faq-q">錄取後會怎麼通知？</div>
+      <div class="faq-a">錄取後會收到信件，也可以到報名系統「我的紀錄」查看付款資訊、應繳金額與付款期限，並依系統顯示完成付款流程。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">錄取後沒有在期限內付款會怎樣？</div>
+      <div class="faq-a">若逾期未完成付款或未完成付款回報，可能會取消錄取資格，並將名額釋出給候補攤商。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">付款後要怎麼回報？</div>
+      <div class="faq-a">付款完成後，請回到「我的紀錄」進行付款回報，並務必通知該活動場次官方 LINE 客服，方便主辦確認款項。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">付款狀態會怎麼變？</div>
+      <div class="faq-a">一般流程為：錄取待付款 → 已回報付款／付款待確認 → 主辦確認後變成已付款。實際狀態請以「我的紀錄」顯示為準。</div>
     </div>
   </div>
+
+  <div id="faqEvent" class="support-faq" style="display:none;margin-bottom:12px">
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">桌椅或設備要怎麼加購？</div>
+      <div class="faq-a">報名時請依需求選擇設備數量，系統會顯示單價、數量與小計。送出前請確認設備與金額是否正確。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">送出後可以更改設備嗎？</div>
+      <div class="faq-a">若已送出報名或已完成付款，需聯繫該活動場次官方 LINE 客服，由主辦確認是否還能異動。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">攤位是自己選還是主辦安排？</div>
+      <div class="faq-a">若未開放選位，或未在期限內完成選位，將依繳費順序安排；若該場次開放加價選位，請依系統開放時間選位。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">可以自己換攤位或要求固定位置嗎？</div>
+      <div class="faq-a">不可以。攤位需依系統或現場工作人員指定位置擺設，不得自行換位、超出攤位範圍或影響通道。主辦保有攤位與現場配置最終調整權，攤商須配合位置更動，不得因此要求退費或補償。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">場次有供電嗎？</div>
+      <div class="faq-a">請依各場次公告為準。若該場次無供電，請自行準備行動電源或照明設備，禁止自行使用場地插座。</div>
+    </div>
+  </div>
+
+  <div id="faqCheckin" class="support-faq" style="display:none;margin-bottom:12px">
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">活動當天什麼時候報到？</div>
+      <div class="faq-a">原則上活動前 60 分鐘開始報到，例如 11:00 開始活動，報到時間約為 10:00–10:45，實際時間以該場次公告為準。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">什麼是開攤照與清場照？</div>
+      <div class="faq-a">開攤完成後，請在活動開始前 10 分鐘上傳「開攤照」至該活動場次官方 LINE。撤場時請清潔攤位、將垃圾自行帶走，並拍攝「清場照」回傳。開攤照與清場照確認後，才會進入保證金退還流程。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">可以提早收攤嗎？</div>
+      <div class="faq-a">活動結束前 30 分鐘不得收攤。若空攤、早退或未依規定完成簽退，可能影響押金或保證金退還。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">保證金怎麼退？</div>
+      <div class="faq-a">請依規定完成報到、開攤照、撤場清潔、清場照與簽退。工作人員確認無違規、無設備損壞、無垃圾遺留後，依主辦流程退還保證金。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">遲到、早退或未報到會怎樣？</div>
+      <div class="faq-a">遲到、早退、未報到或違反現場規範，可能影響保證金退還；若多次發生，將不再錄取。</div>
+    </div>
+  </div>
+
   <div id="faqRefund" class="support-faq" style="display:none;margin-bottom:12px">
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">如何申請退費？</div>
-      <div class="faq-a">在「我的報名」找到對應場次，點擊「申請退費」，依各場次退費規則辦理。</div>
+      <div class="faq-q">報名後想取消怎麼辦？</div>
+      <div class="faq-a">請先登入系統，進入「我的紀錄」查看該筆報名狀態，依系統顯示操作取消或退費申請。</div>
     </div>
     <div class="faq-item" onclick="this.classList.toggle('open')">
       <div class="faq-q">退費規則是什麼？</div>
-      <div class="faq-a">7天前取消：退報名費扣行政費500元。3～6天前：退50%。3天內或當日：不退費。詳見各場次公告。</div>
+      <div class="faq-a">活動前 7 日以上取消，扣除 500 元行政費後退還餘額；活動前 3～6 日取消，退還報名費 50%，不退押金；活動前 3 日內或活動當日未出席，不退押金、不退費。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">遇到天災、疫情或不可抗力怎麼辦？</div>
+      <div class="faq-a">若因天災、疫情或不可抗力影響活動，主辦將依公告辦理延期或退費方案，實際處理方式以該場次公告為準。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">進場搬運商品或設備須注意什麼？</div>
+      <div class="faq-a">禁止使用手扶梯搬運道具、商品或設備，請依場地方或現場工作人員指定方式搬運。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">現場有哪些基本規範？</div>
+      <div class="faq-a">請依指定位置設攤，不得超出攤位範圍，不得阻礙通道，不得自行換位，不得使用明火、高溫電器或危險設備，垃圾須自行帶走，並配合現場工作人員指示。</div>
     </div>
   </div>
-  <div id="faqEvent" class="support-faq" style="display:none;margin-bottom:12px">
+
+  <div id="faqNotice" class="support-faq" style="display:none;margin-bottom:12px">
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">活動當天需要帶什麼？</div>
-      <div class="faq-a">請攜帶手機出示報名確認信，並依場次規定準備商品與擺設工具。</div>
+      <div class="faq-q">活動可以寄放物品或原地包棚嗎？</div>
+      <div class="faq-a">依各場次公告為準。若有開放寄放，僅提供已登記攤商使用，且主辦不負保管責任。貴重物品請自行帶走；若可原地包棚，商品須完整包覆，不可裸露在外。</div>
     </div>
     <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">攤位如何選擇？</div>
-      <div class="faq-a">錄取後系統會開放攤位選擇，請在指定時間內完成選位，逾時由主辦安排。</div>
+      <div class="faq-q">寄放要怎麼登記？</div>
+      <div class="faq-a">依官方 LINE 大群組、記事本或公告格式留言，例如：場次名稱＋品牌名稱＋寄放件數＋是否原地包棚。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">百貨寄賣合作要注意什麼？</div>
+      <div class="faq-a">百貨寄賣、快閃櫃或寄賣品牌合作，須依該場次寄賣規範辦理。商品須貼上「編號＋金額」標籤，合作確認後不得中止、撤件或退費，對帳與撥款依主辦公告流程處理。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">滿額抽獎或引客活動需要配合什麼？</div>
+      <div class="faq-a">若該活動有安排滿額抽獎、引客券或互動任務，請攤商依主辦公告配合執行，例如確認消費、發放券、提供兌換品或引導客人完成互動。</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">通常會在哪裡公告？</div>
+      <div class="faq-a">活動公告、重要通知與規範會以該活動場次官方 LINE、LINE 記事本與「全台市集藝文資訊中心」大群組公告為主。報名後請記得加入，避免漏看重要消息。全台市集藝文資訊中心大群組：https://line.me/ti/g2/cp-K_Los4J2zBc6rGcRA14TJCx3e99v0i4p-hQ?utm_source=invitation&amp;utm_medium=link_copy&amp;utm_campaign=default</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">有問題要聯絡誰？</div>
+      <div class="faq-a">請優先聯繫「該活動場次」官方 LINE 客服。付款回報、資料異動、取消退費、設備問題、現場問題，皆請透過官方 LINE 聯繫。</div>
     </div>
   </div>
-  <div id="faqForce" class="support-faq" style="display:none;margin-bottom:12px">
-    <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">遇到天災或不可抗力如何處理？</div>
-      <div class="faq-a">主辦將依情況公告延期或退費方案，攤友可在「我的報名」選擇同意延期或申請退費。</div>
+
+  <!-- FAQ 大卡片彈窗：點客服項目後顯示，不再展開在下方 -->
+  <div id="supportFaqModal" class="support-modal-overlay" onclick="if(event.target===this) closeSupportFaqCard()">
+    <div class="support-modal-card" role="dialog" aria-modal="true" aria-labelledby="supportModalTitle">
+      <div class="support-modal-head">
+        <div id="supportModalIcon" class="support-modal-icon">❓</div>
+        <div class="support-modal-title-wrap">
+          <div id="supportModalTitle" class="support-modal-title">客服說明</div>
+          <div id="supportModalSub" class="support-modal-sub">請閱讀說明後關閉。</div>
+        </div>
+        <button class="support-modal-close" type="button" onclick="closeSupportFaqCard()" aria-label="關閉">×</button>
+      </div>
+      <div id="supportModalBody" class="support-modal-body"></div>
+      <div class="support-modal-footer">
+        <button type="button" onclick="closeSupportFaqCard()">我知道了，關閉</button>
+      </div>
     </div>
   </div>
 
@@ -1589,17 +1828,82 @@ function applyBrandSkin(skin) {
   document.querySelectorAll('[data-brand-subtitle]').forEach(el=>{ el.textContent=skin.brandSubtitle||''; });
 }
 
-// FAQ 展開/收合
-function toggleFaqSection(id){
-  const el=document.getElementById(id);
-  if(!el) return;
-  const open = el.style.display==='block';
-  ['faqCommon','faqPay','faqRefund','faqEvent','faqForce'].forEach(fid=>{
+// FAQ 大卡片彈窗：保留原本 FAQ 內容，但不再展開在客服清單下方
+const SUPPORT_FAQ_META = {
+  faqCommon:{title:'報名前必看',sub:'審核資料、照片、社群連結',icon:'📝'},
+  faqPay:{title:'審核／錄取／付款',sub:'進度查詢、錄取通知、付款回報',icon:'💳'},
+  faqEvent:{title:'設備／攤位／選位',sub:'桌椅設備、選位、現場配置',icon:'🎪'},
+  faqCheckin:{title:'報到／撤場／保證金',sub:'開攤照、清場照、押金退還',icon:'📸'},
+  faqRefund:{title:'取消／退費／現場規範',sub:'退費規則、搬運、現場秩序',icon:'↩'},
+  faqNotice:{title:'寄放／寄賣／公告',sub:'寄物、百貨寄賣、抽獎、大群組',icon:'📣'}
+};
+
+function escapeSupportText(str){
+  return String(str||'').replace(/[&<>"']/g, s=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[s]));
+}
+
+function formatSupportText(str){
+  const safe = escapeSupportText(str).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  return safe.replace(/\n/g,'<br>');
+}
+
+function openSupportFaqCard(id){
+  const source=document.getElementById(id);
+  const modal=document.getElementById('supportFaqModal');
+  const body=document.getElementById('supportModalBody');
+  if(!source || !modal || !body) return;
+
+  const meta=SUPPORT_FAQ_META[id] || {title:'客服說明',sub:'請閱讀說明後關閉。',icon:'❓'};
+  const titleEl=document.getElementById('supportModalTitle');
+  const subEl=document.getElementById('supportModalSub');
+  const iconEl=document.getElementById('supportModalIcon');
+
+  if(titleEl) titleEl.textContent=meta.title;
+  if(subEl) subEl.textContent=meta.sub;
+  if(iconEl) iconEl.textContent=meta.icon;
+
+  const items=[...source.querySelectorAll('.faq-item')];
+  body.innerHTML = items.map(item=>{
+    const q=item.querySelector('.faq-q')?.textContent?.trim() || '';
+    const a=item.querySelector('.faq-a')?.textContent?.trim() || '';
+    return `
+      <div class="support-modal-qa">
+        <div class="support-modal-q">${escapeSupportText(q)}</div>
+        <div class="support-modal-a">${formatSupportText(a)}</div>
+      </div>
+    `;
+  }).join('') || '<div class="support-modal-qa"><div class="support-modal-a">目前尚無說明內容。</div></div>';
+
+  // 確保舊的下方 FAQ 區塊維持隱藏
+  ['faqCommon','faqPay','faqEvent','faqCheckin','faqRefund','faqNotice'].forEach(fid=>{
     const f=document.getElementById(fid);
     if(f) f.style.display='none';
   });
-  if(!open) el.style.display='block';
+
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
 }
+
+function closeSupportFaqCard(){
+  const modal=document.getElementById('supportFaqModal');
+  if(modal) modal.classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// 舊函式保留相容：原本 onclick 不需重寫，點擊後直接開大卡片
+function toggleFaqSection(id){
+  openSupportFaqCard(id);
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeSupportFaqCard();
+});
 
 
 // ── 長按 Hero 進後台入口 ──
