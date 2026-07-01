@@ -1584,7 +1584,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div class="support-item-text"><h4>聯絡該場次官方 LINE</h4><p>付款、異動、退費、設備、現場問題</p></div>
       <span class="support-arrow">›</span>
     </div>
-    <div class="support-item" onclick="location.href='mailto:ndiangrace@gmail.com?subject=%E5%90%88%E4%BD%9C%E9%82%80%E8%AB%8B%EF%BC%8F%E5%95%86%E6%A5%AD%E5%90%88%E4%BD%9C%E6%B4%BD%E8%A9%A2'">
+    <div class="support-item" onclick="openCooperationEmail()">
       <div class="support-item-icon" style="background:var(--c2)">🤝</div>
       <div class="support-item-text"><h4>合作邀請</h4><p>活動邀約、異業合作、商業合作</p></div>
       <span class="support-arrow">›</span>
@@ -2017,7 +2017,15 @@ async function apiPost(body, timeoutMs=30000){
 }
 function openModal(id){const el=$(id);if(el){el.classList.add('show');el.classList.add('open');}}
 function closeModal(id){const el=$(id);if(el){el.classList.remove('show');el.classList.remove('open');}}
-function openLine(){ if(!LINE_URL){ toast('此主辦尚未設定 LINE，請聯繫主辦'); return; } window.open(LINE_URL,'_blank'); }
+function openLine(){ if(!LINE_URL){ toast('此主辦尚未設定 LINE，請聯繫主辦'); return; } window.open(LINE_URL,'_blank','noopener'); }
+function openCooperationEmail(){
+  const subject = encodeURIComponent('合作邀請／商業合作洽詢');
+  const body = encodeURIComponent('您好，我想洽詢活動邀約／異業合作／商業合作，以下為合作需求說明：\n\n聯絡人：\n單位／品牌名稱：\n聯絡電話：\n合作需求：\n預計活動時間／地點：\n');
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=ndiangrace@gmail.com&su=${subject}&body=${body}`;
+  const mailtoUrl = `mailto:ndiangrace@gmail.com?subject=${subject}&body=${body}`;
+  const opened = window.open(gmailUrl, '_blank', 'noopener');
+  if(!opened){ window.location.href = mailtoUrl; }
+}
 
 function esc(v){return String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
