@@ -505,8 +505,8 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 /* 電腦版不限寬，自動最寬 */
 
 /* ── 封面圖 ── */
-#siteHero{ width:100%; overflow:hidden; border-radius:0 0 22px 22px; }
-#siteHero img{ width:100%; display:block; object-fit:cover; object-position:center; max-height:260px; }
+#siteHero{ width:100%; overflow:hidden; border-radius:0 0 22px 22px; background:#fff; }
+#siteHero img{ width:100%; height:auto !important; display:block; object-fit:contain !important; object-position:center; max-height:none !important; }
 
 /* ── info band ── */
 #siteInfoBand{
@@ -1102,7 +1102,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 <!-- ══ 首頁 ══ -->
 <div id="pageHome" class="page active">
 
-  <!-- 封面圖（長按5秒進後台）-->
+  <!-- 封面圖（長按3秒進後台）-->
   <div id="siteHero"
     onmousedown="startLogoHold()" onmouseup="stopLogoHold()"
     onmouseleave="stopLogoHold()" ontouchstart="startLogoHold(event)"
@@ -1112,7 +1112,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <img class="hero-bg-img" data-skin-hero
       src="前台封面.jpg"
       alt="兔彼樂共創村"
-      style="width:100%;display:block;border-radius:0 0 22px 22px;object-fit:cover;object-position:center;max-height:260px"
+      style="width:100%;height:auto;display:block;border-radius:0 0 22px 22px;object-fit:contain;object-position:center;max-height:none"
       onerror="this.style.display='none'">
   </div>
 
@@ -1536,13 +1536,17 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 <div id="pageSupport" class="page">
 
   <!-- 客服 IP 區塊 -->
-  <div class="support-hero">
+  <div class="support-hero"
+    onmousedown="startStaffHold()" onmouseup="stopStaffHold()"
+    onmouseleave="stopStaffHold()" ontouchstart="startStaffHold(event)"
+    ontouchend="stopStaffHold()" ontouchcancel="stopStaffHold()"
+    oncontextmenu="return false">
     <img class="support-hero-mascot" data-skin-mascot-support
       src="IP客服.png" alt=""
       onerror="this.style.display='none'">
     <div class="support-hero-text">
       <h2>需要幫助嗎？</h2>
-      <p>黑貓小幫手在這裡！</p>
+      <p>兔彼樂-黑貓小幫手在這裡！</p>
     </div>
   </div>
 
@@ -1901,16 +1905,33 @@ document.addEventListener('keydown', e=>{
 });
 
 
-// ── 長按 Hero 進後台入口 ──
+// ── 長按 Hero 進後台入口：3秒 ──
 let _logoHoldTimer = null;
+function buildAdminUrl(extra=''){
+  const base = location.origin + location.pathname.replace('register.html','admin.html');
+  const qs = new URLSearchParams(location.search);
+  if(extra) qs.set('entry', extra);
+  const query = qs.toString();
+  return base + (query ? '?' + query : '');
+}
 function startLogoHold(e){
   _logoHoldTimer = setTimeout(()=>{
-    const url = location.origin + location.pathname.replace('register.html','admin.html') + location.search;
-    if(confirm('進入管理後台？')) location.href = url;
-  }, 5000);
+    if(confirm('進入管理後台？')) location.href = buildAdminUrl();
+  }, 3000);
 }
 function stopLogoHold(){
   if(_logoHoldTimer){ clearTimeout(_logoHoldTimer); _logoHoldTimer = null; }
+}
+
+// ── 客服區隱藏入口：長按3秒進入現場工作人員入口 ──
+let _staffHoldTimer = null;
+function startStaffHold(e){
+  _staffHoldTimer = setTimeout(()=>{
+    if(confirm('進入現場工作人員入口？')) location.href = buildAdminUrl('onsite');
+  }, 3000);
+}
+function stopStaffHold(){
+  if(_staffHoldTimer){ clearTimeout(_staffHoldTimer); _staffHoldTimer = null; }
 }
 
 // ── 系統外觀設定套用 ──
