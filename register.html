@@ -4640,15 +4640,28 @@ function renderMyRegs(regs){
   if(helper) helper.classList.add('show');
   el.innerHTML=ST.regs.map(r=>{
     const pill=mReviewPill(r);
+    const pb=payBadge(r);
     const title=escHtml(r.sessionName||r.sesName||'場次');
     const dateText=escHtml(mRecordDateText(r));
     const locationText=escHtml(mRecordLocationText(r));
     const cover=escHtml(mRecordCover(r));
     const note=escHtml(pill.note||'');
-    const payBtn=canPayReg(r)?`<button class="m-action-btn" onclick="event.stopPropagation();showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:#fff8ed;color:#d97706;border:1.5px solid #f5d7a1">前往繳費</button>`:`<button class="m-action-btn" onclick="event.stopPropagation();openRegDetail('${r.id}')" style="background:#eef6e6;color:#2a6a10;border:1.5px solid #b9d3a5">查看詳情</button>`;
-    const money=(Number(r.total||0)>0 && !isCancelledReg(r))?`<span style="font-size:14px;color:#2a6a10;font-weight:900;margin-left:4px">NT$ ${Number(r.total||0).toLocaleString()}</span>`:'';
-    const stall=(r.stallCount?`<span style="font-size:14px;color:#777;margin-left:4px">${Number(r.stallCount||1)} 攤</span>`:'');
-    return `<div class="m-record-card" onclick="openRegDetail('${r.id}')">
+    const canPay=canPayReg(r), canCancel=canDirectCancelReg(r), canRefund=canRefundReg(r);
+    const detail=`<div style="background:#f8f8f8;border-radius:12px;padding:11px 13px;margin-top:8px;line-height:1.75">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;color:var(--md)">繳費</span><span style="background:${pb.bg};color:${pb.c};font-size:15px;font-weight:900;border-radius:20px;padding:3px 10px">${pb.t}</span></div>
+        <div style="font-size:16px;color:var(--md)">審核：<strong>${escHtml(r.status||'')}</strong></div>
+        <div style="font-size:16px;color:var(--md)">攤位數：<strong>${Number(r.stallCount||1)} 攤</strong></div>
+        ${r.equipmentText?`<div style="font-size:16px;color:var(--md)">設備：<strong>${escHtml(r.equipmentText)}</strong></div>`:''}
+        ${Number(r.total||0)>0?`<div style="font-size:17px;color:var(--g);font-weight:900">應繳金額：NT$ ${Number(r.total||0).toLocaleString()}</div>`:''}
+        ${r.transferStatus?`<div style="font-size:15px;color:#b45309;font-weight:900">退款狀態：${escHtml(r.transferStatus)}</div>`:''}
+        <div style="font-size:13px;color:var(--lt);margin-top:4px">報名編號：${escHtml(r.id)}</div>
+      </div>`;
+    const statusMsg = isCancelledReg(r)?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:9px;margin-top:8px;font-size:15px;font-weight:900;text-align:center">已取消，報名紀錄保留</div>`:(isPendingPayText(r.payStatus)?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:9px;margin-top:8px;font-size:15px;font-weight:900;text-align:center">已回報，等待主辦確認</div>`:'');
+    let actions='';
+    if(canPay) actions+=`<button class="m-action-btn" onclick="showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:var(--g);color:#fff;border:none">前往繳費</button>`;
+    if(canCancel) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,false)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">取消報名</button>`;
+    if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">申請退費</button>`;
+    return `<div class="m-record-card">
       <div class="m-record-top">
         <div class="m-record-thumb"><img src="${cover}" alt="" onerror="this.src='IP指引.png'"></div>
         <div>
@@ -4656,16 +4669,17 @@ function renderMyRegs(regs){
           <div class="m-record-meta">▣　${dateText}</div>
           <div class="m-record-meta">◎　${locationText}</div>
         </div>
-        <div class="m-record-arrow">›</div>
       </div>
       <div class="m-record-bottom">
         <span class="m-status-pill" style="background:${pill.bg};color:${pill.color};border:1.5px solid ${pill.border}">${pill.icon} ${pill.text}</span>
-        <span class="m-status-note">${note}${stall}${money}</span>
-        ${payBtn}
+        <span class="m-status-note">${note}</span>
       </div>
+      ${detail}
+      ${statusMsg}
       ${stallSelectionHtml(r)}
+      ${actions?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${actions}</div>`:''}
     </div>`;
-  }).join('');
+  }).join('')
   handlePendingPayLink(ST.regs);
 }
 
