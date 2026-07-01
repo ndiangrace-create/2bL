@@ -202,11 +202,12 @@ function panelBack(){ const prev=AdminState.panelStack.pop(); if(prev){ $('panel
 function closeAllPanels(){ $('panel').classList.remove('show'); $('panelBody').innerHTML=''; document.body.style.overflow=''; AdminState.panelStack=[]; AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; }
 window.addEventListener('popstate',()=>{ if($('panel').classList.contains('show')) panelBack(); });
 function isRefundLikeText(v){ const s=String(v||''); return s.includes('退費')||s.includes('退款')||s.includes('refund'); }
+function isRefundCompletedRow(r){ const t=String(r.transferStatus||r.transfer_status||r.refundStatus||r.refund_status||''); const p=String(r.paymentStatus||r.payStatus||r.payment_status||''); return ['已退費','已退款','refunded'].includes(t) || ['已退費','已退款','refunded'].includes(p) || !!(r.refundedAt||r.refunded_at); }
 function isFreePayText(v){ const s=String(v||''); return s==='免費'||s.includes('免費'); }
 function isPaidText(v){ const s=String(v||''); return s.includes('已繳')||s.includes('已付款')||s.includes('付款完成')||s.includes('付款成功')||s==='paid'||s==='confirmed_paid'||s==='payment_confirmed'; }
 function isRegActiveForList(reg){ const review=String(reg.reviewStatus||reg.status||''); const pay=String(reg.paymentStatus||reg.payStatus||''); const refund=String(reg.transferStatus||reg.refundStatus||''); if(['已取消','不錄取','未錄取'].includes(review)) return false; if(pay==='已退費'||pay==='已退款') return false; if(isRefundLikeText(refund)) return false; return true; }
 function isApprovedText(v){ return String(v||'')==='已錄取'; }
-function filterReg(reg,filter){ const review=String(reg.reviewStatus||reg.status||''); const pay=String(reg.paymentStatus||reg.payStatus||''); const check=String(reg.checkinStatus||reg.checkin||''); const refund=String(reg.transferStatus||reg.refundStatus||''); const active=isRegActiveForList(reg); const approved=isApprovedText(review); const cash=Number(reg.amount||reg.totalAmount||reg.receivableAmount||0)||0; const received=Number(reg.receivedAmount||0)||0; const unreceived=Number(reg.unreceivedAmount||0)||0; const deposit=Number(reg.deposit||reg.depositAmount||0)||0; if(filter==='all') return true; if(filter==='pending') return active&&(review.includes('待審')||review==='報名成功'||review===''); if(filter==='approved') return active&&approved; if(filter==='unpaid') return active&&approved&&(pay.includes('未繳')||pay===''); if(filter==='paymentPending') return active&&approved&&(pay.includes('待確認')||pay.includes('回報')); if(filter==='paid') return active&&approved&&isPaidText(pay); if(filter==='free') return active&&approved&&isFreePayText(pay); if(filter==='checked') return active&&check.includes('已報到'); if(filter==='refund') return isRefundLikeText(refund)||pay==='已退費'||pay==='已退款'; if(filter==='equipment') return active&&approved&&(isPaidText(pay)||isFreePayText(pay))&&regEquipText(reg)!=='無'; if(filter==='receivable') return active&&approved&&cash>0; if(filter==='received') return active&&approved&&isPaidText(pay)&&received>0; if(filter==='unreceived') return active&&approved&&unreceived>0; if(filter==='deposit') return active&&approved&&deposit>0; if(filter==='checkin') return active&&approved&&(isPaidText(pay)||isFreePayText(pay)); return true; }
+function filterReg(reg,filter){ const review=String(reg.reviewStatus||reg.status||''); const pay=String(reg.paymentStatus||reg.payStatus||''); const check=String(reg.checkinStatus||reg.checkin||''); const refund=String(reg.transferStatus||reg.refundStatus||''); const active=isRegActiveForList(reg); const approved=isApprovedText(review); const cash=Number(reg.amount||reg.totalAmount||reg.receivableAmount||0)||0; const received=Number(reg.receivedAmount||0)||0; const unreceived=Number(reg.unreceivedAmount||0)||0; const deposit=Number(reg.deposit||reg.depositAmount||0)||0; if(filter==='all') return true; if(filter==='pending') return active&&(review.includes('待審')||review==='報名成功'||review===''); if(filter==='approved') return active&&approved; if(filter==='unpaid') return active&&approved&&(pay.includes('未繳')||pay===''); if(filter==='paymentPending') return active&&approved&&(pay.includes('待確認')||pay.includes('回報')); if(filter==='paid') return active&&approved&&isPaidText(pay); if(filter==='free') return active&&approved&&isFreePayText(pay); if(filter==='checked') return active&&check.includes('已報到'); if(filter==='refund') return (isRefundLikeText(refund) && !isRefundCompletedRow(reg)); if(filter==='equipment') return active&&approved&&(isPaidText(pay)||isFreePayText(pay))&&regEquipText(reg)!=='無'; if(filter==='receivable') return active&&approved&&cash>0; if(filter==='received') return active&&approved&&isPaidText(pay)&&received>0; if(filter==='unreceived') return active&&approved&&unreceived>0; if(filter==='deposit') return active&&approved&&deposit>0; if(filter==='checkin') return active&&approved&&(isPaidText(pay)||isFreePayText(pay)); return true; }
 
 document.addEventListener('pointerup',function(e){ const el=e.target.closest('[data-drill-list]'); if(!el) return; e.preventDefault(); drillList(el.dataset.sid,el.dataset.filter,el.dataset.label||'明細'); });
 async function openSessionList(sid,filter,label){ AdminState.currentSessionId=sid; AdminState.currentLayer='sessionList'; AdminState.currentFilter=filter; const s=sessionById(sid); openPanel(sessionName(s)+'｜'+label,'本頁已鎖定 sessionId：'+sid,'<div class="loading">名單載入中…</div>',{replace:true}); try{ const rows=await api({action:'getSessionRegistrations',sessionId:sid,filter}); const list=[]; for(const r of (Array.isArray(rows)?rows:[])){ if(filterReg(r,filter)) list.push(r); } AdminState.currentList=list; $('panelBody').innerHTML='<div class="filter-row"><input id="panelSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderRegistrationCards()"><select id="panelSort" onchange="renderRegistrationCards()"><option value="new">最新報名</option><option value="brand">品牌名稱</option></select><button class="btn secondary" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載本場 Excel</button></div><div id="panelCards" class="cards"></div>'; renderRegistrationCards(); }catch(e){ $('panelBody').innerHTML='<div class="empty">名單載入失敗：'+safe(e.message)+'</div>'; } }
@@ -290,7 +291,7 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
       +'</div></div>';
     openPanel('處理退費','請依資料庫規則確認扣項與實退金額',html);
     calcRefundAmount();
-  }catch(e){ toast('退費資料載入失敗：'+e.message,7000); }
+  }catch(e){ const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
   finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
 }
 function calcRefundAmount(){
@@ -317,7 +318,7 @@ async function confirmAdminRefund(regId,sid){
     closeAllPanels();
     await refreshSessionsOverview();
     if(AdminState.currentPage==='todos') await loadTodos();
-  }catch(e){ toast('退費處理失敗：'+e.message,8000); }
+  }catch(e){ const msg=String(e.message||e); toast('退費處理失敗：'+msg,8000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ closeAllPanels(); await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
 }
 
 
@@ -391,9 +392,82 @@ async function openFinancePanel(sid){
 }
 
 function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) return '<div class="empty">資料庫目前未提供資料</div>'; let h='<div class="table-wrap"><table class="mini-table"><thead><tr>'; for(const x of heads) h+='<th>'+safe(x)+'</th>'; h+='</tr></thead><tbody>'; for(const r of rows){ h+='<tr>'; for(const k of keys){ const v=k==='amount'?money(r[k]):safe(r[k]||''); h+='<td>'+v+'</td>'; } h+='</tr>'; } return h+'</tbody></table></div>'; }
-async function openSessionSettings(sid){ AdminState.currentSessionId=sid; AdminState.currentLayer='sessionSettings'; const s=sessionById(sid); openPanel(sessionName(s)+'｜場次設定','儲存時只送本頁欄位；後端必須保留未修改資料','<div class="loading">設定載入中…</div>'); try{ const rows=await api({action:'getSession',sessionId:sid}).catch(()=>null); const d=(Array.isArray(rows)?rows[0]:rows)||s; $('panelBody').innerHTML=sessionSettingsForm(d); }catch(e){$('panelBody').innerHTML=sessionSettingsForm(s)+'<div class="notice warn">完整設定載入失敗：'+safe(e.message)+'</div>'; } }
-function sessionSettingsForm(s){ const sid=sessionId(s)||AdminState.currentSessionId; return '<div class="form-grid"><div class="form-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div><div class="form-field"><label>系列 / 活動</label><input id="set_event" value="'+attr(s.eventName||s.seriesName||'')+'" disabled></div><div class="form-field"><label>地點</label><input id="set_venue" value="'+attr(s.venue||s.location||'')+'"></div><div class="form-field"><label>合作單位</label><input id="set_organizer" value="'+attr(s.organizer||s.coorg||'')+'"></div><div class="form-field"><label>攤位費</label><input id="set_fee" type="number" value="'+attr(s.fee||0)+'"></div><div class="form-field"><label>押金</label><input id="set_deposit" type="number" value="'+attr(s.deposit||0)+'"></div><div class="form-field"><label>報名狀態</label><select id="set_status"><option '+(!isClosed(s)?'selected':'')+'>報名中</option><option '+(isClosed(s)?'selected':'')+'>已關閉</option><option '+(isArchived(s)?'selected':'')+'>封存</option></select></div><div class="form-field"><label>審核制</label><select id="set_review"><option value="1" '+(s.needReview!==false?'selected':'')+'>開啟</option><option value="0" '+(s.needReview===false?'selected':'')+'>關閉</option></select></div><div class="form-field full"><label>日期 / 說明</label><textarea id="set_desc">'+safe(s.desc||s.description||'')+'</textarea></div><div class="form-field full"><label>封面 / 主題圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div></div><div class="notice">設備、合約、選位、模組等未在本頁顯示的資料，不會由前端送空值；後端 updateSession 必須保留既有資料。</div><div class="card-actions"><button class="btn" onclick="saveSessionSettings(\''+attr(sid)+'\',this)">儲存本場設定</button></div>'; }
-async function saveSessionSettings(sid,btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'updateSession',id:sid,sessionId:sid,name:$('set_name').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),fee:$('set_fee').value,deposit:$('set_deposit').value,status:$('set_status').value,needReview:$('set_review').value==='1',desc:$('set_desc').value,cover:$('set_cover').value.trim()}); toast('已儲存場次設定'); await refreshCurrentSessionOnly(); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
+function sessionJsonPretty(v, fallback){
+  const obj=safeJson(v, fallback);
+  try{return JSON.stringify(obj===undefined?fallback:obj,null,2);}catch(e){return JSON.stringify(fallback,null,2);}
+}
+function sessionField(s, ...keys){ for(const k of keys){ if(s && s[k]!==undefined && s[k]!==null) return s[k]; } return ''; }
+function sessionBool(v, def=false){ if(v===undefined||v===null||v==='') return def; if(typeof v==='boolean') return v; const s=String(v).trim(); return ['1','true','是','開啟','啟用','yes','on'].includes(s); }
+function sessionDates(s){ return safeJson(sessionField(s,'dates','datesJson','dates_json'), []); }
+function sessionModules(s){ return safeJson(sessionField(s,'modules','modulesJson','modules_json'), {}); }
+function sessionEquip(s){ return safeJson(sessionField(s,'equip','equipJson','equip_json'), {}); }
+function sessionAddons(s){ return safeJson(sessionField(s,'addons','addonsJson','addons_json'), []); }
+function sessionInvoiceTax(s){ return safeJson(sessionField(s,'invoiceTax','invoiceTaxJson','invoice_tax_json'), {enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false}); }
+function sessionStallList(s){ const raw=sessionField(s,'stallList','stallListJson','stall_list_json'); const arr=safeJson(raw, raw||[]); if(Array.isArray(arr)) return arr; if(typeof arr==='string') return arr.split(/[\n,，]/).map(x=>x.trim()).filter(Boolean); return []; }
+function parseJsonField(id, fallback, label){ const raw=$(id)?.value||''; if(!raw.trim()) return fallback; try{return JSON.parse(raw);}catch(e){ throw new Error((label||id)+' JSON 格式錯誤：'+e.message); } }
+function lineListFromField(id){ return String($(id)?.value||'').split(/[\n,，]/).map(x=>x.trim()).filter(Boolean); }
+const ADMIN_EQUIP_NAMES=['桌','椅','帳篷','電力','衣桿','網架'];
+function sessionEquipFormHtml(equip){
+  const rows=ADMIN_EQUIP_NAMES.map(name=>{ const x=equip && equip[name] ? equip[name] : {}; return '<div class="info-box"><div class="section-label" style="margin-top:0">'+safe(name)+'</div><label style="display:flex;align-items:center;gap:8px;font-weight:900"><input id="eq_open_'+attr(name)+'" type="checkbox" '+(x.open?'checked':'')+'> 開放選擇</label><div class="form-grid"><div class="form-field"><label>每攤內含</label><input id="eq_incl_'+attr(name)+'" type="number" min="0" value="'+attr(x.incl||0)+'"></div><div class="form-field"><label>單價</label><input id="eq_price_'+attr(name)+'" type="number" min="0" value="'+attr(x.price||0)+'"></div><div class="form-field"><label>每攤上限</label><input id="eq_max_'+attr(name)+'" type="number" min="0" value="'+attr(x.maxPerStall||x.max_per_stall||0)+'"></div></div></div>'; }).join('');
+  return '<div class="compact-grid">'+rows+'</div>';
+}
+function collectSessionEquip(){ const out={}; for(const name of ADMIN_EQUIP_NAMES){ out[name]={open:!!$('eq_open_'+name)?.checked,incl:Number($('eq_incl_'+name)?.value||0)||0,price:Number($('eq_price_'+name)?.value||0)||0,maxPerStall:Number($('eq_max_'+name)?.value||0)||0}; } return out; }
+function moduleCheckHtml(key,label,mods){ return '<label style="display:flex;align-items:center;gap:8px;font-weight:900"><input type="checkbox" id="mod_'+key+'" '+(mods && mods[key]!==false?'checked':'')+'> '+label+'</label>'; }
+async function openSessionSettings(sid){
+  AdminState.currentSessionId=sid; AdminState.currentLayer='sessionSettings'; const s=sessionById(sid);
+  openPanel(sessionName(s)+'｜場次設定','完整場次設定：基本、日期費用、名額、設備、加購、合約、選位。儲存前會檢查 JSON 與必要欄位。','<div class="loading">設定載入中…</div>');
+  try{ const rows=await api({action:'getSession',sessionId:sid}).catch(()=>null); const d=(Array.isArray(rows)?rows[0]:rows)||s; $('panelBody').innerHTML=sessionSettingsForm(d); }
+  catch(e){$('panelBody').innerHTML=sessionSettingsForm(s)+'<div class="notice warn">完整設定載入失敗：'+safe(e.message)+'</div>'; }
+}
+function sessionSettingsForm(s){
+  const sid=sessionId(s)||AdminState.currentSessionId;
+  const dates=sessionDates(s), mods=sessionModules(s), equip=sessionEquip(s), addons=sessionAddons(s), tax=sessionInvoiceTax(s), stalls=sessionStallList(s);
+  const needReview = s.needReview!==undefined ? s.needReview : (s.need_review!==undefined ? s.need_review : true);
+  const agreementRequired = s.agreementRequired!==undefined ? s.agreementRequired : (s.agreement_required!==undefined ? s.agreement_required : true);
+  const seatPricing = s.seatPricingEnabled!==undefined ? s.seatPricingEnabled : s.seat_pricing_enabled;
+  return '<div class="readable-detail">'
+  +'<div class="report-card"><div class="report-title">基本資料</div><div class="form-grid">'
+  +'<div class="form-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div>'
+  +'<div class="form-field"><label>類型</label><input id="set_type" value="'+attr(s.type||'市集場次')+'"></div>'
+  +'<div class="form-field"><label>系列 / 活動 ID</label><input id="set_eventId" value="'+attr(s.eventId||s.event_id||'')+'"></div>'
+  +'<div class="form-field"><label>地區</label><input id="set_region" value="'+attr(s.region||'')+'"></div>'
+  +'<div class="form-field"><label>地點</label><input id="set_venue" value="'+attr(s.venue||s.location||'')+'"></div>'
+  +'<div class="form-field"><label>合作單位</label><input id="set_organizer" value="'+attr(s.organizer||s.coorg||'')+'"></div>'
+  +'<div class="form-field"><label>協辦 / 共同主辦</label><input id="set_coorg" value="'+attr(s.coOrganizer||s.co_organizer||'')+'"></div>'
+  +'<div class="form-field"><label>主題</label><input id="set_theme" value="'+attr(s.theme||'')+'"></div>'
+  +'<div class="form-field"><label>報名狀態</label><select id="set_status"><option '+(String(s.status||'報名中')==='報名中'?'selected':'')+'>報名中</option><option '+(String(s.status||'')==='已關閉'||String(s.status||'')==='關閉'?'selected':'')+'>已關閉</option><option '+(String(s.status||'')==='封存'||String(s.status||'')==='已封存'?'selected':'')+'>封存</option></select></div>'
+  +'<div class="form-field"><label>審核制</label><select id="set_review"><option value="1" '+(sessionBool(needReview,true)?'selected':'')+'>開啟</option><option value="0" '+(!sessionBool(needReview,true)?'selected':'')+'>關閉</option></select></div>'
+  +'<div class="form-field full"><label>封面 / 主題圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
+  +'<div class="form-field full"><label>說明 / 注意事項</label><textarea id="set_desc">'+safe(s.desc||s.description||'')+'</textarea></div>'
+  +'</div></div>'
+  +'<div class="report-card"><div class="report-title">日期、名額與費用</div><div class="form-grid">'
+  +'<div class="form-field"><label>單日 / 基本攤位費</label><input id="set_fee" type="number" value="'+attr(s.fee||0)+'"></div>'
+  +'<div class="form-field"><label>押金</label><input id="set_deposit" type="number" value="'+attr(s.deposit||0)+'"></div>'
+  +'<div class="form-field"><label>開放攤數 / 名額</label><input id="set_limit" type="number" value="'+attr(s.limit||s.limitCount||s.limit_count||s.capacity||0)+'"></div>'
+  +'<div class="form-field"><label>最大攤數</label><input id="set_maxStalls" type="number" value="'+attr(s.maxStalls||s.max_stalls||0)+'"></div>'
+  +'<div class="form-field full"><label>多日日期 JSON</label><textarea id="set_dates" style="font-family:monospace;min-height:150px">'+safe(sessionJsonPretty(dates,[]))+'</textarea><div class="sub">可含 date、label、start、end、fee。多日設備與報名日期都依此資料對應。</div></div>'
+  +'</div></div>'
+  +'<div class="report-card"><div class="report-title">模組開關</div><div class="compact-grid">'+moduleCheckHtml('market','市集報名',mods)+moduleCheckHtml('equipment','設備選擇',mods)+moduleCheckHtml('addons','加購項目',mods)+moduleCheckHtml('agreement','合約同意',mods)+moduleCheckHtml('seats','選位 / 攤位',mods)+moduleCheckHtml('invoice','發票資料',mods)+'</div></div>'
+  +'<div class="report-card"><div class="report-title">設備設定</div><div class="form-field full"><label>內含設備文字說明</label><textarea id="set_basicEquip">'+safe(s.basicEquip||s.basic_equip||'')+'</textarea><div class="sub">正式設備計算以結構化設備為準，文字只做顯示說明。</div></div>'+sessionEquipFormHtml(equip)+'</div>'
+  +'<div class="report-card"><div class="report-title">加購與發票</div><div class="form-grid"><div class="form-field full"><label>加購項目 JSON</label><textarea id="set_addons" style="font-family:monospace;min-height:130px">'+safe(sessionJsonPretty(addons,[]))+'</textarea></div><div class="form-field full"><label>發票稅務 JSON</label><textarea id="set_invoiceTax" style="font-family:monospace;min-height:110px">'+safe(sessionJsonPretty(tax,{enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false}))+'</textarea></div></div></div>'
+  +'<div class="report-card"><div class="report-title">合約設定</div><div class="form-grid"><div class="form-field"><label>是否啟用合約</label><select id="set_agreementRequired"><option value="1" '+(sessionBool(agreementRequired,true)?'selected':'')+'>啟用</option><option value="0" '+(!sessionBool(agreementRequired,true)?'selected':'')+'>關閉</option></select></div><div class="form-field"><label>合約版本</label><input id="set_agreementVersion" value="'+attr(s.agreementVersion||s.agreement_version||'')+'"></div><div class="form-field full"><label>合約標題</label><input id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"></div><div class="form-field full"><label>合約正文</label><textarea id="set_agreementContent" style="min-height:220px">'+safe(s.agreementContent||s.agreement_content||'')+'</textarea></div></div></div>'
+  +'<div class="report-card"><div class="report-title">攤位 / 選位設定</div><div class="form-grid"><div class="form-field"><label>加價選位</label><select id="set_seatPricingEnabled"><option value="1" '+(sessionBool(seatPricing,false)?'selected':'')+'>開啟</option><option value="0" '+(!sessionBool(seatPricing,false)?'selected':'')+'>關閉</option></select></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field full"><label>選位地圖 URL</label><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'"></div><div class="form-field full"><label>攤位代碼清單（一行一個）</label><textarea id="set_stallList" style="font-family:monospace;min-height:130px">'+safe(stalls.join('\n'))+'</textarea></div></div></div>'
+  +'<div class="notice">儲存前會檢查日期、加購、稅務 JSON。未顯示的資料由 Worker 保留，不得送空值覆蓋。</div><div class="card-actions"><button class="btn" onclick="saveSessionSettings(\''+attr(sid)+'\',this)">儲存完整場次設定</button></div>'
+  +'</div>';
+}
+async function saveSessionSettings(sid,btn){
+  const old=btn.textContent; btn.disabled=true; btn.textContent='檢查中…';
+  try{
+    const dates=parseJsonField('set_dates',[],'多日日期'); if(!Array.isArray(dates)) throw new Error('多日日期 JSON 必須是陣列');
+    const addons=parseJsonField('set_addons',[],'加購項目');
+    const invoiceTax=parseJsonField('set_invoiceTax',{enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false},'發票稅務');
+    const name=$('set_name').value.trim(); if(!name) throw new Error('場次名稱不可空白');
+    btn.textContent='儲存中…';
+    const modules={market:!!$('mod_market')?.checked,equipment:!!$('mod_equipment')?.checked,addons:!!$('mod_addons')?.checked,agreement:!!$('mod_agreement')?.checked,seats:!!$('mod_seats')?.checked,invoice:!!$('mod_invoice')?.checked};
+    await apiPost({action:'updateSession',id:sid,sessionId:sid,eventId:$('set_eventId').value.trim(),name,type:$('set_type').value.trim(),region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:$('set_coorg').value.trim(),theme:$('set_theme').value.trim(),fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_review').value==='1',desc:$('set_desc').value,cover:$('set_cover').value.trim(),dates,modules,equip:collectSessionEquip(),basicEquip:$('set_basicEquip').value,addons,invoiceTax,agreementRequired:$('set_agreementRequired').value==='1',agreementTitle:$('set_agreementTitle').value.trim(),agreementVersion:$('set_agreementVersion').value.trim(),agreementContent:$('set_agreementContent').value,seatPricingEnabled:$('set_seatPricingEnabled').value==='1',seatHoldHours:$('set_seatHoldHours').value,seatMapUrl:$('set_seatMapUrl').value.trim(),stallList:lineListFromField('set_stallList')});
+    toast('已儲存完整場次設定'); await refreshCurrentSessionOnly();
+  }catch(e){toast('儲存失敗：'+e.message,8000)}finally{btn.disabled=false;btn.textContent=old;}
+}
 async function openSessionCreatePanel(){ openPanel('新增場次','送出後由 Worker / DB 建立正式場次','<div class="form-grid"><div class="form-field"><label>場次名稱</label><input id="new_name"></div><div class="form-field"><label>地點</label><input id="new_venue"></div><div class="form-field"><label>攤位費</label><input id="new_fee" type="number" value="0"></div><div class="form-field"><label>押金</label><input id="new_deposit" type="number" value="0"></div><div class="form-field full"><label>說明</label><textarea id="new_desc"></textarea></div></div><div class="card-actions"><button class="btn" onclick="createSession(this)">建立場次</button></div>'); }
 async function createSession(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…'; try{ await apiPost({action:'createSession',name:$('new_name').value.trim(),venue:$('new_venue').value.trim(),fee:$('new_fee').value,deposit:$('new_deposit').value,desc:$('new_desc').value}); toast('已建立場次'); closeAllPanels(); await refreshSessionsOverview(); }catch(e){toast('建立失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
 
@@ -447,7 +521,8 @@ function todoKindFromRow(r){
   const eq=regEquipText(r);
   const dates=regDateText(r);
   const hasDataIssue = (dates.includes('未設定') || !r.email || !r.phone || !(r.brandName||r.brand||r.brand_name||r.name) || String(r.dataQualityIssues||'').length>0);
-  if(transfer.includes('退費')||transfer.includes('退款')||transfer.includes('refund')||pay.includes('已退費')||pay.includes('已退款')) return 'refund';
+  if(isRefundCompletedRow(r)) return 'done';
+  if(transfer.includes('退費')||transfer.includes('退款')||transfer.includes('refund')) return 'refund';
   if(hasDataIssue) return 'dataIssue';
   if(review.includes('待審核') || review==='待審' || review==='報名成功' || review==='') return 'pending';
   if(review.includes('已錄取') && (pay.includes('待確認')||pay.includes('付款待確認')||pay.includes('回報'))) return 'paymentPending';
@@ -510,7 +585,7 @@ async function buildTodoRowsFromSessions(){
 }
 function renderTodoRows(rows){
   let out='';
-  const list=sortNearestFirst((Array.isArray(rows)?rows:[]).map(normalizeTodoRow).filter(r=>hasTodoRegId(r)), regSortTs);
+  const list=sortNearestFirst((Array.isArray(rows)?rows:[]).map(normalizeTodoRow).filter(r=>hasTodoRegId(r) && todoKindFromRow(r)!=='done'), regSortTs);
   AdminState.currentList=list;
   for(const r of list){
     const sid=r.sessionId||'';
