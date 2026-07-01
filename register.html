@@ -2539,6 +2539,7 @@ async function safeGetMyRegs(email, phone){
     const list=Array.isArray(regs)?regs:[];
     ST.regs=list;
     renderMyRegs(list);
+    try{ if(typeof renderSessions==='function' && Array.isArray(ST.sessions) && ST.sessions.length) renderSessions(); }catch(_e){}
     return list;
   }catch(e){
     console.warn('[getMyRegs failed]',e);
@@ -2890,6 +2891,22 @@ function openSessionFromCard(ev, sessionId){
   if(card){ card.dataset.busy='1'; setTimeout(()=>{card.dataset.busy='0'},1200); }
   openSession(sessionId);
 }
+function myRegForSession(s){
+  if(!ST.memberEmail || !Array.isArray(ST.regs) || !ST.regs.length) return null;
+  const sid=String(s && s.id || ''); const sname=String(s && s.name || '');
+  const list=ST.regs.filter(r=>{
+    if(typeof isCancelledReg==='function' && isCancelledReg(r)) return false;
+    const rid=String(r.sessionId || r.session_id || '');
+    const rname=String(r.sessionName || r.sesName || '');
+    return (sid && rid===sid) || (sname && rname===sname);
+  });
+  return list.length ? list[list.length-1] : null;
+}
+function myRegBadge(s){
+  const r=myRegForSession(s); if(!r) return '';
+  const p=mReviewPill(r);
+  return `<span style="display:inline-flex;align-items:center;gap:3px;background:${p.bg};color:${p.color};border:1px solid ${p.border};padding:1px 8px;border-radius:5px;font-size:14px;font-weight:700;flex-shrink:0">${p.icon} 你已報名·${esc(p.text)}</span>`;
+}
 function renderSessionCard(s){
   const full = Number(s.limit)>0 && Number(s.count)>=Number(s.limit);
   const closed = s.status==='關閉' || s.status==='已關閉' || full;
@@ -2911,10 +2928,11 @@ function renderSessionCard(s){
   const metaParts=[dateStr,s.region,feeStr,s.venue].filter(Boolean);
   const metaStr=metaParts.join('  ·  ');
   const typeBadge=typeLabel?`<span style="background:${closed?'#e8e8e8':'var(--gp)'};color:${closed?'#888':'var(--g)'};padding:1px 7px;border-radius:5px;font-size:15px;font-weight:700;flex-shrink:0">${esc(typeLabel)}</span>`:'';
+  const myBadge = myRegBadge(s);
   if(closed){
-    return `<div style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div></div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
+    return `<div style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}${myBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div></div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
   }
-  return `<div role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+  return `<div role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}${myBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
       <span style="color:var(--g);font-size:24px;line-height:1;font-weight:700">›</span>
       <button onclick="event.stopPropagation();openSessionFromCard(event,'${esc(s.id)}')"
         style="min-width:82px;height:40px;border-radius:13px;background:#91B574;color:#fff;border:none;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
