@@ -256,11 +256,75 @@ function socialLinks(r){ let out=''; if(r.fb) out+='<a class="tag info" href="'+
 function actionButtons(r){ const id=r.id||r.regId||r.registrationId||r.registration_id||''; const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||''; if(Array.isArray(r.availableActions)){ let out=''; for(const a of r.availableActions) out += actionButton(id,a,sid); return out || '<span class="tag">目前無可操作動作</span>'; } return '<span class="tag">目前無可操作動作</span>'; }
 function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'退費'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>'; }
 function renderRegCard(r){ const brand=r.brand||r.brandName||r.brand_name||'未填品牌'; const sid=regSessionId(r)||AdminState.currentSessionId; const s=sessionById(sid); const dateText=regDateText(r); const createdText=regCreatedText(r); const eq=regEquipText(r); return '<article class="reg-card"><div><div class="reg-title">'+safe(brand)+'</div><div class="reg-sub">'+safe(r.sessionName||sessionName(s))+'｜報名日期：'+safe(dateText||'未設定')+'</div><div class="tag-row">'+statusTags(r)+socialLinks(r)+'</div><div class="kv"><div class="k">報名日期</div><div>'+safe(dateText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(createdText)+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||r.stall_count||1)+'</div><div class="k">設備</div><div>'+safe(eq)+'</div><div class="k">金額</div><div>'+money(regAmount(r))+'</div><div class="k">發票</div><div>'+safe(invoiceBrief(r))+'</div><div class="k">備註</div><div>'+safe(r.adminNote||r.admin_note||r.remark||'—')+'</div></div></div><div class="reg-actions">'+actionButtons(r)+'</div></article>'; }
+
+async function openRefundPanel(regId, btn=null, sidOverride=''){
+  const sid=sidOverride||AdminState.currentSessionId||'';
+  if(!sid){ toast('缺少場次鎖定，無法處理退費',5000); return; }
+  if(!regId){ toast('缺少報名 ID，無法處理退費',5000); return; }
+  const old=btn ? btn.textContent : '';
+  if(btn){ btn.disabled=true; btn.textContent='讀取退費…'; }
+  try{
+    const sug=await apiPost({action:'getRefundSuggestion',regId,sessionId:sid});
+    const paid=Number(sug.paidAmount||0)||0;
+    const adminFee=Number(sug.refundAdminFee||0)||0;
+    const transferFee=Number(sug.refundTransferFee||0)||0;
+    const refund=Math.max(0, paid-adminFee-transferFee);
+    const html='<div class="readable-detail">'
+      +'<div class="report-card"><div class="report-title">退費處理</div>'
+      +'<div class="kv"><div class="k">已繳金額</div><div id="refundPaidText">'+money(paid)+'</div>'
+      +'<div class="k">活動日期</div><div>'+safe(sug.eventDate||'資料庫未提供')+'</div>'
+      +'<div class="k">退費規則</div><div>'+safe(sug.refundRuleLabel||'主辦手動確認')+'</div>'
+      +'<div class="k">距活動日</div><div>'+(sug.daysBefore===null||sug.daysBefore===undefined?'無法判斷':safe(sug.daysBefore)+' 天')+'</div></div>'
+      +'</div>'
+      +'<div class="report-card"><div class="report-title">退費扣項</div>'
+      +'<div class="form-grid">'
+      +'<div class="form-field"><label>行政費</label><input id="refundAdminFeeInput" type="number" min="0" value="'+attr(adminFee)+'" oninput="calcRefundAmount()"></div>'
+      +'<div class="form-field"><label>轉帳手續費</label><input id="refundTransferFeeInput" type="number" min="0" value="'+attr(transferFee)+'" oninput="calcRefundAmount()"></div>'
+      +'<div class="form-field full"><label>退費備註</label><textarea id="refundNoteInput" placeholder="可填寫匯款帳號、處理備註或內部紀錄"></textarea></div>'
+      +'</div>'
+      +'<div class="notice" style="margin-top:12px"><b>實退金額：</b><span id="refundAmountText">'+money(refund)+'</span><br><span class="sub">公式：已繳金額－行政費－轉帳手續費。確認後會改為已退費、釋出名額與攤位。</span></div>'
+      +'<div class="card-actions"><button class="btn danger" onclick="confirmAdminRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認完成退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div>'
+      +'</div></div>';
+    openPanel('處理退費','請依資料庫規則確認扣項與實退金額',html);
+    calcRefundAmount();
+  }catch(e){ toast('退費資料載入失敗：'+e.message,7000); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
+}
+function calcRefundAmount(){
+  const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
+  const paid=Number(paidTxt)||0;
+  const admin=Number($('refundAdminFeeInput')?.value||0)||0;
+  const transfer=Number($('refundTransferFeeInput')?.value||0)||0;
+  const refund=Math.max(0, paid-admin-transfer);
+  const out=$('refundAmountText');
+  if(out) out.textContent=money(refund);
+}
+async function confirmAdminRefund(regId,sid){
+  const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
+  const paid=Number(paidTxt)||0;
+  const refundAdminFee=Number($('refundAdminFeeInput')?.value||0)||0;
+  const refundTransferFee=Number($('refundTransferFeeInput')?.value||0)||0;
+  if(refundAdminFee<0||refundTransferFee<0){ toast('扣項不可小於 0',5000); return; }
+  if(refundAdminFee+refundTransferFee>paid){ toast('扣項不可大於已繳金額',5000); return; }
+  const refundNote=$('refundNoteInput')?.value||'';
+  if(!confirm('確定標記為已退費？此動作會釋出名額與攤位。')) return;
+  try{
+    const res=await apiPost({action:'confirmRefund',regId,sessionId:sid,refundAdminFee,refundTransferFee,refundNote});
+    toast('退費已完成，實退 '+money(res.refundAmount||0),5000);
+    closeAllPanels();
+    await refreshSessionsOverview();
+    if(AdminState.currentPage==='todos') await loadTodos();
+  }catch(e){ toast('退費處理失敗：'+e.message,8000); }
+}
+
 async function runRegAction(regId,regAction,btn,sidOverride=''){
   const sid=sidOverride||AdminState.currentSessionId||'';
   if(!sid){ toast('缺少場次鎖定，已阻斷操作',5000); return; }
   if(!regId){toast('找不到報名 ID');return;}
-  const question={reject:'確定標記為不錄取？',waitlist:'確定標記為備取？',confirmPayment:'確定確認付款？',cancelUnpaid:'確定取消未繳費報名？',refund:'確定處理退費？'}[regAction];
+  if(regAction==='refund' || regAction==='markRefunded') { await openRefundPanel(regId,btn,sid); return; }
+  if(regAction==='note') { toast('備註功能尚未串接，請先使用完整資料或後台備註欄',5000); return; }
+  if(regAction==='remindPayment') { toast('提醒功能尚未串接信件模板，這次不會送出通知',5000); return; }
+  const question={reject:'確定標記為不錄取？',waitlist:'確定標記為備取？',confirmPayment:'確定確認付款？',cancelUnpaid:'確定取消未繳費報名？'}[regAction];
   if(question && !confirm(question)) return;
   const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
   try{
