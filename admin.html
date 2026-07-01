@@ -20,6 +20,11 @@
 @media(max-width:860px){html,body{font-size:16px}.app{padding:10px 10px calc(104px + var(--safe-bottom))}.brand-title{font-size:17px}.brand-sub{max-width:44vw}.hide-sm{display:none}.tabs{bottom:8px;width:calc(100vw - 16px);border-radius:22px;padding:7px}.tab{font-size:13px;min-height:44px;border-radius:16px}.page-title{display:block}.page-actions{margin-top:10px;justify-content:flex-start}.session-head{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.compact-grid{grid-template-columns:1fr}.reg-card{grid-template-columns:1fr}.reg-actions{flex-direction:row;flex-wrap:wrap}.reg-actions .btn{flex:1 1 auto}.settings-grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.kv{grid-template-columns:82px 1fr}.card-actions .btn{flex:1 1 calc(50% - 8px)}}@media(max-width:430px){.stats{grid-template-columns:repeat(2,1fr)}.settings-grid{grid-template-columns:1fr}.card-actions .btn{flex:1 1 100%}}
 
 .session-card.compact-session{border-radius:18px;overflow:hidden}.session-compact-row{display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(360px,2fr) auto;gap:12px;align-items:center;padding:14px 16px;background:#fff}.session-compact-title{font-size:20px;font-weight:950;line-height:1.25}.session-chip-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:6px 9px;font-size:13px;font-weight:900;white-space:nowrap;text-decoration:none;color:inherit}.chip.click{cursor:pointer}.chip.click:hover{box-shadow:0 6px 16px rgba(0,0,0,.10);transform:translateY(-1px)}button.chip{font:inherit}.chip b{font-size:16px}.chip.green{background:var(--green)}.chip.yellow{background:var(--yellow)}.chip.blue{background:var(--blue)}.chip.pink{background:var(--pink)}.chip.purple{background:var(--purple)}.chip.gray{background:#F4F0EA}.detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}.report-card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px}.report-title{font-size:18px;font-weight:950;margin-bottom:10px}.mini-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mini-stat{border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px;text-align:center;position:relative}.mini-stat.click::after{content:"點";position:absolute;right:8px;top:6px;font-size:10px;color:#628E87;background:#EEF7F4;border-radius:999px;padding:1px 5px}.metric-click{position:relative}.metric-click::after{content:"點";font-size:10px;color:#628E87;background:#EEF7F4;border-radius:999px;padding:1px 5px;margin-left:6px}.mini-stat b{display:block;font-size:22px}button.mini-stat{font:inherit;color:inherit;cursor:pointer;width:100%}button.mini-stat.click:hover{border-color:#9EB9B4;box-shadow:0 8px 20px rgba(0,0,0,.08);transform:translateY(-1px)}.info-line.click{border:1px solid var(--line);border-radius:13px;background:#fff;margin:6px 0;padding:9px 10px;cursor:pointer;width:100%;font:inherit;color:inherit;text-align:left}.info-line.click:hover{border-color:#9EB9B4;box-shadow:0 7px 16px rgba(0,0,0,.08);transform:translateY(-1px)}.click-note{font-size:12px;color:var(--muted);font-weight:850;margin-top:6px}.finance-side{position:sticky;top:78px}.readable-detail{display:grid;gap:12px}.quality-warn{background:#fff8ed;border:1px solid #f3d2a2;border-radius:14px;padding:10px;color:#7a3c00;font-weight:850;line-height:1.6}.daily-list{display:flex;flex-direction:column;gap:4px;align-items:flex-end}.session-actions-compact{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}@media(max-width:900px){.session-compact-row{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.finance-side{position:static}.mini-stat-row{grid-template-columns:repeat(2,1fr)}}
+
+
+/* 待辦進度條模板｜20260701 */
+.todo-card{grid-template-columns:1fr auto;gap:14px;align-items:start}.todo-headline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.todo-main-title{font-size:21px!important;font-weight:950;line-height:1.35;color:#1f1f1f}.todo-socials{display:inline-flex;gap:6px;flex-wrap:wrap;vertical-align:middle}.todo-social{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:30px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:950;text-decoration:none;color:#333}.todo-social.fb{background:#EAF1FF;color:#2354A5}.todo-social.ig{background:#FFF0F7;color:#A13A78}.todo-social.web{background:#EEF7F4;color:#2d6a4f}.todo-stage-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 8px}.todo-stage-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:7px 13px;border:2px solid #1f1f1f;background:#fff;font-size:17px;font-weight:950;line-height:1.1}.todo-stage-badge.pending{background:var(--yellow)}.todo-stage-badge.unpaid{background:var(--pink)}.todo-stage-badge.paymentPending{background:var(--purple)}.todo-stage-badge.checkin{background:var(--green)}.todo-stage-badge.refund{background:var(--pink);border-color:#C8645D}.todo-stage-badge.dataIssue{background:#fff8ed;border-color:#B99745}.todo-stage-badge.equipment{background:var(--blue)}.todo-next{font-size:16px;font-weight:900;color:#333}.todo-sub{font-size:15.5px;line-height:1.65;color:#333;font-weight:800;margin-top:6px}.todo-flow{display:flex;gap:5px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px 10px;margin-top:10px}.todo-flow-step{border:1px solid var(--line);background:#F6F3EE;color:#777;border-radius:999px;padding:4px 8px;font-size:13px;font-weight:900;line-height:1.2}.todo-flow-step.done{background:#EEF7EA;color:#3C6E2D;border-color:#CFE3C5}.todo-flow-step.active{background:#fff;color:#111;border:2px solid #111;box-shadow:0 4px 12px rgba(0,0,0,.08)}.todo-flow-step.alert{background:#FFF0F0;color:#A43636;border-color:#E6B5B5}.todo-flow-arrow{color:#aaa;font-size:12px}.todo-direct-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;align-content:flex-start}.todo-direct-actions .btn{min-width:86px}.todo-one-layer-note{font-size:13px;color:var(--muted);font-weight:850;margin-top:6px}@media(max-width:860px){.todo-card{grid-template-columns:1fr}.todo-main-title{font-size:18px!important}.todo-stage-badge{font-size:16px}.todo-next,.todo-sub{font-size:15px}.todo-direct-actions{justify-content:flex-start}.todo-flow{overflow-x:auto;flex-wrap:nowrap}.todo-flow-step{white-space:nowrap}}
+
 </style>
 </head>
 <body>
@@ -58,7 +63,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260701-admin93-three-pages-template-010';
+const ADMIN_BUILD = '20260701-admin93-todo-progress-template-011';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -353,22 +358,55 @@ function normalizeTodoRow(r){
 function todoKindFromRow(r){
   const review=String(r.reviewStatus||r.status||r.review_status||'');
   const pay=String(r.paymentStatus||r.payStatus||r.payment_status||'');
-  const transfer=String(r.transferStatus||r.transfer_status||'');
-  if(transfer.includes('退費')||transfer.includes('退款')||transfer.includes('refund')) return 'refund';
-  if(review.includes('待審核')) return 'pending';
-  if(pay.includes('待確認')||pay.includes('付款待確認')) return 'paymentPending';
+  const transfer=String(r.transferStatus||r.transfer_status||r.refundStatus||r.refund_status||'');
+  const check=String(r.checkinStatus||r.checkin||r.checkin_status||'');
+  const eq=regEquipText(r);
+  const dates=regDateText(r);
+  const hasDataIssue = (dates.includes('未設定') || !r.email || !r.phone || !(r.brandName||r.brand||r.brand_name||r.name) || String(r.dataQualityIssues||'').length>0);
+  if(transfer.includes('退費')||transfer.includes('退款')||transfer.includes('refund')||pay.includes('已退費')||pay.includes('已退款')) return 'refund';
+  if(hasDataIssue) return 'dataIssue';
+  if(review.includes('待審核') || review==='待審' || review==='報名成功' || review==='') return 'pending';
+  if(review.includes('已錄取') && (pay.includes('待確認')||pay.includes('付款待確認')||pay.includes('回報'))) return 'paymentPending';
   if(review.includes('已錄取') && (pay.includes('未繳費')||!pay)) return 'unpaid';
+  if(review.includes('已錄取') && (isPaidText(pay)||isFreePayText(pay)) && !check.includes('已報到')) return 'checkin';
+  if(review.includes('已錄取') && (isPaidText(pay)||isFreePayText(pay)) && eq && eq!=='無' && eq!=='未設定') return 'equipment';
   return 'all';
 }
 function todoLabelFromKind(kind){
-  return {pending:'待審核',paymentPending:'付款待確認',unpaid:'未繳費',refund:'退款待處理',all:'待處理'}[kind] || kind || '待處理';
+  return {pending:'待審核',unpaid:'待付款',paymentPending:'付款待確認',checkin:'待報到',refund:'退費待處理',dataIssue:'資料異常',equipment:'設備待確認',all:'待處理'}[kind] || kind || '待處理';
+}
+function todoNextText(kind){
+  return {pending:'請主辦決定',unpaid:'等待攤商付款',paymentPending:'請主辦對帳',checkin:'活動當日報到',refund:'請處理退費',dataIssue:'請補齊或修正資料',equipment:'確認每日與整場設備',all:'請確認狀態'}[kind] || '請確認狀態';
+}
+function todoFlowHtml(kind){
+  const steps=[['pending','待審核'],['unpaid','待付款'],['paymentPending','付款待確認'],['checkin','待報到'],['refund','退費待處理'],['dataIssue','資料異常'],['equipment','設備待確認']];
+  const idx=steps.findIndex(x=>x[0]===kind);
+  let out='<div class="todo-flow" aria-label="待辦流程">';
+  steps.forEach((st,i)=>{
+    const cls = i===idx ? 'active' : (idx>=0 && i<idx ? 'done' : '');
+    const alert = (st[0]==='refund'||st[0]==='dataIssue') ? ' alert' : '';
+    out+='<span class="todo-flow-step '+cls+alert+'">'+safe(st[1])+'</span>';
+    if(i<steps.length-1) out+='<span class="todo-flow-arrow">›</span>';
+  });
+  out+='</div>';
+  return out;
+}
+function todoSocialLinks(r){
+  const fb=normalizeMemberFb(r.fb||r.fbUrl||r.fb_url||r.facebook||r.facebook_url||'');
+  const ig=normalizeMemberIg(r.ig||r.igUrl||r.ig_url||r.instagram||r.instagram_url||'');
+  const web=normalizeMemberUrl(r.website||r.websiteUrl||r.website_url||r.officialUrl||r.official_url||r.url||r.web||r.homepage||'');
+  let out='';
+  if(fb) out+='<a class="todo-social fb" href="'+attr(fb)+'" target="_blank" rel="noopener" title="開啟 Facebook">FB</a>';
+  if(ig) out+='<a class="todo-social ig" href="'+attr(ig)+'" target="_blank" rel="noopener" title="開啟 Instagram">IG</a>';
+  if(web) out+='<a class="todo-social web" href="'+attr(web)+'" target="_blank" rel="noopener" title="開啟官網">官網</a>';
+  return out ? '<span class="todo-socials">'+out+'</span>' : '';
 }
 async function buildTodoRowsFromSessions(){
   if(!AdminState.sessions.length){
     try{ const rows=await api({action:'getSessionDashboard'}); AdminState.sessions=Array.isArray(rows)?rows:[]; }catch(e){}
   }
   AdminState.currentLayer='todos';
-  const wanted=[['pending','待審核'],['paymentPending','付款待確認'],['unpaid','未繳費'],['refund','退款待處理']];
+  const wanted=[['pending','待審核'],['paymentPending','付款待確認'],['unpaid','待付款'],['refund','退費待處理']];
   const out=[]; const seen=new Set();
   for(const s of AdminState.sessions){
     const sid=sessionId(s); if(!sid) continue;
@@ -389,10 +427,12 @@ async function buildTodoRowsFromSessions(){
 function renderTodoRows(rows){
   let out='';
   const list=sortNearestFirst((Array.isArray(rows)?rows:[]).map(normalizeTodoRow).filter(r=>hasTodoRegId(r)), regSortTs);
+  AdminState.currentList=list;
   for(const r of list){
     const sid=r.sessionId||'';
     const title=r.sessionName||sessionName(sessionById(sid))||'場次';
-    const label=r.label||todoLabelFromKind(r.kind);
+    const kind=todoKindFromRow(r);
+    const label=todoLabelFromKind(kind);
     const who=r.brandName||r.brand||r.brand_name||r.name||r.email||'未填品牌';
     const phone=r.phone||r.mobile||'';
     const email=r.email||'';
@@ -400,18 +440,35 @@ function renderTodoRows(rows){
     const stalls=r.stallCount||r.stall_count||r.stalls||'';
     const amount=Number(r.amount||r.total||r.totalAmount||r.registration_total_amount||0);
     const equip=regEquipText(r);
-    const sub=[];
-    if(r.name && r.name!==who) sub.push('聯絡人：'+safe(r.name));
-    if(phone) sub.push('電話：'+safe(phone));
-    if(email) sub.push('Email：'+safe(email));
-    if(dates && dates.indexOf('未設定')<0) sub.push('報名日期：'+safe(dates));
-    if(stalls) sub.push('攤位數：'+safe(stalls));
-    if(amount) sub.push('金額：'+money(amount));
-    if(equip && equip!=='未設定') sub.push('設備：'+safe(equip));
-    const tags='<div class="tag-row"><span class="tag warn">'+safe(label)+'</span>'+statusTags(r)+socialLinks(r)+'</div>';
-    out+='<article class="reg-card todo-card"><div><div class="reg-title todo-main-title">'+safe(title)+'｜'+safe(who)+'</div><div class="reg-sub todo-sub">'+(sub.join('　')||safe(label))+'</div>'+tags+'</div><div class="reg-actions todo-direct-actions">'+actionButtons(r)+'</div></article>';
+    const info=[];
+    const contact=[];
+    if(r.name && r.name!==who) contact.push('聯絡人：'+safe(r.name));
+    if(phone) contact.push('電話：'+safe(phone));
+    if(email) contact.push('Email：'+safe(email));
+    if(contact.length) info.push(contact.join('　'));
+    const line2=[];
+    if(dates) line2.push('報名日期：'+safe(dates));
+    if(stalls) line2.push('攤位數：'+safe(stalls));
+    if(amount) line2.push('金額：'+money(amount));
+    if(equip && equip!=='未設定') line2.push('設備：'+safe(equip));
+    if(line2.length) info.push(line2.join('　'));
+    out+='<article class="reg-card todo-card"><div><div class="todo-headline"><span class="reg-title todo-main-title">'+safe(title)+'｜'+safe(who)+'</span>'+todoSocialLinks(r)+'</div><div class="todo-stage-row"><span class="todo-stage-badge '+safe(kind)+'">'+safe(label)+'</span><span class="todo-next">下一步：'+safe(todoNextText(kind))+'</span></div><div class="reg-sub todo-sub">'+(info.join('<br>')||safe(label))+'</div>'+todoFlowHtml(kind)+'</div><div class="reg-actions todo-direct-actions">'+todoStageButtons(r,kind)+'</div></article>';
   }
   $('todoList').innerHTML=out||'<div class="empty">目前沒有待辦</div>';
+}
+function todoStageButtons(r,kind){
+  const id=r.id||r.regId||r.registrationId||r.registration_id||'';
+  const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||'';
+  if(!id) return '<span class="tag">缺少報名 ID</span>';
+  const btn=(act,label,cls='secondary')=>'<button class="btn small '+cls+'" onclick="runRegAction(\''+attr(id)+'\',\''+attr(act)+'\',this,\''+attr(sid)+'\')">'+safe(label)+'</button>';
+  if(kind==='pending') return btn('approve','錄取')+btn('reject','不錄取')+btn('waitlist','備取');
+  if(kind==='paymentPending') return btn('confirmPayment','確認付款')+btn('markUnpaid','退回未繳費')+btn('note','備註','secondary');
+  if(kind==='unpaid') return btn('remindPayment','提醒')+btn('note','備註','secondary');
+  if(kind==='checkin') return btn('checkin','報到')+btn('note','備註','secondary');
+  if(kind==='refund') return btn('refund','處理退費')+btn('markRefunded','標記已退費')+btn('note','備註','secondary');
+  if(kind==='dataIssue') return '<button class="btn small secondary" onclick="openRegDetail(\''+attr(id)+'\')">完整資料</button>'+btn('note','備註','secondary');
+  if(kind==='equipment') return '<button class="btn small secondary" onclick="openEquipmentPanel(\''+attr(sid)+'\')">設備總表</button>'+btn('note','備註','secondary');
+  return actionButtons(r);
 }
 
 function memberBrand(m){ return m.brandName||m.brand_name||m.brand||m.storeName||m.store_name||m.displayName||m.name||m.email||'未命名會員'; }
