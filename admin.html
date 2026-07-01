@@ -110,6 +110,40 @@
   .invoice-compact-row{grid-template-columns:1fr 1fr;}
 }
 
+
+
+/* 20260701 場次設定基本資料緊密版：只調整場次設定內容，不動其他頁 */
+.tight-session-settings .session-basic-grid{display:grid;grid-template-columns:minmax(220px,2fr) minmax(150px,1.1fr) minmax(145px,.9fr) minmax(180px,1fr);gap:8px 10px;align-items:end;}
+.tight-session-settings .session-basic-grid .full{grid-column:1 / -1;}
+.tight-session-settings .session-basic-grid .span2{grid-column:span 2;}
+.tight-session-settings .session-basic-grid .span3{grid-column:span 3;}
+.tight-session-settings .review-toggle-box{min-height:38px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:8px 10px;display:flex;align-items:center;gap:8px;font-weight:950;}
+.tight-session-settings .review-toggle-box small{color:var(--muted);font-size:12px;font-weight:850;}
+.tight-session-settings .portal-inline-row{display:flex;flex-wrap:wrap;gap:8px 14px;padding:8px 10px;border:1px solid var(--line);border-radius:14px;background:#fff;}
+.tight-session-settings .org-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.equip-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;}
+.equip-compact-card{border:1px solid #EFE5DA;border-radius:14px;background:#fff;padding:8px;min-width:0;}
+.equip-compact-card .equip-name-readonly{font-size:15px;font-weight:950;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.equip-compact-card .eq-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;align-items:end;}
+.equip-compact-card .eq-mini-grid label{font-size:11px!important;color:#777!important;margin:0!important;font-weight:900!important;}
+.equip-compact-card .eq-mini-grid input{min-height:32px!important;font-size:14px!important;padding:5px 6px!important;border-radius:10px!important;}
+.equip-compact-card .eq-open-line{margin-top:6px;}
+.tight-session-settings .date-head-row,.tight-session-settings .date-line-row{grid-template-columns:132px minmax(64px,82px) minmax(116px,1fr) minmax(116px,1fr) 88px 78px 50px!important;gap:6px!important;}
+.tight-session-settings .date-line-row input[id^="set_date_label_"]{max-width:82px!important;}
+.seat-map-save-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+.seat-map-save-inline .btn{min-height:34px!important;}
+@media(max-width:900px){
+  .tight-session-settings .session-basic-grid{grid-template-columns:1fr 1fr;}
+  .tight-session-settings .session-basic-grid .span2,.tight-session-settings .session-basic-grid .span3,.tight-session-settings .session-basic-grid .full{grid-column:1 / -1;}
+  .tight-session-settings .org-row{grid-template-columns:1fr;}
+  .equip-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:560px){
+  .tight-session-settings .session-basic-grid{grid-template-columns:1fr;}
+  .equip-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .tight-session-settings .date-line-row{grid-template-columns:1fr 1fr!important;}
+}
+
 </style>
 </head>
 <body>
@@ -517,15 +551,17 @@ function sessionEquipFormHtml(equip){
     const price = x.price ?? x.unitPrice ?? x.unit_price ?? 0;
     const max = x.maxPerStall ?? x.max_per_stall ?? x.limit ?? 0;
     const open = x.open!==false && x.enabled!==false && x.active!==false;
-    return '<div class="equip-line-row" data-eq-name="'+attr(name)+'">'
+    return '<div class="equip-compact-card equip-line-row" data-eq-name="'+attr(name)+'">'
       +'<div class="equip-name-readonly">'+safe(name)+'</div>'
-      +'<input class="eq-incl" type="number" min="0" value="'+attr(incl)+'" title="每攤內含">'
-      +'<input class="eq-price" type="number" min="0" value="'+attr(price)+'" title="單價">'
-      +'<input class="eq-max" type="number" min="0" value="'+attr(max)+'" title="每攤上限">'
-      +'<label class="tight-check"><input class="eq-open" type="checkbox" '+(open?'checked':'')+'> 開放</label>'
+      +'<div class="eq-mini-grid">'
+      +'<label>內含<input class="eq-incl" type="number" min="0" value="'+attr(incl)+'" title="每攤內含"></label>'
+      +'<label>單價<input class="eq-price" type="number" min="0" value="'+attr(price)+'" title="單價"></label>'
+      +'<label>上限<input class="eq-max" type="number" min="0" value="'+attr(max)+'" title="每攤上限"></label>'
+      +'</div>'
+      +'<div class="eq-open-line"><label class="tight-check"><input class="eq-open" type="checkbox" '+(open?'checked':'')+'> 開放</label></div>'
       +'</div>';
   }).join('');
-  return '<div class="compact-equip-box"><div class="compact-head"><span>設備名稱</span><span>每攤內含</span><span>單價</span><span>每攤上限</span><span>開放</span></div>'+rows+'</div>';
+  return '<div class="compact-equip-box"><div class="equip-card-grid">'+rows+'</div></div>';
 }
 function collectSessionEquip(){
   const out={};
@@ -701,7 +737,7 @@ function toggleSessionSeatSettings(){
   if(note){
     if(!on) note.textContent='選位功能未啟用。';
     else if(!mapUrl) note.textContent='請先上傳已編號場地圖並儲存，再建立號碼清單。';
-    else if(AdminSessionSeatMapDirty) note.textContent='已載入新地圖，請先按「儲存場次設定」保存地圖，再建立或修改號碼。';
+    else if(AdminSessionSeatMapDirty) note.textContent='已載入新地圖，請先按「儲存地圖」保存後，再建立或修改號碼。';
     else note.textContent='已可依已編號場地圖建立號碼清單。';
   }
   if(rows && on && (!mapUrl || AdminSessionSeatMapDirty)){
@@ -714,7 +750,7 @@ function loadSessionSeatMapFile(input){
   if(!file) return;
   if(!/^image\//.test(file.type||'')){ toast('請選擇圖片檔'); input.value=''; return; }
   const reader=new FileReader();
-  reader.onload=()=>{ const url=reader.result||''; if($('set_seatMapUrl')) $('set_seatMapUrl').value=url; AdminSessionSeatMapDirty=true; toggleSessionSeatSettings(); toast('已載入場地圖，請先按「儲存場次設定」保存'); };
+  reader.onload=()=>{ const url=reader.result||''; if($('set_seatMapUrl')) $('set_seatMapUrl').value=url; AdminSessionSeatMapDirty=true; toggleSessionSeatSettings(); toast('已載入場地圖，請先按「儲存地圖」保存'); };
   reader.onerror=()=>toast('場地圖讀取失敗');
   reader.readAsDataURL(file);
 }
@@ -747,6 +783,24 @@ async function saveSessionSeatSettings(sid){
   if(enabled || seats.length || mapUrl){
     await apiPost({action:'saveSeatMap',sessionId:sid,enabled,mapUrl,holdHours,seats});
   }
+}
+
+async function saveSessionSeatMapOnly(sid,btn){
+  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
+  if(!mapUrl){ toast('請先上傳或貼上已編號場地圖'); return; }
+  const old=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='儲存地圖中…'; }
+  try{
+    const moduleOn = $('mod_seats') ? !!$('mod_seats').checked : true;
+    const enabled = moduleOn && !!$('set_seatPricingEnabled')?.checked;
+    const holdHours=Number($('set_seatHoldHours')?.value||24)||24;
+    const seats=collectSessionSeatItems();
+    await apiPost({action:'saveSeatMap',sessionId:sid,enabled,mapUrl,holdHours,seats});
+    AdminSessionSeatMapDirty=false;
+    toast('已儲存場地圖，可建立或修改號碼清單');
+    await loadSessionSeatSettings(sid, sessionById(sid)||{});
+  }catch(e){ toast('儲存地圖失敗：'+e.message,8000); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
 }
 
 async function openSessionSettings(sid){
@@ -856,39 +910,38 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   const equipmentBody = '<div class="form-field full"><label>基本配備說明</label><input id="set_basicEquip" value="'+attr(s.basicEquip||s.basic_equip||'')+'"><div class="sub">文字只做顯示說明；正式設備項目只讀資料庫 equip_json，不自動新增名稱。</div></div>'+sessionEquipFormHtml(equip);
   const addonsBody = sessionAddonsFormHtml(addons);
   const invoiceBody = sessionInvoiceFormHtml(tax);
-  const agreementBody = '<div class="form-grid"><div class="form-field"><label>合約同意</label><label class="tight-check"><input type="checkbox" id="set_agreementRequired" '+(sessionBool(agreementRequired,true)?'checked':'')+'> 報名時要求同意合約</label></div><div class="form-field"><label>套用後台設定版本</label><select id="set_agreementTemplate" onchange="syncAgreementTemplateSelection()">'+agreementTemplateOptionsHtml(agreementTemplates,s)+'</select><div class="sub">目前版本：<span id="agreementVersionPreview">'+safe(currentAgreementVersion || '請選擇版本')+'</span></div></div><input type="hidden" id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"><input type="hidden" id="set_agreementVersion" value="'+attr(currentAgreementVersion)+'"></div><div class="compact-actions"><button type="button" class="btn secondary small" onclick="openInlineAgreementCreate()">＋ 新增本場次合約</button></div><div class="notice">合約正文在「後台設定 → 合約管理」新增或修改；場次設定只選套用版本。</div>';
-  const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field full"><label>已編號場地圖</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="請上傳或貼上已編號場地圖 URL"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div><div class="sub">上傳新地圖後請先按「儲存場次設定」，再建立或修改號碼清單。</div></div></div><div id="set_seatTools" style="display:none"><div class="seat-map-save-note" id="set_seatMapNote"></div><div class="seat-batch-inline" id="set_seatBatchBox"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1" placeholder="起始"><input id="set_seatCount" type="number" value="" placeholder="數量"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>狀態</span><span>加價</span><span>啟用</span><span>備註</span><span></span></div><div id="set_seatRows"><div class="sub">尚未讀取號碼清單。</div></div></div><div class="sub">選位使用「已編號場地圖＋號碼狀態清單」，不使用拖拉點位。</div>';
+  const agreementBody = '<div class="form-grid"><div class="form-field"><label>選擇合約</label><select id="set_agreementTemplate" onchange="syncAgreementTemplateSelection()">'+agreementTemplateOptionsHtml(agreementTemplates,s)+'</select><div class="sub">目前版本：<span id="agreementVersionPreview">'+safe(currentAgreementVersion || '請選擇版本')+'</span></div></div><div class="form-field"><label>合約同意</label><label class="tight-check"><input type="checkbox" id="set_agreementRequired" '+(sessionBool(agreementRequired,true)?'checked':'')+'> 報名時要求同意合約</label></div><input type="hidden" id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"><input type="hidden" id="set_agreementVersion" value="'+attr(currentAgreementVersion)+'"></div><div class="compact-actions"><button type="button" class="btn secondary small" onclick="openInlineAgreementCreate()">＋ 新增本場次合約</button></div><div class="notice">合約正文在「後台設定 → 合約管理」新增或修改；場次設定只選套用版本。</div>';
+  const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field full"><label>已編號場地圖</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="請上傳或貼上已編號場地圖 URL"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div><div class="seat-map-save-inline"><button type="button" class="btn secondary small" onclick="saveSessionSeatMapOnly(\''+attr(sid)+'\',this)">儲存地圖</button><span class="sub">地圖儲存後，才建立或修改號碼清單。</span></div></div></div><div id="set_seatTools" style="display:none"><div class="seat-map-save-note" id="set_seatMapNote"></div><div class="seat-batch-inline" id="set_seatBatchBox"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1" placeholder="起始"><input id="set_seatCount" type="number" value="" placeholder="數量"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>狀態</span><span>加價</span><span>啟用</span><span>備註</span><span></span></div><div id="set_seatRows"><div class="sub">尚未讀取號碼清單。</div></div></div><div class="sub">選位使用「已編號場地圖＋號碼狀態清單」，不使用拖拉點位。</div>';
   return '<div class="readable-detail tight-session-settings">'
-  +'<div class="report-card"><div class="report-title">基本資料</div><div class="form-grid">'
+  +'<div class="report-card"><div class="report-title">基本資料</div><div class="session-basic-grid">'
   +'<div class="form-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div>'
-  +'<div class="form-field"><label>類型</label><select id="set_type"><option '+(String(s.type||'市集場次')==='市集場次'?'selected':'')+'>市集場次</option><option '+(String(s.type||'')==='活動報名'?'selected':'')+'>活動報名</option><option '+(String(s.type||'')==='合作申請'?'selected':'')+'>合作申請</option><option '+(String(s.type||'')==='通路寄賣'?'selected':'')+'>通路寄賣</option></select></div>'
-  +'<div class="form-field"><label>系列 / 活動 ID</label><input id="set_eventId" value="'+attr(s.eventId||s.event_id||'')+'"></div>'
+  +'<div class="form-field"><label>類型</label><select id="set_type"><option '+(String(s.type||'市集場次')==='市集場次'?'selected':'')+'>市集場次</option><option '+(String(s.type||'')==='體驗活動'||String(s.type||'')==='活動報名'?'selected':'')+'>體驗活動</option><option '+(String(s.type||'')==='通路寄賣'?'selected':'')+'>通路寄賣</option><option '+(String(s.type||'')==='合作洽詢'||String(s.type||'')==='合作申請'?'selected':'')+'>合作洽詢</option></select></div>'
+  +'<div class="form-field"><label>審核制</label><div class="review-toggle-box"><input type="checkbox" id="set_needReviewCheck" '+(sessionBool(needReview,true)?'checked':'')+' onchange="document.getElementById(\'set_reviewMode\').value=this.checked?\'review\':\'instant\'"><span>審核</span><small>未勾＝免審核</small><input type="hidden" id="set_reviewMode" value="'+(sessionBool(needReview,true)?'review':'instant')+'"></div></div>'
+  +'<div class="form-field"><label>ID</label><input id="set_eventId" value="'+attr(s.eventId||s.event_id||'')+'"></div>'
   +'<div class="form-field"><label>地區</label><input id="set_region" value="'+attr(s.region||'')+'"></div>'
   +'<div class="form-field"><label>場地名稱</label><input id="set_venue" value="'+attr(s.venue||s.location||'')+'"></div>'
-  +'<div class="form-field"><label>主辦 / 合作單位</label><input id="set_organizer" value="'+attr(s.organizer||s.coorg||'')+'"></div>'
-  +'<div class="form-field"><label>協辦 / 共同主辦</label><input id="set_coorg" value="'+attr(s.coOrganizer||s.co_organizer||'')+'"></div>'
   +'<div class="form-field"><label>報名狀態</label><select id="set_status"><option '+(String(s.status||'報名中')==='報名中'?'selected':'')+'>報名中</option><option '+(String(s.status||'')==='已關閉'||String(s.status||'')==='關閉'?'selected':'')+'>已關閉</option><option '+(String(s.status||'')==='封存'||String(s.status||'')==='已封存'?'selected':'')+'>封存</option></select></div>'
-  +'<div class="form-field"><label>審核制</label><select id="set_reviewMode"><option value="review" '+(sessionBool(needReview,true)?'selected':'')+'>審核</option><option value="instant" '+(!sessionBool(needReview,true)?'selected':'')+'>免審核（報名繳費=完成）</option></select></div>'
-  +'<div class="form-field full"><label>封面 / 主題圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
+  +'<div></div>'
+  +'<div class="form-field full"><label>顯示入口</label><div class="portal-inline-row">'+portalCheckHtml('market','市集報名',portals)+portalCheckHtml('experience','體驗活動',portals)+portalCheckHtml('consign','通路寄賣',portals)+portalCheckHtml('collab','合作洽詢',portals)+'</div></div>'
   +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:74px">'+safe(s.desc||s.description||'')+'</textarea></div>'
+  +'<div class="form-field full"><label>主視覺圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
+  +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位（＋可新增）</label><input id="set_coorg" value="'+attr(s.coOrganizer||s.co_organizer||s.coorg||'')+'" placeholder="可用逗號分隔多個合作單位"></div></div></div>'
   +'</div></div>'
   +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
-  +'<div class="report-card"><div class="report-title">費用與入口</div><div class="form-grid">'
+  +'<div class="report-card"><div class="report-title">費用與名額</div><div class="form-grid">'
   +'<div class="form-field"><label>多日優惠總價</label><input id="set_fee" type="number" value="'+attr(s.fee||0)+'"><div class="sub">0＝不設優惠</div></div>'
   +'<div class="form-field"><label>保證金 / 押金</label><input id="set_deposit" type="number" value="'+attr(s.deposit||0)+'"></div>'
   +'<div class="form-field"><label>開放攤數 / 名額</label><input id="set_limit" type="number" value="'+attr(s.limit||s.limitCount||s.limit_count||s.capacity||0)+'"></div>'
   +'<div class="form-field"><label>最大攤數</label><input id="set_maxStalls" type="number" value="'+attr(s.maxStalls||s.max_stalls||0)+'"></div>'
-  +'<div class="form-field full"><label>顯示入口</label><div class="tight-check-row">'+portalCheckHtml('market','市集報名',portals)+portalCheckHtml('experience','體驗活動',portals)+portalCheckHtml('consign','通路寄賣',portals)+portalCheckHtml('collab','合作洽詢',portals)+'</div></div>'
   +'</div></div>'
   +featureSectionHtml('equipment','設備選擇',mods,equipmentBody)
   +featureSectionHtml('addons','加購項目',mods,addonsBody)
-  +featureSectionHtml('agreement','合約同意',mods,agreementBody)
+  +featureSectionHtml('agreement','合約',mods,agreementBody)
   +featureSectionHtml('seats','選位 / 攤位',mods,seatsBody)
   +featureSectionHtml('invoice','發票資料',mods,invoiceBody)
-  +'<div class="notice">儲存只送明確欄位；未啟用的功能資料會保留在資料庫，不由前端清空。</div><div class="card-actions"><button class="btn" onclick="saveSessionSettings(\''+attr(sid)+'\',this)">儲存場次設定</button></div>'
+  +'<div class="card-actions"><button class="btn" onclick="saveSessionSettings(\''+attr(sid)+'\',this)">儲存場次設定</button></div>'
   +'</div>';
 }
-
 async function saveSessionSettings(sid,btn){
   const old=btn.textContent; btn.disabled=true; btn.textContent='檢查中…';
   try{
