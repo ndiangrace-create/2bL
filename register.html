@@ -2539,7 +2539,7 @@ async function safeGetMyRegs(email, phone){
     const list=Array.isArray(regs)?regs:[];
     ST.regs=list;
     renderMyRegs(list);
-    try{ if(typeof renderSessions==='function' && Array.isArray(ST.sessions) && ST.sessions.length) renderSessions(); }catch(_e){}
+    try{ if(Array.isArray(ST.sessions) && ST.sessions.length){ ['renderRecentSessions','renderSessions','renderAllSessions','renderHomeFallbackSessions'].forEach(fn=>{ try{ if(typeof window[fn]==='function') window[fn](); }catch(_e){} }); } }catch(_e){}
     return list;
   }catch(e){
     console.warn('[getMyRegs failed]',e);
@@ -2895,17 +2895,24 @@ function myRegForSession(s){
   if(!ST.memberEmail || !Array.isArray(ST.regs) || !ST.regs.length) return null;
   const sid=String(s && s.id || ''); const sname=String(s && s.name || '');
   const list=ST.regs.filter(r=>{
-    if(typeof isCancelledReg==='function' && isCancelledReg(r)) return false;
     const rid=String(r.sessionId || r.session_id || '');
     const rname=String(r.sessionName || r.sesName || '');
     return (sid && rid===sid) || (sname && rname===sname);
   });
-  return list.length ? list[list.length-1] : null;
+  if(!list.length) return null;
+  // 優先顯示仍有效的報名；若全都取消/退費，就顯示最新那筆（讓你知道曾報過、可重報）
+  const active=list.filter(r=> !(typeof isCancelledReg==='function' && isCancelledReg(r)));
+  return active.length ? active[active.length-1] : list[list.length-1];
 }
 function myRegBadge(s){
   const r=myRegForSession(s); if(!r) return '';
   const p=mReviewPill(r);
-  return `<span style="display:inline-flex;align-items:center;gap:3px;background:${p.bg};color:${p.color};border:1px solid ${p.border};padding:1px 8px;border-radius:5px;font-size:14px;font-weight:700;flex-shrink:0">${p.icon} 你已報名·${esc(p.text)}</span>`;
+  const t=String(p.text||'');
+  let label;
+  if(t==='已取消') label='已取消·可重報';
+  else if(t==='未錄取') label='未錄取';
+  else label='你已報名·'+t;
+  return `<span style="display:inline-flex;align-items:center;gap:3px;background:${p.bg};color:${p.color};border:1px solid ${p.border};padding:1px 8px;border-radius:5px;font-size:14px;font-weight:700;flex-shrink:0">${p.icon?p.icon+' ':''}${esc(label)}</span>`;
 }
 function renderSessionCard(s){
   const full = Number(s.limit)>0 && Number(s.count)>=Number(s.limit);
