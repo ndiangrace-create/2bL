@@ -1446,18 +1446,7 @@ async function openPaymentSettings(){
   openPanel('付款資訊','轉帳／刷卡／LINE Pay，儲存後會顯示在報名頁','<div class="loading">載入中…</div>');
   try{
     const d=await api({action:'getPaymentSettings'});
-    const html='<div class="form-grid">'
-      +'<div class="form-field full"><label>付款說明（顯示在報名頁上方）</label><textarea id="pay_note">'+safe(d.paymentNote||'')+'</textarea></div>'
-      +'<div class="section-label">轉帳</div>'
-      +'<div class="form-field"><label>銀行</label><input id="pay_bankName" value="'+attr(d.bankName||'')+'"></div>'
-      +'<div class="form-field"><label>分行</label><input id="pay_bankBranch" value="'+attr(d.bankBranch||'')+'"></div>'
-      +'<div class="form-field"><label>戶名</label><input id="pay_accountName" value="'+attr(d.accountName||'')+'"></div>'
-      +'<div class="form-field"><label>帳號</label><input id="pay_bankAccount" value="'+attr(d.bankAccount||'')+'"></div>'
-      +'<div class="section-label">刷卡</div>'
-      +'<div class="form-field full"><label>刷卡說明 / 連結</label><textarea id="pay_credit">'+safe(d.creditCardText||'')+'</textarea></div>'
-      +'<div class="section-label">LINE Pay</div>'
-      +'<div class="form-field full"><label>LINE Pay 說明 / 連結</label><textarea id="pay_linepay">'+safe(d.linePayText||'')+'</textarea></div>'
-      +'</div><div class="card-actions"><button class="btn" onclick="savePaymentSettings(this)">儲存付款資訊</button></div>';
+    const html=''+'<div class="report-card"><div class="report-title">付款說明</div><div class="sub" style="margin:2px 0 8px">顯示在報名頁最上方</div><textarea id="pay_note" style="width:100%;min-height:70px">'+safe(d.paymentNote||'')+'</textarea></div>'+'<div class="report-card"><div class="report-title">🏦 轉帳</div><div class="form-grid">'+'<div class="form-field"><label>銀行</label><input id="pay_bankName" value="'+attr(d.bankName||'')+'"></div>'+'<div class="form-field"><label>分行</label><input id="pay_bankBranch" value="'+attr(d.bankBranch||'')+'"></div>'+'<div class="form-field"><label>戶名</label><input id="pay_accountName" value="'+attr(d.accountName||'')+'"></div>'+'<div class="form-field"><label>帳號</label><input id="pay_bankAccount" value="'+attr(d.bankAccount||'')+'"></div>'+'</div></div>'+'<div class="report-card"><div class="report-title">💳 刷卡</div><div class="form-field full"><label>刷卡說明 / 連結</label><textarea id="pay_credit" style="width:100%;min-height:60px">'+safe(d.creditCardText||'')+'</textarea></div></div>'+'<div class="report-card"><div class="report-title">🟢 LINE Pay</div><div class="form-field full"><label>LINE Pay 說明 / 連結</label><textarea id="pay_linepay" style="width:100%;min-height:60px">'+safe(d.linePayText||'')+'</textarea></div></div>'+'<div class="card-actions"><button class="btn" onclick="savePaymentSettings(this)">儲存付款資訊</button></div>';
     $('panelBody').innerHTML=html;
   }catch(e){ $('panelBody').innerHTML='<div class="empty">付款資料載入失敗：'+safe(e.message)+'</div>'; }
 }
