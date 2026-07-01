@@ -144,6 +144,31 @@
   .tight-session-settings .date-line-row{grid-template-columns:1fr 1fr!important;}
 }
 
+
+/* 20260701 局部止血：設備表格還原、審核勾選縮小、合作單位新增列 */
+.tight-session-settings .review-toggle-box{min-height:auto!important;border:0!important;background:transparent!important;padding:0!important;gap:6px!important;font-weight:900!important;justify-content:flex-start!important;}
+.tight-session-settings .review-toggle-box input{width:18px!important;height:18px!important;min-height:18px!important;accent-color:var(--main)!important;}
+.tight-session-settings .review-toggle-box span{font-size:16px!important;}
+.tight-session-settings .review-toggle-box small{font-size:12px!important;color:var(--muted)!important;}
+.tight-session-settings #set_desc{min-height:128px!important;}
+.equip-table-box{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;}
+.equip-table-head,.equip-table-row{display:grid;grid-template-columns:minmax(68px,1fr) 92px 92px 92px 86px;gap:8px;align-items:center;padding:7px 9px;border-bottom:1px solid #f0e8de;}
+.equip-table-head{background:#faf8f4;color:#666;font-size:12px;font-weight:950;}
+.equip-table-row:last-child{border-bottom:0;}
+.equip-table-name{font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.equip-table-row input[type="number"]{min-height:34px!important;font-size:15px!important;padding:6px 8px!important;border-radius:10px!important;}
+.equip-table-row .tight-check{justify-content:flex-start!important;white-space:nowrap!important;}
+.coorg-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;}
+.coorg-extra-list{display:grid;gap:7px;margin-top:7px;}
+.coorg-extra-line{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+@media(max-width:760px){
+  .equip-table-head{display:none;}
+  .equip-table-row{grid-template-columns:70px 1fr 1fr;gap:6px;padding:8px;}
+  .equip-table-row .eq-max{grid-column:2 / 3;}
+  .equip-table-row .tight-check{grid-column:3 / 4;}
+  .coorg-row{grid-template-columns:1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -182,7 +207,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260701-session-setting-addon-contract-seat-013';
+const ADMIN_BUILD = '20260701-session-setting-local-fix-014';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -541,27 +566,44 @@ function collectSessionPortals(){
   return arr;
 }
 
+function coorgValuesFromSession(s){
+  const raw = String(s.coOrganizer||s.co_organizer||s.coorg||'').trim();
+  return raw ? raw.split(/[，,]/).map(x=>x.trim()).filter(Boolean) : [''];
+}
+function coorgRemoveBtnHtml(){ return '<button type="button" class="btn secondary small" onclick="this.closest(&quot;.coorg-extra-line&quot;).remove()">刪</button>'; }
+function coorgInputsHtml(s){
+  const vals = coorgValuesFromSession(s);
+  const first = vals.shift() || '';
+  const extras = vals.map(v=>'<div class="coorg-extra-line"><input class="set-coorg" value="'+attr(v)+'" placeholder="合作單位">'+coorgRemoveBtnHtml()+'</div>').join('');
+  return '<div class="coorg-row"><input class="set-coorg" id="set_coorg" value="'+attr(first)+'" placeholder="合作單位"><button type="button" class="btn secondary small" onclick="addCoorgField()">＋新增</button></div><div id="coorgExtraList" class="coorg-extra-list">'+extras+'</div>';
+}
+function addCoorgField(){
+  const box=$('coorgExtraList'); if(!box) return;
+  box.insertAdjacentHTML('beforeend','<div class="coorg-extra-line"><input class="set-coorg" value="" placeholder="合作單位">'+coorgRemoveBtnHtml()+'</div>');
+}
+function collectCoorgValues(){
+  return Array.from(document.querySelectorAll('.set-coorg')).map(el=>String(el.value||'').trim()).filter(Boolean);
+}
+
 function sessionEquipFormHtml(equip){
   const entries = Object.entries(equip||{}).filter(([name,def])=>String(name||'').trim() && def && typeof def==='object');
   if(!entries.length){
-    return '<div class="compact-equip-box"><div class="empty">資料庫尚未提供設備設定；本頁不自行新增預設設備名稱。</div></div>';
+    return '<div class="empty">資料庫尚未提供設備設定；本頁不自行新增預設設備名稱。</div>';
   }
   const rows=entries.map(([name,x])=>{
     const incl = x.incl ?? x.included ?? x.includedPerStall ?? x.included_per_stall ?? 0;
     const price = x.price ?? x.unitPrice ?? x.unit_price ?? 0;
     const max = x.maxPerStall ?? x.max_per_stall ?? x.limit ?? 0;
     const open = x.open!==false && x.enabled!==false && x.active!==false;
-    return '<div class="equip-compact-card equip-line-row" data-eq-name="'+attr(name)+'">'
-      +'<div class="equip-name-readonly">'+safe(name)+'</div>'
-      +'<div class="eq-mini-grid">'
-      +'<label>內含<input class="eq-incl" type="number" min="0" value="'+attr(incl)+'" title="每攤內含"></label>'
-      +'<label>單價<input class="eq-price" type="number" min="0" value="'+attr(price)+'" title="單價"></label>'
-      +'<label>上限<input class="eq-max" type="number" min="0" value="'+attr(max)+'" title="每攤上限"></label>'
-      +'</div>'
-      +'<div class="eq-open-line"><label class="tight-check"><input class="eq-open" type="checkbox" '+(open?'checked':'')+'> 開放</label></div>'
+    return '<div class="equip-table-row equip-line-row" data-eq-name="'+attr(name)+'">'
+      +'<div class="equip-table-name">'+safe(name)+'</div>'
+      +'<input class="eq-incl" type="number" min="0" value="'+attr(incl)+'" title="每攤內含" placeholder="內含">'
+      +'<input class="eq-price" type="number" min="0" value="'+attr(price)+'" title="單價" placeholder="單價">'
+      +'<input class="eq-max" type="number" min="0" value="'+attr(max)+'" title="每攤上限" placeholder="上限">'
+      +'<label class="tight-check"><input class="eq-open" type="checkbox" '+(open?'checked':'')+'> 開放</label>'
       +'</div>';
   }).join('');
-  return '<div class="compact-equip-box"><div class="equip-card-grid">'+rows+'</div></div>';
+  return '<div class="equip-table-box"><div class="equip-table-head"><span>設備</span><span>內含</span><span>單價</span><span>上限</span><span>開放</span></div>'+rows+'</div>';
 }
 function collectSessionEquip(){
   const out={};
@@ -704,7 +746,8 @@ function batchCreateSessionSeats(){
   if(!mapUrl || AdminSessionSeatMapDirty){ toast('請先儲存已編號場地圖後，再建立號碼'); return; }
   const prefix=String($('set_seatPrefix')?.value||'').trim().toUpperCase();
   const start=Math.max(1,Number($('set_seatStart')?.value||1)||1);
-  const count=Math.max(1,Number($('set_seatCount')?.value||0)||0);
+  const count=Number($('set_seatCount')?.value||0)||0;
+  if(count<=0){ toast('請先輸入要建立的號碼數量'); return; }
   let added=0;
   for(let i=0;i<count;i++){
     const code=prefix+String(start+i);
@@ -761,9 +804,11 @@ async function loadSessionSeatSettings(sid,s){
   try{
     const data=await api({action:'getSeatMap',sessionId:sid});
     if(data && !data.error){
-      if($('set_seatMapUrl') && data.mapUrl) $('set_seatMapUrl').value=data.mapUrl;
+      const dbMapUrl=String(data.mapUrl||'').trim();
+      if($('set_seatMapUrl') && dbMapUrl) $('set_seatMapUrl').value=dbMapUrl;
       if($('set_seatHoldHours') && data.holdHours) $('set_seatHoldHours').value=data.holdHours;
-      renderSessionSeatRows((data.seats&&data.seats.length)?data.seats:[]);
+      // 選位號碼必須跟已儲存的場地圖一起存在；沒有地圖時不顯示/沿用舊預設號碼。
+      renderSessionSeatRows((dbMapUrl && data.seats && data.seats.length)?data.seats:[]);
       toggleSessionSeatSettings();
       return;
     }
@@ -923,9 +968,9 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field"><label>報名狀態</label><select id="set_status"><option '+(String(s.status||'報名中')==='報名中'?'selected':'')+'>報名中</option><option '+(String(s.status||'')==='已關閉'||String(s.status||'')==='關閉'?'selected':'')+'>已關閉</option><option '+(String(s.status||'')==='封存'||String(s.status||'')==='已封存'?'selected':'')+'>封存</option></select></div>'
   +'<div></div>'
   +'<div class="form-field full"><label>顯示入口</label><div class="portal-inline-row">'+portalCheckHtml('market','市集報名',portals)+portalCheckHtml('experience','體驗活動',portals)+portalCheckHtml('consign','通路寄賣',portals)+portalCheckHtml('collab','合作洽詢',portals)+'</div></div>'
-  +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:74px">'+safe(s.desc||s.description||'')+'</textarea></div>'
+  +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:128px">'+safe(s.desc||s.description||'')+'</textarea></div>'
   +'<div class="form-field full"><label>主視覺圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
-  +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位（＋可新增）</label><input id="set_coorg" value="'+attr(s.coOrganizer||s.co_organizer||s.coorg||'')+'" placeholder="可用逗號分隔多個合作單位"></div></div></div>'
+  +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位</label>'+coorgInputsHtml(s)+'</div></div></div>'
   +'</div></div>'
   +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
   +'<div class="report-card"><div class="report-title">費用與名額</div><div class="form-grid">'
@@ -952,7 +997,7 @@ async function saveSessionSettings(sid,btn){
     const modules={equipment:!!$('mod_equipment')?.checked,addons:!!$('mod_addons')?.checked,agreement:!!$('mod_agreement')?.checked,seats:!!$('mod_seats')?.checked,invoice:!!$('mod_invoice')?.checked};
     const agreementVersion = $('set_agreementVersion')?.value.trim() || '';
     if(modules.agreement && $('set_agreementRequired')?.checked && !agreementVersion) throw new Error('請先選擇合約版本，或按「＋ 新增本場次合約」建立後再選用');
-    const body={action:'updateSession',id:sid,sessionId:sid,eventId:$('set_eventId').value.trim(),name,type:$('set_type').value.trim(),region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:$('set_coorg').value.trim(),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:collectSessionPortals(),dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,seatPricingEnabled:modules.seats ? !!$('set_seatPricingEnabled')?.checked : false,seatHoldHours:$('set_seatHoldHours')?.value,seatMapUrl:$('set_seatMapUrl')?.value.trim()||'',stallList:collectSessionSeatItems().map(x=>x.code)};
+    const body={action:'updateSession',id:sid,sessionId:sid,eventId:$('set_eventId').value.trim(),name,type:$('set_type').value.trim(),region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:collectSessionPortals(),dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,seatPricingEnabled:modules.seats ? !!$('set_seatPricingEnabled')?.checked : false,seatHoldHours:$('set_seatHoldHours')?.value,seatMapUrl:$('set_seatMapUrl')?.value.trim()||'',stallList:collectSessionSeatItems().map(x=>x.code)};
     if(modules.equipment) body.equip=collectSessionEquip();
     if(modules.addons) body.addons=collectSessionAddons();
     if(modules.invoice) body.invoiceTax=collectSessionInvoiceTax();
