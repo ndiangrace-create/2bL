@@ -5077,16 +5077,19 @@ function initFrontApp(){
   window.__tbFrontInited = true;
   try{ history.replaceState({page:'home'}, '', location.href); }catch(e){}
   try{
-    const savedEmail = (typeof memberSafeEmail==='function' ? memberSafeEmail() : '') || '';
-    if(savedEmail){
-      ST.memberEmail=savedEmail;
-      ST.member=null;
-      api({action:'getMember',email:savedEmail,_t:Date.now()}).then(m=>{ if(m&&!m.error) ST.member=m; }).catch(()=>{});
+    const saved=null; // V5: 只從 DB 回抓，不從 localStorage 讀取 member 資料
+    if(saved){
+      const d=JSON.parse(saved);
+      if(d&&d.email){
+        ST.memberEmail=d.email;
+        ST.member=null;
+        api({action:'getMember',email:d.email,_t:Date.now()}).then(m=>{ if(m&&!m.error) ST.member=m; }).catch(()=>{});
+      }
     }
   }catch(e){}
   try{ applySiteConfig(); }catch(e){}
-  // 使用 bootDbFront 統一處理：頁面還原 + loadHome；載入後若已登入，回抓我的報名讓清單顯示狀態
-  bootDbFront().then(()=>{ try{ if(ST.memberEmail && typeof safeGetMyRegs==='function') safeGetMyRegs(ST.memberEmail, (typeof memberSafePhone==='function'?memberSafePhone():'')); }catch(_e){} }).catch(e=>{ console.error('bootDbFront error:',e); loadHome(); try{ if(ST.memberEmail && typeof safeGetMyRegs==='function') safeGetMyRegs(ST.memberEmail, (typeof memberSafePhone==='function'?memberSafePhone():'')); }catch(_e){} });
+  // 使用 bootDbFront 統一處理：頁面還原 + loadHome
+  bootDbFront().catch(e=>{ console.error('bootDbFront error:',e); loadHome(); });
   const p=new URLSearchParams(window.location.search);
   const deepSes=p.get('ses')||p.get('session')||p.get('sessionId');
   if(deepSes){ setTimeout(()=>openSession(deepSes), 800); }
