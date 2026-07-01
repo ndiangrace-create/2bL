@@ -423,7 +423,7 @@ async function openSessionSettings(sid){
   AdminState.currentSessionId=sid;
   AdminState.currentLayer='sessionSettings';
   const s=sessionById(sid);
-  openPanel(sessionName(s)+'｜場次設定','已還原為舊版整合表單；一次檢查完整設定，合約只帶版本，不在本頁修改正文。','<div class="loading">設定載入中…</div>');
+  openPanel(sessionName(s)+'｜場次設定','已還原為舊版整合表單；入口分類與報名表欄位已分開，合約只帶版本，不在本頁修改正文。','<div class="loading">設定載入中…</div>');
   try{
     const rows=await api({action:'getSession',sessionId:sid}).catch(()=>null);
     const d=(Array.isArray(rows)?rows[0]:rows)||s;
@@ -488,12 +488,16 @@ function sessionSettingsLegacyForm(s){
       <div class="sub">每個日期可分別設定費用；多日設備與報名日期依日期資料對應。</div>
     </div>
 
-    <div class="report-card"><div class="report-title">顯示入口與報名模組</div>
+    <div class="report-card"><div class="report-title">顯示入口（前台分類）</div>
+      <div class="sub" style="margin-bottom:10px">只決定這個場次要出現在前台哪個入口，不是報名表欄位。</div>
       <div class="compact-grid">
         ${portalCheckHtml('市集報名',portals)}${portalCheckHtml('體驗活動',portals)}${portalCheckHtml('通路寄賣',portals)}${portalCheckHtml('合作洽詢',portals)}
       </div>
-      <div style="height:10px"></div>
-      <div id="legacyModuleGrid" class="compact-grid">${legacyModuleHtml(mods)}</div>
+    </div>
+
+    <div class="report-card"><div class="report-title">報名表欄位</div>
+      <div class="sub" style="margin-bottom:10px">只控制本場報名表要出現的補充欄位；設備、加購、合約、選位、發票請在下方各自區塊設定。</div>
+      <div id="legacyModuleGrid" class="compact-grid">${legacyModuleHtml(mods,type)}</div>
     </div>
 
     <div class="report-card"><div class="report-title">設備加購</div>
@@ -578,9 +582,20 @@ function collectLegacyDates(){
   }).filter(d=>d.date||d.label||d.start||d.end||d.fee||d.limit);
 }
 function portalCheckHtml(name,portals){ return '<label style="display:flex;align-items:center;gap:8px;font-weight:900"><input class="old_portal" type="checkbox" value="'+attr(name)+'" '+(Array.isArray(portals)&&portals.includes(name)?'checked':'')+'> '+safe(name)+'</label>'; }
-function legacyModuleHtml(mods){
-  const defs=[['market','市集報名'],['equipment','設備選擇'],['addons','加購項目'],['agreement','合約同意'],['seats','選位 / 攤位'],['invoice','發票資料']];
-  return defs.map(([k,l])=>'<label style="display:flex;align-items:center;gap:8px;font-weight:900"><input class="old_module" data-key="'+attr(k)+'" type="checkbox" '+((mods&&mods[k]===false)?'':'checked')+'> '+safe(l)+'</label>').join('');
+function legacyModuleHtml(mods,type){
+  const defs=[['sell_item','本次販售商品'],['adult','大人人數'],['child','小孩人數'],['remark','備註欄位']];
+  const presets={
+    '市集場次':{sell_item:true,adult:false,child:false,remark:true},
+    '活動報名':{sell_item:false,adult:true,child:true,remark:true},
+    '合作申請':{sell_item:false,adult:false,child:false,remark:true},
+    '通路寄賣':{sell_item:true,adult:false,child:false,remark:true}
+  };
+  const preset=presets[type]||{};
+  return defs.map(([k,l])=>{
+    const has=mods && Object.prototype.hasOwnProperty.call(mods,k);
+    const on=has ? !!mods[k] : !!preset[k];
+    return '<label style="display:flex;align-items:center;gap:8px;font-weight:900"><input class="old_module" data-key="'+attr(k)+'" type="checkbox" '+(on?'checked':'')+'> '+safe(l)+'</label>';
+  }).join('');
 }
 function legacyApplyModulePreset(force){
   if(force===false) return;
