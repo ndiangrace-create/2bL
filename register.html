@@ -1096,7 +1096,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 }
 
 </style>
-</head>
+<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
 
 <!-- ══ 首頁 ══ -->
@@ -1987,7 +1987,7 @@ if (!TENANT_ID) {
 // 不提供任何全域 fallback；tenant 未設定時保持空字串，UI 顯示「尚未設定」
 let LINE_URL = '';
 let LINEPAY_LINK = '';
-let CARDPAY_LINK = '';
+let CARDPAY_LINK = ''; let PAY_METHODS = [];
 
 const EQUIP_LIST_DEFS = {
   '桌':{icon:'🪵',price:350},'椅子':{icon:'🪑',price:20},
@@ -2759,19 +2759,9 @@ function renderHomeFallbackSessions(){
     el.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center;line-height:1.7">目前沒有開放報名場次<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>';
     return;
   }
-  el.innerHTML=open.slice(0,10).map(s=>{
-    const img=s.cover?`<img src="${esc(s.cover)}" alt="" onerror="this.parentElement.innerHTML='<div class=event-cover-placeholder>🎪</div>'">`:`<div class="event-cover-placeholder">🎪</div>`;
-    return `<div class="event-card" style="cursor:default">
-      <div class="event-cover">${img}<div class="event-status-tag">報名中</div></div>
-      <div class="event-info">
-        <div class="event-name">${esc(s.name||'近期開放報名')}</div>
-        <div class="event-meta">${esc([s.region,s.venue].filter(Boolean).join('｜'))}</div>
-        <button type="button" onclick="openSessionFromCard(event,'${esc(s.id)}')" style="margin-top:8px;width:100%;border:none;border-radius:10px;background:var(--g);color:#fff;font-size:16px;font-weight:900;padding:9px 10px;font-family:inherit;cursor:pointer">直接報名</button>
-      </div>
-    </div>`;
-  }).join('');
-  setTimeout(enableDragScroll,100);
+  el.innerHTML=open.slice(0,10).map(s=>renderSessionCard(s)).join('');
 }
+function _legacyHomeFallbackCard(){}
 async function loadHome(){
   const evEl=$('eventsList');
   if(evEl) evEl.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center">載入中…</div>';
@@ -4963,13 +4953,20 @@ function showPayPage(regId, sesName, amount){
   const payLastEl = $('payLastFive');
   const methodEl = $('payMethod');
   if(payLastEl) payLastEl.value = '';
-  if(methodEl) methodEl.value = 'ATM 轉帳';
+  if(methodEl){
+    let opts='<option value="ATM 轉帳">ATM／銀行轉帳</option>';
+    (PAY_METHODS||[]).forEach(m=>{ if(m && m.name){ const nm=String(m.name); opts+='<option value="'+nm.replace(/"/g,'&quot;')+'">'+escHtml(nm)+'</option>'; } });
+    methodEl.innerHTML=opts;
+    methodEl.value = 'ATM 轉帳';
+  }
   $('payFormArea').style.display='block';
   $('paySuccessArea').style.display='none';
   onPayMethodChange();
   $('payModal').classList.add('show');
 }
 function getPayLink(method){
+  const hit=(PAY_METHODS||[]).find(x=>x && x.name===method);
+  if(hit && hit.url) return hit.url;
   if(method==='LINE Pay') return LINEPAY_LINK;
   if(method==='信用卡付款') return CARDPAY_LINK;
   return '';
@@ -5149,6 +5146,7 @@ if(document.readyState==='loading'){
         const tenantCardPay = payCfg.cardPayUrl || payCfg.creditCardUrl || payCfg.ecpayUrl || payCfg.card || payCfg.card_pay_url || '';
         if(tenantLinePay) LINEPAY_LINK = tenantLinePay;
         if(tenantCardPay) CARDPAY_LINK = tenantCardPay;
+        PAY_METHODS = Array.isArray(payCfg.payMethods) ? payCfg.payMethods.filter(m=>m && m.name) : [];
         // 動態更新品牌顯示
         const logoText = document.querySelector('.logo-text');
         if(logoText && boot.tenant.name) logoText.childNodes[0].textContent = boot.tenant.name;
