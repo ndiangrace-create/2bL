@@ -497,6 +497,93 @@
   .session-actions-compact.session-action-grid .btn{font-size:13px!important;min-height:42px!important;}
 }
 
+
+/* 20260703 desktop-fluid-width：後台電腦版全區域改為接近滿版，自動縮放；只調整寬度與排版，不動資料/登入/API/金流 */
+@media(min-width:861px){
+  :root{--admin-desktop-gutter:clamp(18px,2.2vw,36px);} 
+  .app,
+  .topbar-in,
+  .panel-head-in,
+  .panel-body{
+    width:calc(100vw - (var(--admin-desktop-gutter) * 2))!important;
+    max-width:none!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  .app{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  .topbar-in{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  .panel-head{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  .panel-body{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  .page-title,
+  .filter-row,
+  .session-list,
+  .cards,
+  .member-list,
+  .settings-grid,
+  .detail-grid,
+  .table-wrap{
+    width:100%!important;
+    max-width:none!important;
+  }
+  .session-card.compact-session{
+    width:100%!important;
+    max-width:none!important;
+  }
+  .session-compact-row{
+    grid-template-columns:minmax(190px,.9fr) minmax(0,3.35fr) minmax(288px,.8fr)!important;
+    width:100%!important;
+  }
+  .session-chip-row.session-metric-grid{
+    grid-template-columns:repeat(8,minmax(62px,1fr))!important;
+    min-width:0!important;
+  }
+  .session-actions-compact.session-action-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    min-width:0!important;
+    width:100%!important;
+  }
+}
+@media(min-width:861px) and (max-width:1220px){
+  .session-compact-row{
+    grid-template-columns:minmax(160px,.75fr) minmax(0,3fr) minmax(248px,.8fr)!important;
+    gap:10px!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+  .session-chip-row.session-metric-grid{
+    grid-template-columns:repeat(8,minmax(54px,1fr))!important;
+    gap:6px!important;
+  }
+  .session-chip-row.session-metric-grid .chip{
+    min-height:54px!important;
+    padding:6px 4px!important;
+  }
+  .session-chip-row.session-metric-grid .chip .m-label{
+    font-size:11px!important;
+  }
+  .session-chip-row.session-metric-grid .chip b{
+    font-size:13px!important;
+  }
+  .session-actions-compact.session-action-grid .btn{
+    min-height:42px!important;
+    font-size:12px!important;
+    padding-left:4px!important;
+    padding-right:4px!important;
+  }
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
