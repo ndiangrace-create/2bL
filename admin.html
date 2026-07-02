@@ -374,6 +374,129 @@
   .tight-session-settings .equip-table-row .tight-check{font-size:14px!important;gap:4px!important;}
 }
 
+
+/* 20260703 template-1-session-overview：場次總覽改成模板1，方塊小圓角、數據兩排、操作兩排；只調整畫面排版 */
+.session-card.compact-session{
+  border-radius:18px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+.session-compact-row{
+  display:grid!important;
+  grid-template-columns:minmax(210px,1.05fr) minmax(640px,2.6fr) minmax(312px,.95fr)!important;
+  gap:12px!important;
+  align-items:stretch!important;
+  padding:14px 16px!important;
+  background:#fff!important;
+}
+.session-compact-row > div:first-child{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  min-width:0!important;
+}
+.session-compact-title{
+  font-size:20px!important;
+  font-weight:950!important;
+  line-height:1.25!important;
+  margin-bottom:8px!important;
+}
+.session-compact-row .meta{
+  gap:6px!important;
+  margin-top:0!important;
+}
+.session-compact-row .pill{
+  border-radius:10px!important;
+  padding:5px 9px!important;
+}
+.session-chip-row.session-metric-grid{
+  display:grid!important;
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  gap:7px!important;
+  align-content:center!important;
+}
+.session-chip-row.session-metric-grid .chip{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:2px!important;
+  min-height:56px!important;
+  padding:7px 6px!important;
+  border-radius:11px!important;
+  text-align:center!important;
+  white-space:normal!important;
+  line-height:1.18!important;
+  box-shadow:none!important;
+}
+.session-chip-row.session-metric-grid .chip .m-label{
+  display:block!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  color:#555!important;
+  white-space:nowrap!important;
+}
+.session-chip-row.session-metric-grid .chip b{
+  display:block!important;
+  font-size:14px!important;
+  font-weight:950!important;
+  color:#111!important;
+  word-break:break-word!important;
+}
+.session-chip-row.session-metric-grid .chip.click:hover{
+  border-color:#9EB9B4!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.08)!important;
+  transform:translateY(-1px)!important;
+}
+.session-actions-compact.session-action-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+  align-content:center!important;
+  justify-content:stretch!important;
+  min-width:300px!important;
+}
+.session-actions-compact.session-action-grid .btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+  padding:8px 6px!important;
+  border-radius:11px!important;
+  font-size:13px!important;
+  font-weight:950!important;
+  white-space:nowrap!important;
+}
+.session-actions-compact.session-action-grid .btn.secondary{
+  background:#fff!important;
+  color:#1f1f1f!important;
+  border:1px solid var(--line)!important;
+}
+.session-actions-compact.session-action-grid .download-btn{
+  background:#6FA59C!important;
+}
+@media(max-width:1180px){
+  .session-compact-row{
+    grid-template-columns:1fr!important;
+  }
+  .session-chip-row.session-metric-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  .session-actions-compact.session-action-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    min-width:0!important;
+  }
+}
+@media(max-width:560px){
+  .session-compact-row{padding:12px!important;gap:10px!important;}
+  .session-chip-row.session-metric-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .session-actions-compact.session-action-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .session-actions-compact.session-action-grid .btn{font-size:13px!important;min-height:42px!important;}
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -520,10 +643,11 @@ function sessionLimit(s){ return nz(s.limit ?? s.limitCount ?? s.maxStalls ?? s.
 function progressText(s){ const st=getStats(s); const lim=sessionLimit(s); return lim>0 ? (st.total + '/' + lim) : String(st.total); }
 function dailyChipHtml(rows,text,sid=''){
   if(Array.isArray(rows)&&rows.length){
-    return rows.map(r=>'<button type="button" class="chip blue click metric-click" onclick="openEquipmentPanel(\''+attr(sid)+'\',\''+attr(r.date||r.key||'')+'\',\''+attr(r.label||r.date||'每日')+'\')" title="只看 '+safe(r.label||r.date)+' 設備名單">'+safe(r.label||r.date)+'：攤 '+num(r.stallCount||0)+'｜'+safe(r.equipmentText||'無')+'</button>').join('');
+    return rows.map(r=>'<button type="button" class="chip blue click metric-click" onclick="openEquipmentPanel(\''+attr(sid)+'\',\''+attr(r.date||r.key||'')+'\',\''+attr(r.label||r.date||'每日')+'\')" title="只看 '+safe(r.label||r.date)+' 設備名單"><span class="m-label">'+safe(r.label||r.date||'每日')+'</span><b>攤 '+num(r.stallCount||0)+'｜'+safe(r.equipmentText||'無')+'</b></button>').join('');
   }
-  return '<button type="button" class="chip gray click metric-click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看每日設備報表">每日：'+safe(text||'無')+'</button>';
+  return '<button type="button" class="chip gray click metric-click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看每日設備報表"><span class="m-label">每日</span><b>'+safe(text||'無')+'</b></button>';
 }
+
 function drillList(sid,filter,label){ if(!sid){toast('缺少場次 ID，無法開明細'); return;} openSessionList(sid,filter,label); }
 function drillOr(sid,filter,label,count){ if(count!==undefined && count!==null && Number(count)<=0){ toast('目前沒有資料'); return; } drillList(sid,filter,label); }
 function financeLineHtml(label,value,sid,filter){ return '<button type="button" class="info-line click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')"><span class="metric-click">'+safe(label)+'</span><span>'+money(value)+'</span></button>'; }
@@ -543,9 +667,9 @@ function statButton(label,value,kind,sid,filter){ const disabled = value===undef
 
 function renderSessionCard(s){
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
-  const btn=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細">'+safe(label)+' <b>'+safe(value)+'</b></button>';
-  const financeBtn=(cls,label,value,filter)=>'<button type="button" class="chip '+cls+' click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')" title="查看'+safe(label)+'明細">'+safe(label)+' <b>'+safe(value)+'</b></button>';
-  return '<article class="session-card compact-session" id="session-'+attr(sid)+'"><div class="session-compact-row"><div><div class="session-compact-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div><div class="session-chip-row">'+btn('blue','進度',String(progressText(s))+(lim>0?' 攤':' 筆'),'all','全部名單')+btn('yellow','待審核',num(st.pending),'pending','待審核')+btn('blue','已錄取',num(st.approved),'approved','已錄取')+btn('green','已繳費',num(st.paid),'paid','已繳費')+btn('green','免費',num(st.free),'free','免費錄取')+btn('yellow','待確認',num(st.paymentPending),'paymentPending','付款待確認')+btn('pink','未繳費',num(st.unpaid),'unpaid','未繳費')+btn('blue','已報到',num(st.checked),'checked','已報到')+btn('pink','退款',num(st.refund),'refund','退款')+financeBtn('yellow','應收',money(f.receivable),'receivable')+financeBtn('green','已收',money(f.received),'received')+financeBtn('pink','未收',money(f.unreceived),'unreceived')+financeBtn('purple','押金',money(f.deposit),'deposit')+'<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表">設備總計 <b>'+safe(e.total||e.need||'無')+'</b></button>'+dailyChipHtml(e.dailyRows,e.dailyText,sid)+'</div><div class="session-actions-compact"><button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button><button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button><button class="btn small" onclick="downloadSessionExcel(\''+attr(sid)+'\')">Excel</button><button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button></div></div></article>';
+  const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
+  const financeMetric=(cls,label,value,filter)=>'<button type="button" class="chip '+cls+' click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')" title="查看'+safe(label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
+  return '<article class="session-card compact-session" id="session-'+attr(sid)+'"><div class="session-compact-row"><div><div class="session-compact-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div><div class="session-chip-row session-metric-grid">'+metric('blue','進度',String(progressText(s))+(lim>0?' 攤':' 筆'),'all','全部名單')+metric('yellow','待審核',num(st.pending),'pending','待審核')+metric('blue','已錄取',num(st.approved),'approved','已錄取')+metric('green','已繳費',num(st.paid),'paid','已繳費')+metric('green','免費',num(st.free),'free','免費錄取')+metric('yellow','待確認',num(st.paymentPending),'paymentPending','付款待確認')+metric('pink','未繳費',num(st.unpaid),'unpaid','未繳費')+metric('blue','已報到',num(st.checked),'checked','已報到')+metric('pink','退款',num(st.refund),'refund','退款')+financeMetric('yellow','應收',money(f.receivable),'receivable')+financeMetric('green','已收',money(f.received),'received')+financeMetric('pink','未收',money(f.unreceived),'unreceived')+financeMetric('purple','押金',money(f.deposit),'deposit')+'<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表"><span class="m-label">設備總計</span><b>'+safe(e.total||e.need||'無')+'</b></button>'+dailyChipHtml(e.dailyRows,e.dailyText,sid)+'</div><div class="session-actions-compact session-action-grid"><button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button><button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button><button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button><button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button></div></div></article>';
 }
 
 async function copySessionAction(sid){ if(!confirm('要複製這個場次嗎？會建立一個「（複製）」的新場次，內容全帶、名額歸零，之後改日期名稱即可。')) return; try{ await apiPost({action:'copySession', id:sid}); toast('已複製，請在列表編輯新場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('複製失敗：'+e.message,6000); } }
