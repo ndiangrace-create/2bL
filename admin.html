@@ -584,6 +584,180 @@
   }
 }
 
+
+/* 20260703 session-overview-3rows：場次總覽改成三層，設備放右側加寬，操作按鈕獨立第三排；不動資料/API/金流 */
+.session-card.session-card-3rows{
+  width:100%!important;
+  max-width:none!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+.session-card-3rows .session3-wrap{
+  display:grid!important;
+  grid-template-columns:minmax(190px,.72fr) minmax(0,3.4fr)!important;
+  gap:12px!important;
+  padding:14px 16px 10px!important;
+  background:#fff!important;
+  align-items:stretch!important;
+}
+.session-card-3rows .session3-info{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+}
+.session-card-3rows .session3-title{
+  font-size:20px!important;
+  font-weight:950!important;
+  line-height:1.28!important;
+  margin-bottom:8px!important;
+  word-break:break-word!important;
+}
+.session-card-3rows .session3-info .meta{
+  margin-top:0!important;
+  gap:6px!important;
+}
+.session-card-3rows .session3-info .pill{
+  border-radius:10px!important;
+  padding:5px 9px!important;
+}
+.session-card-3rows .session3-main,
+.session-card-3rows .session3-finance,
+.session-card-3rows .session3-equipment{
+  display:grid!important;
+  gap:7px!important;
+  min-width:0!important;
+}
+.session-card-3rows .session3-main{
+  grid-template-columns:repeat(8,minmax(58px,1fr))!important;
+}
+.session-card-3rows .session3-lower{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr)!important;
+  gap:10px!important;
+  padding:0 16px 10px!important;
+  align-items:stretch!important;
+}
+.session-card-3rows .session3-finance{
+  grid-template-columns:repeat(5,minmax(76px,1fr))!important;
+}
+.session-card-3rows .session3-equipment{
+  grid-template-columns:repeat(2,minmax(150px,1fr))!important;
+}
+.session-card-3rows .chip{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  min-height:58px!important;
+  padding:8px 7px!important;
+  border-radius:11px!important;
+  text-align:center!important;
+  white-space:normal!important;
+  line-height:1.18!important;
+  box-shadow:none!important;
+  min-width:0!important;
+}
+.session-card-3rows .session3-equipment .chip{
+  min-height:68px!important;
+  align-items:flex-start!important;
+  text-align:left!important;
+  padding:9px 10px!important;
+}
+.session-card-3rows .chip .m-label{
+  display:block!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  color:#555!important;
+  white-space:nowrap!important;
+}
+.session-card-3rows .chip b{
+  display:block!important;
+  width:100%!important;
+  font-size:14px!important;
+  font-weight:950!important;
+  color:#111!important;
+  word-break:break-word!important;
+  overflow-wrap:anywhere!important;
+}
+.session-card-3rows .session3-equipment .chip b{
+  font-size:14px!important;
+  line-height:1.3!important;
+}
+.session-card-3rows .chip.click:hover{
+  border-color:#9EB9B4!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.08)!important;
+  transform:translateY(-1px)!important;
+}
+.session-card-3rows .session3-actions{
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(92px,1fr))!important;
+  gap:8px!important;
+  padding:0 16px 14px!important;
+  border-top:1px solid #F0E8DE!important;
+  padding-top:10px!important;
+}
+.session-card-3rows .session3-actions .btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  padding:8px 8px!important;
+  border-radius:11px!important;
+  font-size:13px!important;
+  font-weight:950!important;
+  white-space:nowrap!important;
+}
+.session-card-3rows .session3-actions .btn.secondary{
+  background:#fff!important;
+  color:#1f1f1f!important;
+  border:1px solid var(--line)!important;
+}
+.session-card-3rows .session3-actions .download-btn{
+  background:#6FA59C!important;
+}
+@media(min-width:861px){
+  .session-card-3rows .session3-wrap{
+    grid-template-columns:minmax(190px,.68fr) minmax(0,3.6fr)!important;
+  }
+}
+@media(min-width:861px) and (max-width:1220px){
+  .session-card-3rows .session3-wrap{
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+  .session-card-3rows .session3-lower{
+    grid-template-columns:minmax(0,1fr) minmax(310px,.8fr)!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+  .session-card-3rows .session3-main{
+    grid-template-columns:repeat(8,minmax(50px,1fr))!important;
+    gap:6px!important;
+  }
+  .session-card-3rows .chip{min-height:54px!important;padding:6px 5px!important;}
+  .session-card-3rows .chip .m-label{font-size:11px!important;}
+  .session-card-3rows .chip b{font-size:13px!important;}
+  .session-card-3rows .session3-equipment .chip{min-height:66px!important;}
+  .session-card-3rows .session3-actions{padding-left:12px!important;padding-right:12px!important;grid-template-columns:repeat(7,minmax(76px,1fr))!important;}
+  .session-card-3rows .session3-actions .btn{font-size:12px!important;padding-left:4px!important;padding-right:4px!important;}
+}
+@media(max-width:860px){
+  .session-card-3rows .session3-wrap{grid-template-columns:1fr!important;padding:12px!important;gap:10px!important;}
+  .session-card-3rows .session3-main{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-lower{grid-template-columns:1fr!important;padding:0 12px 10px!important;}
+  .session-card-3rows .session3-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-equipment{grid-template-columns:1fr!important;}
+  .session-card-3rows .session3-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:10px 12px 12px!important;}
+}
+@media(max-width:430px){
+  .session-card-3rows .session3-main{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-finance{grid-template-columns:1fr 1fr!important;}
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -756,7 +930,42 @@ function renderSessionCard(s){
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
   const financeMetric=(cls,label,value,filter)=>'<button type="button" class="chip '+cls+' click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')" title="查看'+safe(label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
-  return '<article class="session-card compact-session" id="session-'+attr(sid)+'"><div class="session-compact-row"><div><div class="session-compact-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div><div class="session-chip-row session-metric-grid">'+metric('blue','進度',String(progressText(s))+(lim>0?' 攤':' 筆'),'all','全部名單')+metric('yellow','待審核',num(st.pending),'pending','待審核')+metric('blue','已錄取',num(st.approved),'approved','已錄取')+metric('green','已繳費',num(st.paid),'paid','已繳費')+metric('green','免費',num(st.free),'free','免費錄取')+metric('yellow','待確認',num(st.paymentPending),'paymentPending','付款待確認')+metric('pink','未繳費',num(st.unpaid),'unpaid','未繳費')+metric('blue','已報到',num(st.checked),'checked','已報到')+metric('pink','退款',num(st.refund),'refund','退款')+financeMetric('yellow','應收',money(f.receivable),'receivable')+financeMetric('green','已收',money(f.received),'received')+financeMetric('pink','未收',money(f.unreceived),'unreceived')+financeMetric('purple','押金',money(f.deposit),'deposit')+'<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表"><span class="m-label">設備總計</span><b>'+safe(e.total||e.need||'無')+'</b></button>'+dailyChipHtml(e.dailyRows,e.dailyText,sid)+'</div><div class="session-actions-compact session-action-grid"><button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button><button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button><button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button><button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button><button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button></div></div></article>';
+  const equipmentTotal='<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表"><span class="m-label">設備總計</span><b>'+safe(e.total||e.need||'無')+'</b></button>';
+  const equipmentDaily=dailyChipHtml(e.dailyRows,e.dailyText,sid);
+  return '<article class="session-card session-card-3rows" id="session-'+attr(sid)+'">'
+    +'<div class="session3-wrap">'
+      +'<div class="session3-info"><div class="session3-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div>'
+      +'<div class="session3-main">'
+        +metric('blue','進度',String(progressText(s))+(lim>0?' 攤':' 筆'),'all','全部名單')
+        +metric('yellow','待審核',num(st.pending),'pending','待審核')
+        +metric('blue','已錄取',num(st.approved),'approved','已錄取')
+        +metric('green','已繳費',num(st.paid),'paid','已繳費')
+        +metric('green','免費',num(st.free),'free','免費錄取')
+        +metric('yellow','待確認',num(st.paymentPending),'paymentPending','付款待確認')
+        +metric('pink','未繳費',num(st.unpaid),'unpaid','未繳費')
+        +metric('blue','已報到',num(st.checked),'checked','已報到')
+      +'</div>'
+    +'</div>'
+    +'<div class="session3-lower">'
+      +'<div class="session3-finance">'
+        +metric('pink','退款',num(st.refund),'refund','退款')
+        +financeMetric('yellow','應收',money(f.receivable),'receivable')
+        +financeMetric('green','已收',money(f.received),'received')
+        +financeMetric('pink','未收',money(f.unreceived),'unreceived')
+        +financeMetric('purple','押金',money(f.deposit),'deposit')
+      +'</div>'
+      +'<div class="session3-equipment">'+equipmentTotal+equipmentDaily+'</div>'
+    +'</div>'
+    +'<div class="session3-actions">'
+      +'<button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
+      +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
+      +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
+      +'<button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
+      +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button>'
+      +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button>'
+      +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button>'
+    +'</div>'
+  +'</article>';
 }
 
 async function copySessionAction(sid){ if(!confirm('要複製這個場次嗎？會建立一個「（複製）」的新場次，內容全帶、名額歸零，之後改日期名稱即可。')) return; try{ await apiPost({action:'copySession', id:sid}); toast('已複製，請在列表編輯新場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('複製失敗：'+e.message,6000); } }
