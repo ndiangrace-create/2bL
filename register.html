@@ -4944,6 +4944,8 @@ async function doSubmitCancel(){
       await safeGetMyRegs(ST.memberEmail);
     }
     ST._pendingCancelRegId=''; ST._pendingCancelSesName=''; ST._pendingCancelIsRefund=false;
+  }catch(e){
+    toast('❌ 取消失敗：'+(e&&e.message?e.message:e),6000);
   }finally{
     if(btn){btn.disabled=false;btn.textContent=ST._pendingCancelIsRefund?'送出退款申請':'我已了解，送出取消申請';}
   }
