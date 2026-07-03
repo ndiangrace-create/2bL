@@ -758,6 +758,184 @@
   .session-card-3rows .session3-finance{grid-template-columns:1fr 1fr!important;}
 }
 
+
+
+/* 20260703 compact-two-row-framework-final：場次總覽改成兩行資料＋第三排按鈕；設備固定右側加寬，按鈕不再擠右邊。只改排版，不動資料/API/登入/金流 */
+@media(min-width:861px){
+  :root{--admin-desktop-gutter:clamp(18px,2vw,34px);}
+  .app,.topbar-in,.panel-head-in,.panel-body{
+    width:calc(100vw - (var(--admin-desktop-gutter) * 2))!important;
+    max-width:none!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  .app,.topbar-in,.panel-body{padding-left:0!important;padding-right:0!important;}
+  .panel-head{padding-left:0!important;padding-right:0!important;}
+  .session-list{gap:12px!important;width:100%!important;max-width:none!important;}
+  .session-card.session-card-3rows{
+    width:100%!important;
+    max-width:none!important;
+    border-radius:18px!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  /* 第一排：場次資料＋主要狀態 */
+  .session-card-3rows .session3-wrap{
+    display:grid!important;
+    grid-template-columns:minmax(190px,0.72fr) minmax(0,3.6fr)!important;
+    gap:10px!important;
+    padding:10px 12px 7px!important;
+    align-items:stretch!important;
+    background:#fff!important;
+  }
+  .session-card-3rows .session3-info{
+    min-width:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+  }
+  .session-card-3rows .session3-title{
+    font-size:19px!important;
+    line-height:1.2!important;
+    margin:0 0 6px!important;
+    font-weight:950!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2!important;
+    -webkit-box-orient:vertical!important;
+    overflow:hidden!important;
+  }
+  .session-card-3rows .session3-info .meta{
+    gap:5px!important;
+    margin:0!important;
+  }
+  .session-card-3rows .session3-info .pill{
+    border-radius:10px!important;
+    padding:4px 8px!important;
+    font-size:13px!important;
+    line-height:1.25!important;
+  }
+  .session-card-3rows .session3-main{
+    display:grid!important;
+    grid-template-columns:repeat(8,minmax(50px,1fr))!important;
+    gap:6px!important;
+    align-content:center!important;
+    min-width:0!important;
+  }
+  /* 第二排：左財務＋右設備 */
+  .session-card-3rows .session3-lower{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.15fr) minmax(330px,.88fr)!important;
+    gap:10px!important;
+    padding:0 12px 8px!important;
+    align-items:stretch!important;
+  }
+  .session-card-3rows .session3-finance{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(58px,1fr))!important;
+    gap:6px!important;
+    min-width:0!important;
+  }
+  .session-card-3rows .session3-equipment{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(150px,1fr))!important;
+    gap:6px!important;
+    min-width:0!important;
+  }
+  /* 所有可點格子：縮小一點但維持整齊 */
+  .session-card-3rows .chip{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-width:0!important;
+    min-height:48px!important;
+    padding:5px 5px!important;
+    border-radius:10px!important;
+    gap:2px!important;
+    line-height:1.16!important;
+    text-align:center!important;
+    white-space:normal!important;
+    box-shadow:none!important;
+  }
+  .session-card-3rows .chip .m-label{
+    display:block!important;
+    font-size:11px!important;
+    line-height:1.1!important;
+    font-weight:950!important;
+    color:#555!important;
+    white-space:nowrap!important;
+  }
+  .session-card-3rows .chip b{
+    display:block!important;
+    width:100%!important;
+    font-size:13px!important;
+    line-height:1.18!important;
+    font-weight:950!important;
+    color:#111!important;
+    word-break:break-word!important;
+    overflow-wrap:anywhere!important;
+  }
+  .session-card-3rows .session3-equipment .chip{
+    min-height:64px!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    text-align:left!important;
+    padding:7px 9px!important;
+  }
+  .session-card-3rows .session3-equipment .chip .m-label{
+    font-size:11px!important;
+  }
+  .session-card-3rows .session3-equipment .chip b{
+    font-size:13px!important;
+    line-height:1.25!important;
+    max-height:42px!important;
+    overflow:hidden!important;
+  }
+  /* 第三排：操作按鈕整排放下方 */
+  .session-card-3rows .session3-actions{
+    display:grid!important;
+    grid-template-columns:repeat(7,minmax(76px,1fr))!important;
+    gap:7px!important;
+    padding:8px 12px 10px!important;
+    border-top:1px solid #F0E8DE!important;
+    background:#fff!important;
+  }
+  .session-card-3rows .session3-actions .btn{
+    width:100%!important;
+    min-width:0!important;
+    min-height:36px!important;
+    padding:6px 6px!important;
+    border-radius:10px!important;
+    font-size:12.5px!important;
+    line-height:1.15!important;
+    font-weight:950!important;
+    white-space:nowrap!important;
+  }
+  .session-card-3rows .session3-actions .btn.secondary{
+    background:#fff!important;
+    color:#1f1f1f!important;
+    border:1px solid var(--line)!important;
+  }
+  .session-card-3rows .session3-actions .download-btn{background:#6FA59C!important;}
+}
+@media(min-width:861px) and (max-width:1180px){
+  .session-card-3rows .session3-wrap{
+    grid-template-columns:minmax(160px,.62fr) minmax(0,3.2fr)!important;
+    gap:8px!important;
+  }
+  .session-card-3rows .session3-main{grid-template-columns:repeat(4,minmax(58px,1fr))!important;}
+  .session-card-3rows .session3-lower{grid-template-columns:minmax(0,1fr) minmax(280px,.86fr)!important;}
+  .session-card-3rows .session3-actions{grid-template-columns:repeat(7,minmax(66px,1fr))!important;}
+  .session-card-3rows .session3-actions .btn{font-size:12px!important;padding-left:3px!important;padding-right:3px!important;}
+}
+@media(max-width:860px){
+  .session-card-3rows .session3-wrap{grid-template-columns:1fr!important;padding:12px!important;gap:10px!important;}
+  .session-card-3rows .session3-main{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-lower{grid-template-columns:1fr!important;padding:0 12px 10px!important;}
+  .session-card-3rows .session3-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-equipment{grid-template-columns:1fr!important;}
+  .session-card-3rows .session3-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:10px 12px 12px!important;}
+}
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -796,7 +974,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260703-v11-session-overview-3rows';
+const ADMIN_BUILD = '20260703-compact-two-row-framework';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -1639,14 +1817,7 @@ async function saveSessionSettings(sid,btn){
 async function openSessionCreatePanel(){ openPanel('新增場次','建立一個新的場次','<div class="form-grid"><div class="form-field"><label>場次名稱</label><input id="new_name"></div><div class="form-field"><label>地點</label><input id="new_venue"></div><div class="form-field"><label>攤位費</label><input id="new_fee" type="number" value="0"></div><div class="form-field"><label>押金</label><input id="new_deposit" type="number" value="0"></div><div class="form-field full"><label>說明</label><textarea id="new_desc"></textarea></div></div><div class="card-actions"><button class="btn" onclick="createSession(this)">建立場次</button></div>'); }
 async function createSession(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…'; try{ await apiPost({action:'createSession',name:$('new_name').value.trim(),venue:$('new_venue').value.trim(),fee:$('new_fee').value,deposit:$('new_deposit').value,desc:$('new_desc').value}); toast('已建立場次'); closeAllPanels(); await refreshSessionsOverview(); }catch(e){toast('建立失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
 
-async function downloadSessionExcel(sid){ try{ const data=await api({action:'downloadSession',sessionId:sid}); const name=(data.filename)||(((data.session&&data.session.name)||sessionName(sessionById(sid))||sid)+'_完整名單.xlsx'); if(data.xlsxBase64){ const bin=atob(data.xlsxBase64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); const blob=new Blob([bytes],{type:data.mime||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name.endsWith('.xlsx')?name:name+'.xlsx'; a.click(); URL.revokeObjectURL(a.href); return; } const _csvCell=(v)=>{ v=(v==null?'':String(v)); return /[",\n]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v; };
-    const _rowsToCsv=(h,rows)=>{ let o=(h||[]).map(_csvCell).join(',')+'\n'; (rows||[]).forEach(r=>{ o+=(r||[]).map(_csvCell).join(',')+'\n'; }); return o; };
-    const reg=data.registrations||{headers:[],rows:[]}; const fin=data.finance||{headers:[],rows:[]};
-    let csv='\uFEFF報名名單\n'+_rowsToCsv(reg.headers,reg.rows);
-    if((fin.rows||[]).length) csv+='\n財務\n'+_rowsToCsv(fin.headers,fin.rows);
-    const cblob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-    const ca=document.createElement('a'); ca.href=URL.createObjectURL(cblob); ca.download=(name||'名單').replace(/\.xlsx$/,'')+'.csv'; ca.click(); URL.revokeObjectURL(ca.href);
-    toast('已下載名單（CSV，可用 Excel 開啟）'); }catch(e){toast('下載失敗：'+e.message,6000)} }
+async function downloadSessionExcel(sid){ try{ const data=await api({action:'downloadSession',sessionId:sid}); const name=(data.filename)||(((data.session&&data.session.name)||sessionName(sessionById(sid))||sid)+'_完整名單.xlsx'); if(data.xlsxBase64){ const bin=atob(data.xlsxBase64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); const blob=new Blob([bytes],{type:data.mime||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name.endsWith('.xlsx')?name:name+'.xlsx'; a.click(); URL.revokeObjectURL(a.href); return; } toast('Excel 產生失敗，請稍後再試。',7000); }catch(e){toast('下載失敗：'+e.message,6000)} }
 
 function csvCell(v){ const s=String(v??''); return '"'+s.replace(/"/g,'""')+'"'; }
 
