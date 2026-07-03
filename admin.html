@@ -375,567 +375,114 @@
 }
 
 
-/* 20260703 template-1-session-overview：場次總覽改成模板1，方塊小圓角、數據兩排、操作兩排；只調整畫面排版 */
-.session-card.compact-session{
-  border-radius:18px!important;
-  overflow:hidden!important;
-  background:#fff!important;
-}
-.session-compact-row{
-  display:grid!important;
-  grid-template-columns:minmax(210px,1.05fr) minmax(640px,2.6fr) minmax(312px,.95fr)!important;
-  gap:12px!important;
-  align-items:stretch!important;
-  padding:14px 16px!important;
-  background:#fff!important;
-}
-.session-compact-row > div:first-child{
-  display:flex!important;
-  flex-direction:column!important;
-  justify-content:center!important;
-  min-width:0!important;
-}
-.session-compact-title{
-  font-size:20px!important;
-  font-weight:950!important;
-  line-height:1.25!important;
-  margin-bottom:8px!important;
-}
-.session-compact-row .meta{
-  gap:6px!important;
-  margin-top:0!important;
-}
-.session-compact-row .pill{
-  border-radius:10px!important;
-  padding:5px 9px!important;
-}
-.session-chip-row.session-metric-grid{
-  display:grid!important;
-  grid-template-columns:repeat(8,minmax(0,1fr))!important;
-  gap:7px!important;
-  align-content:center!important;
-}
-.session-chip-row.session-metric-grid .chip{
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:2px!important;
-  min-height:56px!important;
-  padding:7px 6px!important;
-  border-radius:11px!important;
-  text-align:center!important;
-  white-space:normal!important;
-  line-height:1.18!important;
-  box-shadow:none!important;
-}
-.session-chip-row.session-metric-grid .chip .m-label{
-  display:block!important;
-  font-size:12px!important;
-  font-weight:950!important;
-  color:#555!important;
-  white-space:nowrap!important;
-}
-.session-chip-row.session-metric-grid .chip b{
-  display:block!important;
-  font-size:14px!important;
-  font-weight:950!important;
-  color:#111!important;
-  word-break:break-word!important;
-}
-.session-chip-row.session-metric-grid .chip.click:hover{
-  border-color:#9EB9B4!important;
-  box-shadow:0 8px 20px rgba(0,0,0,.08)!important;
-  transform:translateY(-1px)!important;
-}
-.session-actions-compact.session-action-grid{
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:7px!important;
-  align-content:center!important;
-  justify-content:stretch!important;
-  min-width:300px!important;
-}
-.session-actions-compact.session-action-grid .btn{
-  width:100%!important;
-  min-width:0!important;
-  min-height:44px!important;
-  padding:8px 6px!important;
-  border-radius:11px!important;
-  font-size:13px!important;
-  font-weight:950!important;
-  white-space:nowrap!important;
-}
-.session-actions-compact.session-action-grid .btn.secondary{
-  background:#fff!important;
-  color:#1f1f1f!important;
-  border:1px solid var(--line)!important;
-}
-.session-actions-compact.session-action-grid .download-btn{
-  background:#6FA59C!important;
-}
-@media(max-width:1180px){
-  .session-compact-row{
-    grid-template-columns:1fr!important;
-  }
-  .session-chip-row.session-metric-grid{
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  }
-  .session-actions-compact.session-action-grid{
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-    min-width:0!important;
-  }
-}
-@media(max-width:560px){
-  .session-compact-row{padding:12px!important;gap:10px!important;}
-  .session-chip-row.session-metric-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  }
-  .session-actions-compact.session-action-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  }
-  .session-actions-compact.session-action-grid .btn{font-size:13px!important;min-height:42px!important;}
-}
 
 
-/* 20260703 desktop-fluid-width：後台電腦版全區域改為接近滿版，自動縮放；只調整寬度與排版，不動資料/登入/API/金流 */
+
+/* 20260703 session-overview-small-grid：場次總覽小格子版；清除舊模板後只保留這一套，不動資料/API/onclick */
 @media(min-width:861px){
-  :root{--admin-desktop-gutter:clamp(18px,2.2vw,36px);} 
-  .app,
-  .topbar-in,
-  .panel-head-in,
-  .panel-body{
-    width:calc(100vw - (var(--admin-desktop-gutter) * 2))!important;
-    max-width:none!important;
-    margin-left:auto!important;
-    margin-right:auto!important;
+  :root{--overview-gutter:clamp(14px,1.8vw,28px);}
+  .app,.topbar-in,.panel-head-in,.panel-body{
+    width:calc(100vw - (var(--overview-gutter) * 2));
+    max-width:none;
+    margin-left:auto;
+    margin-right:auto;
   }
-  .app{
-    padding-left:0!important;
-    padding-right:0!important;
-  }
-  .topbar-in{
-    padding-left:0!important;
-    padding-right:0!important;
-  }
-  .panel-head{
-    padding-left:0!important;
-    padding-right:0!important;
-  }
-  .panel-body{
-    padding-left:0!important;
-    padding-right:0!important;
-  }
-  .page-title,
-  .filter-row,
-  .session-list,
-  .cards,
-  .member-list,
-  .settings-grid,
-  .detail-grid,
-  .table-wrap{
-    width:100%!important;
-    max-width:none!important;
-  }
-  .session-card.compact-session{
-    width:100%!important;
-    max-width:none!important;
-  }
-  .session-compact-row{
-    grid-template-columns:minmax(190px,.9fr) minmax(0,3.35fr) minmax(288px,.8fr)!important;
-    width:100%!important;
-  }
-  .session-chip-row.session-metric-grid{
-    grid-template-columns:repeat(8,minmax(62px,1fr))!important;
-    min-width:0!important;
-  }
-  .session-actions-compact.session-action-grid{
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-    min-width:0!important;
-    width:100%!important;
-  }
+  .app,.topbar-in,.panel-head,.panel-body{padding-left:0;padding-right:0;}
 }
-@media(min-width:861px) and (max-width:1220px){
-  .session-compact-row{
-    grid-template-columns:minmax(160px,.75fr) minmax(0,3fr) minmax(248px,.8fr)!important;
-    gap:10px!important;
-    padding-left:12px!important;
-    padding-right:12px!important;
-  }
-  .session-chip-row.session-metric-grid{
-    grid-template-columns:repeat(8,minmax(54px,1fr))!important;
-    gap:6px!important;
-  }
-  .session-chip-row.session-metric-grid .chip{
-    min-height:54px!important;
-    padding:6px 4px!important;
-  }
-  .session-chip-row.session-metric-grid .chip .m-label{
-    font-size:11px!important;
-  }
-  .session-chip-row.session-metric-grid .chip b{
-    font-size:13px!important;
-  }
-  .session-actions-compact.session-action-grid .btn{
-    min-height:42px!important;
-    font-size:12px!important;
-    padding-left:4px!important;
-    padding-right:4px!important;
-  }
-}
-
-
-/* 20260703 session-overview-3rows：場次總覽改成三層，設備放右側加寬，操作按鈕獨立第三排；不動資料/API/金流 */
-.session-card.session-card-3rows{
-  width:100%!important;
-  max-width:none!important;
-  border-radius:18px!important;
+.session-list{gap:10px!important;}
+.session-card.session-overview-small{
+  background:#fff!important;
+  border:1px solid #E9E1D8!important;
+  border-radius:15px!important;
+  box-shadow:0 6px 16px rgba(45,39,32,.045)!important;
   overflow:hidden!important;
-  background:#fff!important;
 }
-.session-card-3rows .session3-wrap{
+.session-overview-small .overview-grid{
   display:grid!important;
-  grid-template-columns:minmax(190px,.72fr) minmax(0,3.4fr)!important;
-  gap:12px!important;
-  padding:14px 16px 10px!important;
-  background:#fff!important;
-  align-items:stretch!important;
-}
-.session-card-3rows .session3-info{
-  min-width:0!important;
-  display:flex!important;
-  flex-direction:column!important;
-  justify-content:center!important;
-}
-.session-card-3rows .session3-title{
-  font-size:20px!important;
-  font-weight:950!important;
-  line-height:1.28!important;
-  margin-bottom:8px!important;
-  word-break:break-word!important;
-}
-.session-card-3rows .session3-info .meta{
-  margin-top:0!important;
-  gap:6px!important;
-}
-.session-card-3rows .session3-info .pill{
-  border-radius:10px!important;
-  padding:5px 9px!important;
-}
-.session-card-3rows .session3-main,
-.session-card-3rows .session3-finance,
-.session-card-3rows .session3-equipment{
-  display:grid!important;
+  grid-template-columns:minmax(180px,.72fr) minmax(0,2.8fr) minmax(0,1.45fr) minmax(270px,1.05fr)!important;
+  grid-template-areas:
+    "info main main equipment"
+    "info finance finance equipment";
   gap:7px!important;
-  min-width:0!important;
-}
-.session-card-3rows .session3-main{
-  grid-template-columns:repeat(8,minmax(58px,1fr))!important;
-}
-.session-card-3rows .session3-lower{
-  display:grid!important;
-  grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr)!important;
-  gap:10px!important;
-  padding:0 16px 10px!important;
   align-items:stretch!important;
+  padding:10px 12px 7px!important;
 }
-.session-card-3rows .session3-finance{
-  grid-template-columns:repeat(5,minmax(76px,1fr))!important;
-}
-.session-card-3rows .session3-equipment{
-  grid-template-columns:repeat(2,minmax(150px,1fr))!important;
-}
-.session-card-3rows .chip{
+.session-overview-small .overview-info{grid-area:info;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:6px;}
+.session-overview-small .overview-title{font-size:18px;font-weight:950;line-height:1.25;word-break:break-word;}
+.session-overview-small .meta{gap:5px!important;margin:0!important;}
+.session-overview-small .pill{border-radius:9px!important;padding:4px 8px!important;font-size:12px!important;line-height:1.25!important;}
+.session-overview-small .overview-main{grid-area:main;display:grid!important;grid-template-columns:repeat(8,minmax(48px,1fr))!important;gap:6px!important;}
+.session-overview-small .overview-finance{grid-area:finance;display:grid!important;grid-template-columns:repeat(5,minmax(68px,1fr))!important;gap:6px!important;}
+.session-overview-small .overview-equipment{grid-area:equipment;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;align-content:stretch!important;}
+.session-overview-small .overview-equipment .chip:first-child{grid-column:1 / -1!important;}
+.session-overview-small .chip{
   display:flex!important;
   flex-direction:column!important;
   align-items:center!important;
   justify-content:center!important;
-  gap:3px!important;
-  min-height:58px!important;
-  padding:8px 7px!important;
-  border-radius:11px!important;
-  text-align:center!important;
-  white-space:normal!important;
-  line-height:1.18!important;
-  box-shadow:none!important;
-  min-width:0!important;
-}
-.session-card-3rows .session3-equipment .chip{
-  min-height:68px!important;
-  align-items:flex-start!important;
-  text-align:left!important;
-  padding:9px 10px!important;
-}
-.session-card-3rows .chip .m-label{
-  display:block!important;
-  font-size:12px!important;
-  font-weight:950!important;
-  color:#555!important;
-  white-space:nowrap!important;
-}
-.session-card-3rows .chip b{
-  display:block!important;
-  width:100%!important;
-  font-size:14px!important;
-  font-weight:950!important;
-  color:#111!important;
-  word-break:break-word!important;
-  overflow-wrap:anywhere!important;
-}
-.session-card-3rows .session3-equipment .chip b{
-  font-size:14px!important;
-  line-height:1.3!important;
-}
-.session-card-3rows .chip.click:hover{
-  border-color:#9EB9B4!important;
-  box-shadow:0 8px 20px rgba(0,0,0,.08)!important;
-  transform:translateY(-1px)!important;
-}
-.session-card-3rows .session3-actions{
-  display:grid!important;
-  grid-template-columns:repeat(7,minmax(92px,1fr))!important;
-  gap:8px!important;
-  padding:0 16px 14px!important;
-  border-top:1px solid #F0E8DE!important;
-  padding-top:10px!important;
-}
-.session-card-3rows .session3-actions .btn{
-  width:100%!important;
   min-width:0!important;
   min-height:42px!important;
-  padding:8px 8px!important;
-  border-radius:11px!important;
-  font-size:13px!important;
+  padding:5px 6px!important;
+  border-radius:9px!important;
+  border:1px solid #E6DED4!important;
+  box-shadow:none!important;
+  white-space:normal!important;
+  line-height:1.16!important;
+  text-align:center!important;
+}
+.session-overview-small .overview-equipment .chip{
+  min-height:44px!important;
+  align-items:flex-start!important;
+  text-align:left!important;
+  padding:6px 8px!important;
+}
+.session-overview-small .chip .m-label{display:block!important;font-size:11px!important;font-weight:950!important;color:#555!important;white-space:nowrap!important;}
+.session-overview-small .chip b{display:block!important;width:100%!important;font-size:13px!important;font-weight:950!important;color:#111!important;word-break:break-word!important;overflow-wrap:anywhere!important;}
+.session-overview-small .chip.click:hover{border-color:#9EB9B4!important;box-shadow:0 6px 14px rgba(0,0,0,.07)!important;transform:translateY(-1px)!important;}
+.session-overview-small .overview-actions{
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(74px,1fr))!important;
+  gap:6px!important;
+  padding:7px 12px 10px!important;
+  border-top:1px solid #F0E8DE!important;
+}
+.session-overview-small .overview-actions .btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:32px!important;
+  padding:5px 7px!important;
+  border-radius:9px!important;
+  font-size:12px!important;
+  line-height:1.15!important;
   font-weight:950!important;
   white-space:nowrap!important;
 }
-.session-card-3rows .session3-actions .btn.secondary{
-  background:#fff!important;
-  color:#1f1f1f!important;
-  border:1px solid var(--line)!important;
-}
-.session-card-3rows .session3-actions .download-btn{
-  background:#6FA59C!important;
-}
-@media(min-width:861px){
-  .session-card-3rows .session3-wrap{
-    grid-template-columns:minmax(190px,.68fr) minmax(0,3.6fr)!important;
-  }
-}
-@media(min-width:861px) and (max-width:1220px){
-  .session-card-3rows .session3-wrap{
-    grid-template-columns:1fr!important;
-    gap:9px!important;
-    padding-left:12px!important;
-    padding-right:12px!important;
-  }
-  .session-card-3rows .session3-lower{
-    grid-template-columns:minmax(0,1fr) minmax(310px,.8fr)!important;
-    padding-left:12px!important;
-    padding-right:12px!important;
-  }
-  .session-card-3rows .session3-main{
-    grid-template-columns:repeat(8,minmax(50px,1fr))!important;
-    gap:6px!important;
-  }
-  .session-card-3rows .chip{min-height:54px!important;padding:6px 5px!important;}
-  .session-card-3rows .chip .m-label{font-size:11px!important;}
-  .session-card-3rows .chip b{font-size:13px!important;}
-  .session-card-3rows .session3-equipment .chip{min-height:66px!important;}
-  .session-card-3rows .session3-actions{padding-left:12px!important;padding-right:12px!important;grid-template-columns:repeat(7,minmax(76px,1fr))!important;}
-  .session-card-3rows .session3-actions .btn{font-size:12px!important;padding-left:4px!important;padding-right:4px!important;}
+.session-overview-small .overview-actions .btn.secondary{background:#fff!important;color:#1f1f1f!important;border:1px solid var(--line)!important;}
+.session-overview-small .overview-actions .download-btn{background:#6FA59C!important;}
+@media(min-width:861px) and (max-width:1240px){
+  .session-overview-small .overview-grid{grid-template-columns:minmax(160px,.62fr) minmax(0,2.4fr) minmax(0,1.2fr) minmax(230px,1fr)!important;gap:6px!important;padding:9px 10px 6px!important;}
+  .session-overview-small .overview-main{grid-template-columns:repeat(8,minmax(43px,1fr))!important;gap:5px!important;}
+  .session-overview-small .overview-finance{grid-template-columns:repeat(5,minmax(58px,1fr))!important;gap:5px!important;}
+  .session-overview-small .chip{min-height:40px!important;padding:4px 5px!important;}
+  .session-overview-small .chip .m-label{font-size:10.5px!important;}
+  .session-overview-small .chip b{font-size:12px!important;}
 }
 @media(max-width:860px){
-  .session-card-3rows .session3-wrap{grid-template-columns:1fr!important;padding:12px!important;gap:10px!important;}
-  .session-card-3rows .session3-main{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
-  .session-card-3rows .session3-lower{grid-template-columns:1fr!important;padding:0 12px 10px!important;}
-  .session-card-3rows .session3-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  .session-card-3rows .session3-equipment{grid-template-columns:1fr!important;}
-  .session-card-3rows .session3-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:10px 12px 12px!important;}
+  .session-card.session-overview-small{border-radius:15px!important;}
+  .session-overview-small .overview-grid{display:grid!important;grid-template-columns:1fr!important;grid-template-areas:"info" "main" "finance" "equipment";gap:7px!important;padding:10px!important;}
+  .session-overview-small .overview-main{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;}
+  .session-overview-small .overview-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;}
+  .session-overview-small .overview-equipment{grid-template-columns:1fr!important;gap:6px!important;}
+  .session-overview-small .chip{min-height:42px!important;}
+  .session-overview-small .overview-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:7px 10px 10px!important;}
+  .session-overview-small .overview-actions .btn{min-height:34px!important;}
 }
 @media(max-width:430px){
-  .session-card-3rows .session3-main{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  .session-card-3rows .session3-finance{grid-template-columns:1fr 1fr!important;}
+  .session-overview-small .overview-main,.session-overview-small .overview-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .session-overview-small .overview-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 }
 
 
-
-/* 20260703 compact-two-row-framework-final：場次總覽改成兩行資料＋第三排按鈕；設備固定右側加寬，按鈕不再擠右邊。只改排版，不動資料/API/登入/金流 */
-@media(min-width:861px){
-  :root{--admin-desktop-gutter:clamp(18px,2vw,34px);}
-  .app,.topbar-in,.panel-head-in,.panel-body{
-    width:calc(100vw - (var(--admin-desktop-gutter) * 2))!important;
-    max-width:none!important;
-    margin-left:auto!important;
-    margin-right:auto!important;
-  }
-  .app,.topbar-in,.panel-body{padding-left:0!important;padding-right:0!important;}
-  .panel-head{padding-left:0!important;padding-right:0!important;}
-  .session-list{gap:12px!important;width:100%!important;max-width:none!important;}
-  .session-card.session-card-3rows{
-    width:100%!important;
-    max-width:none!important;
-    border-radius:18px!important;
-    overflow:hidden!important;
-    background:#fff!important;
-  }
-  /* 第一排：場次資料＋主要狀態 */
-  .session-card-3rows .session3-wrap{
-    display:grid!important;
-    grid-template-columns:minmax(190px,0.72fr) minmax(0,3.6fr)!important;
-    gap:10px!important;
-    padding:10px 12px 7px!important;
-    align-items:stretch!important;
-    background:#fff!important;
-  }
-  .session-card-3rows .session3-info{
-    min-width:0!important;
-    display:flex!important;
-    flex-direction:column!important;
-    justify-content:center!important;
-  }
-  .session-card-3rows .session3-title{
-    font-size:19px!important;
-    line-height:1.2!important;
-    margin:0 0 6px!important;
-    font-weight:950!important;
-    display:-webkit-box!important;
-    -webkit-line-clamp:2!important;
-    -webkit-box-orient:vertical!important;
-    overflow:hidden!important;
-  }
-  .session-card-3rows .session3-info .meta{
-    gap:5px!important;
-    margin:0!important;
-  }
-  .session-card-3rows .session3-info .pill{
-    border-radius:10px!important;
-    padding:4px 8px!important;
-    font-size:13px!important;
-    line-height:1.25!important;
-  }
-  .session-card-3rows .session3-main{
-    display:grid!important;
-    grid-template-columns:repeat(8,minmax(50px,1fr))!important;
-    gap:6px!important;
-    align-content:center!important;
-    min-width:0!important;
-  }
-  /* 第二排：左財務＋右設備 */
-  .session-card-3rows .session3-lower{
-    display:grid!important;
-    grid-template-columns:minmax(0,1.15fr) minmax(330px,.88fr)!important;
-    gap:10px!important;
-    padding:0 12px 8px!important;
-    align-items:stretch!important;
-  }
-  .session-card-3rows .session3-finance{
-    display:grid!important;
-    grid-template-columns:repeat(5,minmax(58px,1fr))!important;
-    gap:6px!important;
-    min-width:0!important;
-  }
-  .session-card-3rows .session3-equipment{
-    display:grid!important;
-    grid-template-columns:repeat(2,minmax(150px,1fr))!important;
-    gap:6px!important;
-    min-width:0!important;
-  }
-  /* 所有可點格子：縮小一點但維持整齊 */
-  .session-card-3rows .chip{
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    min-width:0!important;
-    min-height:48px!important;
-    padding:5px 5px!important;
-    border-radius:10px!important;
-    gap:2px!important;
-    line-height:1.16!important;
-    text-align:center!important;
-    white-space:normal!important;
-    box-shadow:none!important;
-  }
-  .session-card-3rows .chip .m-label{
-    display:block!important;
-    font-size:11px!important;
-    line-height:1.1!important;
-    font-weight:950!important;
-    color:#555!important;
-    white-space:nowrap!important;
-  }
-  .session-card-3rows .chip b{
-    display:block!important;
-    width:100%!important;
-    font-size:13px!important;
-    line-height:1.18!important;
-    font-weight:950!important;
-    color:#111!important;
-    word-break:break-word!important;
-    overflow-wrap:anywhere!important;
-  }
-  .session-card-3rows .session3-equipment .chip{
-    min-height:64px!important;
-    align-items:flex-start!important;
-    justify-content:center!important;
-    text-align:left!important;
-    padding:7px 9px!important;
-  }
-  .session-card-3rows .session3-equipment .chip .m-label{
-    font-size:11px!important;
-  }
-  .session-card-3rows .session3-equipment .chip b{
-    font-size:13px!important;
-    line-height:1.25!important;
-    max-height:42px!important;
-    overflow:hidden!important;
-  }
-  /* 第三排：操作按鈕整排放下方 */
-  .session-card-3rows .session3-actions{
-    display:grid!important;
-    grid-template-columns:repeat(7,minmax(76px,1fr))!important;
-    gap:7px!important;
-    padding:8px 12px 10px!important;
-    border-top:1px solid #F0E8DE!important;
-    background:#fff!important;
-  }
-  .session-card-3rows .session3-actions .btn{
-    width:100%!important;
-    min-width:0!important;
-    min-height:36px!important;
-    padding:6px 6px!important;
-    border-radius:10px!important;
-    font-size:12.5px!important;
-    line-height:1.15!important;
-    font-weight:950!important;
-    white-space:nowrap!important;
-  }
-  .session-card-3rows .session3-actions .btn.secondary{
-    background:#fff!important;
-    color:#1f1f1f!important;
-    border:1px solid var(--line)!important;
-  }
-  .session-card-3rows .session3-actions .download-btn{background:#6FA59C!important;}
-}
-@media(min-width:861px) and (max-width:1180px){
-  .session-card-3rows .session3-wrap{
-    grid-template-columns:minmax(160px,.62fr) minmax(0,3.2fr)!important;
-    gap:8px!important;
-  }
-  .session-card-3rows .session3-main{grid-template-columns:repeat(4,minmax(58px,1fr))!important;}
-  .session-card-3rows .session3-lower{grid-template-columns:minmax(0,1fr) minmax(280px,.86fr)!important;}
-  .session-card-3rows .session3-actions{grid-template-columns:repeat(7,minmax(66px,1fr))!important;}
-  .session-card-3rows .session3-actions .btn{font-size:12px!important;padding-left:3px!important;padding-right:3px!important;}
-}
-@media(max-width:860px){
-  .session-card-3rows .session3-wrap{grid-template-columns:1fr!important;padding:12px!important;gap:10px!important;}
-  .session-card-3rows .session3-main{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
-  .session-card-3rows .session3-lower{grid-template-columns:1fr!important;padding:0 12px 10px!important;}
-  .session-card-3rows .session3-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  .session-card-3rows .session3-equipment{grid-template-columns:1fr!important;}
-  .session-card-3rows .session3-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:10px 12px 12px!important;}
-}
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -974,7 +521,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260703-compact-two-row-framework';
+const ADMIN_BUILD = '20260701-v10_2-settings-017';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -1110,10 +657,10 @@ function renderSessionCard(s){
   const financeMetric=(cls,label,value,filter)=>'<button type="button" class="chip '+cls+' click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')" title="查看'+safe(label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
   const equipmentTotal='<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表"><span class="m-label">設備總計</span><b>'+safe(e.total||e.need||'無')+'</b></button>';
   const equipmentDaily=dailyChipHtml(e.dailyRows,e.dailyText,sid);
-  return '<article class="session-card session-card-3rows" id="session-'+attr(sid)+'">'
-    +'<div class="session3-wrap">'
-      +'<div class="session3-info"><div class="session3-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div>'
-      +'<div class="session3-main">'
+  return '<article class="session-card session-overview-small" id="session-'+attr(sid)+'">'
+    +'<div class="overview-grid">'
+      +'<div class="overview-info"><div class="overview-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div>'
+      +'<div class="overview-main">'
         +metric('blue','進度',String(progressText(s))+(lim>0?' 攤':' 筆'),'all','全部名單')
         +metric('yellow','待審核',num(st.pending),'pending','待審核')
         +metric('blue','已錄取',num(st.approved),'approved','已錄取')
@@ -1123,18 +670,16 @@ function renderSessionCard(s){
         +metric('pink','未繳費',num(st.unpaid),'unpaid','未繳費')
         +metric('blue','已報到',num(st.checked),'checked','已報到')
       +'</div>'
-    +'</div>'
-    +'<div class="session3-lower">'
-      +'<div class="session3-finance">'
+      +'<div class="overview-finance">'
         +metric('pink','退款',num(st.refund),'refund','退款')
         +financeMetric('yellow','應收',money(f.receivable),'receivable')
         +financeMetric('green','已收',money(f.received),'received')
         +financeMetric('pink','未收',money(f.unreceived),'unreceived')
         +financeMetric('purple','押金',money(f.deposit),'deposit')
       +'</div>'
-      +'<div class="session3-equipment">'+equipmentTotal+equipmentDaily+'</div>'
+      +'<div class="overview-equipment">'+equipmentTotal+equipmentDaily+'</div>'
     +'</div>'
-    +'<div class="session3-actions">'
+    +'<div class="overview-actions">'
       +'<button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
       +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
       +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
@@ -1817,7 +1362,14 @@ async function saveSessionSettings(sid,btn){
 async function openSessionCreatePanel(){ openPanel('新增場次','建立一個新的場次','<div class="form-grid"><div class="form-field"><label>場次名稱</label><input id="new_name"></div><div class="form-field"><label>地點</label><input id="new_venue"></div><div class="form-field"><label>攤位費</label><input id="new_fee" type="number" value="0"></div><div class="form-field"><label>押金</label><input id="new_deposit" type="number" value="0"></div><div class="form-field full"><label>說明</label><textarea id="new_desc"></textarea></div></div><div class="card-actions"><button class="btn" onclick="createSession(this)">建立場次</button></div>'); }
 async function createSession(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…'; try{ await apiPost({action:'createSession',name:$('new_name').value.trim(),venue:$('new_venue').value.trim(),fee:$('new_fee').value,deposit:$('new_deposit').value,desc:$('new_desc').value}); toast('已建立場次'); closeAllPanels(); await refreshSessionsOverview(); }catch(e){toast('建立失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
 
-async function downloadSessionExcel(sid){ try{ const data=await api({action:'downloadSession',sessionId:sid}); const name=(data.filename)||(((data.session&&data.session.name)||sessionName(sessionById(sid))||sid)+'_完整名單.xlsx'); if(data.xlsxBase64){ const bin=atob(data.xlsxBase64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); const blob=new Blob([bytes],{type:data.mime||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name.endsWith('.xlsx')?name:name+'.xlsx'; a.click(); URL.revokeObjectURL(a.href); return; } toast('Excel 產生失敗，請稍後再試。',7000); }catch(e){toast('下載失敗：'+e.message,6000)} }
+async function downloadSessionExcel(sid){ try{ const data=await api({action:'downloadSession',sessionId:sid}); const name=(data.filename)||(((data.session&&data.session.name)||sessionName(sessionById(sid))||sid)+'_完整名單.xlsx'); if(data.xlsxBase64){ const bin=atob(data.xlsxBase64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); const blob=new Blob([bytes],{type:data.mime||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name.endsWith('.xlsx')?name:name+'.xlsx'; a.click(); URL.revokeObjectURL(a.href); return; } const _csvCell=(v)=>{ v=(v==null?'':String(v)); return /[",\n]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v; };
+    const _rowsToCsv=(h,rows)=>{ let o=(h||[]).map(_csvCell).join(',')+'\n'; (rows||[]).forEach(r=>{ o+=(r||[]).map(_csvCell).join(',')+'\n'; }); return o; };
+    const reg=data.registrations||{headers:[],rows:[]}; const fin=data.finance||{headers:[],rows:[]};
+    let csv='\uFEFF報名名單\n'+_rowsToCsv(reg.headers,reg.rows);
+    if((fin.rows||[]).length) csv+='\n財務\n'+_rowsToCsv(fin.headers,fin.rows);
+    const cblob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const ca=document.createElement('a'); ca.href=URL.createObjectURL(cblob); ca.download=(name||'名單').replace(/\.xlsx$/,'')+'.csv'; ca.click(); URL.revokeObjectURL(ca.href);
+    toast('已下載名單（CSV，可用 Excel 開啟）'); }catch(e){toast('下載失敗：'+e.message,6000)} }
 
 function csvCell(v){ const s=String(v??''); return '"'+s.replace(/"/g,'""')+'"'; }
 
