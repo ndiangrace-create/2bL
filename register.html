@@ -3401,7 +3401,7 @@ function adjStallDirect(val){
   const s=ST.currentSession||{};
   const sType=s.type||'市集場次';
   const isMkt=sType==='市集場次'||sType==='通路寄賣';
-  const maxN=Number(s.maxStalls)>0?Number(s.maxStalls):99;
+  const maxN=Number(s.maxStalls)>0?Number(s.maxStalls):999;
   ST.stallCount=Math.max(1,Math.min(maxN,parseInt(val)||1));
   const stallUnit=isMkt?'攤':'份';
   const el=$('stallDisplay');
@@ -3478,7 +3478,7 @@ function adjStall(delta){
   const sType=s.type||'市集場次';
   const isMkt=sType==='市集場次'||sType==='通路寄賣';
   // 上限從後台場次設定讀取，不硬編碼
-  const maxN=Number(s.maxStalls)>0?Number(s.maxStalls):99;
+  const maxN=Number(s.maxStalls)>0?Number(s.maxStalls):999;
   ST.stallCount=Math.max(1,Math.min(maxN,(ST.stallCount||1)+delta));
   const stallUnit=isMkt?'攤':sType==='活動報名'?'份':'份';
   const el=$('stallDisplay');
