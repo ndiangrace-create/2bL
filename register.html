@@ -1927,7 +1927,11 @@ function stopLogoHold(){
 let _staffHoldTimer = null;
 function startStaffHold(e){
   _staffHoldTimer = setTimeout(()=>{
-    if(confirm('進入現場工作人員入口？')) location.href = buildAdminUrl('onsite');
+    if(confirm('進入現場工作人員入口？')){
+      const base = location.origin + location.pathname.replace('register.html','onsite.html');
+      const qs = new URLSearchParams(location.search); const query = qs.toString();
+      location.href = base + (query ? '?' + query : '');
+    }
   }, 3000);
 }
 function stopStaffHold(){
