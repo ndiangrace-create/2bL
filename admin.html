@@ -378,110 +378,203 @@
 
 
 
-/* 20260703 session-overview-small-grid：場次總覽小格子版；清除舊模板後只保留這一套，不動資料/API/onclick */
+
+/* 20260703 session-overview-soft-compact：場次總覽低彩度小格版；只調整視覺排版，不動資料/API/onclick */
 @media(min-width:861px){
-  :root{--overview-gutter:clamp(14px,1.8vw,28px);}
+  :root{--admin-desktop-gutter:clamp(18px,2.2vw,36px);} 
   .app,.topbar-in,.panel-head-in,.panel-body{
-    width:calc(100vw - (var(--overview-gutter) * 2));
-    max-width:none;
-    margin-left:auto;
-    margin-right:auto;
+    width:calc(100vw - (var(--admin-desktop-gutter) * 2))!important;
+    max-width:none!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
   }
-  .app,.topbar-in,.panel-head,.panel-body{padding-left:0;padding-right:0;}
+  .app,.topbar-in,.panel-body{padding-left:0!important;padding-right:0!important;}
+  .panel-head{padding-left:0!important;padding-right:0!important;}
+  .page-title,.filter-row,.session-list,.cards,.member-list,.settings-grid,.detail-grid,.table-wrap{width:100%!important;max-width:none!important;}
 }
 .session-list{gap:10px!important;}
-.session-card.session-overview-small{
-  background:#fff!important;
-  border:1px solid #E9E1D8!important;
-  border-radius:15px!important;
-  box-shadow:0 6px 16px rgba(45,39,32,.045)!important;
+.session-card.session-card-3rows{
+  width:100%!important;
+  max-width:none!important;
+  border:1px solid rgba(214,203,190,.72)!important;
+  border-radius:16px!important;
   overflow:hidden!important;
+  box-shadow:0 4px 12px rgba(45,39,32,.045)!important;
+  background:#fbfaf5!important;
 }
-.session-overview-small .overview-grid{
+.session-list .session-card.session-card-3rows:nth-child(3n+1){background:#fbfaf5!important;}
+.session-list .session-card.session-card-3rows:nth-child(3n+2){background:#f6faf6!important;}
+.session-list .session-card.session-card-3rows:nth-child(3n+3){background:#f6f9fb!important;}
+.session-card-3rows .session3-wrap{
   display:grid!important;
-  grid-template-columns:minmax(180px,.72fr) minmax(0,2.8fr) minmax(0,1.45fr) minmax(270px,1.05fr)!important;
-  grid-template-areas:
-    "info main main equipment"
-    "info finance finance equipment";
-  gap:7px!important;
+  grid-template-columns:minmax(170px,190px) minmax(0,1fr)!important;
+  gap:8px!important;
+  padding:10px 12px 6px!important;
   align-items:stretch!important;
-  padding:10px 12px 7px!important;
+  background:transparent!important;
 }
-.session-overview-small .overview-info{grid-area:info;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:6px;}
-.session-overview-small .overview-title{font-size:18px;font-weight:950;line-height:1.25;word-break:break-word;}
-.session-overview-small .meta{gap:5px!important;margin:0!important;}
-.session-overview-small .pill{border-radius:9px!important;padding:4px 8px!important;font-size:12px!important;line-height:1.25!important;}
-.session-overview-small .overview-main{grid-area:main;display:grid!important;grid-template-columns:repeat(8,minmax(48px,1fr))!important;gap:6px!important;}
-.session-overview-small .overview-finance{grid-area:finance;display:grid!important;grid-template-columns:repeat(5,minmax(68px,1fr))!important;gap:6px!important;}
-.session-overview-small .overview-equipment{grid-area:equipment;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;align-content:stretch!important;}
-.session-overview-small .overview-equipment .chip:first-child{grid-column:1 / -1!important;}
-.session-overview-small .chip{
+.session-card-3rows .session3-info{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  padding:2px 0!important;
+}
+.session-card-3rows .session3-title{
+  font-size:18px!important;
+  font-weight:950!important;
+  line-height:1.25!important;
+  margin:0 0 6px!important;
+  word-break:break-word!important;
+}
+.session-card-3rows .session3-info .meta{margin:0!important;gap:5px!important;}
+.session-card-3rows .session3-info .pill{
+  border-radius:9px!important;
+  padding:3px 7px!important;
+  font-size:12.5px!important;
+  background:rgba(255,255,255,.72)!important;
+  border:1px solid rgba(221,213,202,.85)!important;
+}
+.session-card-3rows .session3-main,
+.session-card-3rows .session3-finance,
+.session-card-3rows .session3-equipment{
+  display:grid!important;
+  gap:5px!important;
+  min-width:0!important;
+}
+.session-card-3rows .session3-main{
+  grid-template-columns:repeat(8,minmax(56px,82px))!important;
+  justify-content:start!important;
+  align-content:center!important;
+}
+.session-card-3rows .session3-lower{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(260px,292px)!important;
+  gap:8px!important;
+  padding:0 12px 7px!important;
+  align-items:start!important;
+  background:transparent!important;
+}
+.session-card-3rows .session3-finance{
+  grid-template-columns:repeat(5,minmax(68px,112px))!important;
+  justify-content:start!important;
+}
+.session-card-3rows .session3-equipment{
+  grid-template-columns:1fr!important;
+  width:100%!important;
+  align-content:start!important;
+}
+.session-card-3rows .chip{
   display:flex!important;
   flex-direction:column!important;
   align-items:center!important;
   justify-content:center!important;
+  gap:1px!important;
   min-width:0!important;
-  min-height:42px!important;
-  padding:5px 6px!important;
+  min-height:40px!important;
+  padding:4px 6px!important;
   border-radius:9px!important;
-  border:1px solid #E6DED4!important;
-  box-shadow:none!important;
-  white-space:normal!important;
-  line-height:1.16!important;
   text-align:center!important;
+  white-space:normal!important;
+  line-height:1.15!important;
+  box-shadow:none!important;
+  background:rgba(255,255,255,.76)!important;
+  border:1px solid rgba(223,215,205,.86)!important;
+  color:#1f1f1f!important;
 }
-.session-overview-small .overview-equipment .chip{
-  min-height:44px!important;
+.session-card-3rows .chip.blue,
+.session-card-3rows .chip.yellow,
+.session-card-3rows .chip.green,
+.session-card-3rows .chip.pink,
+.session-card-3rows .chip.purple,
+.session-card-3rows .chip.gray{background:rgba(255,255,255,.78)!important;}
+.session-card-3rows .chip .m-label{
+  display:block!important;
+  font-size:10.5px!important;
+  font-weight:900!important;
+  color:#6d655c!important;
+  white-space:nowrap!important;
+}
+.session-card-3rows .chip b{
+  display:block!important;
+  width:100%!important;
+  font-size:13px!important;
+  font-weight:950!important;
+  color:#111!important;
+  word-break:break-word!important;
+  overflow-wrap:anywhere!important;
+}
+.session-card-3rows .session3-finance .chip{min-height:41px!important;}
+.session-card-3rows .session3-equipment .chip{
+  width:100%!important;
+  min-height:38px!important;
   align-items:flex-start!important;
   text-align:left!important;
   padding:6px 8px!important;
+  border-radius:9px!important;
+  background:rgba(255,255,255,.70)!important;
 }
-.session-overview-small .chip .m-label{display:block!important;font-size:11px!important;font-weight:950!important;color:#555!important;white-space:nowrap!important;}
-.session-overview-small .chip b{display:block!important;width:100%!important;font-size:13px!important;font-weight:950!important;color:#111!important;word-break:break-word!important;overflow-wrap:anywhere!important;}
-.session-overview-small .chip.click:hover{border-color:#9EB9B4!important;box-shadow:0 6px 14px rgba(0,0,0,.07)!important;transform:translateY(-1px)!important;}
-.session-overview-small .overview-actions{
+.session-card-3rows .session3-equipment .chip .m-label{font-size:11px!important;}
+.session-card-3rows .session3-equipment .chip b{font-size:13px!important;line-height:1.25!important;}
+.session-card-3rows .chip.click:hover{
+  border-color:#a8c4bd!important;
+  background:#fff!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.07)!important;
+  transform:translateY(-1px)!important;
+}
+.session-card-3rows .session3-actions{
   display:grid!important;
   grid-template-columns:repeat(7,minmax(74px,1fr))!important;
   gap:6px!important;
   padding:7px 12px 10px!important;
-  border-top:1px solid #F0E8DE!important;
+  border-top:1px solid rgba(226,218,207,.82)!important;
+  background:rgba(255,255,255,.38)!important;
 }
-.session-overview-small .overview-actions .btn{
+.session-card-3rows .session3-actions .btn{
   width:100%!important;
   min-width:0!important;
   min-height:32px!important;
   padding:5px 7px!important;
   border-radius:9px!important;
-  font-size:12px!important;
-  line-height:1.15!important;
+  font-size:12.5px!important;
   font-weight:950!important;
   white-space:nowrap!important;
+  background:#d8e8e1!important;
+  color:#1f3b36!important;
+  border:1px solid #bed8cf!important;
+  box-shadow:none!important;
 }
-.session-overview-small .overview-actions .btn.secondary{background:#fff!important;color:#1f1f1f!important;border:1px solid var(--line)!important;}
-.session-overview-small .overview-actions .download-btn{background:#6FA59C!important;}
-@media(min-width:861px) and (max-width:1240px){
-  .session-overview-small .overview-grid{grid-template-columns:minmax(160px,.62fr) minmax(0,2.4fr) minmax(0,1.2fr) minmax(230px,1fr)!important;gap:6px!important;padding:9px 10px 6px!important;}
-  .session-overview-small .overview-main{grid-template-columns:repeat(8,minmax(43px,1fr))!important;gap:5px!important;}
-  .session-overview-small .overview-finance{grid-template-columns:repeat(5,minmax(58px,1fr))!important;gap:5px!important;}
-  .session-overview-small .chip{min-height:40px!important;padding:4px 5px!important;}
-  .session-overview-small .chip .m-label{font-size:10.5px!important;}
-  .session-overview-small .chip b{font-size:12px!important;}
+.session-card-3rows .session3-actions .btn.secondary,
+.session-card-3rows .session3-actions .download-btn{
+  background:#d8e8e1!important;
+  color:#1f3b36!important;
+  border:1px solid #bed8cf!important;
+}
+.session-card-3rows .session3-actions .btn:hover{background:#cce1d9!important;}
+@media(min-width:861px) and (max-width:1220px){
+  .session-card-3rows .session3-wrap{grid-template-columns:minmax(150px,170px) minmax(0,1fr)!important;padding-left:10px!important;padding-right:10px!important;}
+  .session-card-3rows .session3-main{grid-template-columns:repeat(8,minmax(48px,1fr))!important;gap:4px!important;}
+  .session-card-3rows .session3-lower{grid-template-columns:minmax(0,1fr) minmax(235px,270px)!important;padding-left:10px!important;padding-right:10px!important;}
+  .session-card-3rows .session3-finance{grid-template-columns:repeat(5,minmax(58px,1fr))!important;gap:4px!important;}
+  .session-card-3rows .chip{min-height:38px!important;padding:4px 4px!important;}
+  .session-card-3rows .chip .m-label{font-size:10px!important;}
+  .session-card-3rows .chip b{font-size:12px!important;}
+  .session-card-3rows .session3-actions{grid-template-columns:repeat(7,minmax(64px,1fr))!important;padding-left:10px!important;padding-right:10px!important;}
+  .session-card-3rows .session3-actions .btn{font-size:12px!important;padding-left:3px!important;padding-right:3px!important;}
 }
 @media(max-width:860px){
-  .session-card.session-overview-small{border-radius:15px!important;}
-  .session-overview-small .overview-grid{display:grid!important;grid-template-columns:1fr!important;grid-template-areas:"info" "main" "finance" "equipment";gap:7px!important;padding:10px!important;}
-  .session-overview-small .overview-main{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;}
-  .session-overview-small .overview-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;}
-  .session-overview-small .overview-equipment{grid-template-columns:1fr!important;gap:6px!important;}
-  .session-overview-small .chip{min-height:42px!important;}
-  .session-overview-small .overview-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:7px 10px 10px!important;}
-  .session-overview-small .overview-actions .btn{min-height:34px!important;}
+  .session-list{gap:9px!important;}
+  .session-card-3rows .session3-wrap{grid-template-columns:1fr!important;padding:10px!important;gap:8px!important;}
+  .session-card-3rows .session3-main{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-lower{grid-template-columns:1fr!important;padding:0 10px 7px!important;}
+  .session-card-3rows .session3-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-equipment{grid-template-columns:1fr!important;}
+  .session-card-3rows .session3-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:7px 10px 10px!important;}
 }
 @media(max-width:430px){
-  .session-overview-small .overview-main,.session-overview-small .overview-finance{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  .session-overview-small .overview-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-main{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .session-card-3rows .session3-finance{grid-template-columns:1fr 1fr!important;}
 }
-
 
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
@@ -657,10 +750,10 @@ function renderSessionCard(s){
   const financeMetric=(cls,label,value,filter)=>'<button type="button" class="chip '+cls+' click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')" title="查看'+safe(label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
   const equipmentTotal='<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表"><span class="m-label">設備總計</span><b>'+safe(e.total||e.need||'無')+'</b></button>';
   const equipmentDaily=dailyChipHtml(e.dailyRows,e.dailyText,sid);
-  return '<article class="session-card session-overview-small" id="session-'+attr(sid)+'">'
-    +'<div class="overview-grid">'
-      +'<div class="overview-info"><div class="overview-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div>'
-      +'<div class="overview-main">'
+  return '<article class="session-card session-card-3rows" id="session-'+attr(sid)+'">'
+    +'<div class="session3-wrap">'
+      +'<div class="session3-info"><div class="session3-title">'+safe(sessionName(s))+'</div><div class="meta"><span class="pill blue">'+safe(formatDate(s))+'</span><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div></div>'
+      +'<div class="session3-main">'
         +metric('blue','進度',String(progressText(s))+(lim>0?' 攤':' 筆'),'all','全部名單')
         +metric('yellow','待審核',num(st.pending),'pending','待審核')
         +metric('blue','已錄取',num(st.approved),'approved','已錄取')
@@ -670,16 +763,18 @@ function renderSessionCard(s){
         +metric('pink','未繳費',num(st.unpaid),'unpaid','未繳費')
         +metric('blue','已報到',num(st.checked),'checked','已報到')
       +'</div>'
-      +'<div class="overview-finance">'
+    +'</div>'
+    +'<div class="session3-lower">'
+      +'<div class="session3-finance">'
         +metric('pink','退款',num(st.refund),'refund','退款')
         +financeMetric('yellow','應收',money(f.receivable),'receivable')
         +financeMetric('green','已收',money(f.received),'received')
         +financeMetric('pink','未收',money(f.unreceived),'unreceived')
         +financeMetric('purple','押金',money(f.deposit),'deposit')
       +'</div>'
-      +'<div class="overview-equipment">'+equipmentTotal+equipmentDaily+'</div>'
+      +'<div class="session3-equipment">'+equipmentTotal+equipmentDaily+'</div>'
     +'</div>'
-    +'<div class="overview-actions">'
+    +'<div class="session3-actions">'
       +'<button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
       +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
       +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
