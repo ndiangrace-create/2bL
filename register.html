@@ -13,7 +13,7 @@
   --c-green:#DDEAD1;--c-yellow:#FAEEC7;--c-blue:#D9E5EE;--c-pink:#FAE1DD;--c-purple:#DCD7ED;
   --wh:#ffffff;--txt:#111111;--muted:#666666;--border:#e8e8e4;
   --r:14px;--r-sm:10px;
-  --g:var(--c1);--gp:var(--c1);--gl:#b8d4a0;
+  --g:#6b9560;--gp:var(--c1);--gl:#b8d4a0;
   --s-ok:#2a6a10;--s-ok-bg:#DDEAD1;
   --s-warn:#7a5c00;--s-warn-bg:#FAEEC7;
   --s-err:#8b1c1c;--s-err-bg:#FAE1DD;
@@ -109,7 +109,7 @@ button,a,[onclick]{touch-action:manipulation}
 
 /* ── 按鈕 ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
-.btn-primary{background:var(--c1);color:var(--s-ok)}
+.btn-primary{background:#7fb069;color:var(--s-ok)}
 .btn-secondary{background:var(--c3);color:#1a4a6a}
 .btn-danger{background:var(--c4);color:var(--s-err)}
 .btn-grey{background:#f0f0ee;color:var(--muted)}
@@ -2201,6 +2201,7 @@ function renderActCard(s, mode){
         ${loc?`<span>📍 ${loc}</span>`:''}
       </div>
       <div class="act-card-fee">${fee}</div>
+      ${(typeof myRegBadge==='function'?myRegBadge(s):'')}
       ${regType?`<span class="act-card-tag ${tagCls}">${regType}</span>`:''}
     </div>
   </div>
@@ -3220,6 +3221,10 @@ function renderDynFormFull(s, isNew=false){
           超過期限未完成選位與付款，位置將釋出，且同場次不可再加購選位。<br>
           不選位則依付款確認順序排位。
         </div>
+        <label style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--c-blue);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer;font-size:16px;font-weight:800;color:#111">
+          <input type="checkbox" id="seatIntentChk" onchange="ST.seatChoiceIntent=this.checked?'paid':'auto'" style="width:20px;height:20px">
+          我要加價選位（錄取後可在「我的紀錄」挑位置）
+        </label>
         <button type="button" onclick="previewSeatMap('${s.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;margin-bottom:4px;box-shadow:0 3px 0 rgba(0,0,0,.08)">🗺️ 查看場地圖與加價位置</button>
         <div style="font-size:13px;line-height:1.6;color:#666;margin-top:6px">此處僅供報名前查看位置配置；正式選位在錄取後的「我的紀錄」完成。</div>
       </div>`;
