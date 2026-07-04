@@ -2772,18 +2772,20 @@ function renderBundleSection(){
   const host=$('eventsList'); if(!host) return;
   const old=document.getElementById('bundleSection'); if(old) old.remove();
   if(!bundles.length) return;
-  const wrap=document.createElement('div'); wrap.id='bundleSection'; wrap.style.margin='0 0 14px';
-  wrap.innerHTML='<div style="font-size:17px;font-weight:900;color:#111;margin:0 0 10px">🎫 連續套組（一次報名多場、優惠價）</div>'
-    + bundles.map(bd=>{
-      const names=(bd.sessions||[]).map(s=>esc(s.name)).join('｜');
-      return '<div style="background:linear-gradient(90deg,#FFF9EB,#FEFFF8);border:1.5px solid #E7DCC5;border-radius:16px;padding:14px 16px;margin-bottom:10px">'
-        +'<div style="font-weight:900;font-size:16px;color:#111">'+esc(bd.name)+'</div>'
-        +'<div style="font-size:13px;color:#666;margin:4px 0">'+names+'（共 '+((bd.sessions||[]).length)+' 場）</div>'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:10px;flex-wrap:wrap">'
-          +'<div style="font-weight:900;color:#b26a00">組合攤位費 NT$ '+(Number(bd.bundlePrice||0).toLocaleString())+'<span style="font-size:12px;color:#999;font-weight:400">（押金各場另計）</span></div>'
-          +'<button type="button" onclick="openBundleReport(\''+esc(bd.id)+'\')" style="border:none;border-radius:10px;background:#7fb069;color:#fff;font-weight:900;font-size:15px;padding:9px 16px;cursor:pointer">套組報名</button>'
-        +'</div></div>';
-    }).join('');
+  const wrap=document.createElement('div'); wrap.id='bundleSection';
+  wrap.innerHTML=bundles.map(bd=>{
+    const names=(bd.sessions||[]).map(s=>esc(s.name)).join('｜');
+    const n=(bd.sessions||[]).length;
+    return '<div class="act-card" onclick="openBundleReport(\''+esc(bd.id)+'\')" style="cursor:pointer">'
+      +'<div class="act-card-inner">'
+        +'<div class="act-card-img"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:34px;background:linear-gradient(135deg,#FFF3D6,#FCE8C8)">🎫</div><div class="act-card-status open">套組</div></div>'
+        +'<div class="act-card-body">'
+          +'<div class="act-card-name">'+esc(bd.name)+'</div>'
+          +'<div class="act-card-meta"><span>🎫 '+names+'（共 '+n+' 場）</span></div>'
+          +'<div class="act-card-fee">組合價 NT$ '+(Number(bd.bundlePrice||0).toLocaleString())+'　<span style="font-size:12px;color:#999;font-weight:400">押金各場另計</span></div>'
+        +'</div>'
+      +'</div></div>';
+  }).join('');
   host.parentNode.insertBefore(wrap, host);
 }
 async function openBundleReport(bundleId){

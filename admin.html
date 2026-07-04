@@ -1153,7 +1153,8 @@ function sessionEventOptionsHtml(events,currentId){
     if(!id || seen.has(id)) continue;
     seen.add(id);
     const title=String(e?.title||e?.name||id).trim();
-    html+='<option value="'+attr(id)+'" '+(id===cur?'selected':'')+'>'+safe(title)+'</option>';
+    const loc=String(e?.location||'').trim();
+    html+='<option value="'+attr(id)+'" '+(id===cur?'selected':'')+'>'+safe(title+(loc?'｜'+loc:''))+'</option>';
   }
   if(cur && !seen.has(cur)) html+='<option value="'+attr(cur)+'" selected>目前主題 ID：'+safe(cur)+'（資料庫清單未找到）</option>';
   return html;
