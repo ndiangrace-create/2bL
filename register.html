@@ -521,7 +521,8 @@ button,a,[onclick]{touch-action:manipulation}
 }
 @media (min-width:900px){
   #eventsList,
-  #portalSessionList{
+  #portalSessionList,
+  #sessionsList{
     display:grid!important;
     grid-template-columns:repeat(auto-fill,minmax(190px,220px));
     gap:14px!important;
@@ -529,7 +530,8 @@ button,a,[onclick]{touch-action:manipulation}
     justify-content:start;
   }
   #eventsList > *,
-  #portalSessionList > *{
+  #portalSessionList > *,
+  #sessionsList > *{
     margin-bottom:0!important;
   }
   .ses-list-card{
@@ -636,7 +638,8 @@ button,a,[onclick]{touch-action:manipulation}
 }
 @media (min-width:1200px){
   #eventsList,
-  #portalSessionList{
+  #portalSessionList,
+  #sessionsList{
     grid-template-columns:repeat(auto-fill,minmax(190px,220px));
   }
 }
@@ -1315,8 +1318,9 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
   <!-- 精選主題活動 -->
   <div style="padding:0 14px 4px">
-    <div style="display:flex;justify-content:flex-start;align-items:center;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:20px;font-weight:900;color:#111">精選主題活動</div>
+      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
     </div>
     <div id="featuredEventsList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none">
       <div style="padding:20px;color:#aaa;font-size:14px">載入中…</div>
@@ -1325,8 +1329,9 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
   <!-- 近期場次 -->
   <div id="recentSection" style="padding:8px 14px 100px">
-    <div style="display:flex;justify-content:flex-start;align-items:center;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:20px;font-weight:900;color:#111">近期場次</div>
+      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
     </div>
     <div id="eventsList">
       <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
@@ -1347,6 +1352,17 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   </div>
 </div>
 
+<!-- ══ 場次頁 ══ -->
+
+
+<!-- ══ 場次詳細頁 ══ -->
+<div id="pageSession" class="page">
+  <div class="back-bar" onclick="backToHome()">
+    <span class="arrow">←</span>
+    <span class="title" id="sessionEventName">場次列表</span>
+  </div>
+  <div id="sessionsList"></div>
+</div>
 
 <!-- ══ 報名表 Modal ══ -->
 <div class="page" id="regFormModal" style="background:#fff;min-height:100vh">
@@ -2239,6 +2255,129 @@ async function navToTab(tab){
     if(pg) pg.classList.add('active');
   }
 }
+// ── 探索頁篩選 ──
+function exploreFilter(type, el){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderExplorePage(type);
+}
+
+function renderExplorePage(catFilter){
+  const list=document.getElementById('exploreList');
+  if(!list) return;
+  const allSessions = (window.ST && ST.allSessionsData) ? ST.allSessionsData : [];
+  let sessions = allSessions.filter(s=>{
+    if(s.status==='closed'||s.status==='archived'||s.status==='cancelled'||s.isHidden||s.testMode||s.internal) return false;
+    return true;
+  });
+  if(catFilter && catFilter!=='全部'){
+    sessions = sessions.filter(s=>{
+      const t=String(s.regType||s.type||s.category||'');
+      return t===catFilter || t.includes(catFilter.replace('報名','').replace('活動','').replace('寄賣','').replace('洽詢',''));
+    });
+  }
+  // 依日期排序
+  sessions = sortSessionsByUpcoming(sessions);
+  if(!sessions.length){
+    list.innerHTML='<div style="text-align:center;color:#aaa;font-size:14px;padding:40px 20px">目前無符合條件的場次</div>';
+    return;
+  }
+  list.innerHTML = sessions.map(s=>renderActCard(s,'full')).join('');
+}
+
+// ── 近期活動渲染（首頁第四區塊）──
+function renderRecentSessions(){
+  const el=document.getElementById('recentSessionList');
+  if(!el) return;
+  const allSessions = (window.ST && ST.allSessionsData) ? ST.allSessionsData : [];
+  let sessions = allSessions
+    .filter(s=>{
+      if(s.status==='closed'||s.status==='archived'||s.status==='cancelled'||s.isHidden||s.testMode||s.internal) return false;
+      return true;
+    });
+  sessions = sortSessionsByUpcoming(sessions);
+  if(!sessions.length){
+    el.innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:20px">目前無近期活動</div>';
+    return;
+  }
+  el.innerHTML = sessions.map(s=>renderActCard(s,'full')).join('');
+}
+
+// ── 活動卡片渲染（共用）──
+function renderActCard(s, mode){
+  const isFull = mode==='full';
+  const cls = isFull ? 'act-card full' : 'act-card';
+  const id = s.id||s.sessionId||'';
+  const name = s.name||s.title||'未命名活動';
+  const dateStr = s.date||s.startDate||s.eventDate||'';
+  const timeStr = s.startTime||s.time||'';
+  const loc = s.location||s.venue||s.place||'';
+  const fee = s.baseFee!=null ? 'NT$'+Number(s.baseFee).toLocaleString()+(s.hasFeeRange?'起':'') : (s.feeText||s.fee||'依項目計算');
+  const regType = s.regType||s.type||s.category||'';
+  const cover = s.coverUrl||s.imageUrl||s.imgUrl||'';
+  const isOpen = s.regOpen!==false && s.status!=='closed' && s.status!=='cancelled';
+  const isClosed = !isOpen;
+
+  // 狀態文字
+  let statusTxt='報名中', statusCls='';
+  if(s.status==='closed'||s.regOpen===false){ statusTxt='已截止'; statusCls='closed'; }
+  else if(s.isFull||s.remainSlots===0){ statusTxt='額滿'; statusCls='full-s'; }
+  else if(s.regStartDate && new Date(s.regStartDate)>new Date()){ statusTxt='即將開放'; statusCls='soon'; }
+  else if(s.regType==='合作洽詢'||s.regType==='審核制'){ statusTxt='審核制'; }
+  else if(s.status==='coming'){ statusTxt='即將開始'; statusCls='soon'; }
+
+  // 分類標籤 class
+  let tagCls='market';
+  if(regType.includes('寄賣')) tagCls='consign';
+  else if(regType.includes('體驗')) tagCls='exp';
+  else if(regType.includes('合作')) tagCls='collab';
+
+  // 圖片
+  const imgHtml = cover
+    ? `<img src="${cover}" alt="${name}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=act-card-img-ph>🎪</div>'">`
+    : `<div class="act-card-img-ph">🎪</div>`;
+
+  // 報名按鈕
+  const regBtnTxt = isClosed ? statusTxt : '立即報名';
+  const regBtnCls = isClosed ? 'act-card-reg disabled' : 'act-card-reg';
+  const regAction = isClosed ? '' : `onclick="openSessionById('${id}')"`;
+
+  return `<div class="${cls}">
+  <div class="act-card-inner">
+    <div class="act-card-img">
+      ${imgHtml}
+      <div class="act-card-status ${statusCls}">${statusTxt}</div>
+    </div>
+    <div class="act-card-body">
+      <div class="act-card-name">${name}</div>
+      <div class="act-card-meta">
+        ${dateStr?`<span>📅 ${dateStr}${timeStr?' '+timeStr:''}</span>`:''}
+        ${loc?`<span>📍 ${loc}</span>`:''}
+      </div>
+      <div class="act-card-fee">${fee}</div>
+      ${(typeof myRegBadge==='function'?myRegBadge(s):'')}
+      ${regType?`<span class="act-card-tag ${tagCls}">${regType}</span>`:''}
+    </div>
+  </div>
+  <div class="act-card-actions">
+    <button class="act-card-fav" onclick="toggleFav('${id}',this)" title="收藏">🤍</button>
+    <button class="act-card-share" onclick="shareSessionCard('${id}','${name.replace(/'/g,"\'")}',event)" title="分享">🔗</button>
+    <button class="act-card-detail" onclick="openSessionById('${id}')">查看詳情</button>
+    <button class="${regBtnCls}" ${regAction}>${regBtnTxt}</button>
+  </div>
+</div>`;
+}
+
+// ── 分享（卡片版）── 
+function shareSessionCard(id, name, event){
+  if(event) event.stopPropagation();
+  const url = window.location.origin + window.location.pathname + '?tenant=' + TENANT_ID + '&session=' + id;
+  if(navigator.share){
+    navigator.share({ title: name, text: '來看看這個活動！', url }).catch(()=>{});
+  } else {
+    navigator.clipboard && navigator.clipboard.writeText(url).then(()=>toast('已複製活動連結！')).catch(()=>toast('請手動複製：'+url));
+  }
+}
 
 // ── 收藏 ──
 function toggleFav(id, btn){
@@ -2559,7 +2698,7 @@ async function safeGetMyRegs(email, phone){
     const list=Array.isArray(regs)?regs:[];
     ST.regs=list;
     renderMyRegs(list);
-    try{ if(Array.isArray(ST.sessions) && ST.sessions.length){ ['renderHomeFallbackSessions'].forEach(fn=>{ try{ if(typeof window[fn]==='function') window[fn](); }catch(_e){} }); } }catch(_e){}
+    try{ if(Array.isArray(ST.sessions) && ST.sessions.length){ ['renderRecentSessions','renderSessions','renderAllSessions','renderHomeFallbackSessions'].forEach(fn=>{ try{ if(typeof window[fn]==='function') window[fn](); }catch(_e){} }); } }catch(_e){}
     return list;
   }catch(e){
     console.warn('[getMyRegs failed]',e);
@@ -3015,6 +3154,21 @@ function renderSessionCard(s){
       </button>
     </div></div>`;
 }
+function renderSessions(){
+  const el=$('sessionsList');
+  if(!el) return;
+  const list=(ST.sessions||[]).filter(isOpenSession);
+  if(!list.length){el.innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:16px">目前無開放場次</div>';return;}
+  el.innerHTML=list.map(s=>renderSessionCard(s)).join('');
+}
+function renderAllSessions(){
+  const el=$('allSessionsList');
+  if(!el) return;
+  const list=(ST.allSessionsData||[]).filter(isOpenSession);
+  if(!list.length){ el.innerHTML='<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">目前無開放場次</div>'; return; }
+  el.innerHTML=list.map(s=>renderSessionCard(s)).join('');
+}
+
 // ── 會員資料查找步驟（報名前先帶入會員資料）──
 function showEmailStep(s){
   const dynEl=$('dynForm');
