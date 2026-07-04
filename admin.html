@@ -889,6 +889,7 @@ function renderSessionCard(s){
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button>'
+          +'<button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteSessionUI(\''+attr(sid)+'\')">刪除</button>'
         +'</div>'
       +'</div>'
     +'</div>'
@@ -1565,6 +1566,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field choice-field"><label>入口分類</label><select id="set_entry">'+entryOptionsHtml(entryFromSession(s))+'</select></div>'
   +'<div class="form-field choice-field"><label>審核制</label><div class="review-toggle-box"><input type="checkbox" id="set_needReviewCheck" '+(sessionBool(needReview,true)?'checked':'')+' onchange="document.getElementById(\'set_reviewMode\').value=this.checked?\'review\':\'instant\'"><span>審核</span><small>未勾＝免審核</small><input type="hidden" id="set_reviewMode" value="'+(sessionBool(needReview,true)?'review':'instant')+'"></div></div>'
   +'<div class="form-field choice-field"><label>報名狀態</label><select id="set_status"><option '+(String(s.status||'報名中')==='報名中'?'selected':'')+'>報名中</option><option '+(String(s.status||'')==='已關閉'||String(s.status||'')==='關閉'?'selected':'')+'>已關閉</option><option '+(String(s.status||'')==='封存'||String(s.status||'')==='已封存'?'selected':'')+'>封存</option></select></div>'
+  +'<div class="form-field full"><button type="button" class="btn secondary" style="width:100%" onclick="openSessionBundleModal(\''+attr(sid)+'\')">🎫 組合報名設定（連動場次）</button></div>'
   +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:128px">'+safe(s.desc||s.description||'')+'</textarea></div>'
   +'<div class="form-field full"><label>主視覺圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
   +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位</label>'+coorgInputsHtml(s)+'</div></div></div>'
@@ -1581,12 +1583,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +featureSectionHtml('agreement','合約',mods,agreementBody)
   +featureSectionHtml('seats','選位 / 攤位',mods,seatsBody)
   +featureSectionHtml('invoice','發票資料',mods,invoiceBody)
-  +'<div class="report-card" style="margin-top:14px"><div class="report-title">🎫 組合報名（連動其他場次、設組合價）</div>'
-  +'<div class="sub" style="margin-bottom:8px">勾選要和「本場次」一起組合報名的其他場次，設定組合攤位費。攤商在前台就會看到這個組合、一次報名整組（押金各場照舊、其他規則同單場、同進退）。</div>'
-  +'<div class="form-field full"><label>組合攤位費（總額；押金各場另加）</label><input id="bndsec_price" type="number" value="0"></div>'
-  +'<div class="form-field full"><label>連動場次（勾 1 個以上，會和本場組成套組）</label><div id="bndsec_list" style="max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px 12px">載入中…</div></div>'
-  +'<div class="card-actions"><button class="btn" onclick="saveSessionBundle(\''+attr(sid)+'\',this)">建立 / 更新組合</button> <button class="btn secondary" onclick="removeSessionBundle(\''+attr(sid)+'\',this)">移除組合</button></div>'
-  +'</div>'
+
   +'<div class="card-actions"><button class="btn" onclick="saveSessionSettings(\''+attr(sid)+'\',this)">儲存場次設定</button></div>'
   +'</div>';
 }
@@ -1953,6 +1950,11 @@ async function deleteBundleUI(id, btn){
   try{ await apiPost({action:'deleteBundle', id}); const list=await api({action:'getBundles'}); AdminState.bundles=Array.isArray(list)?list:[]; renderBundlePanel(); toast('已刪除'); }
   catch(e){ toast('刪除失敗：'+e.message,6000); }
 }
+async function deleteSessionUI(sid){
+  if(!confirm('確定刪除這個場次嗎？此動作無法復原（若已有報名資料，建議改用封存）。')) return;
+  try{ await apiPost({action:'deleteSession', sessionId:sid, id:sid}); toast('已刪除場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }
+  catch(e){ toast('刪除失敗：'+e.message,6000); }
+}
 async function newSessionFull(){
   try{
     const res=await apiPost({action:'createSession', name:'未命名場次', type:entryTypeMap('市集報名'), portals:['市集報名'], fee:0, deposit:0});
@@ -1961,9 +1963,26 @@ async function newSessionFull(){
     try{ await apiPost({action:'toggleSessionStatus', sessionId:id, status:'關閉'}); }catch(_e){}
     await refreshSessionsOverview();
     openSessionSettings(id);
-    toast('新場次已建立（暫時隱藏）；填完整資料後把「報名狀態」設為報名中並儲存。若不用可直接封存或刪除。',8000);
+    toast('已建立空白場次，往下填資料即可',2500);
   }catch(e){ toast('建立失敗：'+e.message,6000); }
 }
+function openSessionBundleModal(sid){
+  let m=document.getElementById('bundleModal');
+  if(!m){ m=document.createElement('div'); m.id='bundleModal'; document.body.appendChild(m); }
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  m.innerHTML='<div style="background:#fff;border-radius:18px;max-width:520px;width:100%;max-height:86vh;overflow:auto;padding:20px" onclick="event.stopPropagation()">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:18px">🎫 組合報名設定</b><button onclick="closeBundleModal()" style="border:none;background:#eee;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px">×</button></div>'
+    +'<div style="font-size:13px;color:#666;margin-bottom:10px">勾選要和「本場次」一起組合報名的其他場次，設定組合攤位費。押金各場照舊、其他規則同單場、同進退。</div>'
+    +'<label style="font-size:14px;font-weight:700">組合攤位費（總額；押金各場另加）</label>'
+    +'<input id="bndsec_price" type="number" value="0" style="width:100%;margin:4px 0 12px;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:15px">'
+    +'<label style="font-size:14px;font-weight:700">連動場次（勾 1 個以上）</label>'
+    +'<div id="bndsec_list" style="max-height:40vh;overflow:auto;border:1px solid #eee;border-radius:12px;padding:8px 12px;margin-top:6px">載入中…</div>'
+    +'<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="saveSessionBundle(\''+attr(sid)+'\',this)">建立 / 更新組合</button><button class="btn secondary" onclick="removeSessionBundle(\''+attr(sid)+'\',this)">移除</button></div>'
+    +'</div>';
+  m.onclick=closeBundleModal;
+  loadSessionBundleInfo(sid);
+}
+function closeBundleModal(){ const m=document.getElementById('bundleModal'); if(m) m.style.display='none'; }
 async function loadSessionBundleInfo(sid){
   const el=$('bndsec_list'); if(!el) return;
   try{
@@ -1993,8 +2012,7 @@ async function saveSessionBundle(sid, btn){
     const payload={action:'saveBundle', name:nm, bundlePrice:price, sessionIds:sids};
     if(existing&&existing.id) payload.id=existing.id;
     await apiPost(payload);
-    toast('已儲存組合！前台會出現這個組合報名');
-    await loadSessionBundleInfo(sid);
+    toast('已儲存組合！前台會出現這個組合報名'); closeBundleModal();
   }catch(e){ toast('儲存失敗：'+e.message,6000); }
   finally{ btn.disabled=false; btn.textContent=old; }
 }
