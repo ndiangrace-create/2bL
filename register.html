@@ -491,6 +491,148 @@ button,a,[onclick]{touch-action:manipulation}
 .ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
 .ses-list-reg{min-width:88px;height:42px;border-radius:12px;border:none;background:#DCD7ED;color:#111;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0 12px}
 
+/* 20260705 前台電腦版：近期場次改小卡片 Grid，同主題同色；手機版不動 */
+:root{
+  --theme-default-bg:#fff;
+  --theme-default-border:rgba(0,0,0,.08);
+  --theme-default-accent:#DCD7ED;
+}
+.theme-huanri{--theme-bg:#FFF6D7;--theme-border:#E8D58A;--theme-accent:#D7B84E;} /* 幻日祭：淡黃 */
+.theme-yes{--theme-bg:#EEF8E7;--theme-border:#BBD9AD;--theme-accent:#8FB77A;} /* 耶市集：淡綠 */
+.theme-travel{--theme-bg:#EEF7FC;--theme-border:#B7D6E8;--theme-accent:#86B8D2;} /* 兔彼樂的市集小旅行：淡藍 */
+.theme-flip{--theme-bg:#F1EEFA;--theme-border:#C9BFE7;--theme-accent:#9E8CCD;} /* 翻轉市集：淡紫 */
+.theme-none{--theme-bg:#FFF0F3;--theme-border:#EBC2CC;--theme-accent:#D98FA2;} /* 無主題：淡粉 */
+.ses-theme-pill{
+  display:inline-flex;
+  width:max-content;
+  max-width:100%;
+  align-items:center;
+  border-radius:999px;
+  background:var(--theme-accent,#DCD7ED);
+  color:#111;
+  padding:3px 9px;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.2;
+  margin-bottom:6px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+@media (min-width:900px){
+  #eventsList,
+  #portalSessionList,
+  #sessionsList{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px!important;
+    align-items:stretch;
+  }
+  #eventsList > *,
+  #portalSessionList > *,
+  #sessionsList > *{
+    margin-bottom:0!important;
+  }
+  .ses-list-card{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    min-height:330px;
+    padding:14px!important;
+    background:linear-gradient(135deg,#fff 0%,var(--theme-bg,#fff) 100%)!important;
+    border:1.5px solid var(--theme-border,rgba(0,0,0,.08))!important;
+    border-left:8px solid var(--theme-accent,#DCD7ED)!important;
+    border-radius:22px!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.06)!important;
+  }
+  .ses-list-img{
+    width:100%!important;
+    height:155px!important;
+    border-radius:17px!important;
+    background:rgba(255,255,255,.65)!important;
+    border:1px solid rgba(0,0,0,.06)!important;
+  }
+  .ses-list-img img{
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+  }
+  .ses-list-body{
+    width:100%!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:4px!important;
+  }
+  .ses-list-name{
+    font-size:20px!important;
+    line-height:1.28!important;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .ses-list-meta{
+    font-size:14px!important;
+    line-height:1.6!important;
+    min-height:44px;
+  }
+  .ses-list-fee{
+    font-size:18px!important;
+    color:#111!important;
+    margin-top:4px!important;
+  }
+  .ses-list-actions{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:44px 1fr!important;
+    gap:8px!important;
+    align-items:center!important;
+    margin-top:auto!important;
+  }
+  .ses-list-share{
+    width:44px!important;
+    height:44px!important;
+    border-radius:14px!important;
+    background:#fff!important;
+  }
+  .ses-list-reg{
+    width:100%!important;
+    height:44px!important;
+    border-radius:14px!important;
+    background:#DCD7ED!important;
+  }
+  [data-front-session-card]{
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    min-height:250px;
+    padding:16px!important;
+    background:linear-gradient(135deg,#fff 0%,var(--theme-bg,#fff) 100%)!important;
+    border:1.5px solid var(--theme-border,rgba(0,0,0,.08))!important;
+    border-left:8px solid var(--theme-accent,#DCD7ED)!important;
+    border-radius:22px!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.06)!important;
+  }
+  [data-front-session-card] > div:first-child{
+    width:100%!important;
+  }
+  [data-front-session-card] > div:last-child{
+    width:100%!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+  }
+}
+@media (min-width:1200px){
+  #eventsList,
+  #portalSessionList,
+  #sessionsList{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+
+
 
 
 
@@ -2942,7 +3084,32 @@ function myRegBadge(s){
   else label='你已報名·'+t;
   return `<span style="display:inline-flex;align-items:center;gap:3px;background:${p.bg};color:${p.color};border:1px solid ${p.border};padding:1px 8px;border-radius:5px;font-size:14px;font-weight:700;flex-shrink:0">${p.icon?p.icon+' ':''}${esc(label)}</span>`;
 }
+
+
+/* 20260705 前台主題色：同一主題活動固定同色，不用場次名稱判斷 */
+function getFrontSessionThemeInfo(s){
+  try{
+    const eventId=String((s&& (s.eventId||s.event_id)) || '').trim();
+    const evt=(ST.events||[]).find(e=>String(e.id)===eventId);
+    const rawTitle=String((evt&&(evt.title||evt.name)) || (s&&(s.eventTitle||s.event_title||s.themeTitle||s.theme_title)) || '').trim();
+    const title=rawTitle || (eventId ? '主題活動' : '無主題');
+    let cls='theme-none';
+    if(rawTitle.indexOf('幻日祭')>-1) cls='theme-huanri';
+    else if(rawTitle.indexOf('耶市集')>-1) cls='theme-yes';
+    else if(rawTitle.indexOf('兔彼樂的市集小旅行')>-1) cls='theme-travel';
+    else if(rawTitle.indexOf('翻轉市集')>-1) cls='theme-flip';
+    else if(!eventId) cls='theme-none';
+    else cls='theme-none';
+    return {cls,title};
+  }catch(_e){
+    return {cls:'theme-none',title:'無主題'};
+  }
+}
+
 function renderSessionCard(s){
+  const themeInfo=getFrontSessionThemeInfo(s);
+  const themeClass=themeInfo.cls||'theme-none';
+  const themePill=`<span class="ses-theme-pill">${esc(themeInfo.title||'無主題')}</span>`;
   const full = Number(s.limit)>0 && Number(s.count)>=Number(s.limit);
   const closed = s.status==='關閉' || s.status==='已關閉' || full;
   const typeMap={'市集場次':'市集','活動報名':'活動','體驗活動':'體驗','通路寄賣':'寄賣','合作申請':'合作'};
@@ -2965,9 +3132,9 @@ function renderSessionCard(s){
   const typeBadge=typeLabel?`<span style="background:${closed?'#e8e8e8':'var(--gp)'};color:${closed?'#888':'var(--g)'};padding:1px 7px;border-radius:5px;font-size:15px;font-weight:700;flex-shrink:0">${esc(typeLabel)}</span>`:'';
   const myBadge = myRegBadge(s);
   if(closed){
-    return `<div style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}</div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
+    return `<div class="${themeClass}" data-front-session-card="1" style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}</div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
   }
-  return `<div role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+  return `<div class="${themeClass}" data-front-session-card="1" role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
       <span style="color:var(--g);font-size:24px;line-height:1;font-weight:700">›</span>
       <button onclick="event.stopPropagation();openSessionFromCard(event,'${esc(s.id)}')"
         style="min-width:82px;height:40px;border-radius:13px;background:#91B574;color:#fff;border:none;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
@@ -5258,12 +5425,16 @@ if(document.readyState==='loading'){
           const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'免費';
           // 封面圖：有圖用圖，無圖用 IP 插圖（不用大字）
           const hasCover=!!(s.coverUrl||s.cover);
+          const themeInfo=getFrontSessionThemeInfo(s);
+          const themeClass=themeInfo.cls||'theme-none';
+          const themeTitle=themeInfo.title||'無主題';
           const coverEl=hasCover
             ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
             :`<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
-          return `<div class="ses-list-card" onclick="openActivityFromHome(null,'${esc(s.id)}')">
+          return `<div class="ses-list-card ${themeClass}" onclick="openActivityFromHome(null,'${esc(s.id)}')">
             <div class="ses-list-img">${coverEl}</div>
             <div class="ses-list-body">
+              <div class="ses-theme-pill">${esc(themeTitle)}</div>
               <div class="ses-list-name">${esc(s.name||'')}</div>
               <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${s.venue?'<br>📍 '+esc(s.venue):''}</div>
               <div class="ses-list-fee">${feeStr}</div>
