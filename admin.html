@@ -676,7 +676,7 @@
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn" onclick="openSessionCreatePanel()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
-    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button></div></section>
+    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openBundleSettings()"><div class="ico">🎫</div><b>場次組合</b><span>多場綁定套組</span></button></div></section>
   </main>
 </section>
 
@@ -1899,6 +1899,52 @@ async function loadCompanySettings(){ try{ const c=await api({action:'getCompany
 async function saveCompanySettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'saveCompanySettings',systemName:$('co_system').value,companyName:$('co_name').value,serviceEmail:$('co_email').value,serviceLine:$('co_line').value,phone:$('co_phone').value,website:$('co_site').value,loginText:$('co_login').value}); toast('公司資料已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
 function openHomepageSettings(){ openPanel('公告 / 首頁顯示','首頁封面、公告與精選主題活動圖片','<div class="form-grid"><div class="form-field full"><label>登入頁 / 品牌 Logo 網址</label><input id="home_logo"></div><div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div><div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div></div><div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div><div class="report-card" style="margin-top:16px"><div class="report-title">精選主題活動圖片</div><div class="sub" style="margin:4px 0 10px">改這裡的圖，前台首頁「精選主題活動」那排就會換。</div><div id="featCoverList"><div class="loading">活動載入中…</div></div></div>'); loadHomepageSettings(); }
 async function loadHomepageSettings(){ try{ const c=await api({action:'getSiteConfig'}); $('home_hero').value=c.heroImg||''; $('home_info').value=c.infoText||''; $('home_logo').value=c.logoUrl||''; }catch(e){toast('首頁設定載入失敗：'+e.message,6000)} try{ const evs=await api({action:'getEventsAdmin'}); AdminState.featEvents=Array.isArray(evs)?evs:[]; renderFeatCoverList(AdminState.featEvents); }catch(e){ const el=$('featCoverList'); if(el) el.innerHTML='<div class="empty">活動載入失敗：'+safe(e.message)+'</div>'; } }
+async function openBundleSettings(){
+  openPanel('場次組合','把多個場次綁成套組、設組合攤位費；攤商可一次報名（其他規則同單場，同進退）','<div class="loading">載入中…</div>');
+  try{
+    if(!Array.isArray(AdminState.sessions)||!AdminState.sessions.length){ try{ await refreshSessionsOverview(); }catch(_e){} }
+    const list=await api({action:'getBundles'});
+    AdminState.bundles=Array.isArray(list)?list:[];
+    renderBundlePanel();
+  }catch(e){ $('panelBody').innerHTML='<div class="empty">載入失敗：'+safe(e.message)+'</div>'; }
+}
+function renderBundlePanel(){
+  const el=$('panelBody'); if(!el) return;
+  const sess=(AdminState.sessions||[]);
+  const bundles=(AdminState.bundles||[]);
+  const sessOpts=sess.map(s=>'<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:15px"><input type="checkbox" class="bnd-sess" value="'+attr(s.id)+'" style="width:18px;height:18px"> '+safe(s.name||s.id)+'</label>').join('');
+  let html='<div class="report-card" style="margin-bottom:14px"><div class="report-title">新增套組</div>'
+    +'<div class="form-field full"><label>套組名稱</label><input id="bnd_name" placeholder="例：幻日祭雙日套組"></div>'
+    +'<div class="form-field full"><label>組合攤位費（總額；押金各場另加 500）</label><input id="bnd_price" type="number" value="0"></div>'
+    +'<div class="form-field full"><label>綁定場次（勾 2 個以上）</label><div style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px 12px">'+(sessOpts||'目前沒有場次')+'</div></div>'
+    +'<div class="card-actions"><button class="btn" onclick="saveBundleUI(this)">建立套組</button></div></div>';
+  html+='<div class="report-card"><div class="report-title">現有套組</div>';
+  if(!bundles.length){ html+='<div class="empty">尚無套組</div>'; }
+  else { html+=bundles.map(bd=>{
+    const names=(bd.sessionIds||[]).map(id=>{ const s=sess.find(x=>String(x.id)===String(id)); return s?(s.name||id):id; }).join('、');
+    return '<div class="card" style="padding:12px;margin-bottom:8px"><b>'+safe(bd.name)+'</b>'
+      +'<div style="font-size:13px;color:#666;margin-top:4px">場次：'+safe(names)+'</div>'
+      +'<div style="font-size:15px;color:#2a6a10;font-weight:900;margin-top:2px">組合攤位費 NT$ '+(Number(bd.bundlePrice||0).toLocaleString())+'</div>'
+      +'<div style="margin-top:8px"><button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteBundleUI(\''+attr(bd.id)+'\',this)">刪除套組</button></div></div>';
+  }).join(''); }
+  html+='</div>';
+  el.innerHTML=html;
+}
+async function saveBundleUI(btn){
+  const name=($('bnd_name')?$('bnd_name').value:'').trim();
+  const price=Number($('bnd_price')?$('bnd_price').value:0)||0;
+  const sids=Array.from(document.querySelectorAll('.bnd-sess:checked')).map(x=>x.value);
+  if(!name){ toast('請填套組名稱'); return; }
+  if(sids.length<2){ toast('請勾至少 2 個場次'); return; }
+  const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…';
+  try{ await apiPost({action:'saveBundle', name, bundlePrice:price, sessionIds:sids}); const list=await api({action:'getBundles'}); AdminState.bundles=Array.isArray(list)?list:[]; renderBundlePanel(); toast('已建立套組'); }
+  catch(e){ toast('建立失敗：'+e.message,6000); btn.disabled=false; btn.textContent=old; }
+}
+async function deleteBundleUI(id, btn){
+  if(!confirm('確定刪除這個套組？（不影響已報名的攤商）')) return;
+  try{ await apiPost({action:'deleteBundle', id}); const list=await api({action:'getBundles'}); AdminState.bundles=Array.isArray(list)?list:[]; renderBundlePanel(); toast('已刪除'); }
+  catch(e){ toast('刪除失敗：'+e.message,6000); }
+}
 function pcDate(x){ try{ return new Date(x).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}); }catch(e){ return x||''; } }
 async function openOnsitePasscodes(){
   openPanel('現場通行碼','工讀生免登入、輸入 4 位碼直接進該場報到','<div class="loading">載入中…</div>');

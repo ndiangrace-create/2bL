@@ -2767,19 +2767,50 @@ function renderHomeFallbackSessions(){
   el.innerHTML=open.slice(0,10).map(s=>renderSessionCard(s)).join('');
 }
 function _legacyHomeFallbackCard(){}
+function renderBundleSection(){
+  const bundles=ST.bundles||[];
+  const host=$('eventsList'); if(!host) return;
+  const old=document.getElementById('bundleSection'); if(old) old.remove();
+  if(!bundles.length) return;
+  const wrap=document.createElement('div'); wrap.id='bundleSection'; wrap.style.margin='0 0 14px';
+  wrap.innerHTML='<div style="font-size:17px;font-weight:900;color:#111;margin:0 0 10px">🎫 連續套組（一次報名多場、優惠價）</div>'
+    + bundles.map(bd=>{
+      const names=(bd.sessions||[]).map(s=>esc(s.name)).join('｜');
+      return '<div style="background:linear-gradient(90deg,#FFF9EB,#FEFFF8);border:1.5px solid #E7DCC5;border-radius:16px;padding:14px 16px;margin-bottom:10px">'
+        +'<div style="font-weight:900;font-size:16px;color:#111">'+esc(bd.name)+'</div>'
+        +'<div style="font-size:13px;color:#666;margin:4px 0">'+names+'（共 '+((bd.sessions||[]).length)+' 場）</div>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:10px;flex-wrap:wrap">'
+          +'<div style="font-weight:900;color:#b26a00">組合攤位費 NT$ '+(Number(bd.bundlePrice||0).toLocaleString())+'<span style="font-size:12px;color:#999;font-weight:400">（押金各場另計）</span></div>'
+          +'<button type="button" onclick="openBundleReport(\''+esc(bd.id)+'\')" style="border:none;border-radius:10px;background:#7fb069;color:#fff;font-weight:900;font-size:15px;padding:9px 16px;cursor:pointer">套組報名</button>'
+        +'</div></div>';
+    }).join('');
+  host.parentNode.insertBefore(wrap, host);
+}
+async function openBundleReport(bundleId){
+  const bd=(ST.bundles||[]).find(x=>String(x.id)===String(bundleId));
+  if(!bd){ toast('找不到套組'); return; }
+  if(!bd.sessions||!bd.sessions.length){ toast('此套組沒有綁定場次'); return; }
+  await openSession(bd.sessions[0].id);
+  ST.currentBundle=bd;
+  const names=bd.sessions.map(s=>s.name).join('、');
+  toast('套組報名：'+bd.name+'　送出後會一次幫你報名：'+names, 7000);
+}
 async function loadHome(){
   const evEl=$('eventsList');
   if(evEl) evEl.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center">載入中…</div>';
   try{
-    const [events, sessions, announcements] = await Promise.all([
+    const [events, sessions, announcements, bundles] = await Promise.all([
       api({action:'getEvents',_t:Date.now()}),
       api({action:'getSessions',_t:Date.now()}),
       api({action:'getAnnouncements',_t:Date.now()}),
+      api({action:'getBundlesPublic',_t:Date.now()}).catch(()=>[]),
     ]);
     ST.events = Array.isArray(events) ? events : [];
+    ST.bundles = Array.isArray(bundles) ? bundles : [];
     mergeSessions(Array.isArray(sessions) ? sessions : []);
     renderAnnouncements(Array.isArray(announcements) ? announcements : []);
     renderEvents();
+    renderBundleSection();
     setTimeout(()=>{
       const el=$('eventsList');
       if(el && (!el.children.length || /載入中/.test(el.textContent||''))) renderHomeFallbackSessions();
@@ -3848,6 +3879,7 @@ function shareCurrentSession(){
 }
 
 async function openSession(sessionId){
+  ST.currentBundle=null;
   // 點場次必須立即有反應：先用列表快取打開報名表，再背景抓最新資料。
   const cached = (ST.allSessionsData||[]).find(x=>String(x.id)===String(sessionId))
     || (ST.sessions||[]).find(x=>String(x.id)===String(sessionId));
@@ -4449,11 +4481,13 @@ async function submitReg(ev){
       agreementTitle: ST._agreementData?.title || '',
       agreementVersion: ST._agreementData?.version || '',
     };
+    if(ST.currentBundle && ST.currentBundle.id){ body.action='registerBundle'; body.bundleId=ST.currentBundle.id; }
     const res=await apiPost(body);
     if(!res){ toast('❌ 後端沒有回傳資料',8000); showFormError('後端沒有回傳資料，請稍後到我的紀錄確認是否已建立報名。'); restoreBtn(); return false; }
     if(res.error){ toast('❌ '+res.error, 8000); showFormError(res.error); restoreBtn(); return false; }
     hideFormError();
     ST.memberEmail=email;
+    ST.currentBundle=null;
     try{ localStorage.setItem('tb_member_email',email||''); }catch(e){}
     // 同步存入 phone，讓 getMyRegs 查詢時能帶入
     if(phone) { try{ localStorage.setItem('tb_member_phone', phone); }catch(e){} }
@@ -4936,8 +4970,14 @@ async function doSubmitCancel(){
   if(btn){btn.disabled=true;btn.textContent='處理中…';}
   try{
     const action=ST._pendingCancelIsRefund?'applyRefund':'cancelReg';
-    const res=await apiPost({action,regId,email:ST.member?.email||ST.memberEmail||''});
-    if(res.error){toast('❌ '+res.error);return;}
+    const em=ST.member?.email||ST.memberEmail||'';
+    const cur=(ST.regs||[]).find(r=>String(r.id)===String(regId));
+    const gid=(cur&&cur.bundleGroupId)?String(cur.bundleGroupId):'';
+    const ids=gid?((ST.regs||[]).filter(r=>String(r.bundleGroupId)===gid).map(r=>r.id)):[regId];
+    for(const rid of ids){
+      const res=await apiPost({action,regId:rid,email:em});
+      if(res&&res.error){toast('❌ '+res.error);return;}
+    }
     closeModal('cancelModal');
     toast(ST._pendingCancelIsRefund?'✅ 已送出退款申請':'✅ 已取消報名');
     if(ST.memberEmail){
