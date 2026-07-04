@@ -815,6 +815,24 @@
   }
 }
 
+
+/* 20260705｜後台場次卡主題同色＋右上角迷你主題圖 */
+.session-list > .session-card.theme-session-card,
+#sessionList > .session-card.theme-session-card{
+  background:var(--session-theme-bg,#fff)!important;
+  border-color:var(--session-theme-border,#E2D8CA)!important;
+}
+.session-list > .session-card.theme-session-card .session3-wrap,
+#sessionList > .session-card.theme-session-card .session3-wrap{
+  background:transparent!important;
+}
+.session3-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:start!important;}
+.session3-head-main{min-width:0!important;}
+.session-mini-thumb{width:54px;height:54px;border-radius:12px;overflow:hidden;border:1px solid rgba(123,111,92,.22);background:rgba(255,255,255,.75);box-shadow:0 3px 10px rgba(0,0,0,.05);flex:0 0 54px;}
+.session-mini-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.session-mini-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#655c51;text-align:center;padding:4px;}
+@media (min-width: 900px){#sessionList .session-mini-thumb{width:58px;height:58px;flex-basis:58px;}}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -874,6 +892,39 @@ function safeJson(v, fallback){
   if(v===null||v===undefined||v==='') return fallback;
   if(typeof v !== 'string') return v;
   try{return JSON.parse(v);}catch(e){return fallback;}
+}
+function normalizeThemeText(v){ return String(v||'').replace(/\s+/g,'').trim(); }
+const SESSION_THEME_PALETTES = [
+  { match:['幻日祭'], bg:'#FFF7D8', border:'#D9B84A' },
+  { match:['耶市集'], bg:'#EEF8E8', border:'#9FBE8B' },
+  { match:['兔彼樂的市集小旅行'], bg:'#EEF7FF', border:'#8EB7DA' },
+  { match:['翻轉市集'], bg:'#F4EEFF', border:'#B8A1E3' },
+  { match:['無主題',''], bg:'#FCEEF5', border:'#DCA8C2' }
+];
+function themePaletteByName(name){
+  const t=normalizeThemeText(name);
+  for(const item of SESSION_THEME_PALETTES){
+    if((item.match||[]).some(k=>normalizeThemeText(k)===t)) return item;
+  }
+  return SESSION_THEME_PALETTES[SESSION_THEME_PALETTES.length-1];
+}
+function findEventBySession(s){
+  const eid=String(s?.eventId||s?.event_id||'').trim();
+  const ename=String(s?.eventName||s?.event_name||'').trim();
+  const evs=Array.isArray(AdminState.events)?AdminState.events:[];
+  let ev=eid ? evs.find(e=>String(e?.id||'').trim()===eid) : null;
+  if(!ev && ename){
+    const target=normalizeThemeText(ename);
+    ev = evs.find(e=>normalizeThemeText(e?.title||e?.name||'')===target) || null;
+  }
+  return ev||null;
+}
+function getSessionThemeMeta(s){
+  const ev=findEventBySession(s);
+  const themeName=String(ev?.title||s?.eventName||s?.event_name||'無主題').trim() || '無主題';
+  const palette=themePaletteByName(themeName);
+  const cover=String(ev?.cover||ev?.coverUrl||ev?.cover_url||s?.cover||s?.coverUrl||s?.cover_url||'').trim();
+  return { name:themeName, bg:palette.bg, border:palette.border, cover };
 }
 function normalizeMemberUrl(v){
   const s=String(v||'').trim();
@@ -955,7 +1006,7 @@ function nz(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
 function getStats(s){ const st=s.stats||{}; return { total: nz(st.registrationTotal ?? s.registrationTotal ?? s.total), pending: nz(st.pendingReview ?? s.pendingReview ?? s.pending), approved: nz(st.approved ?? s.approved), unpaid: nz(st.unpaid ?? s.unpaid), paymentPending: nz(st.paymentPending ?? s.paymentPending ?? s.pendingPayment), paid: nz(st.paid ?? s.paid), free: nz(st.free ?? s.free), checked: nz(st.checkedIn ?? s.checkedIn ?? s.seated), refund: nz(st.refund ?? s.refund ?? s.refundReq) }; }
 function getFinance(s){ const f=s.finance||{}; return {deposit:nz(f.depositTotal ?? s.depositTotal), receivable:nz(f.receivableTotal ?? s.receivableTotal ?? s.invoiceTotal), received:nz(f.receivedTotal ?? s.receivedTotal ?? s.revenue), unreceived:nz(f.unreceivedTotal ?? s.unreceivedTotal)}; }
 function getEquip(s){ const e=s.equipment||{}; return {need:e.neededText ?? e.paidNeededText ?? e.approvedNeededText ?? textFromMap(s.equipNeed), dailyRows:e.dailyRows || s.dailyEquipmentRows || [], dailyText:e.dailyText || s.dailyEquipmentText || '', total:e.totalText || s.totalEquipmentText || e.neededText || textFromMap(s.equipNeed)}; }
-async function refreshSessionsOverview(){ AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; try{ toast('場次載入中…'); const rows=await api({action:'getSessionDashboard'}); AdminState.sessions = Array.isArray(rows) ? rows : []; renderSessions(); toast('場次已更新'); }catch(e){ $('sessionList').innerHTML='<div class="empty">場次載入失敗：'+safe(e.message)+'</div>'; } }
+async function refreshSessionsOverview(){ AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; try{ toast('場次載入中…'); const [rows, events] = await Promise.all([api({action:'getSessionDashboard'}), api({action:'getEventsAdmin'}).catch(()=>AdminState.events||[])]); AdminState.sessions = Array.isArray(rows) ? rows : []; AdminState.events = Array.isArray(events) ? events : (AdminState.events||[]); renderSessions(); toast('場次已更新'); }catch(e){ $('sessionList').innerHTML='<div class="empty">場次載入失敗：'+safe(e.message)+'</div>'; } }
 
 function sessionLimit(s){ return nz(s.limit ?? s.limitCount ?? s.maxStalls ?? s.max_stalls ?? s.capacity ?? 0); }
 function progressText(s){ const st=getStats(s); const lim=sessionLimit(s); return lim>0 ? (st.total + '/' + lim) : String(st.total); }
@@ -1018,16 +1069,24 @@ function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearc
 function statButton(label,value,kind,sid,filter){ const disabled = value===undefined || value===null || value===''; const shown = disabled ? '—' : safe(value); return '<button class="stat click '+kind+'" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'\','+(Number(value)||0)+')"><b>'+shown+'</b><span>'+safe(label)+'</span></button>'; }
 
 function renderSessionCard(s){
-  const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
+  const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s), theme=getSessionThemeMeta(s);
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
   const financeMetric=(cls,label,value,filter)=>'<button type="button" class="chip '+cls+' click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')" title="查看'+safe(label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
   const equipmentTotal='<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表"><span class="m-label">設備總計</span><b>'+safe(e.total||e.need||'無')+'</b></button>';
   const dateEquip=sessionDateEquipHtml(s,e,sid);
-  return '<article class="session-card session-card-3rows" id="session-'+attr(sid)+'">'
+  const thumb = theme.cover
+    ? '<div class="session-mini-thumb" title="'+safe(theme.name)+'"><img src="'+attr(theme.cover)+'" alt="'+safe(theme.name)+'" loading="lazy" onerror="this.parentNode.classList.add(&quot;placeholder&quot;);this.remove();"></div>'
+    : '<div class="session-mini-thumb placeholder" title="'+safe(theme.name)+'"><span>'+safe(theme.name)+'</span></div>';
+  return '<article class="session-card session-card-3rows theme-session-card" id="session-'+attr(sid)+'" style="--session-theme-bg:'+attr(theme.bg)+';--session-theme-border:'+attr(theme.border)+';">'
     +'<div class="session3-wrap">'
       +'<div class="session3-info">'
-        +'<div class="session3-title">'+safe(sessionName(s))+'</div>'
-        +'<div class="meta"><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div>'
+        +'<div class="session3-head">'
+          +'<div class="session3-head-main">'
+            +'<div class="session3-title">'+safe(sessionName(s))+'</div>'
+            +'<div class="meta"><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div>'
+          +'</div>'
+          +thumb
+        +'</div>'
         +'<div class="session-date-equip-list">'+dateEquip+'</div>'
       +'</div>'
       +'<div class="session3-content">'
