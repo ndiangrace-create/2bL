@@ -2903,27 +2903,7 @@ function renderHomeFallbackSessions(){
   el.innerHTML=open.slice(0,10).map(s=>renderSessionCard(s)).join('');
 }
 function _legacyHomeFallbackCard(){}
-function renderBundleSection(){
-  const bundles=ST.bundles||[];
-  const host=$('eventsList'); if(!host) return;
-  const old=document.getElementById('bundleSection'); if(old) old.remove();
-  if(!bundles.length) return;
-  const wrap=document.createElement('div'); wrap.id='bundleSection';
-  wrap.innerHTML=bundles.map(bd=>{
-    const names=(bd.sessions||[]).map(s=>esc(s.name)).join('｜');
-    const n=(bd.sessions||[]).length;
-    return '<div class="act-card" onclick="openBundleReport(\''+esc(bd.id)+'\')" style="cursor:pointer">'
-      +'<div class="act-card-inner">'
-        +'<div class="act-card-img"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:34px;background:linear-gradient(135deg,#FFF3D6,#FCE8C8)">🎫</div><div class="act-card-status open">套組</div></div>'
-        +'<div class="act-card-body">'
-          +'<div class="act-card-name">'+esc(bd.name)+'</div>'
-          +'<div class="act-card-meta"><span>🎫 '+names+'（共 '+n+' 場）</span></div>'
-          +'<div class="act-card-fee">組合價 NT$ '+(Number(bd.bundlePrice||0).toLocaleString())+'　<span style="font-size:12px;color:#999;font-weight:400">押金各場另計</span></div>'
-        +'</div>'
-      +'</div></div>';
-  }).join('');
-  host.parentNode.insertBefore(wrap, host);
-}
+function renderBundleSection(){ const o=document.getElementById('bundleSection'); if(o) o.remove(); }
 async function openBundleReport(bundleId){
   const bd=(ST.bundles||[]).find(x=>String(x.id)===String(bundleId));
   if(!bd){ toast('找不到套組'); return; }
@@ -3120,7 +3100,7 @@ function renderSessionCard(s){
   if(s.dates&&s.dates.length>1){
     if(Number(s.fee)>0){ feeStr='全報 NT$'+s.fee; }
     else{ const df=s.dates[0]?.fee||0; feeStr=Number(df)>0?'NT$'+df+'/日':'免費'; }
-  } else if(Number(s.fee)>0){ feeStr='NT$'+s.fee; }
+  } else { if(Number(s.fee)>0){ feeStr='NT$'+s.fee; } else { const _df=(s.dates&&s.dates[0])?Number(s.dates[0].fee||0):0; if(_df>0) feeStr='NT$'+_df.toLocaleString(); } }
   const metaParts=[dateStr,s.region,feeStr,s.venue].filter(Boolean);
   const metaStr=metaParts.join('  ·  ');
   const typeBadge=typeLabel?`<span style="background:${closed?'#e8e8e8':'var(--gp)'};color:${closed?'#888':'var(--g)'};padding:1px 7px;border-radius:5px;font-size:15px;font-weight:700;flex-shrink:0">${esc(typeLabel)}</span>`:'';
@@ -3245,6 +3225,7 @@ async function checkMemberStep(){
     if(checkBtn){ checkBtn.disabled=false; checkBtn.textContent='查詢 / 繼續 →'; }
   }
 }
+function onBundleAddonChange(cb){ document.querySelectorAll('.bundleAddonChk').forEach(x=>{ if(x!==cb) x.checked=false; }); ST.bundleAddon = cb.checked ? cb.value : ''; if(typeof updateFee==='function') updateFee(); }
 function renderDynFormFull(s, isNew=false){
   ST.seatChoiceIntent='auto';
   const V=ST.member||{};
@@ -3398,6 +3379,19 @@ function renderDynFormFull(s, isNew=false){
     html+=`</div>`;
 
     // 加價選位告知（正式規則：報名階段只告知，不選位、不加價、不卡位）
+    try{
+      const _myB=(ST.bundles||[]).filter(b=>(b.sessions||[]).some(x=>String(x.id)===String(s.id)));
+      if(_myB.length){
+        ST.bundleAddon='';
+        html+=`<div class="form-card-new card-blue" style="margin-top:12px"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">＋</span>加報其他場次（組合優惠）</div><div style="font-size:13px;color:#c0392b;background:#fff5f5;border:1px solid #f0c0c0;border-radius:10px;padding:8px 10px;margin-bottom:8px">⚠️ 加報屬「組合報名，同進退」：退場即整組退出、組合優惠失效；若只需單場，請取消後重新報名單場。</div>`;
+        _myB.forEach(b=>{
+          const _o=(b.sessions||[]).filter(x=>String(x.id)!==String(s.id));
+          const _nm=_o.map(x=>esc(x.name)).join('、');
+          html+=`<label style="display:flex;align-items:flex-start;gap:10px;background:#fff;border:1.5px solid var(--c-blue);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;font-size:15px;font-weight:700;color:#111"><input type="checkbox" class="bundleAddonChk" value="${esc(b.id)}" onchange="onBundleAddonChange(this)" style="width:20px;height:20px;margin-top:2px"><span>加報：${_nm}<br><span style="font-weight:900;color:#b26a00">一起報名組合價 NT$ ${Number(b.bundlePrice||0).toLocaleString()}</span>（共 ${(_o.length+1)} 場，押金各場另計；勾選後這張表單一次報名全部）</span></label>`;
+        });
+        html+=`</div>`;
+      }
+    }catch(e){}
     const seatEnabled = !!(s.seatPricingEnabled || s.seat_pricing_enabled || (s.modules&&s.modules.seatPricing));
     if(seatEnabled){
       ST.seatChoiceIntent = 'auto';
@@ -4036,7 +4030,7 @@ function shareCurrentSession(){
 }
 
 async function openSession(sessionId){
-  ST.currentBundle=null;
+  ST.currentBundle=null; ST.bundleAddon='';
   // 點場次必須立即有反應：先用列表快取打開報名表，再背景抓最新資料。
   const cached = (ST.allSessionsData||[]).find(x=>String(x.id)===String(sessionId))
     || (ST.sessions||[]).find(x=>String(x.id)===String(sessionId));
@@ -4361,17 +4355,19 @@ function updateFee(){
   (s.addons||[]).forEach((a,i)=>{
     if(a && a.open===true) addonTotal+=(Number(a.price)||0)*(ST.addonQty&&ST.addonQty[i]||0);
   });
-  const total=fee+dep+equipTotal+addonTotal;
+  let _bfee=fee, _bdep=dep;
+  if(ST.bundleAddon){ const _bd=(ST.bundles||[]).find(b=>String(b.id)===String(ST.bundleAddon)); if(_bd){ const _n=(_bd.sessions||[]).length||1; _bfee=Number(_bd.bundlePrice)||0; _bdep=(Number(s.deposit)||0)*_n; } }
+  const total=_bfee+_bdep+equipTotal+addonTotal;
   // 只顯示有值的費用行
   // 費用行顯隱（直接用 id）
-  if($('feeBase')) $('feeBase').textContent='NT$'+fee;
-  const fbRow=$('feeBaseRow'); if(fbRow) fbRow.style.display=fee>0?'':'none';
+  if($('feeBase')) $('feeBase').textContent='NT$'+_bfee;
+  const fbRow=$('feeBaseRow'); if(fbRow) fbRow.style.display=_bfee>0?'':'none';
   if($('feeEquip')) $('feeEquip').textContent='NT$'+equipTotal;
   const feRow=$('feeEquipRow'); if(feRow) feRow.style.display=equipTotal>0?'':'none';
   if($('feeAddon')) $('feeAddon').textContent='NT$'+addonTotal;
   const faRow=$('feeAddonRow'); if(faRow) faRow.style.display=addonTotal>0?'':'none';
-  if($('feeDeposit')) $('feeDeposit').textContent='NT$'+dep;
-  const fdRow=$('feeDepRow'); if(fdRow) fdRow.style.display=dep>0?'':'none';
+  if($('feeDeposit')) $('feeDeposit').textContent='NT$'+_bdep;
+  const fdRow=$('feeDepRow'); if(fdRow) fdRow.style.display=_bdep>0?'':'none';
   if($('feeTotal')) $('feeTotal').textContent='NT$'+total;
   // feeBox 在卡片內時永遠顯示（不需要切換）
   const feeBoxEl=$('feeBox');
@@ -4382,7 +4378,7 @@ function updateFee(){
   const stEl=$('stallTotal');
   if(stEl){
     const isQtyRow=stEl.classList.contains('qty-total');
-    stEl.textContent=isQtyRow?'（NT$'+fee+'）':'NT$'+fee;
+    stEl.textContent=isQtyRow?'（NT$'+_bfee+'）':'NT$'+_bfee;
   }
   // 設備各列小計
   Object.entries(_s.equip||{}).forEach(([k,v])=>{
@@ -4638,7 +4634,7 @@ async function submitReg(ev){
       agreementTitle: ST._agreementData?.title || '',
       agreementVersion: ST._agreementData?.version || '',
     };
-    if(ST.currentBundle && ST.currentBundle.id){ body.action='registerBundle'; body.bundleId=ST.currentBundle.id; }
+    if(ST.bundleAddon){ body.action='registerBundle'; body.bundleId=ST.bundleAddon; }
     const res=await apiPost(body);
     if(!res){ toast('❌ 後端沒有回傳資料',8000); showFormError('後端沒有回傳資料，請稍後到我的紀錄確認是否已建立報名。'); restoreBtn(); return false; }
     if(res.error){ toast('❌ '+res.error, 8000); showFormError(res.error); restoreBtn(); return false; }
