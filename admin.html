@@ -607,6 +607,46 @@
 }
 
 
+
+/* 20260704 場次設定基本資料排版：可填寫第一排白底；下拉第二排淡色；移除入口工程說明 */
+.tight-session-settings .session-basic-grid{
+  display:grid!important;
+  grid-template-columns:1.35fr 1fr 1fr 1fr!important;
+  gap:12px 12px!important;
+  align-items:end!important;
+}
+.tight-session-settings .session-basic-grid .form-field{min-width:0!important;}
+.tight-session-settings .manual-field input,
+.tight-session-settings .manual-field textarea{background:#fff!important;}
+.tight-session-settings .choice-field{
+  background:#F3FAF7!important;
+  border:1px solid #D7E8E1!important;
+  border-radius:16px!important;
+  padding:10px!important;
+}
+.tight-session-settings .choice-field select{
+  background:#fff!important;
+  border-color:#CFE2DA!important;
+}
+.tight-session-settings .readonly-field input[readonly]{
+  background:#F7F4EE!important;
+  color:#666!important;
+  cursor:not-allowed!important;
+}
+.tight-session-settings .review-toggle-box{
+  background:#fff!important;
+  border:1px solid #CFE2DA!important;
+  border-radius:14px!important;
+  min-height:40px!important;
+  padding:8px 10px!important;
+}
+@media(max-width:900px){
+  .tight-session-settings .session-basic-grid{grid-template-columns:1fr 1fr!important;}
+}
+@media(max-width:560px){
+  .tight-session-settings .session-basic-grid{grid-template-columns:1fr!important;}
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -1516,16 +1556,14 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field full"><label>已編號場地圖</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="請上傳或貼上已編號場地圖 URL"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div><div class="seat-map-save-inline"><button type="button" class="btn secondary small" onclick="saveSessionSeatMapOnly(\''+attr(sid)+'\',this)">儲存地圖</button><span class="sub">地圖儲存後，才建立或修改號碼清單。</span></div></div></div><div id="set_seatTools" style="display:none"><div class="seat-map-save-note" id="set_seatMapNote"></div><div class="seat-batch-inline" id="set_seatBatchBox"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1" placeholder="起始"><input id="set_seatCount" type="number" value="" placeholder="數量"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>狀態</span><span>加價</span><span>啟用</span><span>備註</span><span></span></div><div id="set_seatRows"><div class="sub">尚未讀取號碼清單。</div></div></div><div class="sub">選位使用「已編號場地圖＋號碼狀態清單」，不使用拖拉點位。</div>';
   return '<div class="readable-detail tight-session-settings">'
   +'<div class="report-card"><div class="report-title">基本資料</div><div class="session-basic-grid">'
-  +'<div class="form-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div>'
-  +'<div class="form-field"><label>入口分類</label><select id="set_entry">'+entryOptionsHtml(entryFromSession(s))+'</select><div class="sub">儲存時會同步寫入 type 與 portals。</div></div>'
-  +'<div class="form-field"><label>審核制</label><div class="review-toggle-box"><input type="checkbox" id="set_needReviewCheck" '+(sessionBool(needReview,true)?'checked':'')+' onchange="document.getElementById(\'set_reviewMode\').value=this.checked?\'review\':\'instant\'"><span>審核</span><small>未勾＝免審核</small><input type="hidden" id="set_reviewMode" value="'+(sessionBool(needReview,true)?'review':'instant')+'"></div></div>'
-  +'<div class="form-field"><label>場次 ID</label><input id="set_sessionId" value="'+attr(sid)+'" readonly style="background:#f7f4ee;color:#666"><div class="sub">自動產生，不可手動修改。</div></div>'
-  +'<div class="form-field"><label>所屬主題活動</label><select id="set_eventId">'+sessionEventOptionsHtml(AdminState.events||[],s.eventId||s.event_id||'')+'</select><div class="sub">主題活動來自資料庫 events。</div></div>'
-  +'<div class="form-field"><label>地區</label><input id="set_region" value="'+attr(s.region||'')+'"></div>'
-  +'<div class="form-field"><label>場地名稱</label><input id="set_venue" value="'+attr(s.venue||s.location||'')+'"></div>'
-  +'<div class="form-field"><label>報名狀態</label><select id="set_status"><option '+(String(s.status||'報名中')==='報名中'?'selected':'')+'>報名中</option><option '+(String(s.status||'')==='已關閉'||String(s.status||'')==='關閉'?'selected':'')+'>已關閉</option><option '+(String(s.status||'')==='封存'||String(s.status||'')==='已封存'?'selected':'')+'>封存</option></select></div>'
-  +'<div></div>'
-  +'<div class="form-field full"><label>入口說明</label><div class="notice" style="margin:0">入口分類只需要選一次；系統會自動同步「類型 type」與「顯示入口 portals」。</div></div>'
+  +'<div class="form-field manual-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div>'
+  +'<div class="form-field manual-field"><label>地區</label><input id="set_region" value="'+attr(s.region||'')+'"></div>'
+  +'<div class="form-field manual-field"><label>場地名稱</label><input id="set_venue" value="'+attr(s.venue||s.location||'')+'"></div>'
+  +'<div class="form-field readonly-field"><label>場次 ID</label><input id="set_sessionId" value="'+attr(sid)+'" readonly><div class="sub">自動產生，不可手動修改。</div></div>'
+  +'<div class="form-field choice-field"><label>所屬主題活動</label><select id="set_eventId">'+sessionEventOptionsHtml(AdminState.events||[],s.eventId||s.event_id||'')+'</select></div>'
+  +'<div class="form-field choice-field"><label>入口分類</label><select id="set_entry">'+entryOptionsHtml(entryFromSession(s))+'</select></div>'
+  +'<div class="form-field choice-field"><label>審核制</label><div class="review-toggle-box"><input type="checkbox" id="set_needReviewCheck" '+(sessionBool(needReview,true)?'checked':'')+' onchange="document.getElementById(\'set_reviewMode\').value=this.checked?\'review\':\'instant\'"><span>審核</span><small>未勾＝免審核</small><input type="hidden" id="set_reviewMode" value="'+(sessionBool(needReview,true)?'review':'instant')+'"></div></div>'
+  +'<div class="form-field choice-field"><label>報名狀態</label><select id="set_status"><option '+(String(s.status||'報名中')==='報名中'?'selected':'')+'>報名中</option><option '+(String(s.status||'')==='已關閉'||String(s.status||'')==='關閉'?'selected':'')+'>已關閉</option><option '+(String(s.status||'')==='封存'||String(s.status||'')==='已封存'?'selected':'')+'>封存</option></select></div>'
   +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:128px">'+safe(s.desc||s.description||'')+'</textarea></div>'
   +'<div class="form-field full"><label>主視覺圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
   +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位</label>'+coorgInputsHtml(s)+'</div></div></div>'
@@ -1572,10 +1610,10 @@ async function openSessionCreatePanel(){
   const evs=await api({action:'getEventsAdmin'}).catch(()=>AdminState.events||[]);
   AdminState.events=Array.isArray(evs)?evs:[];
   $('panelBody').innerHTML='<div class="form-grid">'
-    +'<div class="form-field"><label>場次名稱</label><input id="new_name"></div>'
-    +'<div class="form-field"><label>所屬主題活動</label><select id="new_eventId">'+sessionEventOptionsHtml(AdminState.events||[],'')+'</select></div>'
-    +'<div class="form-field"><label>入口分類</label><select id="new_entry">'+entryOptionsHtml('市集報名')+'</select><div class="sub">會同步寫入 type 與 portals。</div></div>'
-    +'<div class="form-field"><label>地點</label><input id="new_venue"></div>'
+    +'<div class="form-field manual-field"><label>場次名稱</label><input id="new_name"></div>'
+    +'<div class="form-field choice-field"><label>所屬主題活動</label><select id="new_eventId">'+sessionEventOptionsHtml(AdminState.events||[],'')+'</select></div>'
+    +'<div class="form-field choice-field"><label>入口分類</label><select id="new_entry">'+entryOptionsHtml('市集報名')+'</select></div>'
+    +'<div class="form-field manual-field"><label>地點</label><input id="new_venue"></div>'
     +'<div class="form-field"><label>攤位費</label><input id="new_fee" type="number" value="0"></div>'
     +'<div class="form-field"><label>押金</label><input id="new_deposit" type="number" value="0"></div>'
     +'<div class="form-field full"><label>說明</label><textarea id="new_desc"></textarea></div>'
