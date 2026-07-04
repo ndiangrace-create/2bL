@@ -676,7 +676,7 @@
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
-    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openBundleSettings()"><div class="ico">🎫</div><b>場次組合</b><span>多場綁定套組</span></button></div></section>
+    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button></div></section>
   </main>
 </section>
 
@@ -1455,7 +1455,7 @@ async function openSessionSettings(sid){
     renderSessionDateRows(sessionDates(d));
     renderSessionAddonRows(sessionAddons(d));
     toggleSessionFeatureSections();
-    await loadSessionSeatSettings(sid,d);
+    await loadSessionSeatSettings(sid,d); try{ await loadSessionBundleInfo(sid); }catch(_e){}
   }catch(e){
     AdminState.events=Array.isArray(AdminState.events)?AdminState.events:[];
     $('panelBody').innerHTML=sessionSettingsForm(s, [])+'<div class="notice warn">完整設定載入失敗：'+safe(e.message)+'</div>';
@@ -1580,6 +1580,12 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +featureSectionHtml('agreement','合約',mods,agreementBody)
   +featureSectionHtml('seats','選位 / 攤位',mods,seatsBody)
   +featureSectionHtml('invoice','發票資料',mods,invoiceBody)
+  +'<div class="report-card" style="margin-top:14px"><div class="report-title">🎫 組合報名（連動其他場次、設組合價）</div>'
+  +'<div class="sub" style="margin-bottom:8px">勾選要和「本場次」一起組合報名的其他場次，設定組合攤位費。攤商在前台就會看到這個組合、一次報名整組（押金各場照舊、其他規則同單場、同進退）。</div>'
+  +'<div class="form-field full"><label>組合攤位費（總額；押金各場另加）</label><input id="bndsec_price" type="number" value="0"></div>'
+  +'<div class="form-field full"><label>連動場次（勾 1 個以上，會和本場組成套組）</label><div id="bndsec_list" style="max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px 12px">載入中…</div></div>'
+  +'<div class="card-actions"><button class="btn" onclick="saveSessionBundle(\''+attr(sid)+'\',this)">建立 / 更新組合</button> <button class="btn secondary" onclick="removeSessionBundle(\''+attr(sid)+'\',this)">移除組合</button></div>'
+  +'</div>'
   +'<div class="card-actions"><button class="btn" onclick="saveSessionSettings(\''+attr(sid)+'\',this)">儲存場次設定</button></div>'
   +'</div>';
 }
@@ -1956,6 +1962,49 @@ async function newSessionFull(){
     openSessionSettings(id);
     toast('新場次已建立（暫時隱藏）；填完整資料後把「報名狀態」設為報名中並儲存。若不用可直接封存或刪除。',8000);
   }catch(e){ toast('建立失敗：'+e.message,6000); }
+}
+async function loadSessionBundleInfo(sid){
+  const el=$('bndsec_list'); if(!el) return;
+  try{
+    if(!Array.isArray(AdminState.sessions)||!AdminState.sessions.length){ try{ await refreshSessionsOverview(); }catch(_e){} }
+    const sessions=(AdminState.sessions||[]);
+    const list=await api({action:'getBundles'}).catch(()=>[]);
+    const bundles=Array.isArray(list)?list:[];
+    const mine=bundles.find(b=>(b.sessionIds||[]).length && String(b.sessionIds[0])===String(sid));
+    AdminState._bundleForSession=mine||null;
+    const checked=mine?(mine.sessionIds||[]).slice(1).map(String):[];
+    if(mine && $('bndsec_price')) $('bndsec_price').value=mine.bundlePrice||0;
+    el.innerHTML=sessions.filter(s=>String(s.id)!==String(sid)).map(s=>{
+      const ck=checked.includes(String(s.id))?'checked':'';
+      return '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:15px"><input type="checkbox" class="bndsec-sess" value="'+attr(s.id)+'" '+ck+' style="width:18px;height:18px"> '+safe(s.name||s.id)+'</label>';
+    }).join('')||'目前沒有其他場次';
+  }catch(e){ el.innerHTML='載入失敗'; }
+}
+async function saveSessionBundle(sid, btn){
+  const price=Number($('bndsec_price')?$('bndsec_price').value:0)||0;
+  const others=Array.from(document.querySelectorAll('.bndsec-sess:checked')).map(x=>x.value);
+  if(!others.length){ toast('請至少勾一個要連動的場次'); return; }
+  const sids=[sid, ...others];
+  const s=(typeof sessionById==='function')?sessionById(sid):null; const nm=((s&&s.name)?s.name:'場次')+' 組合套組';
+  const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
+  try{
+    const existing=AdminState._bundleForSession;
+    const payload={action:'saveBundle', name:nm, bundlePrice:price, sessionIds:sids};
+    if(existing&&existing.id) payload.id=existing.id;
+    await apiPost(payload);
+    toast('已儲存組合！前台會出現這個組合報名');
+    await loadSessionBundleInfo(sid);
+  }catch(e){ toast('儲存失敗：'+e.message,6000); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
+async function removeSessionBundle(sid, btn){
+  const existing=AdminState._bundleForSession;
+  if(!existing||!existing.id){ toast('本場目前沒有組合'); return; }
+  if(!confirm('確定移除本場的組合？（不影響已報名的攤商）')) return;
+  const old=btn.textContent; btn.disabled=true; btn.textContent='移除中…';
+  try{ await apiPost({action:'deleteBundle', id:existing.id}); toast('已移除組合'); await loadSessionBundleInfo(sid); }
+  catch(e){ toast('移除失敗：'+e.message,6000); }
+  finally{ btn.disabled=false; btn.textContent=old; }
 }
 function pcDate(x){ try{ return new Date(x).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}); }catch(e){ return x||''; } }
 async function openOnsitePasscodes(){
