@@ -647,6 +647,174 @@
   .tight-session-settings .session-basic-grid{grid-template-columns:1fr!important;}
 }
 
+
+
+/* =========================================================
+   20260705｜後台電腦版場次總覽小卡片模式
+   範圍：只影響 #page-sessions 電腦版場次總覽顯示
+   不動：登入、API、資料庫、Worker、金流、onclick、手機版
+========================================================= */
+@media (min-width: 900px){
+  #page-sessions .page-title{
+    margin:12px 0 8px!important;
+  }
+  #page-sessions .page-title h2{
+    font-size:24px!important;
+  }
+  #page-sessions .filter-row{
+    margin:8px 0 14px!important;
+  }
+  #sessionList.session-list{
+    display:grid!important;
+    grid-template-columns:repeat(auto-fill,minmax(350px,1fr))!important;
+    gap:14px!important;
+    align-items:stretch!important;
+  }
+  #sessionList > .session-card.session-card-3rows{
+    min-height:0!important;
+    height:auto!important;
+    border-radius:20px!important;
+    box-shadow:0 7px 18px rgba(40,35,28,.07)!important;
+  }
+  #sessionList > .session-card:nth-child(3n+1){background:linear-gradient(180deg,#FFF7E3 0%,#fff 100%)!important;}
+  #sessionList > .session-card:nth-child(3n+2){background:linear-gradient(180deg,#EEF9F7 0%,#fff 100%)!important;}
+  #sessionList > .session-card:nth-child(3n+3){background:linear-gradient(180deg,#F0F7FF 0%,#fff 100%)!important;}
+
+  #sessionList .session3-wrap{
+    display:flex!important;
+    flex-direction:column!important;
+    grid-template-columns:none!important;
+    gap:9px!important;
+    padding:13px 14px 14px!important;
+    height:100%!important;
+    align-items:stretch!important;
+  }
+  #sessionList .session3-info{
+    border-right:0!important;
+    padding-right:0!important;
+    min-width:0!important;
+  }
+  #sessionList .session3-title{
+    font-size:18px!important;
+    line-height:1.28!important;
+    margin:0 0 7px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #sessionList .session3-info .meta{
+    gap:5px!important;
+    margin:0 0 7px!important;
+  }
+  #sessionList .session3-info .pill{
+    font-size:12px!important;
+    padding:3px 8px!important;
+    border-radius:999px!important;
+    max-width:100%!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  #sessionList .session-date-equip-list{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:6px!important;
+    margin:0!important;
+  }
+  #sessionList .session-date-equip-list .chip:nth-child(n+3){
+    display:none!important;
+  }
+  #sessionList .session-date-equip-list .chip{
+    min-height:42px!important;
+    width:100%!important;
+    padding:6px 8px!important;
+    border-radius:11px!important;
+    line-height:1.2!important;
+  }
+  #sessionList .session-date-equip-list .m-label{
+    font-size:12px!important;
+    margin-bottom:1px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    max-width:100%!important;
+  }
+  #sessionList .session-date-equip-list b{
+    font-size:12px!important;
+    line-height:1.2!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:1!important;
+    -webkit-box-orient:vertical!important;
+    overflow:hidden!important;
+  }
+
+  #sessionList .session3-content{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:8px!important;
+    min-width:0!important;
+    flex:1 1 auto!important;
+  }
+  #sessionList .session3-main{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+  #sessionList .session3-finance{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    margin:0!important;
+  }
+  #sessionList .session3-main .chip,
+  #sessionList .session3-finance .chip{
+    min-height:45px!important;
+    padding:5px 6px!important;
+    border-radius:11px!important;
+    line-height:1.15!important;
+  }
+  #sessionList .session3-main .m-label,
+  #sessionList .session3-finance .m-label{
+    font-size:11px!important;
+    margin-bottom:1px!important;
+    white-space:nowrap!important;
+  }
+  #sessionList .session3-main b,
+  #sessionList .session3-finance b{
+    font-size:14px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    max-width:100%!important;
+  }
+
+  #sessionList .session3-actions{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:6px!important;
+    padding:8px 0 0!important;
+    margin-top:auto!important;
+    border-top:1px solid rgba(150,140,124,.20)!important;
+  }
+  #sessionList .session3-actions .btn{
+    min-height:31px!important;
+    height:31px!important;
+    padding:4px 6px!important;
+    border-radius:10px!important;
+    font-size:12px!important;
+    line-height:1!important;
+  }
+}
+
+@media (min-width: 1280px){
+  .app,.topbar-in,.panel-body,.panel-head-in{max-width:1280px!important;}
+  #sessionList.session-list{
+    grid-template-columns:repeat(auto-fill,minmax(360px,1fr))!important;
+  }
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
