@@ -521,8 +521,7 @@ button,a,[onclick]{touch-action:manipulation}
 }
 @media (min-width:900px){
   #eventsList,
-  #portalSessionList,
-  #sessionsList{
+  #portalSessionList{
     display:grid!important;
     grid-template-columns:repeat(auto-fill,minmax(190px,220px));
     gap:14px!important;
@@ -530,8 +529,7 @@ button,a,[onclick]{touch-action:manipulation}
     justify-content:start;
   }
   #eventsList > *,
-  #portalSessionList > *,
-  #sessionsList > *{
+  #portalSessionList > *{
     margin-bottom:0!important;
   }
   .ses-list-card{
@@ -638,8 +636,7 @@ button,a,[onclick]{touch-action:manipulation}
 }
 @media (min-width:1200px){
   #eventsList,
-  #portalSessionList,
-  #sessionsList{
+  #portalSessionList{
     grid-template-columns:repeat(auto-fill,minmax(190px,220px));
   }
 }
@@ -1320,7 +1317,6 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   <div style="padding:0 14px 4px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:20px;font-weight:900;color:#111">精選主題活動</div>
-      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
     </div>
     <div id="featuredEventsList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none">
       <div style="padding:20px;color:#aaa;font-size:14px">載入中…</div>
@@ -1331,7 +1327,6 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   <div id="recentSection" style="padding:8px 14px 100px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:20px;font-weight:900;color:#111">近期場次</div>
-      <div onclick="filterCat('市集報名',null)" style="font-size:14px;font-weight:800;color:#555;cursor:pointer">查看全部 ›</div>
     </div>
     <div id="eventsList">
       <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
@@ -1351,19 +1346,6 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <div style="padding:20px;color:#aaa;font-size:13px;text-align:center">載入中…</div>
   </div>
 </div>
-
-<!-- ══ 場次頁 ══ -->
-
-
-<!-- ══ 場次詳細頁 ══ -->
-<div id="pageSession" class="page">
-  <div class="back-bar" onclick="backToHome()">
-    <span class="arrow">←</span>
-    <span class="title" id="sessionEventName">場次列表</span>
-  </div>
-  <div id="sessionsList"></div>
-</div>
-
 <!-- ══ 報名表 Modal ══ -->
 <div class="page" id="regFormModal" style="background:#fff;min-height:100vh">
   <div style="width:100%">
@@ -3154,13 +3136,7 @@ function renderSessionCard(s){
       </button>
     </div></div>`;
 }
-function renderSessions(){
-  const el=$('sessionsList');
-  if(!el) return;
-  const list=(ST.sessions||[]).filter(isOpenSession);
-  if(!list.length){el.innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:16px">目前無開放場次</div>';return;}
-  el.innerHTML=list.map(s=>renderSessionCard(s)).join('');
-}
+
 function renderAllSessions(){
   const el=$('allSessionsList');
   if(!el) return;
