@@ -524,9 +524,10 @@ button,a,[onclick]{touch-action:manipulation}
   #portalSessionList,
   #sessionsList{
     display:grid!important;
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(190px,220px));
     gap:14px!important;
-    align-items:stretch;
+    align-items:start;
+    justify-content:start;
   }
   #eventsList > *,
   #portalSessionList > *,
@@ -537,19 +538,21 @@ button,a,[onclick]{touch-action:manipulation}
     display:flex!important;
     flex-direction:column!important;
     align-items:stretch!important;
-    gap:10px!important;
-    min-height:330px;
-    padding:14px!important;
+    gap:7px!important;
+    width:100%!important;
+    min-height:0!important;
+    padding:10px!important;
     background:linear-gradient(135deg,#fff 0%,var(--theme-bg,#fff) 100%)!important;
     border:1.5px solid var(--theme-border,rgba(0,0,0,.08))!important;
-    border-left:8px solid var(--theme-accent,#DCD7ED)!important;
-    border-radius:22px!important;
-    box-shadow:0 8px 22px rgba(0,0,0,.06)!important;
+    border-left:6px solid var(--theme-accent,#DCD7ED)!important;
+    border-radius:18px!important;
+    box-shadow:0 6px 18px rgba(0,0,0,.055)!important;
   }
   .ses-list-img{
     width:100%!important;
-    height:155px!important;
-    border-radius:17px!important;
+    height:auto!important;
+    aspect-ratio:1/1!important;
+    border-radius:14px!important;
     background:rgba(255,255,255,.65)!important;
     border:1px solid rgba(0,0,0,.06)!important;
   }
@@ -562,57 +565,66 @@ button,a,[onclick]{touch-action:manipulation}
     width:100%!important;
     display:flex!important;
     flex-direction:column!important;
-    gap:4px!important;
+    gap:3px!important;
+  }
+  .ses-theme-pill{
+    padding:2px 7px!important;
+    font-size:10.5px!important;
+    margin-bottom:3px!important;
   }
   .ses-list-name{
-    font-size:20px!important;
-    line-height:1.28!important;
+    font-size:16px!important;
+    line-height:1.25!important;
     display:-webkit-box;
     -webkit-line-clamp:2;
     -webkit-box-orient:vertical;
     overflow:hidden;
+    min-height:40px;
   }
   .ses-list-meta{
-    font-size:14px!important;
-    line-height:1.6!important;
-    min-height:44px;
+    font-size:12px!important;
+    line-height:1.45!important;
+    min-height:34px!important;
   }
   .ses-list-fee{
-    font-size:18px!important;
+    font-size:15px!important;
     color:#111!important;
-    margin-top:4px!important;
+    margin-top:2px!important;
   }
   .ses-list-actions{
     width:100%!important;
     display:grid!important;
-    grid-template-columns:44px 1fr!important;
-    gap:8px!important;
+    grid-template-columns:34px 1fr!important;
+    gap:7px!important;
     align-items:center!important;
-    margin-top:auto!important;
+    margin-top:4px!important;
   }
   .ses-list-share{
-    width:44px!important;
-    height:44px!important;
-    border-radius:14px!important;
+    width:34px!important;
+    height:34px!important;
+    border-radius:11px!important;
     background:#fff!important;
+    font-size:13px!important;
   }
   .ses-list-reg{
     width:100%!important;
-    height:44px!important;
-    border-radius:14px!important;
+    height:34px!important;
+    min-width:0!important;
+    border-radius:11px!important;
     background:#DCD7ED!important;
+    font-size:13px!important;
   }
   [data-front-session-card]{
     flex-direction:column!important;
     align-items:stretch!important;
-    gap:10px!important;
-    min-height:250px;
-    padding:16px!important;
+    gap:7px!important;
+    min-height:0!important;
+    padding:10px!important;
     background:linear-gradient(135deg,#fff 0%,var(--theme-bg,#fff) 100%)!important;
     border:1.5px solid var(--theme-border,rgba(0,0,0,.08))!important;
-    border-left:8px solid var(--theme-accent,#DCD7ED)!important;
-    border-radius:22px!important;
-    box-shadow:0 8px 22px rgba(0,0,0,.06)!important;
+    border-left:6px solid var(--theme-accent,#DCD7ED)!important;
+    border-radius:18px!important;
+    box-shadow:0 6px 18px rgba(0,0,0,.055)!important;
   }
   [data-front-session-card] > div:first-child{
     width:100%!important;
@@ -628,7 +640,7 @@ button,a,[onclick]{touch-action:manipulation}
   #eventsList,
   #portalSessionList,
   #sessionsList{
-    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(190px,220px));
   }
 }
 
