@@ -543,8 +543,9 @@ button,a,[onclick]{touch-action:manipulation}
   #portalSessionList{
     display:grid!important;
     grid-template-columns:repeat(auto-fill,minmax(190px,220px));
+    grid-auto-rows:1fr;
     gap:14px!important;
-    align-items:start;
+    align-items:stretch;
     justify-content:start;
   }
   #eventsList > *,
@@ -619,7 +620,14 @@ button,a,[onclick]{touch-action:manipulation}
     grid-template-columns:34px 1fr!important;
     gap:7px!important;
     align-items:center!important;
-    margin-top:4px!important;
+    margin-top:auto!important;
+  }
+  .ses-list-card{
+    min-height:360px!important;
+    height:100%!important;
+  }
+  .ses-list-body{
+    flex:1!important;
   }
   .ses-list-share{
     width:34px!important;
@@ -2178,6 +2186,14 @@ function buildFrontShareUrl(kind, id){
   }
   return location.origin + location.pathname + '?' + qs.toString();
 }
+function cleanFrontHomeUrl(){
+  try{
+    const u=new URL(location.href);
+    ['ses','session','sessionId','event','eventId','activity','page','view','member','pay','reg'].forEach(k=>u.searchParams.delete(k));
+    const query=u.searchParams.toString();
+    history.replaceState({page:'home'},'',u.pathname+(query?'?'+query:'')+u.hash);
+  }catch(_e){}
+}
 function copyFrontShareLink(url, msg){
   const okMsg = msg || '已複製連結！';
   if(navigator.clipboard && navigator.clipboard.writeText){
@@ -2488,9 +2504,11 @@ function navTo(tab, opts={}){
     const pp=$('pagePortal');if(pp)pp.style.background='';
     document.body.style.background='var(--wh)';
     try{ localStorage.removeItem('2bl_page_state'); localStorage.setItem('2bl_page_state', JSON.stringify({tab:'home'})); }catch(e){}
+    cleanFrontHomeUrl();
   }
   if(!opts.noPush){
-    history.pushState({page:tab}, '', location.href);
+    if(tab==='home') history.pushState({page:tab}, '', location.pathname + location.search + location.hash);
+    else history.pushState({page:tab}, '', location.href);
   }
 }
 function backToHome(){navTo('home');}
@@ -3196,39 +3214,45 @@ function frontBundleBadgeHtml(s){
 function renderSessionCard(s){
   const themeInfo=getFrontSessionThemeInfo(s);
   const themeClass=themeInfo.cls||'theme-none';
-  const themePill=`<span class="ses-theme-pill">${esc(themeInfo.title||'無主題')}</span>`;
   const full = Number(s.limit)>0 && Number(s.count)>=Number(s.limit);
   const closed = s.status==='關閉' || s.status==='已關閉' || full;
-  const typeMap={'市集場次':'市集','活動報名':'活動','體驗活動':'體驗','通路寄賣':'寄賣','合作申請':'合作'};
-  const typeLabel = typeMap[s.type||''] || (s.type||'');
+  const dates=Array.isArray(s.dates)?s.dates:[];
   let dateStr='';
-  if(s.dates&&s.dates.length>1){
+  if(dates.length>1){
     const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
-    dateStr=fmt(s.dates[0].date)+'-'+fmt(s.dates[s.dates.length-1].date);
-  } else if(s.dates&&s.dates.length===1){
-    const d=s.dates[0].date||'';
-    dateStr=d?String(d).slice(5).replace('-','/'):'';
-  } else if(s.date){ dateStr=String(s.date).slice(5).replace('-','/'); }
-  let feeStr='免費';
-  if(s.dates&&s.dates.length>1){
-    if(Number(s.fee)>0){ feeStr='全報 NT$'+s.fee; }
-    else{ const df=s.dates[0]?.fee||0; feeStr=Number(df)>0?'NT$'+df+'/日':'免費'; }
-  } else { if(Number(s.fee)>0){ feeStr='NT$'+s.fee; } else { const _df=(s.dates&&s.dates[0])?Number(s.dates[0].fee||0):0; if(_df>0) feeStr='NT$'+_df.toLocaleString(); } }
-  const metaParts=[dateStr,s.region,s.venue].filter(Boolean);
-  const metaStr=metaParts.join('  ·  ');
-  const typeBadge=typeLabel?`<span style="background:${closed?'#e8e8e8':'var(--gp)'};color:${closed?'#888':'var(--g)'};padding:1px 7px;border-radius:5px;font-size:15px;font-weight:700;flex-shrink:0">${esc(typeLabel)}</span>`:'';
-  const myBadge = myRegBadge(s);
-  const bundleBadge = frontBundleBadgeHtml(s);
-  if(closed){
-    return `<div class="${themeClass}" data-front-session-card="1" style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}${bundleBadge?`<div style="margin-top:6px">${bundleBadge}</div>`:``}</div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
+    dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
+  }else if(dates.length===1){
+    const d=dates[0]||{};
+    dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
+  }else if(s.date){
+    dateStr=String(s.date).slice(5).replace('-','/');
   }
-  return `<div class="${themeClass}" data-front-session-card="1" role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}${bundleBadge?`<div style="margin-top:6px">${bundleBadge}</div>`:``}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
-      <span style="color:var(--g);font-size:24px;line-height:1;font-weight:700">›</span>
-      <button onclick="event.stopPropagation();openSessionFromCard(event,'${esc(s.id)}')"
-        style="min-width:82px;height:40px;border-radius:13px;background:#91B574;color:#fff;border:none;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
-        立即報名
-      </button>
-    </div></div>`;
+  const placeStr=s.venue||s.location||s.place||'';
+  const eventId=String(s.eventId||s.event_id||'');
+  const evt=(ST.events||[]).find(e=>String(e.id)===eventId);
+  const cover=s.coverUrl||s.cover||evt?.cover||'';
+  const bundleBadge=frontBundleBadgeHtml(s);
+  const myBadge=myRegBadge(s);
+  const coverEl=cover
+    ? `<img src="${esc(cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
+    : `<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
+  const actionHtml=closed
+    ? `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:34px;border-radius:11px;background:#eee;color:#999;font-size:13px;font-weight:900">${full?'名額已滿':'已關閉'}</span>`
+    : `<button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>`;
+  return `<div class="ses-list-card ${themeClass}" data-session-id="${esc(s.id)}" onclick="${closed?'':'openActivityFromHome(null,\''+esc(s.id)+'\')'}" style="${closed?'opacity:.62;':''}">
+    <div class="ses-list-img">${coverEl}</div>
+    <div class="ses-list-body">
+      <div class="ses-theme-pill">${esc(themeInfo.title||'無主題')}</div>
+      <div class="ses-list-name">${esc(s.name||'')}</div>
+      <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${placeStr?'<br>📍 '+esc(placeStr):''}</div>
+      ${myBadge?`<div style="margin-top:5px">${myBadge}</div>`:''}
+      ${bundleBadge?`<div>${bundleBadge}</div>`:''}
+    </div>
+    <div class="ses-list-actions">
+      <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
+      ${actionHtml}
+    </div>
+  </div>`;
 }
 
 function renderAllSessions(){
@@ -5561,35 +5585,7 @@ if(document.readyState==='loading'){
     if(el){
       const sessions=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(openSess));
       if(sessions.length){
-        el.innerHTML=sessions.slice(0,12).map(s=>{
-          const dates=asArr(s.dates);
-          let dateStr='';
-          if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);}
-          else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');}
-          const placeStr=s.venue||s.location||s.place||'';
-          // 封面圖：有圖用圖，無圖用 IP 插圖（不用大字）
-          const hasCover=!!(s.coverUrl||s.cover);
-          const themeInfo=getFrontSessionThemeInfo(s);
-          const themeClass=themeInfo.cls||'theme-none';
-          const themeTitle=themeInfo.title||'無主題';
-          const bundleBadge=frontBundleBadgeHtml(s);
-          const coverEl=hasCover
-            ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
-            :`<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
-          return `<div class="ses-list-card ${themeClass}" onclick="openActivityFromHome(null,'${esc(s.id)}')">
-            <div class="ses-list-img">${coverEl}</div>
-            <div class="ses-list-body">
-              <div class="ses-theme-pill">${esc(themeTitle)}</div>
-              <div class="ses-list-name">${esc(s.name||'')}</div>
-              <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${placeStr?'<br>📍 '+esc(placeStr):''}</div>
-              ${bundleBadge?`<div>${bundleBadge}</div>`:''}
-            </div>
-            <div class="ses-list-actions">
-              <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
-              <button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>
-            </div>
-          </div>`;
-        }).join('');
+        el.innerHTML=sessions.slice(0,12).map(s=>renderSessionCard(s)).join('');
       } else {
         el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:15px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#2a6a10;font-weight:800;cursor:pointer">重新載入</span></div>';
       }
@@ -5622,53 +5618,8 @@ if(document.readyState==='loading'){
   if(deepLink.sessionId){ await openSession(deepLink.sessionId); return; }
   if(deepLink.eventId){ await openEvent(deepLink.eventId); return; }
 
-  // 還原頁面
-  if(lastTab === 'regForm' && savedState && savedState.sessionId){
-    // 還原報名表
-    try{
-      const s = await api({action:'getSession', id:savedState.sessionId, _t:Date.now()});
-      if(s && !s.error){
-        ST.currentSession = s;
-        // 還原攤數和設備數量
-        if(savedState.stallCount) ST.stallCount = savedState.stallCount;
-        if(savedState.equipQty) ST.equipQty = savedState.equipQty;
-        if(savedState.addonQty) ST.addonQty = savedState.addonQty;
-        const evt=(ST.events||[]).find(e=>String(e.id)===String(s.eventId));
-        buildFormHero(s, s.cover||evt?.cover||'');
-        const titleEl=$('formBackTitle');
-        if(titleEl) titleEl.textContent=s.name||'報名表';
-        openRegFormModal();
-        // 還原表單欄位（延遲等 DOM 渲染完）
-        setTimeout(()=>{
-          if(ST.memberEmail){
-            renderDynFormFull(s, false);
-            // 還原已填欄位
-            setTimeout(()=>{
-              const fields = savedState.formFields || {};
-              const ids = ['f_brand','f_name','f_phone','f_sellItem','f_brandIntro','f_note',
-                           'f_fb','f_ig','f_web','f_taxId','f_company','f_invoiceCarrier','f_invoiceEmail'];
-              ids.forEach(id=>{ const el=$(id); if(el && fields[id]) el.value=fields[id]; });
-              // 還原攤數顯示
-              const stallDisp=$('stallDisplay');
-              if(stallDisp) stallDisp.textContent=(ST.stallCount||1);
-              const stallInp=$('stallInput');
-              if(stallInp) stallInp.value=(ST.stallCount||1);
-              updateFee();
-            }, 400);
-          } else {
-            showEmailStep(s);
-          }
-        }, 300);
-        return;
-      }
-    }catch(e){ console.warn('還原報名表失敗', e); }
-    // 還原失敗→回首頁
-    navToTab('home');
-  } else if(lastTab === 'portal' && savedState && savedState.catFilter){
-    // 還原場次列表
-    ST.currentCatFilter = savedState.catFilter;
-    setTimeout(()=>{ filterCat(savedState.catFilter, null); }, 200);
-  } else if(lastTab === 'member' && savedEmail){
+  // 還原頁面：非分享連結一律回到單一首頁；避免上次停留的報名表或舊場次列表蓋回首頁。
+  if(lastTab === 'member' && savedEmail){
     setTimeout(()=>{ navToTab('member'); }, 200);
   } else if(lastTab === 'support'){
     setTimeout(()=>{ navToTab('support'); }, 200);
