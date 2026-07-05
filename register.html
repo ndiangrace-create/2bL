@@ -1247,7 +1247,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 }
 
 </style>
-<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
+<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><!-- 2BL-REGISTER-BUNDLE-INLINE-v3 --></head>
 <body>
 
 <!-- ══ 首頁 ══ -->
@@ -4031,6 +4031,7 @@ function shareCurrentSession(){
 
 async function openSession(sessionId){
   ST.currentBundle=null; ST.bundleAddon='';
+  if(!Array.isArray(ST.bundles)||!ST.bundles.length){ try{ const _bl=await api({action:'getBundlesPublic'}); ST.bundles=Array.isArray(_bl)?_bl:[]; }catch(_e){} }
   // 點場次必須立即有反應：先用列表快取打開報名表，再背景抓最新資料。
   const cached = (ST.allSessionsData||[]).find(x=>String(x.id)===String(sessionId))
     || (ST.sessions||[]).find(x=>String(x.id)===String(sessionId));
