@@ -2336,7 +2336,7 @@ function renderActCard(s, mode){
         ${dateStr?`<span>📅 ${dateStr}${timeStr?' '+timeStr:''}</span>`:''}
         ${loc?`<span>📍 ${loc}</span>`:''}
       </div>
-      <div class="act-card-fee">${fee}</div>
+      
       ${(typeof myRegBadge==='function'?myRegBadge(s):'')}
       ${regType?`<span class="act-card-tag ${tagCls}">${regType}</span>`:''}
     </div>
@@ -3101,7 +3101,7 @@ function renderSessionCard(s){
     if(Number(s.fee)>0){ feeStr='全報 NT$'+s.fee; }
     else{ const df=s.dates[0]?.fee||0; feeStr=Number(df)>0?'NT$'+df+'/日':'免費'; }
   } else { if(Number(s.fee)>0){ feeStr='NT$'+s.fee; } else { const _df=(s.dates&&s.dates[0])?Number(s.dates[0].fee||0):0; if(_df>0) feeStr='NT$'+_df.toLocaleString(); } }
-  const metaParts=[dateStr,s.region,feeStr,s.venue].filter(Boolean);
+  const metaParts=[dateStr,s.region,s.venue].filter(Boolean);
   const metaStr=metaParts.join('  ·  ');
   const typeBadge=typeLabel?`<span style="background:${closed?'#e8e8e8':'var(--gp)'};color:${closed?'#888':'var(--g)'};padding:1px 7px;border-radius:5px;font-size:15px;font-weight:700;flex-shrink:0">${esc(typeLabel)}</span>`:'';
   const myBadge = myRegBadge(s);
@@ -4668,6 +4668,7 @@ async function submitReg(ev){
     const sessionSnapshot = {...s};
     if(btn){ btn.disabled=true; btn.textContent='報名成功'; btn.style.display='none'; }
     closeRegFormToSessionListAfterSubmit(sessionSnapshot, email);
+    try{ if(typeof navToTab==='function') navToTab('member'); }catch(_e){}
     ST.__submitting=false;
     scheduleMemberRecordsSync('after-register-success',150);
     return false;
