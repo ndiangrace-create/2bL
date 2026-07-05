@@ -944,6 +944,37 @@
   .unified-reg-card,#page-todos .todo-card-lite,.member-card-lite{padding:11px!important}
 }
 
+
+/* 20260706 補修：待辦操作按鈕固定一行，避免舊版 reg-actions 直排覆蓋 */
+#page-todos .todo-action-row{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+#page-todos .todo-action-row .btn{
+  flex:1 1 0!important;
+  min-width:0!important;
+  width:auto!important;
+  padding:6px 4px!important;
+  min-height:31px!important;
+  font-size:12.5px!important;
+  border-radius:10px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+/* 固定資料區以後端回傳文字完整呈現，避免設備被省略成看不到 */
+.card-fixed-block .fixed-row span,
+.card-fixed-block .fixed-pay{
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:break-word!important;
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -2221,7 +2252,7 @@ function renderTodoRows(rows){
     out+='<article class="reg-card todo-card todo-card-lite unified-reg-card">'
       +'<div class="todo-card-top"><span class="todo-stage-badge '+safe(kind)+'">'+safe(label)+'</span><span class="todo-next-mini">'+safe(todoNextText(kind))+'</span></div>'
       +'<div class="todo-session-title" title="'+attr(title)+'">'+safe(title)+'</div>'
-      +'<div class="reg-actions todo-direct-actions todo-actions-inline">'+todoStageButtons(r,kind)+'</div>'
+      +'<div class="todo-action-row">'+todoStageButtons(r,kind)+'</div>'
       +'<div class="todo-brand-row"><span class="todo-brand-name" title="'+attr(who)+'">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
       +'<div class="todo-contact-line" title="'+attr(contactText)+'">'+safe(contactText)+'</div>'
       +adminRegFixedBlockHtml(r)
