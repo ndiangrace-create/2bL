@@ -519,6 +519,25 @@ button,a,[onclick]{touch-action:manipulation}
   overflow:hidden;
   text-overflow:ellipsis;
 }
+.ses-bundle-pill{
+  display:inline-flex;
+  width:max-content;
+  max-width:100%;
+  align-items:center;
+  border-radius:999px;
+  background:#fff8dc;
+  color:#7a5200;
+  border:1px solid rgba(190,145,45,.35);
+  padding:3px 9px;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.25;
+  margin-top:5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
 @media (min-width:900px){
   #eventsList,
   #portalSessionList{
@@ -569,6 +588,11 @@ button,a,[onclick]{touch-action:manipulation}
     padding:2px 7px!important;
     font-size:10.5px!important;
     margin-bottom:3px!important;
+  }
+  .ses-bundle-pill{
+    padding:2px 7px!important;
+    font-size:10.5px!important;
+    margin-top:4px!important;
   }
   .ses-list-name{
     font-size:16px!important;
@@ -2212,6 +2236,7 @@ let ST = {
   events:[], sessions:[], currentEvent:null, currentSession:null,
   member:null, memberEmail:null, equipQty:{}, stallCount:1,
   currentCatFilter:'市集場次',
+  bundles:[],
 };
 
 function $(id){return document.getElementById(id);}
@@ -2410,6 +2435,7 @@ function renderActCard(s, mode){
       </div>
       
       ${(typeof myRegBadge==='function'?myRegBadge(s):'')}
+      ${(typeof frontBundleBadgeHtml==='function'?frontBundleBadgeHtml(s):'')}
       ${regType?`<span class="act-card-tag ${tagCls}">${regType}</span>`:''}
     </div>
   </div>
@@ -3148,6 +3174,25 @@ function getFrontSessionThemeInfo(s){
   }
 }
 
+
+function frontBundleBadgeHtml(s){
+  try{
+    const sid=String((s&&s.id)||'').trim();
+    if(!sid) return '';
+    const bundles=Array.isArray(ST.bundles)?ST.bundles:[];
+    let addCount=0;
+    bundles.forEach(b=>{
+      const list=Array.isArray(b&&b.sessions)?b.sessions:[];
+      const hasCurrent=list.some(x=>String((x&&x.id)||'')===sid);
+      if(!hasCurrent) return;
+      const otherCount=list.filter(x=>String((x&&x.id)||'')!==sid).length;
+      if(otherCount>addCount) addCount=otherCount;
+    });
+    if(addCount<=0) return '';
+    return `<span class="ses-bundle-pill">🎫 可加報 ${addCount} 場｜組合優惠</span>`;
+  }catch(_e){ return ''; }
+}
+
 function renderSessionCard(s){
   const themeInfo=getFrontSessionThemeInfo(s);
   const themeClass=themeInfo.cls||'theme-none';
@@ -3173,10 +3218,11 @@ function renderSessionCard(s){
   const metaStr=metaParts.join('  ·  ');
   const typeBadge=typeLabel?`<span style="background:${closed?'#e8e8e8':'var(--gp)'};color:${closed?'#888':'var(--g)'};padding:1px 7px;border-radius:5px;font-size:15px;font-weight:700;flex-shrink:0">${esc(typeLabel)}</span>`:'';
   const myBadge = myRegBadge(s);
+  const bundleBadge = frontBundleBadgeHtml(s);
   if(closed){
-    return `<div class="${themeClass}" data-front-session-card="1" style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}</div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
+    return `<div class="${themeClass}" data-front-session-card="1" style="background:#f8f8f8;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:700;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}${bundleBadge?`<div style="margin-top:6px">${bundleBadge}</div>`:``}</div><span style="font-size:14px;color:#bbb;flex-shrink:0;font-weight:700">${full?'名額已滿':'已關閉'}</span></div>`;
   }
-  return `<div class="${themeClass}" data-front-session-card="1" role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+  return `<div class="${themeClass}" data-front-session-card="1" role="button" tabindex="0" data-session-id="${esc(s.id)}" onclick="openSessionFromCard(event,'${esc(s.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){openSessionFromCard(event,'${esc(s.id)}')}" style="background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.09);padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--g);touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);position:relative;z-index:1"><div style="flex:1;min-width:0">${themePill}<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:nowrap;overflow:hidden">${typeBadge}<span style="font-size:20px;font-weight:800;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span></div><div style="font-size:16px;color:var(--md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(metaStr)}</div>${myBadge?`<div style="margin-top:6px">${myBadge}</div>`:``}${bundleBadge?`<div style="margin-top:6px">${bundleBadge}</div>`:``}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
       <span style="color:var(--g);font-size:24px;line-height:1;font-weight:700">›</span>
       <button onclick="event.stopPropagation();openSessionFromCard(event,'${esc(s.id)}')"
         style="min-width:82px;height:40px;border-radius:13px;background:#91B574;color:#fff;border:none;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">
@@ -5389,6 +5435,12 @@ if(document.readyState==='loading'){
     const evEl=$('eventsList'); if(evEl) evEl.innerHTML='<div style="padding:20px;color:#aaa;font-size:13px">載入中…</div>';
     try{ const boot = await api({action:'frontBootstrap', tenant:TENANT_ID, _t:Date.now()});
       ST.events=asArr(boot.events); ST.sessions=uniqueSessions(boot.sessions).filter(openSess); ST.allSessionsData=ST.sessions;
+      try{
+        const publicBundles=await api({action:'getBundlesPublic', tenant:TENANT_ID, _t:Date.now()});
+        ST.bundles=Array.isArray(publicBundles)?publicBundles:[];
+      }catch(_bundleErr){
+        ST.bundles=[];
+      }
       if(boot.tenant){
         // 動態更新 LINE_URL
         if(boot.tenant.name) document.title = boot.tenant.name + '｜報名系統';
@@ -5420,7 +5472,7 @@ if(document.readyState==='loading'){
         if(hero && tenantCover){ hero.style.backgroundImage='url('+tenantCover+')'; hero.style.backgroundSize='cover'; hero.style.backgroundPosition='center'; }
       }
       renderAnnouncements(asArr(boot.announcements)); renderEvents(); return boot;
-    }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; renderEvents(); }
+    }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; ST.bundles=[]; renderEvents(); }
   };
   function frontShortDate(v){
     if(!v) return '';
@@ -5520,6 +5572,7 @@ if(document.readyState==='loading'){
           const themeInfo=getFrontSessionThemeInfo(s);
           const themeClass=themeInfo.cls||'theme-none';
           const themeTitle=themeInfo.title||'無主題';
+          const bundleBadge=frontBundleBadgeHtml(s);
           const coverEl=hasCover
             ?`<img src="${esc(s.coverUrl||s.cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
             :`<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
@@ -5529,6 +5582,7 @@ if(document.readyState==='loading'){
               <div class="ses-theme-pill">${esc(themeTitle)}</div>
               <div class="ses-list-name">${esc(s.name||'')}</div>
               <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${placeStr?'<br>📍 '+esc(placeStr):''}</div>
+              ${bundleBadge?`<div>${bundleBadge}</div>`:''}
             </div>
             <div class="ses-list-actions">
               <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
