@@ -827,6 +827,48 @@
   }
 }
 
+
+
+/* 20260705 後台待辦：自動縮放小卡片，只改顯示排版，資料仍由後端/資料庫回傳 */
+#page-todos #todoList.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:10px;
+  align-items:start;
+}
+#page-todos .todo-card-lite{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0;
+  padding:10px;
+  border-radius:18px;
+  box-shadow:0 8px 22px rgba(45,39,32,.08);
+}
+#page-todos .todo-card-top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+#page-todos .todo-card-lite .todo-stage-badge{font-size:13px;padding:5px 10px;border-width:1.5px;white-space:nowrap}
+#page-todos .todo-next-mini{font-size:12px;font-weight:900;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#page-todos .todo-session-title{font-size:15.5px;font-weight:950;line-height:1.35;color:#1f1f1f;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:42px}
+#page-todos .todo-brand-row{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
+#page-todos .todo-brand-name{font-size:14px;font-weight:950;color:#333;line-height:1.35;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+#page-todos .todo-card-lite .todo-socials{display:inline-flex;gap:4px;flex-wrap:wrap}
+#page-todos .todo-card-lite .todo-social{min-width:28px;height:25px;padding:0 7px;font-size:11px}
+#page-todos .todo-mini-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:6px}
+#page-todos .todo-mini-item{background:#FBF8F1;border:1px solid #EFE6DC;border-radius:12px;padding:7px 8px;font-size:13px;font-weight:900;color:#333;line-height:1.35;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#page-todos .todo-detail-list{display:grid;gap:5px}
+#page-todos .todo-detail-line{display:grid;grid-template-columns:58px minmax(0,1fr);gap:6px;align-items:start;background:#fff;border:1px solid #EFE6DC;border-radius:12px;padding:7px 8px;min-width:0}
+#page-todos .todo-detail-line span{font-size:12px;font-weight:950;color:#777;white-space:nowrap}
+#page-todos .todo-detail-line b{font-size:13px;font-weight:950;color:#222;line-height:1.35;min-width:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#page-todos .todo-contact-list{display:grid;gap:4px;border-top:1px dashed #EFE6DC;padding-top:7px}
+#page-todos .todo-contact-line{font-size:13px;font-weight:900;color:#333;line-height:1.35;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#page-todos .todo-card-lite .todo-direct-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:6px;margin-top:auto;min-width:0}
+#page-todos .todo-card-lite .todo-direct-actions .btn{min-width:0;width:100%;padding:7px 6px;min-height:34px;font-size:13px;border-radius:12px}
+@media(max-width:520px){
+  #page-todos #todoList.cards{grid-template-columns:1fr;gap:10px}
+  #page-todos .todo-card-lite{padding:12px}
+  #page-todos .todo-session-title{min-height:0;font-size:16px}
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -1958,6 +2000,54 @@ async function buildTodoRowsFromSessions(){
   }
   return out;
 }
+function todoFirstValue(r,keys){
+  for(const k of keys){
+    if(r && r[k]!==undefined && r[k]!==null && r[k]!== '') return r[k];
+  }
+  return '';
+}
+function todoAmountText(r){
+  const v=todoFirstValue(r,['amount','totalAmount','total_amount','receivableAmount','registration_total_amount','total']);
+  if(v!=='' && v!==undefined && v!==null) return money(v);
+  const pay=String(r.paymentStatus||r.payStatus||r.payment_status||'').trim();
+  return pay || '資料庫未提供';
+}
+function regAddonText(r){
+  const direct = todoFirstValue(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_qty_text','addon_text','addons_text']);
+  if(direct) return String(direct);
+  const raw = r.addonQty || r.addon_qty || r.addon_qty_json || r.addons || r.addons_json || r.addonItems || r.addon_items || r.addon_items_json || {};
+  const qty = safeJson(raw, raw);
+  if(!qty) return '無';
+  const s = sessionById(r.sessionId||r.session_id||regSessionId(r)||'') || {};
+  const defs = sessionAddons(s) || [];
+  const parts=[];
+  if(Array.isArray(qty)){
+    qty.forEach((it,i)=>{
+      if(it && typeof it==='object'){
+        const name=it.name||it.label||it.title||(defs[i]&&defs[i].name)||('項目'+(i+1));
+        const n=Number(it.qty||it.count||it.quantity||it.value||0);
+        if(n>0) parts.push(name+'×'+n);
+      }else{
+        const n=Number(it||0);
+        const name=(defs[i]&&defs[i].name)||('項目'+(i+1));
+        if(n>0) parts.push(name+'×'+n);
+      }
+    });
+  }else if(typeof qty==='object'){
+    Object.entries(qty).forEach(([k,v])=>{
+      const n=Number((v&&typeof v==='object')?(v.qty||v.count||v.quantity||v.value||0):v);
+      if(n<=0) return;
+      const def=(/^\d+$/.test(String(k)) && defs[Number(k)]) ? defs[Number(k)] : null;
+      const name=(v&&typeof v==='object'&&(v.name||v.label||v.title)) || (def&&def.name) || k;
+      parts.push(String(name)+'×'+n);
+    });
+  }
+  return parts.length ? parts.join('、') : '無';
+}
+function todoCompactValue(v,fallback='未設定'){
+  const s=String(v===undefined||v===null?'':v).trim();
+  return s || fallback;
+}
 function renderTodoRows(rows){
   let out='';
   const list=sortNearestFirst((Array.isArray(rows)?rows:[]).map(normalizeTodoRow).filter(r=>hasTodoRegId(r) && todoKindFromRow(r)!=='done'), regSortTs);
@@ -1969,24 +2059,28 @@ function renderTodoRows(rows){
     const label=todoLabelFromKind(kind);
     const who=r.brandName||r.brand||r.brand_name||r.name||r.email||'未填品牌';
     const phone=r.phone||r.mobile||'';
-    const email=r.email||'';
+    const contactName=(r.name && r.name!==who) ? r.name : (r.name || '未填聯絡人');
     const dates=regDateText(r);
-    const stalls=r.stallCount||r.stall_count||r.stalls||'';
-    const amount=Number(r.amount||r.total||r.totalAmount||r.registration_total_amount||0);
+    const stalls=todoFirstValue(r,['stallCount','stall_count','stalls']) || '';
     const equip=regEquipText(r);
-    const info=[];
-    const contact=[];
-    if(r.name && r.name!==who) contact.push('聯絡人：'+safe(r.name));
-    if(phone) contact.push('電話：'+safe(phone));
-    if(email) contact.push('Email：'+safe(email));
-    if(contact.length) info.push(contact.join('　'));
-    const line2=[];
-    if(dates) line2.push('報名日期：'+safe(dates));
-    if(stalls) line2.push('攤位數：'+safe(stalls));
-    if(amount) line2.push('金額：'+money(amount));
-    if(equip && equip!=='未設定') line2.push('設備：'+safe(equip));
-    if(line2.length) info.push(line2.join('　'));
-    out+='<article class="reg-card todo-card"><div><div class="todo-headline"><span class="reg-title todo-main-title">'+safe(title)+'｜'+safe(who)+'</span>'+todoSocialLinks(r)+'</div><div class="todo-stage-row"><span class="todo-stage-badge '+safe(kind)+'">'+safe(label)+'</span><span class="todo-next">下一步：'+safe(todoNextText(kind))+'</span></div><div class="reg-sub todo-sub">'+(info.join('<br>')||safe(label))+'</div>'+todoFlowHtml(kind)+'</div><div class="reg-actions todo-direct-actions">'+todoStageButtons(r,kind)+'</div></article>';
+    const addon=regAddonText(r);
+    const amountText=todoAmountText(r);
+    out+='<article class="reg-card todo-card todo-card-lite">'
+      +'<div class="todo-card-top"><span class="todo-stage-badge '+safe(kind)+'">'+safe(label)+'</span><span class="todo-next-mini">'+safe(todoNextText(kind))+'</span></div>'
+      +'<div class="todo-session-title">'+safe(title)+'</div>'
+      +'<div class="todo-brand-row"><span class="todo-brand-name">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
+      +'<div class="todo-mini-grid"><div class="todo-mini-item" title="'+attr(dates)+'">📅 '+safe(todoCompactValue(dates))+'</div><div class="todo-mini-item">🧺 '+safe(stalls?String(stalls)+' 攤':'未設定')+'</div></div>'
+      +'<div class="todo-detail-list">'
+        +'<div class="todo-detail-line"><span>設備</span><b title="'+attr(equip||'無')+'">'+safe(todoCompactValue(equip,'無'))+'</b></div>'
+        +'<div class="todo-detail-line"><span>加購</span><b title="'+attr(addon||'無')+'">'+safe(todoCompactValue(addon,'無'))+'</b></div>'
+        +'<div class="todo-detail-line"><span>繳費</span><b>'+safe(amountText)+'</b></div>'
+      +'</div>'
+      +'<div class="todo-contact-list">'
+        +'<div class="todo-contact-line" title="'+attr(contactName)+'">👤 '+safe(todoCompactValue(contactName,'未填聯絡人'))+'</div>'
+        +'<div class="todo-contact-line" title="'+attr(phone)+'">☎ '+safe(todoCompactValue(phone,'未填電話'))+'</div>'
+      +'</div>'
+      +'<div class="reg-actions todo-direct-actions">'+todoStageButtons(r,kind)+'</div>'
+    +'</article>';
   }
   $('todoList').innerHTML=out||'<div class="empty">目前沒有待辦</div>';
 }
