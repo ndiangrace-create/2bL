@@ -5310,7 +5310,9 @@ function initFrontApp(){
   bootDbFront().catch(e=>{ console.error('bootDbFront error:',e); loadHome(); });
   const p=new URLSearchParams(window.location.search);
   const deepSes=p.get('ses')||p.get('session')||p.get('sessionId');
+  const deepEvent=p.get('event')||p.get('eventId')||p.get('activity');
   if(deepSes){ setTimeout(()=>openSession(deepSes), 800); }
+  else if(deepEvent){ setTimeout(()=>openEvent(deepEvent), 800); }
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', initFrontApp);
@@ -5369,6 +5371,57 @@ if(document.readyState==='loading'){
       renderAnnouncements(asArr(boot.announcements)); renderEvents(); return boot;
     }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; renderEvents(); }
   };
+  function frontShortDate(v){
+    if(!v) return '';
+    const s=String(v).trim();
+    if(!s) return '';
+    if(/^\d{4}[-/]\d{1,2}[-/]\d{1,2}/.test(s)) return s.slice(5,10).replace('-','/');
+    return s;
+  }
+  function frontTimeRange(start,end){
+    const a=String(start||'').trim();
+    const b=String(end||'').trim();
+    if(a&&b) return a+'～'+b;
+    return a||b||'';
+  }
+  function frontSessionInfo(s){
+    const dates=asArr(s&&s.dates);
+    let date='', time='';
+    if(dates.length>1){
+      date=frontShortDate(dates[0]?.date)+'～'+frontShortDate(dates[dates.length-1]?.date);
+      time=frontTimeRange(dates[0]?.start||dates[0]?.startTime, dates[0]?.end||dates[0]?.endTime);
+    }else if(dates.length===1){
+      const d=dates[0]||{};
+      date=frontShortDate(d.date);
+      time=frontTimeRange(d.start||d.startTime, d.end||d.endTime);
+    }
+    if(!date){
+      const start=s?.date||s?.startDate||s?.start_date||s?.eventDate||s?.event_date||'';
+      const end=s?.endDate||s?.end_date||'';
+      date=end&&String(end)!==String(start)?frontShortDate(start)+'～'+frontShortDate(end):frontShortDate(start);
+    }
+    if(!time) time=frontTimeRange(s?.startTime||s?.start_time||s?.time, s?.endTime||s?.end_time);
+    const location=s?.venue||s?.location||s?.place||s?.address||'';
+    return {date,time,location};
+  }
+  function frontEventInfo(e){
+    const eventId=String(e&&e.id||'');
+    const related=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||s.event_id||'')===eventId&&openSess(s)));
+    const first=related[0]||null;
+    const fromSession=first?frontSessionInfo(first):{date:'',time:'',location:''};
+    let date=fromSession.date;
+    let time=fromSession.time;
+    let location=e?.location||e?.venue||fromSession.location||'';
+    if(!date){
+      const start=e?.date||e?.startDate||e?.start_date||e?.eventDate||e?.event_date||'';
+      const end=e?.endDate||e?.end_date||'';
+      date=end&&String(end)!==String(start)?frontShortDate(start)+'～'+frontShortDate(end):frontShortDate(start);
+    }
+    if(!time) time=frontTimeRange(e?.startTime||e?.start_time||e?.time, e?.endTime||e?.end_time);
+    if(!location) location=fromSession.location;
+    return {date,time,location};
+  }
+
   window.renderEvents = function(){
     // ── 精選主題活動（ST.events 活動層）──
     const fl=$('featuredEventsList');
@@ -5376,7 +5429,7 @@ if(document.readyState==='loading'){
       const events=asArr(ST.events);
       if(events.length){
         fl.innerHTML=events.map(e=>{
-          const feeStr=Number(e.fee)>0?'NT$'+Number(e.fee).toLocaleString():'免費';
+          const info=frontEventInfo(e);
           const coverHtml=e.cover
             ?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:104px;object-fit:cover;background:#DDEAD1;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
             :``;
@@ -5385,11 +5438,12 @@ if(document.readyState==='loading'){
           </div>`;
           return `<div style="position:relative;min-width:155px;max-width:165px;background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;flex-shrink:0" onclick="openActivityFromHome('${esc(e.id)}')">
             ${coverHtml}${placeholderHtml}
-            <button onclick="event.stopPropagation();shareSession('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔗</button>
+            <button onclick="event.stopPropagation();shareEvent('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔗</button>
             <div style="padding:10px">
               <div style="font-size:15px;font-weight:900;color:#111;line-height:1.3;min-height:38px">${esc(e.title||'')}</div>
-              ${e.location?`<div style="font-size:12px;color:#555;margin-top:3px">📍 ${esc(e.location)}</div>`:''}
-              <div style="font-size:15px;font-weight:900;color:#111;margin-top:5px">${feeStr}</div>
+              ${info.date?`<div style="font-size:12px;color:#555;margin-top:5px;line-height:1.45">📅 ${esc(info.date)}</div>`:''}
+              ${info.time?`<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.45">⏰ ${esc(info.time)}</div>`:''}
+              ${info.location?`<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.45">📍 ${esc(info.location)}</div>`:''}
               <button onclick="event.stopPropagation();registerFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:#DCD7ED;color:#111;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">立即報名</button>
             </div>
           </div>`;
@@ -5409,7 +5463,7 @@ if(document.readyState==='loading'){
           let dateStr='';
           if(dates.length>1){const fmt=d=>d?String(d).slice(5).replace('-','/'):'';dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);}
           else if(dates.length===1){const d=dates[0];dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');}
-          const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString():'免費';
+          const placeStr=s.venue||s.location||s.place||'';
           // 封面圖：有圖用圖，無圖用 IP 插圖（不用大字）
           const hasCover=!!(s.coverUrl||s.cover);
           const themeInfo=getFrontSessionThemeInfo(s);
@@ -5423,8 +5477,7 @@ if(document.readyState==='loading'){
             <div class="ses-list-body">
               <div class="ses-theme-pill">${esc(themeTitle)}</div>
               <div class="ses-list-name">${esc(s.name||'')}</div>
-              <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${s.venue?'<br>📍 '+esc(s.venue):''}</div>
-              <div class="ses-list-fee">${feeStr}</div>
+              <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${placeStr?'<br>📍 '+esc(placeStr):''}</div>
             </div>
             <div class="ses-list-actions">
               <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
@@ -5456,6 +5509,12 @@ if(document.readyState==='loading'){
   const lastTab = (rawTab === 'myregs') ? 'member' : rawTab;
 
   await loadHome();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const deepSession = urlParams.get('ses') || urlParams.get('session') || urlParams.get('sessionId');
+  const deepEvent = urlParams.get('event') || urlParams.get('eventId') || urlParams.get('activity');
+  if(deepSession){ setTimeout(()=>openSession(deepSession), 80); return; }
+  if(deepEvent){ setTimeout(()=>openEvent(deepEvent), 80); return; }
 
   // 還原頁面
   if(lastTab === 'regForm' && savedState && savedState.sessionId){
@@ -5544,6 +5603,18 @@ async function applyForceRefundFn(regId, btn) {
     } else { alert('失敗：'+(res&&res.error?res.error:'未知錯誤')); }
   } catch(e) { alert('失敗：'+e.message); }
   finally { if (btn) { btn.disabled = false; btn.textContent = '申請退費'; } }
+}
+
+// 分享主題活動
+function shareEvent(eventId, eventName){
+  const url = location.origin + location.pathname + '?tenant=' + encodeURIComponent(TENANT_ID) + '&event=' + encodeURIComponent(eventId);
+  if(navigator.share){
+    navigator.share({title: eventName, url: url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>toast('已複製主題活動連結！')).catch(()=>{
+      prompt('複製此連結：', url);
+    });
+  }
 }
 
 // 分享場次
