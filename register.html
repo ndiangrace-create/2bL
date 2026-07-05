@@ -1278,6 +1278,55 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   .member-edit-card{padding:14px;}
 }
 
+
+
+/* 20260706 前台我的紀錄小卡統一：只改顯示排版，資料仍由後端/資料庫回傳 */
+.m-record-grid{
+  padding:8px 14px 100px!important;
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+.m-record-card-lite{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+  padding:10px!important;
+  border-radius:18px!important;
+  min-width:0!important;
+  box-shadow:0 7px 18px rgba(45,39,32,.07)!important;
+  cursor:pointer!important;
+}
+.m-record-card-lite .m-record-top{
+  display:grid!important;
+  grid-template-columns:70px minmax(0,1fr)!important;
+  gap:9px!important;
+  margin-bottom:0!important;
+  align-items:start!important;
+}
+.m-record-card-lite .m-record-thumb{width:70px!important;height:70px!important;border-radius:14px!important}
+.m-record-card-lite .m-record-name{font-size:15.5px!important;line-height:1.3!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important;margin-bottom:3px!important}
+.m-record-card-lite .m-record-meta{font-size:12.5px!important;line-height:1.3!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.m-record-card-lite .m-record-bottom.compact{display:flex!important;align-items:center!important;gap:5px!important;flex-wrap:wrap!important;margin-top:5px!important}
+.m-record-card-lite .m-status-pill{font-size:11.5px!important;padding:2px 7px!important;border-radius:999px!important}
+.m-record-card-lite .m-status-note{font-size:11.5px!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
+.m-fixed-block{border-top:1px dashed #e2ecd9!important;margin-top:2px!important;padding-top:7px!important;display:grid!important;gap:5px!important}
+.m-fixed-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;min-width:0!important}
+.m-fixed-row span{background:#f8fbf5!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
+.m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.m-fixed-pay b{font-weight:950!important;color:#111!important}
+.m-record-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important;gap:6px!important;margin-top:auto!important}
+.m-record-actions .m-action-btn{width:100%!important;min-height:34px!important;padding:7px 6px!important;border-radius:12px!important;font-size:13px!important;white-space:nowrap!important}
+.m-record-alert{border-radius:10px!important;padding:7px 8px!important;font-size:12.5px!important;font-weight:950!important;text-align:center!important}
+.m-record-alert.muted{background:#f3f4f6!important;color:#666!important}
+.m-record-alert.warn{background:#fff8ed!important;color:#92400e!important}
+.m-record-id{font-size:11.5px!important;color:#aaa!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+@media(max-width:520px){
+  .m-record-grid{grid-template-columns:1fr!important}
+  .m-record-card-lite{padding:12px!important}
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><!-- 2BL-REGISTER-BUNDLE-INLINE-v3 --></head>
 <body>
@@ -4926,6 +4975,47 @@ function mRecordCover(r){
   const s=mSessionForReg(r);
   return mFirstVal(r,['coverUrl','cover','image','imageUrl','sessionCover','eventCover'], '') || mFirstVal(s,['coverUrl','cover','imageUrl','imgUrl','sessionCover','eventCover'], '') || 'IP指引.png';
 }
+
+function mShortDateRange(v){
+  const s=String(v===undefined||v===null?'':v).trim();
+  if(!s) return '未設定';
+  const dates=[];
+  const re=/(20\d{2})[\/\-\.年](\d{1,2})[\/\-\.月](\d{1,2})|(^|[^0-9])(\d{1,2})[\/\-\.月](\d{1,2})(?=[^0-9]|$)/g;
+  let m;
+  while((m=re.exec(s))){
+    const mo=m[2]||m[5];
+    const da=m[3]||m[6];
+    if(mo&&da) dates.push(Number(mo)+'/'+Number(da));
+  }
+  const uniq=[];
+  dates.forEach(d=>{ if(!uniq.includes(d)) uniq.push(d); });
+  if(uniq.length>1) return uniq[0]+'－'+uniq[uniq.length-1];
+  if(uniq.length===1) return uniq[0];
+  return s.replace(/20\d{2}[\/\-\.年]/g,'').replace(/月/g,'/').replace(/日/g,'').replace(/\s+/g,' ').trim() || '未設定';
+}
+function mRecordEquipText(r){ return String(mFirstVal(r,['equipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'無')||'無'); }
+function mRecordAddonText(r){ return String(mFirstVal(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_text','addons_text','addon_qty_text'],'無')||'無'); }
+function mRecordStallText(r){
+  const v=mFirstVal(r,['stallCount','stall_count','stalls','boothCount','booth_count'],'');
+  return v!=='' ? (String(v).replace(/攤$/,'')+'攤') : '未設定';
+}
+function mRecordPayText(r){
+  const v=mFirstVal(r,['total','totalAmount','amount','receivableAmount','registration_total_amount'],'');
+  if(v!=='' && v!==undefined && v!==null && !Number.isNaN(Number(v))) return 'NT$ '+Number(v).toLocaleString('zh-TW');
+  return String(r.payStatus||r.paymentStatus||'資料庫未提供');
+}
+function mRecordFixedBlockHtml(r){
+  const date=mShortDateRange(mRecordDateText(r));
+  const stalls=mRecordStallText(r);
+  const equip=mRecordEquipText(r);
+  const addon=mRecordAddonText(r);
+  const pay=mRecordPayText(r);
+  return `<div class="m-fixed-block">
+    <div class="m-fixed-row m-main"><span>${escHtml(date)}</span><span>${escHtml(stalls)}</span></div>
+    <div class="m-fixed-row"><span title="${escHtml(equip)}">設備：${escHtml(equip)}</span><span title="${escHtml(addon)}">加購：${escHtml(addon)}</span></div>
+    <div class="m-fixed-pay">繳費(含押金)：<b>${escHtml(pay)}</b></div>
+  </div>`;
+}
 function mReviewPill(r){
   if(isCancelledReg(r)) return {text:'已取消', icon:'✕', bg:'#f3f4f6', color:'#777', border:'#e5e7eb', note:'此筆報名已取消'};
   const st=String(r.status||r.reviewStatus||'待審核').trim();
@@ -4951,49 +5041,40 @@ function renderMyRegs(regs){
   if(helper) helper.classList.add('show');
   el.innerHTML=ST.regs.map(r=>{
     const pill=mReviewPill(r);
-    const pb=payBadge(r);
     const title=escHtml(r.sessionName||r.sesName||'場次');
-    const dateText=escHtml(mRecordDateText(r));
     const locationText=escHtml(mRecordLocationText(r));
     const cover=escHtml(mRecordCover(r));
     const note=escHtml(pill.note||'');
     const canPay=canPayReg(r), canCancel=canDirectCancelReg(r), canRefund=canRefundReg(r);
-    const detail=`<div style="background:#f8f8f8;border-radius:12px;padding:11px 13px;margin-top:8px;line-height:1.75">
-        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;color:var(--md)">繳費</span><span style="background:${pb.bg};color:${pb.c};font-size:15px;font-weight:900;border-radius:20px;padding:3px 10px">${pb.t}</span></div>
-        <div style="font-size:16px;color:var(--md)">審核：<strong>${escHtml(r.status||'')}</strong></div>
-        <div style="font-size:16px;color:var(--md)">攤位數：<strong>${Number(r.stallCount||1)} 攤</strong></div>
-        ${r.equipmentText?`<div style="font-size:16px;color:var(--md)">設備：<strong>${escHtml(r.equipmentText)}</strong></div>`:''}
-        ${Number(r.total||0)>0?`<div style="font-size:17px;color:var(--g);font-weight:900">應繳金額：NT$ ${Number(r.total||0).toLocaleString()}</div>`:''}
-        ${r.transferStatus?`<div style="font-size:15px;color:#b45309;font-weight:900">退款狀態：${escHtml(r.transferStatus)}</div>`:''}
-        <div style="font-size:13px;color:var(--lt);margin-top:4px">報名編號：${escHtml(r.id)}</div>
-      </div>`;
-    const statusMsg = isCancelledReg(r)?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:9px;margin-top:8px;font-size:15px;font-weight:900;text-align:center">已取消，報名紀錄保留</div>`:(isPendingPayText(r.payStatus)?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:9px;margin-top:8px;font-size:15px;font-weight:900;text-align:center">已回報，等待主辦確認</div>`:'');
+    const statusMsg = isCancelledReg(r)?`<div class="m-record-alert muted">已取消，報名紀錄保留</div>`:(isPendingPayText(r.payStatus)?`<div class="m-record-alert warn">已回報，等待主辦確認</div>`:'');
     let actions='';
     if(canPay) actions+=`<button class="m-action-btn" onclick="showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:var(--g);color:#fff;border:none">前往繳費</button>`;
     if(canCancel) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,false)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">取消報名</button>`;
     if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">申請退費</button>`;
-    return `<div class="m-record-card">
+    return `<div class="m-record-card m-record-card-lite">
       <div class="m-record-top">
         <div class="m-record-thumb"><img src="${cover}" alt="" onerror="this.src='IP指引.png'"></div>
-        <div>
+        <div class="m-record-main">
           <div class="m-record-name">${title}</div>
-          <div class="m-record-meta">▣　${dateText}</div>
-          <div class="m-record-meta">◎　${locationText}</div>
+          <div class="m-record-meta">◎ ${locationText}</div>
+          <div class="m-record-bottom compact">
+            <span class="m-status-pill" style="background:${pill.bg};color:${pill.color};border:1.5px solid ${pill.border}">${pill.icon} ${pill.text}</span>
+            <span class="m-status-note">${note}</span>
+          </div>
         </div>
       </div>
-      <div class="m-record-bottom">
-        <span class="m-status-pill" style="background:${pill.bg};color:${pill.color};border:1.5px solid ${pill.border}">${pill.icon} ${pill.text}</span>
-        <span class="m-status-note">${note}</span>
-      </div>
-      ${detail}
+      ${mRecordFixedBlockHtml(r)}
       ${statusMsg}
       ${stallSelectionHtml(r)}
-      ${actions?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${actions}</div>`:''}
+      ${actions?`<div class="m-record-actions">${actions}</div>`:''}
+      <div class="m-record-id">報名編號：${escHtml(r.id)}</div>
     </div>`;
   }).join('');
-  el.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start;padding:8px 14px 100px';
+  el.className='m-record-list m-record-grid';
+  el.style.cssText='';
   handlePendingPayLink(ST.regs);
 }
+
 
 function handlePendingPayLink(regs){
   const regId = window._pendingPayRegId || '';

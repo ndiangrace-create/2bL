@@ -869,6 +869,81 @@
   #page-todos .todo-session-title{min-height:0;font-size:16px}
 }
 
+
+
+/* 20260706 全系統小卡統一：只改顯示排版，資料仍由後端/資料庫回傳 */
+#page-todos #todoList.cards,
+#panelCards.cards,
+#memberList.member-list,
+.panel-body > .cards{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+.unified-reg-card,
+#page-todos .todo-card-lite,
+.member-card-lite{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  min-width:0!important;
+  padding:10px!important;
+  border-radius:18px!important;
+  box-shadow:0 7px 18px rgba(45,39,32,.07)!important;
+  overflow:hidden!important;
+}
+#page-todos .todo-card-top{display:flex!important;align-items:center!important;gap:6px!important;min-width:0!important}
+#page-todos .todo-card-lite .todo-stage-badge{font-size:13px!important;padding:4px 9px!important;border-width:1.5px!important;white-space:nowrap!important;flex-shrink:0!important}
+#page-todos .todo-next-mini{font-size:12px!important;font-weight:950!important;color:#555!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
+#page-todos .todo-session-title{font-size:15.5px!important;font-weight:950!important;line-height:1.3!important;color:#1f1f1f!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important;min-height:auto!important}
+#page-todos .todo-actions-inline,
+.compact-action-row{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(56px,1fr))!important;
+  gap:5px!important;
+  margin:0!important;
+  min-width:0!important;
+}
+#page-todos .todo-actions-inline .btn,
+.compact-action-row .btn{
+  min-width:0!important;
+  width:100%!important;
+  padding:6px 4px!important;
+  min-height:31px!important;
+  font-size:12.5px!important;
+  border-radius:10px!important;
+  white-space:nowrap!important;
+}
+#page-todos .todo-brand-row{display:flex!important;align-items:center!important;gap:5px!important;min-width:0!important;flex-wrap:wrap!important}
+#page-todos .todo-brand-name{font-size:14px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;max-width:100%!important}
+#page-todos .todo-card-lite .todo-socials{display:inline-flex!important;gap:4px!important;flex-wrap:wrap!important}
+#page-todos .todo-card-lite .todo-social{min-width:27px!important;height:23px!important;padding:0 7px!important;font-size:11px!important}
+#page-todos .todo-contact-line,
+.reg-contact-line,
+.member-small-line{font-size:13px!important;font-weight:900!important;color:#444!important;line-height:1.3!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.card-fixed-block{border-top:1px dashed #E9DED2!important;margin-top:4px!important;padding-top:7px!important;display:grid!important;gap:5px!important;min-width:0!important}
+.card-fixed-block .fixed-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;min-width:0!important}
+.card-fixed-block .fixed-row span{background:#FBF8F1!important;border:1px solid #EFE6DC!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;min-width:0!important}
+.card-fixed-block .fixed-pay{background:#fff!important;border:1px solid #EFE6DC!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.card-fixed-block .fixed-pay b{font-weight:950!important;color:#111!important}
+.reg-title,.member-title{font-size:16px!important;font-weight:950!important;line-height:1.3!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important;margin:0!important;min-height:auto!important}
+.reg-sub{font-size:12.5px!important;font-weight:850!important;color:#666!important;line-height:1.3!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;margin:0!important}
+.unified-reg-card .tag-row{gap:4px!important;margin-top:0!important}
+.unified-reg-card .tag{font-size:11.5px!important;padding:3px 7px!important}
+.reg-small-muted{font-size:12px!important;color:#777!important;font-weight:850!important;line-height:1.35!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.member-card-lite .member-icons{gap:4px!important;margin-top:0!important}
+.member-card-lite .member-icon{min-width:32px!important;height:27px!important;font-size:12px!important}
+.member-card-lite .member-sub{font-size:13px!important;line-height:1.3!important;margin-top:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.member-card-lite .member-meta{gap:4px!important;margin-top:0!important}
+.member-card-lite .member-note{margin-top:0!important;padding:7px 8px!important;border-radius:11px!important;font-size:12.5px!important;line-height:1.35!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+.member-card-lite .member-actions{justify-content:stretch!important;margin-top:auto!important}
+.member-card-lite .member-actions .btn{width:100%!important;min-height:32px!important;padding:6px!important;font-size:12.5px!important}
+@media(max-width:520px){
+  #page-todos #todoList.cards,#panelCards.cards,#memberList.member-list,.panel-body > .cards{grid-template-columns:1fr!important}
+  .unified-reg-card,#page-todos .todo-card-lite,.member-card-lite{padding:11px!important}
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -1211,12 +1286,94 @@ function regCreatedText(r){ return r.createdText || r.createdAt || r.created_at 
 function regAmount(r){ return Number(r.amount ?? r.totalAmount ?? r.total_amount ?? r.receivableAmount ?? r.registration_total_amount ?? r.total ?? 0) || 0; }
 function invoiceBrief(r){ const parts=[]; if(r.taxId) parts.push('統編 '+r.taxId); if(r.invoiceTitle) parts.push(r.invoiceTitle); if(r.invoiceEmail) parts.push(r.invoiceEmail); return parts.join('｜') || '—'; }
 
-function renderRegistrationCards(){ const box=$('panelCards'); if(!box) return; const kw=($('panelSearch')?.value||'').trim().toLowerCase(); let list=AdminState.currentList.slice(); if(kw) list=list.filter(r=>[r.brand,r.brandName,r.name,r.phone,r.email,r.fb,r.ig].join(' ').toLowerCase().includes(kw)); const sort=$('panelSort')?.value||'new'; if(sort==='brand') list.sort((a,b)=>String(a.brand||a.brandName||'').localeCompare(String(b.brand||b.brandName||''),'zh-Hant')); else list.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))); if(!list.length){box.innerHTML='<div class="empty">沒有符合條件的名單</div>';return;} let html=''; for(const r of list){ const id=attr(r.id||r.regId); html+='<article class="reg-card"><div><div class="reg-title">'+safe(r.brand||r.brandName||r.brand_name||'未填品牌')+'</div><div class="reg-sub">'+safe(r.sessionName||'')+'｜'+safe(r.selectedDatesText||'未設定日期')+'</div><div class="tag-row"><span class="tag info">審核：'+safe(r.reviewStatus||r.status||'')+'</span><span class="tag warn">付款：'+safe(r.paymentStatus||r.payStatus||'')+'</span><span class="tag purple">報到：'+safe(r.checkinStatus||r.checkin||'未報到')+'</span>'+((r.transferStatus)?'<span class="tag bad">'+safe(r.transferStatus)+'</span>':'')+'</div><div class="kv"><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">設備</div><div>'+safe(r.dailyEquipmentText||r.equipmentText||'無')+'</div><div class="k">金額</div><div>'+money(r.amount||r.totalAmount||0)+'｜已收 '+money(r.receivedAmount||0)+'｜未收 '+money(r.unreceivedAmount||0)+'</div><div class="k">備註</div><div>'+safe(r.adminNote||r.note||'—')+'</div></div></div><div class="reg-actions"><button class="btn secondary small" onclick="openRegDetail(\''+id+'\')">完整資料</button>'+actionButtons(r)+'</div></article>'; } box.innerHTML=html; }
+function adminShortDateRange(v){
+  const s=String(v===undefined||v===null?'':v).trim();
+  if(!s) return '未設定';
+  const dates=[];
+  const re=/(20\d{2})[\/\-\.年](\d{1,2})[\/\-\.月](\d{1,2})|(^|[^0-9])(\d{1,2})[\/\-\.月](\d{1,2})(?=[^0-9]|$)/g;
+  let m;
+  while((m=re.exec(s))){
+    const mo=m[2]||m[5];
+    const da=m[3]||m[6];
+    if(mo&&da) dates.push(Number(mo)+'/'+Number(da));
+  }
+  const uniq=[];
+  dates.forEach(d=>{ if(!uniq.includes(d)) uniq.push(d); });
+  if(uniq.length>1) return uniq[0]+'－'+uniq[uniq.length-1];
+  if(uniq.length===1) return uniq[0];
+  return s.replace(/20\d{2}[\/\-\.年]/g,'').replace(/月/g,'/').replace(/日/g,'').replace(/\s+/g,' ').trim() || '未設定';
+}
+function adminStallText(r){
+  const v=todoFirstValue(r,['stallCount','stall_count','stalls','boothCount','booth_count']);
+  return v!=='' ? (String(v).replace(/攤$/,'')+'攤') : '未設定';
+}
+function adminPaymentText(r){
+  const v=todoFirstValue(r,['amount','totalAmount','total_amount','receivableAmount','registration_total_amount','total']);
+  if(v!=='' && v!==undefined && v!==null) return money(v);
+  const pay=String(r.paymentStatus||r.payStatus||r.payment_status||'').trim();
+  return pay || '資料庫未提供';
+}
+function adminRegFixedBlockHtml(r){
+  const date=adminShortDateRange(regDateText(r));
+  const stalls=adminStallText(r);
+  const equip=regEquipText(r)||'無';
+  const addon=regAddonText(r)||'無';
+  const pay=adminPaymentText(r);
+  return '<div class="card-fixed-block">'
+    +'<div class="fixed-row fixed-main"><span>'+safe(date)+'</span><span>'+safe(stalls)+'</span></div>'
+    +'<div class="fixed-row"><span title="'+attr(equip)+'">設備：'+safe(equip)+'</span><span title="'+attr(addon)+'">加購：'+safe(addon)+'</span></div>'
+    +'<div class="fixed-pay">繳費(含押金)：<b>'+safe(pay)+'</b></div>'
+  +'</div>';
+}
+
+function renderRegistrationCards(){
+  const box=$('panelCards');
+  if(!box) return;
+  const kw=($('panelSearch')?.value||'').trim().toLowerCase();
+  let list=AdminState.currentList.slice();
+  if(kw) list=list.filter(r=>[r.brand,r.brandName,r.brand_name,r.name,r.phone,r.email,r.fb,r.ig].join(' ').toLowerCase().includes(kw));
+  const sort=$('panelSort')?.value||'new';
+  if(sort==='brand') list.sort((a,b)=>String(a.brand||a.brandName||'').localeCompare(String(b.brand||b.brandName||''),'zh-Hant'));
+  else list.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  if(!list.length){box.innerHTML='<div class="empty">沒有符合條件的名單</div>';return;}
+  let html='';
+  for(const r of list){
+    const id=attr(r.id||r.regId||r.registrationId||r.registration_id||'');
+    const brand=r.brand||r.brandName||r.brand_name||'未填品牌';
+    const contact=[r.name||'—',r.phone||''].filter(Boolean).join('｜');
+    html+='<article class="reg-card unified-reg-card">'
+      +'<div class="reg-title" title="'+attr(brand)+'">'+safe(brand)+'</div>'
+      +'<div class="reg-sub" title="'+attr(r.sessionName||'')+'">'+safe(r.sessionName||'場次')+'</div>'
+      +'<div class="tag-row">'+statusTags(r)+socialLinks(r)+'</div>'
+      +'<div class="reg-contact-line">'+safe(contact)+'</div>'
+      +adminRegFixedBlockHtml(r)
+      +'<div class="reg-actions compact-action-row"><button class="btn secondary small" onclick="openRegDetail(\''+id+'\')">完整資料</button>'+actionButtons(r)+'</div>'
+    +'</article>';
+  }
+  box.innerHTML=html;
+}
 function statusTags(r){ const review=r.reviewStatus||r.status||'待審核'; const pay=r.paymentStatus||r.payStatus||'未繳費'; const check=r.checkinStatus||r.checkin||'未報到'; return '<span class="tag '+(String(review).includes('錄取')?'ok':String(review).includes('待')?'warn':'info')+'">審核：'+safe(review)+'</span><span class="tag '+(String(pay).includes('已繳')||String(pay).includes('免費')?'ok':String(pay).includes('回報')||String(pay).includes('待確認')?'warn':'bad')+'">付款：'+safe(pay)+'</span><span class="tag '+(String(check).includes('已報到')?'ok':'purple')+'">報到：'+safe(check)+'</span>'; }
 function socialLinks(r){ let out=''; if(r.fb) out+='<a class="tag info" href="'+attr(r.fb)+'" target="_blank">FB</a>'; if(r.ig) out+='<a class="tag bad" href="'+attr(r.ig)+'" target="_blank">IG</a>'; return out || '<span class="tag">未填社群</span>'; }
 function actionButtons(r){ const id=r.id||r.regId||r.registrationId||r.registration_id||''; const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||''; if(Array.isArray(r.availableActions)){ let out=''; for(const a of r.availableActions) out += actionButton(id,a,sid); return out || '<span class="tag">目前無可操作動作</span>'; } return '<span class="tag">目前無可操作動作</span>'; }
 function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'退費'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>'; }
-function renderRegCard(r){ const brand=r.brand||r.brandName||r.brand_name||'未填品牌'; const sid=regSessionId(r)||AdminState.currentSessionId; const s=sessionById(sid); const dateText=regDateText(r); const createdText=regCreatedText(r); const eq=regEquipText(r); return '<article class="reg-card"><div><div class="reg-title">'+safe(brand)+'</div><div class="reg-sub">'+safe(r.sessionName||sessionName(s))+'｜報名日期：'+safe(dateText||'未設定')+'</div><div class="tag-row">'+statusTags(r)+socialLinks(r)+'</div><div class="kv"><div class="k">報名日期</div><div>'+safe(dateText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(createdText)+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||r.stall_count||1)+'</div><div class="k">設備</div><div>'+safe(eq)+'</div><div class="k">金額</div><div>'+money(regAmount(r))+'</div><div class="k">發票</div><div>'+safe(invoiceBrief(r))+'</div><div class="k">備註</div><div>'+safe(r.adminNote||r.admin_note||r.remark||'—')+'</div></div></div><div class="reg-actions">'+actionButtons(r)+'</div></article>'; }
+function renderRegCard(r){
+  const brand=r.brand||r.brandName||r.brand_name||'未填品牌';
+  const sid=regSessionId(r)||AdminState.currentSessionId;
+  const s=sessionById(sid);
+  const sessionTitle=r.sessionName||sessionName(s)||'場次';
+  const contact=[r.name||'—',r.phone||''].filter(Boolean).join('｜');
+  const createdText=regCreatedText(r);
+  return '<article class="reg-card unified-reg-card">'
+    +'<div class="reg-title" title="'+attr(brand)+'">'+safe(brand)+'</div>'
+    +'<div class="reg-sub" title="'+attr(sessionTitle)+'">'+safe(sessionTitle)+'</div>'
+    +'<div class="tag-row">'+statusTags(r)+socialLinks(r)+'</div>'
+    +'<div class="reg-contact-line">'+safe(contact)+'</div>'
+    +adminRegFixedBlockHtml(r)
+    +'<div class="reg-small-muted">送出：'+safe(createdText)+'｜發票：'+safe(invoiceBrief(r))+'</div>'
+    +'<div class="reg-actions compact-action-row">'+actionButtons(r)+'</div>'
+  +'</article>';
+}
+
 
 async function openRefundPanel(regId, btn=null, sidOverride=''){
   const sid=sidOverride||AdminState.currentSessionId||'';
@@ -2060,26 +2217,14 @@ function renderTodoRows(rows){
     const who=r.brandName||r.brand||r.brand_name||r.name||r.email||'未填品牌';
     const phone=r.phone||r.mobile||'';
     const contactName=(r.name && r.name!==who) ? r.name : (r.name || '未填聯絡人');
-    const dates=regDateText(r);
-    const stalls=todoFirstValue(r,['stallCount','stall_count','stalls']) || '';
-    const equip=regEquipText(r);
-    const addon=regAddonText(r);
-    const amountText=todoAmountText(r);
-    out+='<article class="reg-card todo-card todo-card-lite">'
+    const contactText=[contactName,phone].filter(Boolean).join('｜') || '未填聯絡人';
+    out+='<article class="reg-card todo-card todo-card-lite unified-reg-card">'
       +'<div class="todo-card-top"><span class="todo-stage-badge '+safe(kind)+'">'+safe(label)+'</span><span class="todo-next-mini">'+safe(todoNextText(kind))+'</span></div>'
-      +'<div class="todo-session-title">'+safe(title)+'</div>'
-      +'<div class="todo-brand-row"><span class="todo-brand-name">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
-      +'<div class="todo-mini-grid"><div class="todo-mini-item" title="'+attr(dates)+'">📅 '+safe(todoCompactValue(dates))+'</div><div class="todo-mini-item">🧺 '+safe(stalls?String(stalls)+' 攤':'未設定')+'</div></div>'
-      +'<div class="todo-detail-list">'
-        +'<div class="todo-detail-line"><span>設備</span><b title="'+attr(equip||'無')+'">'+safe(todoCompactValue(equip,'無'))+'</b></div>'
-        +'<div class="todo-detail-line"><span>加購</span><b title="'+attr(addon||'無')+'">'+safe(todoCompactValue(addon,'無'))+'</b></div>'
-        +'<div class="todo-detail-line"><span>繳費</span><b>'+safe(amountText)+'</b></div>'
-      +'</div>'
-      +'<div class="todo-contact-list">'
-        +'<div class="todo-contact-line" title="'+attr(contactName)+'">👤 '+safe(todoCompactValue(contactName,'未填聯絡人'))+'</div>'
-        +'<div class="todo-contact-line" title="'+attr(phone)+'">☎ '+safe(todoCompactValue(phone,'未填電話'))+'</div>'
-      +'</div>'
-      +'<div class="reg-actions todo-direct-actions">'+todoStageButtons(r,kind)+'</div>'
+      +'<div class="todo-session-title" title="'+attr(title)+'">'+safe(title)+'</div>'
+      +'<div class="reg-actions todo-direct-actions todo-actions-inline">'+todoStageButtons(r,kind)+'</div>'
+      +'<div class="todo-brand-row"><span class="todo-brand-name" title="'+attr(who)+'">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
+      +'<div class="todo-contact-line" title="'+attr(contactText)+'">'+safe(contactText)+'</div>'
+      +adminRegFixedBlockHtml(r)
     +'</article>';
   }
   $('todoList').innerHTML=out||'<div class="empty">目前沒有待辦</div>';
@@ -2148,7 +2293,15 @@ function renderMembers(){
     const cat=m.category||m.saleCategory||m.sellCategory||m.sell_category||'—';
     const intro=m.intro||m.brandIntro||m.description||m.brand_intro||'—';
     const updated=m.updatedAt||m.updated_at||m.joinedAt||m.joined_at||m.createdAt||m.created_at||'—';
-    html+='<article class="member-card"><div><div class="member-title">'+safe(brand)+'</div><div class="member-sub">聯絡人：'+safe(name)+'　電話：'+safe(phone)+'　Email：'+safe(email)+'</div><div class="member-icons">'+memberIconLinks(m)+'</div><div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(updated)+'</span></div><div class="member-note">品牌介紹：'+safe(intro)+'</div></div><div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button></div></article>';
+    html+='<article class="member-card member-card-lite">'
+      +'<div class="member-title" title="'+attr(brand)+'">'+safe(brand)+'</div>'
+      +'<div class="member-icons">'+memberIconLinks(m)+'</div>'
+      +'<div class="member-sub">'+safe(name)+'｜'+safe(phone)+'</div>'
+      +'<div class="member-small-line" title="'+attr(email)+'">Email：'+safe(email)+'</div>'
+      +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span></div>'
+      +'<div class="member-note">'+safe(intro)+'</div>'
+      +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button></div>'
+    +'</article>';
   }
   box.innerHTML=html;
 }
