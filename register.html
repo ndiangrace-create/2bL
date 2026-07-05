@@ -2154,6 +2154,44 @@ function buildFrontShareUrl(kind, id){
   }
   return location.origin + location.pathname + '?' + qs.toString();
 }
+function copyFrontShareLink(url, msg){
+  const okMsg = msg || '已複製連結！';
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(url).then(()=>toast(okMsg)).catch(()=>{
+      const ta=document.createElement('textarea');
+      ta.value=url;
+      ta.setAttribute('readonly','readonly');
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand('copy'); toast(okMsg); }
+      catch(e){ prompt('請複製此連結：', url); }
+      document.body.removeChild(ta);
+    });
+  }
+  const ta=document.createElement('textarea');
+  ta.value=url;
+  ta.setAttribute('readonly','readonly');
+  ta.style.position='fixed';
+  ta.style.left='-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); toast(okMsg); }
+  catch(e){ prompt('請複製此連結：', url); }
+  document.body.removeChild(ta);
+}
+function shareFrontToLine(title, url, copyMsg){
+  const cleanTitle = (title || '兔彼樂活動').trim();
+  const lineUrl = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(cleanTitle);
+  const opened = window.open(lineUrl, '_blank', 'noopener,noreferrer');
+  if(opened){
+    try{ opened.opener = null; }catch(e){}
+    toast('已開啟 LINE 分享');
+    return;
+  }
+  copyFrontShareLink(url, copyMsg || '已複製連結，請貼到 LINE 分享');
+}
 function clearFrontPageStateForDeepLink(){
   const d = readFrontDeepLink();
   if(!d.hasDeepLink) return;
@@ -2388,11 +2426,7 @@ function renderActCard(s, mode){
 function shareSessionCard(id, name, event){
   if(event) event.stopPropagation();
   const url = buildFrontShareUrl('session', id);
-  if(navigator.share){
-    navigator.share({ title: name, text: '來看看這個活動！', url }).catch(()=>{});
-  } else {
-    navigator.clipboard && navigator.clipboard.writeText(url).then(()=>toast('已複製活動連結！')).catch(()=>toast('請手動複製：'+url));
-  }
+  shareFrontToLine(name, url, '已複製活動連結，請貼到 LINE 分享');
 }
 
 // ── 收藏 ──
@@ -4045,22 +4079,7 @@ function shareCurrentSession(){
   const s=ST.currentSession;
   if(!s) return;
   const url=buildFrontShareUrl('session', s.id);
-  if(navigator.share){
-    navigator.share({title:s.name||'報名表', url:url}).catch(()=>{});
-  } else {
-    navigator.clipboard.writeText(url).then(()=>{
-      toast('✅ 連結已複製！');
-    }).catch(()=>{
-      // fallback
-      const ta=document.createElement('textarea');
-      ta.value=url;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      toast('✅ 連結已複製！');
-    });
-  }
+  shareFrontToLine(s.name||'報名表', url, '已複製連結，請貼到 LINE 分享');
 }
 
 async function openSession(sessionId){
@@ -5642,25 +5661,13 @@ async function applyForceRefundFn(regId, btn) {
 // 分享主題活動
 function shareEvent(eventId, eventName){
   const url = buildFrontShareUrl('event', eventId);
-  if(navigator.share){
-    navigator.share({title: eventName, url: url}).catch(()=>{});
-  } else {
-    navigator.clipboard.writeText(url).then(()=>toast('已複製主題活動連結！')).catch(()=>{
-      prompt('複製此連結：', url);
-    });
-  }
+  shareFrontToLine(eventName||'主題活動', url, '已複製主題活動連結，請貼到 LINE 分享');
 }
 
 // 分享場次
 function shareSession(sesId, sesName){
   const url = buildFrontShareUrl('session', sesId);
-  if(navigator.share){
-    navigator.share({title: sesName, url: url}).catch(()=>{});
-  } else {
-    navigator.clipboard.writeText(url).then(()=>toast('已複製連結！')).catch(()=>{
-      prompt('複製此連結：', url);
-    });
-  }
+  shareFrontToLine(sesName||'場次活動', url, '已複製場次連結，請貼到 LINE 分享');
 }
 
 
