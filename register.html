@@ -2109,13 +2109,16 @@ async function applySiteConfig(){
 const API_BASE = 'https://2bl-v7.ndiangrace.workers.dev';
 
 const _urlParams = new URLSearchParams(window.location.search);
-// 租戶解析：優先從 URL 讀取，存入 sessionStorage 後清除網址列參數
+// 租戶解析：只移除 tenant 參數，保留分享連結要用的 ses/event/member/pay 等參數
 (function(){
   const urlTenant = _urlParams.get('tenant') || _urlParams.get('tenantId');
-  // 先把所有需要的參數存起來，再清除網址
   if (urlTenant) sessionStorage.setItem('2bl_tenant', urlTenant);
   if (urlTenant) {
-    window.history.replaceState({}, '', window.location.pathname);
+    const kept = new URLSearchParams(window.location.search);
+    kept.delete('tenant');
+    kept.delete('tenantId');
+    const query = kept.toString();
+    window.history.replaceState({}, '', window.location.pathname + (query ? '?' + query : ''));
   }
 })();
 const TENANT_ID = sessionStorage.getItem('2bl_tenant') || _urlParams.get('tenant') || _urlParams.get('tenantId') || 'tuibile';
@@ -2128,6 +2131,37 @@ if (!TENANT_ID) {
 let LINE_URL = '';
 let LINEPAY_LINK = '';
 let CARDPAY_LINK = ''; let PAY_METHODS = [];
+
+// 分享連結與開啟路由：統一判斷，避免分享後被上次停留頁面蓋回報名頁
+function readFrontDeepLink(){
+  const p = new URLSearchParams(window.location.search);
+  const sessionId = p.get('ses') || p.get('session') || p.get('sessionId') || '';
+  const eventId = p.get('event') || p.get('eventId') || p.get('activity') || '';
+  const page = p.get('page') || p.get('view') || '';
+  return { sessionId, eventId, page, hasDeepLink: !!(sessionId || eventId) };
+}
+function buildFrontShareUrl(kind, id){
+  const qs = new URLSearchParams();
+  qs.set('tenant', TENANT_ID || 'tuibile');
+  if(kind === 'event'){
+    qs.set('page', 'event');
+    qs.set('event', id);
+  }else if(kind === 'session'){
+    qs.set('page', 'session');
+    qs.set('ses', id);
+  }else if(kind === 'member'){
+    qs.set('page', 'member');
+  }
+  return location.origin + location.pathname + '?' + qs.toString();
+}
+function clearFrontPageStateForDeepLink(){
+  const d = readFrontDeepLink();
+  if(!d.hasDeepLink) return;
+  try{
+    localStorage.removeItem('2bl_page_state');
+    localStorage.setItem('2bl_current_tab','home');
+  }catch(e){}
+}
 
 const EQUIP_LIST_DEFS = {
   '桌':{icon:'🪵',price:350},'椅子':{icon:'🪑',price:20},
@@ -2353,7 +2387,7 @@ function renderActCard(s, mode){
 // ── 分享（卡片版）── 
 function shareSessionCard(id, name, event){
   if(event) event.stopPropagation();
-  const url = window.location.origin + window.location.pathname + '?tenant=' + TENANT_ID + '&session=' + id;
+  const url = buildFrontShareUrl('session', id);
   if(navigator.share){
     navigator.share({ title: name, text: '來看看這個活動！', url }).catch(()=>{});
   } else {
@@ -4010,7 +4044,7 @@ window.addEventListener('popstate', function(e){
 function shareCurrentSession(){
   const s=ST.currentSession;
   if(!s) return;
-  const url=location.origin+location.pathname+'?ses='+s.id;
+  const url=buildFrontShareUrl('session', s.id);
   if(navigator.share){
     navigator.share({title:s.name||'報名表', url:url}).catch(()=>{});
   } else {
@@ -5294,6 +5328,7 @@ function initFrontApp(){
   if(window.__tbFrontInited) return;
   window.__tbFrontInited = true;
   try{ history.replaceState({page:'home'}, '', location.href); }catch(e){}
+  clearFrontPageStateForDeepLink();
   try{
     const saved=null; // V5: 只從 DB 回抓，不從 localStorage 讀取 member 資料
     if(saved){
@@ -5306,13 +5341,10 @@ function initFrontApp(){
     }
   }catch(e){}
   try{ applySiteConfig(); }catch(e){}
-  // 使用 bootDbFront 統一處理：頁面還原 + loadHome
-  bootDbFront().catch(e=>{ console.error('bootDbFront error:',e); loadHome(); });
-  const p=new URLSearchParams(window.location.search);
-  const deepSes=p.get('ses')||p.get('session')||p.get('sessionId');
-  const deepEvent=p.get('event')||p.get('eventId')||p.get('activity');
-  if(deepSes){ setTimeout(()=>openSession(deepSes), 800); }
-  else if(deepEvent){ setTimeout(()=>openEvent(deepEvent), 800); }
+  // 深層分享與頁面還原統一交給 bootDbFront，避免同一連結被開兩次或被上次報名頁覆蓋
+  if(!window.__tbBootDbFrontAutoScheduled && typeof bootDbFront === 'function') {
+    bootDbFront().catch(e=>{ console.error('bootDbFront error:',e); loadHome(); });
+  }
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', initFrontApp);
@@ -5502,19 +5534,20 @@ if(document.readyState==='loading'){
   if (savedEmail) ST.memberEmail = savedEmail;
 
 
+  // 讀取分享連結；若網址有指定場次/主題，必須優先於上次停留頁面
+  const deepLink = readFrontDeepLink();
+  if(deepLink.hasDeepLink) clearFrontPageStateForDeepLink();
+
   // 讀取上次儲存的完整狀態
   let savedState = null;
-  try { savedState = JSON.parse(localStorage.getItem('2bl_page_state')||'null'); } catch(e){}
+  try { savedState = deepLink.hasDeepLink ? null : JSON.parse(localStorage.getItem('2bl_page_state')||'null'); } catch(e){}
   const rawTab = (savedState && savedState.tab) || localStorage.getItem('2bl_current_tab') || 'home';
-  const lastTab = (rawTab === 'myregs') ? 'member' : rawTab;
+  const lastTab = deepLink.hasDeepLink ? 'home' : ((rawTab === 'myregs') ? 'member' : rawTab);
 
   await loadHome();
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const deepSession = urlParams.get('ses') || urlParams.get('session') || urlParams.get('sessionId');
-  const deepEvent = urlParams.get('event') || urlParams.get('eventId') || urlParams.get('activity');
-  if(deepSession){ setTimeout(()=>openSession(deepSession), 80); return; }
-  if(deepEvent){ setTimeout(()=>openEvent(deepEvent), 80); return; }
+  if(deepLink.sessionId){ await openSession(deepLink.sessionId); return; }
+  if(deepLink.eventId){ await openEvent(deepLink.eventId); return; }
 
   // 還原頁面
   if(lastTab === 'regForm' && savedState && savedState.sessionId){
@@ -5570,6 +5603,7 @@ if(document.readyState==='loading'){
     navToTab('home');
   }
 }
+  window.__tbBootDbFrontAutoScheduled = true;
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootDbFront,{once:true}); else setTimeout(bootDbFront,0);
 })();
 
@@ -5607,7 +5641,7 @@ async function applyForceRefundFn(regId, btn) {
 
 // 分享主題活動
 function shareEvent(eventId, eventName){
-  const url = location.origin + location.pathname + '?tenant=' + encodeURIComponent(TENANT_ID) + '&event=' + encodeURIComponent(eventId);
+  const url = buildFrontShareUrl('event', eventId);
   if(navigator.share){
     navigator.share({title: eventName, url: url}).catch(()=>{});
   } else {
@@ -5619,7 +5653,7 @@ function shareEvent(eventId, eventName){
 
 // 分享場次
 function shareSession(sesId, sesName){
-  const url = location.origin + location.pathname + '?tenant=' + encodeURIComponent(TENANT_ID) + '&ses=' + encodeURIComponent(sesId);
+  const url = buildFrontShareUrl('session', sesId);
   if(navigator.share){
     navigator.share({title: sesName, url: url}).catch(()=>{});
   } else {
