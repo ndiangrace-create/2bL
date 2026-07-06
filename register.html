@@ -5385,20 +5385,49 @@ async function doSubmitCancel(){
 let ST_currentPayRegId = '';
 let ST_currentPayAmount = 0;
 let ST_currentPaymentCard = '';
+let ST_currentPaymentInfo = null;
+
+
+function findMyRegById(regId){ return (ST.regs||[]).find(r=>String(r.id)===String(regId)) || null; }
+function paymentAllowedMethodsFromReg(reg){
+  const p=(reg&&reg.paymentProfile)||{};
+  const a=reg&&reg.allowedPaymentMethods || p.allowedMethods || {};
+  return {bank:a.bank!==false, linepay:!!a.linepay, card:!!a.card};
+}
+function bankInfoHtmlFromPayment(reg){
+  const p=(reg&&reg.paymentProfile)||{};
+  const b=(reg&&reg.bankAccount)||p.bankAccount||{};
+  const lines=[];
+  if(p.paymentProfileName) lines.push('本場收款：'+p.paymentProfileName);
+  if(b.bankName) lines.push('銀行：'+b.bankName);
+  if(b.branchName) lines.push('分行：'+b.branchName);
+  if(b.accountName) lines.push('戶名：'+b.accountName);
+  if(b.accountNumber) lines.push('帳號：'+b.accountNumber);
+  return lines.length?lines.map(escHtml).join('<br>'):'此報名尚未取得收款快照，請聯繫主辦';
+}
+function paymentMethodOptionsForReg(reg){
+  const a=paymentAllowedMethodsFromReg(reg);
+  let opts='';
+  if(a.bank) opts+='<option value="ATM 轉帳">ATM／銀行轉帳</option>';
+  if(a.linepay) opts+='<option value="LINE Pay">LINE Pay</option>';
+  if(a.card) opts+='<option value="信用卡付款">信用卡</option>';
+  return opts || '<option value="">目前未開放付款方式</option>';
+}
 
 function showPayPage(regId, sesName, amount){
+  const reg=findMyRegById(regId) || {};
   ST_currentPayRegId = regId;
-  ST_currentPayAmount = Number(amount)||0;
+  ST_currentPayAmount = Number(amount)||Number(reg.total||reg.totalAmount||reg.amount||0)||0;
+  ST_currentPaymentInfo = reg.paymentProfile || null;
   $('payModalTitle').textContent = '前往繳費';
   $('payModalInfo').innerHTML = `<div><strong>${escHtml(sesName)}</strong></div><div style="font-size:20px;font-weight:900;color:var(--g);margin-top:2px">應繳金額：NT$ ${ST_currentPayAmount.toLocaleString()}</div>`;
+  const bankEl=$('bankInfoDisplay'); if(bankEl) bankEl.innerHTML=bankInfoHtmlFromPayment(reg);
   const payLastEl = $('payLastFive');
   const methodEl = $('payMethod');
   if(payLastEl) payLastEl.value = '';
   if(methodEl){
-    let opts='<option value="ATM 轉帳">ATM／銀行轉帳</option>';
-    (PAY_METHODS||[]).forEach(m=>{ if(m && m.name){ const nm=String(m.name); opts+='<option value="'+nm.replace(/"/g,'&quot;')+'">'+escHtml(nm)+'</option>'; } });
-    methodEl.innerHTML=opts;
-    methodEl.value = 'ATM 轉帳';
+    methodEl.innerHTML=paymentMethodOptionsForReg(reg);
+    methodEl.value = methodEl.querySelector('option')?.value || '';
   }
   $('payFormArea').style.display='block';
   $('paySuccessArea').style.display='none';
@@ -5406,11 +5435,12 @@ function showPayPage(regId, sesName, amount){
   $('payModal').classList.add('show');
 }
 function getPayLink(method){
+  const reg=findMyRegById(ST_currentPayRegId)||{};
+  const p=reg.paymentProfile||{};
+  if(method==='LINE Pay') return (p.linepay&&p.linepay.url)||'';
+  if(method==='信用卡付款') return (p.card&&p.card.url)||'';
   const hit=(PAY_METHODS||[]).find(x=>x && x.name===method);
-  if(hit && hit.url) return hit.url;
-  if(method==='LINE Pay') return LINEPAY_LINK;
-  if(method==='信用卡付款') return CARDPAY_LINK;
-  return '';
+  return (hit&&hit.url)||'';
 }
 function onPayMethodChange(){
   const method = $('payMethod')?.value || 'ATM 轉帳';
@@ -5425,7 +5455,7 @@ function openExternalPay(){
   const isBank = method.includes('ATM') || method.includes('銀行') || method.includes('轉帳') || method.includes('匯款');
   if(isBank){ toast('請依上方 ATM 資訊完成轉帳，付款後回來按「我已完成付款，回報付款」',5000); return; }
   const url = getPayLink(method);
-  if(!url){ toast('此付款方式尚未設定連結'); return; }
+  if(!url){ toast('此報名的收款設定尚未提供此付款方式連結，請改用已開放方式或聯繫主辦'); return; }
   const ok = confirm('付款前請先注意：完成付款後，請務必截圖保留付款證明。付款完成後請回到「我的紀錄」按「我已完成付款，回報付款」，並將付款卡片與付款截圖一起傳至官方 LINE。');
   if(!ok) return;
   window.open(url,'_blank');
