@@ -1530,13 +1530,13 @@ async function openFinancePanel(sid){
   AdminState.currentSessionId=sid; AdminState.currentLayer='finance'; const s=sessionById(sid);
   openPanel(sessionName(s)+'｜本場財報','收入、押金、發票與財務明細；財務數字可點','<div class="loading">財務載入中…</div>');
   try{
-    const [summaryRows,finance,invoices]=await Promise.all([api({action:'getSessionDashboard',sessionId:sid}).catch(()=>[]),api({action:'getFinance',sessionId:sid}).catch(()=>[]),api({action:'getInvoiceList',sessionId:sid}).catch(()=>[])]);
+    const [summaryRows,finance,invoices,paymentGroups]=await Promise.all([api({action:'getSessionDashboard',sessionId:sid}).catch(()=>[]),api({action:'getFinance',sessionId:sid}).catch(()=>[]),api({action:'getInvoiceList',sessionId:sid}).catch(()=>[]),api({action:'getFinancePaymentGroups',sessionId:sid}).catch(()=>[])]);
     const d=Array.isArray(summaryRows)?summaryRows[0]:summaryRows; const f=getFinance(d||s);
-    $('panelBody').innerHTML='<div class="detail-grid"><div>'+financeCardsHtml(f,sid)+'<div style="height:14px"></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載本場完整 Excel</button></div><div style="height:14px"></div><h3>財務項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side"><div class="report-card"><div class="report-title">本場淨收</div><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'received\',\'已收明細\')"><span>已收</span><span>'+money(f.received)+'</span></button><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'deposit\',\'押金明細\')"><span>扣除押金</span><span>'+money(f.deposit)+'</span></button><div style="font-size:30px;font-weight:950;text-align:right">'+money(Math.max(0,(f.received||0)-(f.deposit||0)))+'</div><div class="sub" style="text-align:right">已收－押金</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div>';
+    $('panelBody').innerHTML='<div class="detail-grid"><div>'+financeCardsHtml(f,sid)+'<div style="height:14px"></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載本場完整 Excel</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>財務項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side"><div class="report-card"><div class="report-title">本場淨收</div><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'received\',\'已收明細\')"><span>已收</span><span>'+money(f.received)+'</span></button><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'deposit\',\'押金明細\')"><span>扣除押金</span><span>'+money(f.deposit)+'</span></button><div style="font-size:30px;font-weight:950;text-align:right">'+money(Math.max(0,(f.received||0)-(f.deposit||0)))+'</div><div class="sub" style="text-align:right">已收－押金</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div>';
   }catch(e){$('panelBody').innerHTML='<div class="empty">財務載入失敗：'+safe(e.message)+'</div>';}
 }
 
-function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) return '<div class="empty">資料庫目前未提供資料</div>'; let h='<div class="table-wrap"><table class="mini-table"><thead><tr>'; for(const x of heads) h+='<th>'+safe(x)+'</th>'; h+='</tr></thead><tbody>'; for(const r of rows){ h+='<tr>'; for(const k of keys){ const v=k==='amount'?money(r[k]):safe(r[k]||''); h+='<td>'+v+'</td>'; } h+='</tr>'; } return h+'</tbody></table></div>'; }
+function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) return '<div class="empty">資料庫目前未提供資料</div>'; let h='<div class="table-wrap"><table class="mini-table"><thead><tr>'; for(const x of heads) h+='<th>'+safe(x)+'</th>'; h+='</tr></thead><tbody>'; for(const r of rows){ h+='<tr>'; for(const k of keys){ const v=['amount','receivable','received','transferDue','deposit'].includes(k)?money(r[k]):safe(r[k]||''); h+='<td>'+v+'</td>'; } h+='</tr>'; } return h+'</tbody></table></div>'; }
 function sessionJsonPretty(v, fallback){
   const obj=safeJson(v, fallback);
   try{return JSON.stringify(obj===undefined?fallback:obj,null,2);}catch(e){return JSON.stringify(fallback,null,2);}
@@ -1895,7 +1895,9 @@ async function openSessionSettings(sid){
     const d=(Array.isArray(rows)?rows[0]:rows)||s;
     const ag=await api({action:'getAgreementTemplate'}).catch(()=>[]);
     const evs=await api({action:'getEventsAdmin'}).catch(()=>AdminState.events||[]);
+    const profiles=await api({action:'getPaymentProfiles'}).catch(()=>AdminState.paymentProfiles||[]);
     AdminState.events=Array.isArray(evs)?evs:[];
+    AdminState.paymentProfiles=Array.isArray(profiles)?profiles:[];
     $('panelBody').innerHTML=sessionSettingsForm(d, Array.isArray(ag)?ag:[]);
     renderSessionDateRows(sessionDates(d));
     renderSessionAddonRows(sessionAddons(d));
@@ -1903,6 +1905,7 @@ async function openSessionSettings(sid){
     await loadSessionSeatSettings(sid,d); try{ await loadSessionBundleInfo(sid); }catch(_e){}
   }catch(e){
     AdminState.events=Array.isArray(AdminState.events)?AdminState.events:[];
+    AdminState.paymentProfiles=Array.isArray(AdminState.paymentProfiles)?AdminState.paymentProfiles:[];
     $('panelBody').innerHTML=sessionSettingsForm(s, [])+'<div class="notice warn">完整設定載入失敗：'+safe(e.message)+'</div>';
     renderSessionDateRows(sessionDates(s));
     renderSessionAddonRows(sessionAddons(s));
@@ -1988,8 +1991,27 @@ function openInlineAgreementCreate(){
 }
 
 
+
+function paymentProfileOptionsHtml(list, selected){
+  const arr=Array.isArray(list)?list:[];
+  if(!arr.length) return '<option value="">請先到付款資訊建立收款設定</option>';
+  return arr.filter(p=>p && p.isEnabled!==false).map(p=>'<option value="'+attr(p.id)+'" '+(String(p.id)===String(selected||'')?'selected':'')+'>'+safe(p.name||p.id)+(p.isDefault?'（預設）':'')+'</option>').join('');
+}
+function paymentProfilePreviewHtml(id){
+  const p=(AdminState.paymentProfiles||[]).find(x=>String(x.id)===String(id)) || (AdminState.paymentProfiles||[]).find(x=>x.isDefault) || null;
+  if(!p) return '<div class="sub">尚未建立收款設定，無法產生付款資訊。</div>';
+  const m={tuibile_self:'兔彼樂自收',tuibile_agency:'兔彼樂代收',partner_self:'合作主辦自收'}[p.mode]||p.mode||'未設定';
+  const a=p.allowedMethods||{};
+  const bank=p.bankAccount||{};
+  const methods=[a.bank?'轉帳':'',a.linepay?'LINE Pay':'',a.card?'信用卡':''].filter(Boolean).join('、')||'未開放';
+  return '<div class="notice" style="margin-top:8px"><b>本場將使用：'+safe(p.name||'')+'</b><br>模式：'+safe(m)+'｜可用付款：'+safe(methods)+'<br>轉帳帳戶：'+safe(bank.bankName||'未設定')+' / '+safe(bank.accountName||'')+' / '+safe((bank.accountNumber||'').slice(-5)?('尾號 '+String(bank.accountNumber||'').slice(-5)):'')+'</div>';
+}
+function updatePaymentProfilePreview(){ const el=$('set_paymentProfilePreview'); if(el) el.innerHTML=paymentProfilePreviewHtml($('set_paymentProfileId')?.value||''); }
+
 function sessionSettingsForm(s, agreementTemplates=[]){
   const sid=sessionId(s)||AdminState.currentSessionId;
+  const paymentProfiles=AdminState.paymentProfiles||[];
+  const currentPaymentProfileId=s.paymentProfileId||s.payment_profile_id||'';
   const mods=sessionModules(s), equip=sessionEquip(s), addons=sessionAddons(s), tax=sessionInvoiceTax(s), portals=sessionPortalList(s);
   const needReview = s.needReview!==undefined ? s.needReview : (s.need_review!==undefined ? s.need_review : true);
   const agreementRequired = s.agreementRequired!==undefined ? s.agreementRequired : (s.agreement_required!==undefined ? s.agreement_required : true);
@@ -2011,6 +2033,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field choice-field"><label>審核制</label><div class="review-toggle-box"><input type="checkbox" id="set_needReviewCheck" '+(sessionBool(needReview,true)?'checked':'')+' onchange="document.getElementById(\'set_reviewMode\').value=this.checked?\'review\':\'instant\'"><span>審核</span><small>未勾＝免審核</small><input type="hidden" id="set_reviewMode" value="'+(sessionBool(needReview,true)?'review':'instant')+'"></div></div>'
   +'<div class="form-field choice-field"><label>報名狀態</label><select id="set_status"><option '+(String(s.status||'報名中')==='報名中'?'selected':'')+'>報名中</option><option '+(String(s.status||'')==='已關閉'||String(s.status||'')==='關閉'?'selected':'')+'>已關閉</option><option '+(String(s.status||'')==='封存'||String(s.status||'')==='已封存'?'selected':'')+'>封存</option></select></div>'
   +'<div class="form-field full"><button type="button" class="btn secondary" style="width:100%" onclick="openSessionBundleModal(\''+attr(sid)+'\')">🎫 組合報名設定（連動場次）</button></div>'
+  +'<div class="form-field full"><label>本場收款設定</label><select id="set_paymentProfileId" onchange="updatePaymentProfilePreview()">'+paymentProfileOptionsHtml(paymentProfiles,currentPaymentProfileId)+'</select><div id="set_paymentProfilePreview">'+paymentProfilePreviewHtml(currentPaymentProfileId)+'</div><div class="sub">付款帳戶、LINE Pay、信用卡都以資料庫收款設定為準；前台只讀取付款快照。</div></div>'
   +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:128px">'+safe(s.desc||s.description||'')+'</textarea></div>'
   +'<div class="form-field full"><label>主視覺圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
   +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位</label>'+coorgInputsHtml(s)+'</div></div></div>'
@@ -2043,7 +2066,7 @@ async function saveSessionSettings(sid,btn){
     const mappedType=entryTypeMap(entry);
     const agreementVersion = $('set_agreementVersion')?.value.trim() || '';
     if(modules.agreement && $('set_agreementRequired')?.checked && !agreementVersion) throw new Error('請先選擇合約版本，或按「＋ 新增本場次合約」建立後再選用');
-    const body={action:'updateSession',id:sid,sessionId:sid,eventId:($('set_eventId')?.value||'').trim(),name,type:mappedType,region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:[entry],dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,seatPricingEnabled:modules.seats ? !!$('set_seatPricingEnabled')?.checked : false,seatHoldHours:$('set_seatHoldHours')?.value,seatMapUrl:$('set_seatMapUrl')?.value.trim()||'',stallList:collectSessionSeatItems().map(x=>x.code)};
+    const body={action:'updateSession',id:sid,sessionId:sid,eventId:($('set_eventId')?.value||'').trim(),name,type:mappedType,region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:[entry],dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,seatPricingEnabled:modules.seats ? !!$('set_seatPricingEnabled')?.checked : false,seatHoldHours:$('set_seatHoldHours')?.value,seatMapUrl:$('set_seatMapUrl')?.value.trim()||'',paymentProfileId:($('set_paymentProfileId')?.value||'').trim(),stallList:collectSessionSeatItems().map(x=>x.code)};
     if(modules.equipment) body.equip=collectSessionEquip();
     if(modules.addons) body.addons=collectSessionAddons();
     if(modules.invoice) body.invoiceTax=collectSessionInvoiceTax();
@@ -2349,37 +2372,44 @@ async function openMemberHistory(key){
     $('panelBody').innerHTML='<div class="empty">歷史報名載入失敗：'+safe(e.message)+'</div>';
   }
 }
+
 async function openPaymentSettings(){
-  openPanel('付款資訊','轉帳固定；其他付款方式可自行新增名稱與連結，儲存後前台自動出現','<div class="loading">載入中…</div>');
+  openPanel('本場收款設定','管理轉帳、LINE Pay、信用卡與合作主辦收款歸屬','<div class="loading">載入收款設定…</div>');
   try{
-    const d=await api({action:'getPaymentSettings'});
-    const html=''
-      +'<div class="report-card"><div class="report-title">付款說明</div><div class="sub" style="margin:2px 0 8px">顯示在報名頁最上方</div><textarea id="pay_note" style="width:100%;min-height:60px">'+safe(d.paymentNote||'')+'</textarea></div>'
-      +'<div class="report-card"><div class="report-title">🏦 轉帳（固定）</div><div class="form-grid">'
-        +'<div class="form-field"><label>銀行</label><input id="pay_bankName" value="'+attr(d.bankName||'')+'"></div>'
-        +'<div class="form-field"><label>分行</label><input id="pay_bankBranch" value="'+attr(d.bankBranch||'')+'"></div>'
-        +'<div class="form-field"><label>戶名</label><input id="pay_accountName" value="'+attr(d.accountName||'')+'"></div>'
-        +'<div class="form-field"><label>帳號</label><input id="pay_bankAccount" value="'+attr(d.bankAccount||'')+'"></div>'
-      +'</div></div>'
-      +'<div class="report-card"><div class="report-title">其他付款方式（名稱＋連結）</div><div class="sub" style="margin:2px 0 8px">例如：綠界、藍新、LINE Pay。新增後，前台付款方式會自動多這個選項。</div><div id="payMethodsList"></div><button class="btn small" style="margin-top:8px" onclick="addPayMethodRow()">＋ 新增付款方式</button></div>'
-      +'<div class="card-actions"><button class="btn" onclick="savePaymentSettings(this)">儲存付款資訊</button></div>';
-    $('panelBody').innerHTML=html;
-    renderPayMethodRows(Array.isArray(d.payMethods)?d.payMethods:[]);
-  }catch(e){ $('panelBody').innerHTML='<div class="empty">付款資料載入失敗：'+safe(e.message)+'</div>'; }
+    const profiles=await api({action:'getPaymentProfiles'});
+    AdminState.paymentProfiles=Array.isArray(profiles)?profiles:[];
+    renderPaymentProfileManager();
+  }catch(e){ $('panelBody').innerHTML='<div class="empty">收款設定載入失敗：'+safe(e.message)+'<br>請確認已執行財務模組資料庫 SQL。</div>'; }
 }
-function pmRowHtml(name,url){ return '<div class="pm-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input class="pm-name" placeholder="名稱（例：綠界）" value="'+attr(name||'')+'" style="flex:0 0 34%"><input class="pm-url" placeholder="付款連結 URL" value="'+attr(url||'')+'" style="flex:1"><button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b;flex-shrink:0" onclick="this.parentNode.remove()">刪除</button></div>'; }
-function renderPayMethodRows(list){ const el=$('payMethodsList'); if(!el) return; const arr=(list&&list.length)?list:[{name:'',url:''}]; el.innerHTML=arr.map(m=>pmRowHtml(m.name,m.url)).join(''); }
-function addPayMethodRow(){ const el=$('payMethodsList'); if(!el) return; el.insertAdjacentHTML('beforeend', pmRowHtml('','')); }
-async function savePaymentSettings(btn){
-  const payMethods=[];
-  document.querySelectorAll('#payMethodsList .pm-row').forEach(r=>{ const n=(r.querySelector('.pm-name').value||'').trim(); const u=(r.querySelector('.pm-url').value||'').trim(); if(n) payMethods.push({name:n,url:u}); });
+function paymentModeOptions(v){ const o=[['tuibile_self','兔彼樂自收'],['tuibile_agency','兔彼樂代收，需轉合作主辦'],['partner_self','合作主辦自收']]; return o.map(x=>'<option value="'+x[0]+'" '+(String(v)===x[0]?'selected':'')+'>'+x[1]+'</option>').join(''); }
+function renderPaymentProfileManager(editId=''){
+  const list=AdminState.paymentProfiles||[];
+  const edit=list.find(x=>String(x.id)===String(editId))||{};
+  const a=edit.allowedMethods||{bank:true}; const bank=edit.bankAccount||{}; const lp=edit.linepay||{}; const card=edit.card||{};
+  const cards=list.map(p=>{ const aa=p.allowedMethods||{}; const m=[aa.bank?'轉帳':'',aa.linepay?'LINE Pay':'',aa.card?'信用卡':''].filter(Boolean).join('、')||'未開放'; return '<div class="card" style="padding:14px"><b>'+safe(p.name||'未命名')+'</b> '+(p.isDefault?'<span class="tag ok">預設</span>':'')+(p.isEnabled===false?'<span class="tag bad">停用</span>':'')+'<div class="sub">'+safe(({tuibile_self:'兔彼樂自收',tuibile_agency:'兔彼樂代收',partner_self:'合作主辦自收'}[p.mode]||p.mode||''))+'｜'+safe(m)+'</div><div class="sub">帳戶：'+safe((p.bankAccount||{}).bankName||'未設定')+' / '+safe((p.bankAccount||{}).accountName||'')+'</div><div class="card-actions"><button class="btn small secondary" onclick="renderPaymentProfileManager(\''+attr(p.id)+'\')">編輯</button>'+(!p.isDefault?'<button class="btn small danger" onclick="disablePaymentProfile(\''+attr(p.id)+'\')">停用</button>':'')+'</div></div>'; }).join('') || '<div class="empty">目前沒有收款設定</div>';
+  $('panelBody').innerHTML='<div class="notice">本區資料會寫入資料庫。場次指定收款設定後，錄取／付款時會保存付款快照；前台不自行判斷帳戶。</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:14px">'+cards+'</div>'
+    +'<div class="report-card"><div class="report-title">'+(edit.id?'編輯收款設定':'新增收款設定')+'</div><div class="form-grid">'
+    +'<input type="hidden" id="pp_id" value="'+attr(edit.id||'')+'">'
+    +'<div class="form-field"><label>收款設定名稱</label><input id="pp_name" value="'+attr(edit.name||'')+'" placeholder="例：合作主辦A收款"></div>'
+    +'<div class="form-field"><label>收款模式</label><select id="pp_mode">'+paymentModeOptions(edit.mode||'tuibile_self')+'</select></div>'
+    +'<div class="form-field"><label>收款歸屬名稱</label><input id="pp_owner" value="'+attr(edit.ownerName||'')+'" placeholder="例：兔彼樂／合作主辦A"></div>'
+    +'<div class="form-field"><label>預設設定</label><label class="tight-check"><input type="checkbox" id="pp_default" '+(edit.isDefault?'checked':'')+'> 設為預設</label></div>'
+    +'<div class="form-field full"><label>可用付款方式</label><div class="tight-check-row"><label class="tight-check"><input type="checkbox" id="pp_m_bank" '+(a.bank!==false?'checked':'')+'> 轉帳</label><label class="tight-check"><input type="checkbox" id="pp_m_linepay" '+(a.linepay?'checked':'')+'> LINE Pay</label><label class="tight-check"><input type="checkbox" id="pp_m_card" '+(a.card?'checked':'')+'> 信用卡</label></div></div>'
+    +'<div class="form-field"><label>銀行</label><input id="pp_bankName" value="'+attr(bank.bankName||'')+'"></div><div class="form-field"><label>分行</label><input id="pp_bankBranch" value="'+attr(bank.branchName||'')+'"></div><div class="form-field"><label>戶名</label><input id="pp_accountName" value="'+attr(bank.accountName||'')+'"></div><div class="form-field"><label>帳號</label><input id="pp_bankAccount" value="'+attr(bank.accountNumber||'')+'"></div>'
+    +'<div class="form-field"><label>LINE Pay 顯示名稱</label><input id="pp_linepayName" value="'+attr(lp.displayName||'LINE Pay')+'"></div><div class="form-field"><label>LINE Pay 付款連結／說明</label><input id="pp_linepayUrl" value="'+attr(lp.url||'')+'"></div>'
+    +'<div class="form-field"><label>信用卡顯示名稱</label><input id="pp_cardName" value="'+attr(card.displayName||'信用卡')+'"></div><div class="form-field"><label>信用卡付款連結／說明</label><input id="pp_cardUrl" value="'+attr(card.url||'')+'"></div>'
+    +'<div class="form-field full"><label>備註</label><textarea id="pp_note">'+safe(edit.note||'')+'</textarea></div>'
+    +'</div><div class="card-actions"><button class="btn" onclick="savePaymentProfile(this)">儲存收款設定</button><button class="btn secondary" onclick="renderPaymentProfileManager()">清空新增</button></div></div>';
+}
+async function savePaymentProfile(btn){
   const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
   try{
-    await apiPost({action:'savePaymentSettings', paymentNote:$('pay_note').value, bankName:$('pay_bankName').value, bankBranch:$('pay_bankBranch').value, accountName:$('pay_accountName').value, bankAccount:$('pay_bankAccount').value, payMethods});
-    toast('付款資訊已儲存');
-  }catch(e){ toast('儲存失敗：'+e.message,6000); }
+    await apiPost({action:'savePaymentProfile',id:$('pp_id').value,name:$('pp_name').value,mode:$('pp_mode').value,ownerName:$('pp_owner').value,isDefault:!!$('pp_default').checked,allowedMethods:{bank:!!$('pp_m_bank').checked,linepay:!!$('pp_m_linepay').checked,card:!!$('pp_m_card').checked},bankName:$('pp_bankName').value,bankBranch:$('pp_bankBranch').value,accountName:$('pp_accountName').value,bankAccount:$('pp_bankAccount').value,linepayDisplayName:$('pp_linepayName').value,linepayUrl:$('pp_linepayUrl').value,cardDisplayName:$('pp_cardName').value,cardUrl:$('pp_cardUrl').value,note:$('pp_note').value});
+    toast('收款設定已儲存'); await openPaymentSettings();
+  }catch(e){ toast('儲存失敗：'+e.message,8000); }
   finally{ btn.disabled=false; btn.textContent=old; }
 }
+async function disablePaymentProfile(id){ if(!confirm('停用後新場次不可選用；舊付款快照不會被改動。確定停用？')) return; try{ await apiPost({action:'disablePaymentProfile',id}); toast('已停用'); await openPaymentSettings(); }catch(e){ toast('停用失敗：'+e.message,6000); } }
 
 async function openEmailTemplates(){ openPanel('信件模板','正式模板管理，不是測試信','<div class="loading">載入信件模板…</div>'); try{ const rows=await api({action:'getEmailTemplates'}); renderEmailTemplates(rows); }catch(e){$('panelBody').innerHTML='<div class="empty">信件模板載入失敗，請稍後再試。</div>'; } }
 function renderEmailTemplates(rows){ let out=''; for(const t of (Array.isArray(rows)?rows:[])){ out+='<div class="card" style="padding:14px"><b>'+safe(t.title||t.templateKey||'模板')+'</b><div class="form-grid"><div class="form-field full"><label>主旨</label><input id="sub_'+attr(t.templateKey)+'" value="'+attr(t.subject||'')+'"></div><div class="form-field full"><label>內容</label><textarea id="body_'+attr(t.templateKey)+'">'+safe(t.body||'')+'</textarea></div></div><div class="card-actions"><button class="btn small" onclick="saveEmailTemplate(\''+attr(t.templateKey)+'\',this)">儲存</button></div></div>'; } $('panelBody').innerHTML=out||'<div class="empty">目前沒有信件模板資料</div>'; }
