@@ -308,6 +308,15 @@ button,a,[onclick]{touch-action:manipulation}
 @media(min-width:600px){.seat-preview-box{border-radius:20px;height:min(92dvh,820px)}}
 .modal-title{font-size:18px;font-weight:900;margin-bottom:16px}
 .modal-actions{display:flex;gap:10px;margin-top:16px}
+
+/* 20260706 取消報名彈窗：按鈕固定並排，避免手機被吃掉 */
+.cancel-modal-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:16px!important}
+.cancel-modal-actions button{width:100%!important;min-width:0!important;white-space:normal!important;line-height:1.35!important}
+.cancel-bundle-notice{display:none;background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:12px 14px;margin-bottom:14px;color:#6b4a00;font-size:14px;line-height:1.65;font-weight:800}
+.cancel-bundle-notice ul{margin:6px 0 0 18px;padding:0}
+.cancel-bundle-notice li{margin:2px 0}
+@media(max-width:420px){.cancel-modal-actions{gap:8px!important}.cancel-modal-actions button{font-size:13px!important;padding:12px 8px!important}}
+
 .f-row{margin-bottom:14px}
 .f-label{font-size:13px;font-weight:700;margin-bottom:6px;color:var(--txt)}
 .f-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--wh);color:var(--txt)}
@@ -1686,13 +1695,14 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div style="margin-top:6px">4. 因天災、疫情或其他不可抗力因素導致活動取消<br><span style="color:var(--md)">主辦單位將依實際情況安排延期，或辦理部分退費。</span></div>
     </div>
     <div id="cancelDirectPolicy" style="display:none;background:#f8f8f8;border-radius:12px;padding:14px;margin-bottom:14px;font-size:15px;line-height:1.8;color:var(--dk)">尚未完成付款，取消後此報名紀錄將保留，不涉及金流。</div>
+    <div id="cancelBundleNotice" class="cancel-bundle-notice"></div>
     <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border:1.5px solid #e8b5b5;border-radius:10px;cursor:pointer;font-size:13px;color:var(--dk);margin-bottom:14px">
       <input type="checkbox" id="cancelConfirmCheck" onchange="onCancelCheckChange()" style="width:18px;height:18px;flex-shrink:0;accent-color:var(--rd);margin-top:1px">
       <span id="cancelConfirmLabel">我已了解取消與退款規則，仍要送出取消申請</span>
     </label>
-    <div class="modal-actions">
-      <button class="btn-s2" onclick="closeModal('cancelModal')" style="flex:1;padding:12px;font-size:14px">返回，不取消</button>
-      <button id="cancelSubmitBtn" onclick="doSubmitCancel()" disabled style="flex:1;padding:12px;font-size:14px;font-weight:700;background:var(--rd);color:#fff;border:none;border-radius:10px;cursor:not-allowed;opacity:.5">我已了解，送出取消申請</button>
+    <div class="modal-actions cancel-modal-actions">
+      <button class="btn-s2" onclick="closeModal('cancelModal')" style="padding:12px;font-size:14px">返回，不取消</button>
+      <button id="cancelSubmitBtn" onclick="doSubmitCancel()" disabled style="padding:12px;font-size:14px;font-weight:700;background:var(--rd);color:#fff;border:none;border-radius:10px;cursor:not-allowed;opacity:.5">我已了解，送出取消申請</button>
     </div>
   </div>
 </div>
@@ -5301,16 +5311,33 @@ function openRegDetail(regId){
 }
 
 async function cancelMyReg(regId, sesName, isRefund){
+  const cur=(ST.regs||[]).find(r=>String(r.id)===String(regId));
+  const gid=cur&&cur.bundleGroupId?String(cur.bundleGroupId):'';
+  const groupRegs=gid?(ST.regs||[]).filter(r=>String(r.bundleGroupId||'')===gid):[];
+  const isBundle=groupRegs.length>1;
   $('cancelModalSesName').textContent=(isRefund?'申請取消／退款：':'取消報名：')+'「'+sesName+'」';
   $('cancelConfirmCheck').checked=false;
   $('cancelSubmitBtn').disabled=true;
-  $('cancelSubmitBtn').textContent=isRefund?'送出退款申請':'確認取消報名';
+  $('cancelSubmitBtn').textContent=isBundle?(isRefund?'確認申請整組退款':'確認取消整組報名'):(isRefund?'送出退款申請':'確認取消報名');
   const refundPolicy=$('cancelRefundPolicy');
   const directPolicy=$('cancelDirectPolicy');
   const confirmLabel=$('cancelConfirmLabel');
+  const bundleNotice=$('cancelBundleNotice');
   if(refundPolicy) refundPolicy.style.display=isRefund?'block':'none';
   if(directPolicy) directPolicy.style.display=isRefund?'none':'block';
-  if(confirmLabel) confirmLabel.textContent=isRefund?'我已了解取消與退款規則，仍要送出退款申請':'我確認要取消此報名';
+  if(bundleNotice){
+    if(isBundle){
+      const names=groupRegs.map(r=>escHtml(r.sessionName||r.sesName||'場次')).filter(Boolean);
+      bundleNotice.style.display='block';
+      bundleNotice.innerHTML=`<div>此筆為組合報名。送出後，系統會由資料庫判斷同組報名並同步處理：</div><ul>${names.map(n=>`<li>${n}</li>`).join('')}</ul>`;
+    }else{
+      bundleNotice.style.display='none';
+      bundleNotice.innerHTML='';
+    }
+  }
+  if(confirmLabel) confirmLabel.textContent=isBundle
+    ? (isRefund?'我確認要申請整組報名退款':'我確認要取消整組報名')
+    : (isRefund?'我已了解取消與退款規則，仍要送出退款申請':'我確認要取消此報名');
   ST._pendingCancelRegId=regId;
   ST._pendingCancelSesName=sesName;
   ST._pendingCancelIsRefund=!!isRefund;
@@ -5331,15 +5358,12 @@ async function doSubmitCancel(){
   try{
     const action=ST._pendingCancelIsRefund?'applyRefund':'cancelReg';
     const em=ST.member?.email||ST.memberEmail||'';
-    const cur=(ST.regs||[]).find(r=>String(r.id)===String(regId));
-    const gid=(cur&&cur.bundleGroupId)?String(cur.bundleGroupId):'';
-    const ids=gid?((ST.regs||[]).filter(r=>String(r.bundleGroupId)===gid).map(r=>r.id)):[regId];
-    for(const rid of ids){
-      const res=await apiPost({action,regId:rid,email:em});
-      if(res&&res.error){toast('❌ '+res.error);return;}
-    }
+    const res=await apiPost({action,regId,email:em});
+    if(res&&res.error){toast('❌ '+res.error,7000);return;}
     closeModal('cancelModal');
-    toast(ST._pendingCancelIsRefund?'✅ 已送出退款申請':'✅ 已取消報名');
+    const n=Number(res&&res.affectedCount?res.affectedCount:1);
+    const groupMsg=n>1?`（同組 ${n} 筆）`:'';
+    toast(ST._pendingCancelIsRefund?'✅ 已送出退款申請'+groupMsg:'✅ 已取消報名'+groupMsg);
     if(ST.memberEmail){
       await safeGetMyRegs(ST.memberEmail);
     }
@@ -5347,7 +5371,13 @@ async function doSubmitCancel(){
   }catch(e){
     toast('❌ 取消失敗：'+(e&&e.message?e.message:e),6000);
   }finally{
-    if(btn){btn.disabled=false;btn.textContent=ST._pendingCancelIsRefund?'送出退款申請':'我已了解，送出取消申請';}
+    if(btn){
+      const cur=(ST.regs||[]).find(r=>String(r.id)===String(ST._pendingCancelRegId));
+      const gid=cur&&cur.bundleGroupId?String(cur.bundleGroupId):'';
+      const isBundle=gid&&(ST.regs||[]).filter(r=>String(r.bundleGroupId||'')===gid).length>1;
+      btn.disabled=false;
+      btn.textContent=isBundle?(ST._pendingCancelIsRefund?'確認申請整組退款':'確認取消整組報名'):(ST._pendingCancelIsRefund?'送出退款申請':'確認取消報名');
+    }
   }
 }
 
