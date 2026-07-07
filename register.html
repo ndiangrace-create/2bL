@@ -5078,15 +5078,13 @@ function mRecordEquipText(r){
   if(hasIncluded) return included;
   if(hasExtra) return `加購：${extra}`;
 
-  // 舊 Worker 尚未部署時的備援：只呈現「加購」，避免誤導成全部設備。
-  const legacy=mObjectQtyText(r&&r.equip) || mObjectQtyText(r&&r.equipment) || '';
-  if(legacy) return `加購：${legacy}`;
-  return '依本場報名資料與主辦公告';
+  // 不能用前台舊欄位自行猜正式設備；若 Worker 尚未部署，直接提示重新整理，避免顯示錯誤設備。
+  return '設備資料同步中，請重新整理';
 }
 function mCleanEquipDisplayText(txt){
   let s=String(txt||'').trim();
-  s=s.replace(/^總設備\s*[:：]\s*/,'').replace(/^加購\s*[:：]\s*/,'').trim();
-  if(!s || s==='無' || s==='依本場設定') return '請重新整理後查看設備資料';
+  s=s.replace(/^總設備\s*[:：]\s*/,'').replace(/^加購\s*[:：]\s*/,'').replace(/^內含設備\s*[:：]\s*/,'').trim();
+  if(!s || s==='無' || s==='依本場設定' || s==='依本場報名資料與主辦公告') return '設備資料同步中，請重新整理';
   return s;
 }
 function mPreNoticeEquipDisplayText(r){
