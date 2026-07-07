@@ -5041,9 +5041,23 @@ function mObjectQtyText(v){
   return parts.join('、');
 }
 function mRecordEquipText(r){
-  const direct=String(mFirstVal(r,['equipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'')||'').trim();
-  if(direct) return direct;
-  return mObjectQtyText(r&&r.equip) || mObjectQtyText(r&&r.equipment) || '無';
+  // 正式設備顯示優先使用 Worker 從資料庫整理好的欄位。
+  // 若資料庫/Worker 已回傳 basic + 加購合併結果，就直接顯示，不在前台猜。
+  const direct=String(mFirstVal(r,['equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'')||'').trim();
+  if(direct && !/^(無|沒有|未加購|不需|none)$/i.test(direct)) return direct;
+
+  const included=String(mFirstVal(r,['includedEquipmentText','included_equipment_text','baseEquipmentText','base_equipment_text'],'')||'').trim();
+  const extra=String(mFirstVal(r,['extraEquipmentText','extra_equipment_text'],'')||'').trim();
+  const hasIncluded=included && !/^(無|沒有|未加購|不需|none)$/i.test(included);
+  const hasExtra=extra && !/^(無|沒有|未加購|不需|none)$/i.test(extra);
+  if(hasIncluded && hasExtra) return `${included}，另加 ${extra}`;
+  if(hasIncluded) return included;
+  if(hasExtra) return `加購：${extra}`;
+
+  // 舊 Worker 尚未部署時的備援：只呈現「加購」，避免誤導成全部設備。
+  const legacy=mObjectQtyText(r&&r.equip) || mObjectQtyText(r&&r.equipment) || '';
+  if(legacy) return `加購：${legacy}`;
+  return '依本場報名資料與主辦公告';
 }
 function mRecordAddonText(r){ return String(mFirstVal(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_text','addons_text','addon_qty_text'],'無')||'無'); }
 function mRecordStallText(r){
@@ -5076,6 +5090,12 @@ function openOfficialGroup(){
   if(!url){ toast('此主辦尚未設定官方群組或 LINE，請聯繫主辦'); return; }
   window.open(url,'_blank','noopener');
 }
+function openPreNoticeSupport(id){
+  // 行前通知裡的規範按鈕直接銜接既有客服說明，不重做第二套規範。
+  closeModal('preNoticeModal');
+  setTimeout(()=>openSupportFaqCard(id), 80);
+}
+
 function openPreEventNotice(regId){
   const r=findMyRegById(regId);
   if(!r){ toast('找不到報名資料，請重新整理我的紀錄'); return; }
@@ -5096,9 +5116,9 @@ function openPreEventNotice(regId){
     </div>
     <div class="pre-notice-actions">
       ${groupBtn}
-      <button class="info" onclick="openSupportFaqCard('faqCheckin')">查看報到／撤場／保證金</button>
-      <button class="info" onclick="openSupportFaqCard('faqRefund')">查看市集規範／退款與參與須知</button>
-      <button class="info" onclick="openSupportFaqCard('faqNotice')">查看寄放／公告說明</button>
+      <button class="info" onclick="openPreNoticeSupport('faqCheckin')">查看報到／撤場／保證金</button>
+      <button class="info" onclick="openPreNoticeSupport('faqRefund')">查看市集規範／退款與參與須知</button>
+      <button class="info" onclick="openPreNoticeSupport('faqNotice')">查看寄放／公告說明</button>
     </div>`;
   openModal('preNoticeModal');
 }
