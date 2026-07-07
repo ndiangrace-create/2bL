@@ -1334,6 +1334,8 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-fixed-block{border-top:1px dashed #e2ecd9!important;margin-top:2px!important;padding-top:7px!important;display:grid!important;gap:5px!important}
 .m-fixed-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;min-width:0!important}
 .m-fixed-row span{background:#f8fbf5!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
+.m-fixed-row.m-equip-row{grid-template-columns:1fr!important}
+.m-fixed-row.m-equip-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:12.8px!important;line-height:1.35!important}
 .m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .m-fixed-pay b{font-weight:950!important;color:#111!important}
 .m-record-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important;gap:6px!important;margin-top:auto!important}
@@ -2041,6 +2043,13 @@ function buildBrandSkin(cfg={}) {
     brandSubtitle: cfg.brandSubtitle || defaultBrandSkin.brandSubtitle,
     heroImageUrl: cfg.heroImg || cfg.coverUrl || cfg.heroImageUrl || defaultBrandSkin.heroImageUrl,
     logoUrl: cfg.logoUrl || defaultBrandSkin.logoUrl,
+    // 小圖/IP 圖片：優先吃資料庫 tenant config_json；沒有設定才用檔案內預設圖。
+    mascotHome: cfg.mascotHome || defaultBrandSkin.mascotHome,
+    mascotPortal: cfg.mascotPortal || defaultBrandSkin.mascotPortal,
+    mascotMember: cfg.mascotMember || defaultBrandSkin.mascotMember,
+    mascotSupport: cfg.mascotSupport || defaultBrandSkin.mascotSupport,
+    mascotProfile: cfg.mascotProfile || defaultBrandSkin.mascotProfile,
+    mascotModal: cfg.mascotModal || defaultBrandSkin.mascotModal,
   };
 }
 
@@ -2200,6 +2209,8 @@ async function applySiteConfig(){
         hero.style.backgroundRepeat = 'no-repeat';
       }
     }
+    // 套用品牌小圖/IP 圖片與 Logo。這些來源由 Worker 從資料庫 config_json 帶出，不靠前台硬寫。
+    applyBrandSkin(buildBrandSkin(cfg));
     if(cfg.logoUrl){
       const logoImg=document.querySelector('.logo-img');
       if(logoImg) logoImg.src=cfg.logoUrl;
@@ -5002,7 +5013,11 @@ function mRecordLocationText(r){
 }
 function mRecordCover(r){
   const s=mSessionForReg(r);
-  return mFirstVal(r,['coverUrl','cover','image','imageUrl','sessionCover','eventCover'], '') || mFirstVal(s,['coverUrl','cover','imageUrl','imgUrl','sessionCover','eventCover'], '') || 'IP指引.png';
+  const skin = window.activeBrandSkin || defaultBrandSkin || {};
+  return mFirstVal(r,['coverUrl','cover','image','imageUrl','sessionCover','eventCover'], '')
+    || mFirstVal(s,['coverUrl','cover','imageUrl','imgUrl','sessionCover','eventCover'], '')
+    || skin.mascotPortal
+    || 'IP指引.png';
 }
 
 function mShortDateRange(v){
@@ -5040,16 +5055,25 @@ function mObjectQtyText(v){
   });
   return parts.join('、');
 }
+function mEquipTextIsUseful(v){
+  const s=String(v===undefined||v===null?'':v).trim();
+  return !!s && !/^(無|沒有|未加購|不需|none)$/i.test(s);
+}
+function mRecordIncludedEquipText(r){
+  return String(mFirstVal(r,['preNoticeIncludedEquipmentText','includedEquipmentText','included_equipment_text','baseEquipmentText','base_equipment_text'],'')||'').trim();
+}
+function mRecordExtraEquipText(r){
+  return String(mFirstVal(r,['preNoticeExtraEquipmentText','extraEquipmentText','extra_equipment_text'],'')||'').trim();
+}
 function mRecordEquipText(r){
-  // 正式設備顯示優先使用 Worker 從資料庫整理好的欄位。
-  // 若資料庫/Worker 已回傳 basic + 加購合併結果，就直接顯示，不在前台猜。
-  const direct=String(mFirstVal(r,['equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'')||'').trim();
-  if(direct && !/^(無|沒有|未加購|不需|none)$/i.test(direct)) return direct;
+  // 正式設備顯示優先使用 Worker 從資料庫整理好的總設備：內含數量×攤位數＋加購設備。
+  const direct=String(mFirstVal(r,['preNoticeEquipmentText','totalEquipmentText','equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','equipment_text','daily_equipment_text'],'')||'').trim();
+  if(mEquipTextIsUseful(direct)) return direct;
 
-  const included=String(mFirstVal(r,['includedEquipmentText','included_equipment_text','baseEquipmentText','base_equipment_text'],'')||'').trim();
-  const extra=String(mFirstVal(r,['extraEquipmentText','extra_equipment_text'],'')||'').trim();
-  const hasIncluded=included && !/^(無|沒有|未加購|不需|none)$/i.test(included);
-  const hasExtra=extra && !/^(無|沒有|未加購|不需|none)$/i.test(extra);
+  const included=mRecordIncludedEquipText(r);
+  const extra=mRecordExtraEquipText(r);
+  const hasIncluded=mEquipTextIsUseful(included);
+  const hasExtra=mEquipTextIsUseful(extra);
   if(hasIncluded && hasExtra) return `${included}，另加 ${extra}`;
   if(hasIncluded) return included;
   if(hasExtra) return `加購：${extra}`;
@@ -5058,6 +5082,16 @@ function mRecordEquipText(r){
   const legacy=mObjectQtyText(r&&r.equip) || mObjectQtyText(r&&r.equipment) || '';
   if(legacy) return `加購：${legacy}`;
   return '依本場報名資料與主辦公告';
+}
+function mCleanEquipDisplayText(txt){
+  let s=String(txt||'').trim();
+  s=s.replace(/^總設備\s*[:：]\s*/,'').replace(/^加購\s*[:：]\s*/,'').trim();
+  if(!s || s==='無' || s==='依本場設定') return '請重新整理後查看設備資料';
+  return s;
+}
+function mPreNoticeEquipDisplayText(r){
+  const raw = mRecordEquipText(r);
+  return mCleanEquipDisplayText(raw);
 }
 function mRecordAddonText(r){ return String(mFirstVal(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_text','addons_text','addon_qty_text'],'無')||'無'); }
 function mRecordStallText(r){
@@ -5093,7 +5127,22 @@ function openOfficialGroup(){
 function openPreNoticeSupport(id){
   // 行前通知裡的規範按鈕直接銜接既有客服說明，不重做第二套規範。
   closeModal('preNoticeModal');
-  setTimeout(()=>openSupportFaqCard(id), 80);
+  setTimeout(()=>{
+    try{
+      // 手機版先切到客服頁，再打開對應說明卡片；避免看起來只是跳回我的紀錄。
+      if(typeof navToTab === 'function') navToTab('support');
+      setTimeout(()=>{
+        if(typeof openSupportFaqCard === 'function' && document.getElementById(id)){
+          openSupportFaqCard(id);
+        }else{
+          toast('已切到客服說明，請點選對應項目');
+        }
+      }, 120);
+    }catch(e){
+      console.warn('[openPreNoticeSupport]', e);
+      toast('客服說明開啟失敗，請切到客服頁查看');
+    }
+  }, 80);
 }
 
 function openPreEventNotice(regId){
@@ -5109,7 +5158,8 @@ function openPreEventNotice(regId){
       <div class="pre-notice-row"><b>日期</b><span>${escHtml(mRecordDateText(r))}</span></div>
       <div class="pre-notice-row"><b>地點</b><span>${escHtml(mRecordLocationText(r))}</span></div>
       <div class="pre-notice-row"><b>報到時間</b><span>活動前 60 分鐘開始報到</span></div>
-      <div class="pre-notice-row"><b>設備</b><span>${escHtml(mRecordEquipText(r))}</span></div>
+      <div class="pre-notice-row"><b>攤位</b><span>${escHtml(mRecordStallText(r))}</span></div>
+      <div class="pre-notice-row"><b>設備</b><span>${escHtml(mPreNoticeEquipDisplayText(r))}</span></div>
     </div>
     <div style="background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:14px;padding:12px;font-size:16px;font-weight:900;line-height:1.7;color:#5b4630">
       已完成繳費，請務必查看下方行前規範。後續提醒與現場異動，均以官方大群組統一公告為主。
@@ -5130,7 +5180,7 @@ function mRecordFixedBlockHtml(r){
   const pay=mRecordPayText(r);
   return `<div class="m-fixed-block">
     <div class="m-fixed-row m-main"><span>${escHtml(date)}</span><span>${escHtml(stalls)}</span></div>
-    <div class="m-fixed-row"><span title="${escHtml(equip)}">設備：${escHtml(equip)}</span><span title="${escHtml(addon)}">加購：${escHtml(addon)}</span></div>
+    <div class="m-fixed-row m-equip-row"><span title="${escHtml(mPreNoticeEquipDisplayText(r))}">設備：${escHtml(mPreNoticeEquipDisplayText(r))}</span></div>
     <div class="m-fixed-pay">繳費(含押金)：<b>${escHtml(pay)}</b></div>
   </div>`;
 }
