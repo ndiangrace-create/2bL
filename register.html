@@ -5040,16 +5040,25 @@ function mObjectQtyText(v){
   });
   return parts.join('、');
 }
+function mEquipTextIsUseful(v){
+  const s=String(v===undefined||v===null?'':v).trim();
+  return !!s && !/^(無|沒有|未加購|不需|none)$/i.test(s);
+}
+function mRecordIncludedEquipText(r){
+  return String(mFirstVal(r,['preNoticeIncludedEquipmentText','includedEquipmentText','included_equipment_text','baseEquipmentText','base_equipment_text'],'')||'').trim();
+}
+function mRecordExtraEquipText(r){
+  return String(mFirstVal(r,['preNoticeExtraEquipmentText','extraEquipmentText','extra_equipment_text'],'')||'').trim();
+}
 function mRecordEquipText(r){
-  // 正式設備顯示優先使用 Worker 從資料庫整理好的欄位。
-  // 若資料庫/Worker 已回傳 basic + 加購合併結果，就直接顯示，不在前台猜。
-  const direct=String(mFirstVal(r,['equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'')||'').trim();
-  if(direct && !/^(無|沒有|未加購|不需|none)$/i.test(direct)) return direct;
+  // 正式設備顯示優先使用 Worker 從資料庫整理好的總設備：內含數量×攤位數＋加購設備。
+  const direct=String(mFirstVal(r,['preNoticeEquipmentText','totalEquipmentText','equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','equipment_text','daily_equipment_text'],'')||'').trim();
+  if(mEquipTextIsUseful(direct)) return direct;
 
-  const included=String(mFirstVal(r,['includedEquipmentText','included_equipment_text','baseEquipmentText','base_equipment_text'],'')||'').trim();
-  const extra=String(mFirstVal(r,['extraEquipmentText','extra_equipment_text'],'')||'').trim();
-  const hasIncluded=included && !/^(無|沒有|未加購|不需|none)$/i.test(included);
-  const hasExtra=extra && !/^(無|沒有|未加購|不需|none)$/i.test(extra);
+  const included=mRecordIncludedEquipText(r);
+  const extra=mRecordExtraEquipText(r);
+  const hasIncluded=mEquipTextIsUseful(included);
+  const hasExtra=mEquipTextIsUseful(extra);
   if(hasIncluded && hasExtra) return `${included}，另加 ${extra}`;
   if(hasIncluded) return included;
   if(hasExtra) return `加購：${extra}`;
@@ -5109,7 +5118,10 @@ function openPreEventNotice(regId){
       <div class="pre-notice-row"><b>日期</b><span>${escHtml(mRecordDateText(r))}</span></div>
       <div class="pre-notice-row"><b>地點</b><span>${escHtml(mRecordLocationText(r))}</span></div>
       <div class="pre-notice-row"><b>報到時間</b><span>活動前 60 分鐘開始報到</span></div>
-      <div class="pre-notice-row"><b>設備</b><span>${escHtml(mRecordEquipText(r))}</span></div>
+      <div class="pre-notice-row"><b>攤位</b><span>${escHtml(mRecordStallText(r))}</span></div>
+      <div class="pre-notice-row"><b>內含設備</b><span>${escHtml(mEquipTextIsUseful(mRecordIncludedEquipText(r)) ? mRecordIncludedEquipText(r) : '依本場設定')}</span></div>
+      <div class="pre-notice-row"><b>加購設備</b><span>${escHtml(mEquipTextIsUseful(mRecordExtraEquipText(r)) ? mRecordExtraEquipText(r) : '無')}</span></div>
+      <div class="pre-notice-row"><b>總設備</b><span>${escHtml(mRecordEquipText(r))}</span></div>
     </div>
     <div style="background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:14px;padding:12px;font-size:16px;font-weight:900;line-height:1.7;color:#5b4630">
       已完成繳費，請務必查看下方行前規範。後續提醒與現場異動，均以官方大群組統一公告為主。
