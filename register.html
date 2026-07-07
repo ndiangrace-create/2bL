@@ -5055,11 +5055,12 @@ function mCleanRecordEquipText(v){
   return s;
 }
 function mRecordEquipText(r){
-  // 我的紀錄設備只能顯示 Worker 從資料庫整理好的正式結果，不在前台推算、不顯示工程文字。
+  // 我的紀錄設備只能顯示 Worker 從資料庫整理好的正式結果。
+  // 如果 Worker 沒回傳正確設備，前台不顯示任何假文字、不顯示提醒字樣。
   const direct=mFirstVal(r,['equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'');
   const cleaned=mCleanRecordEquipText(direct);
-  if(cleaned) return cleaned;
-  return '請重新整理後查看設備資料';
+  if(cleaned && !/^(設備資料.*|依本場設定|依本場報名資料與主辦公告|依主辦公告)$/i.test(cleaned)) return cleaned;
+  return '';
 }
 function mRecordAddonText(r){ return String(mFirstVal(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_text','addons_text','addon_qty_text'],'無')||'無'); }
 function mRecordStallText(r){
@@ -5132,9 +5133,10 @@ function mRecordFixedBlockHtml(r){
   const addonClean=String(addon||'').trim();
   const addonHtml=(addonClean && !/^(無|沒有|未加購|不需|none)$/i.test(addonClean))
     ? `<div class="m-fixed-row m-addon-row"><span title="${escHtml(addonClean)}">加購：${escHtml(addonClean)}</span></div>` : '';
+  const equipHtml=equip ? `<div class="m-fixed-row m-equip-row"><span title="${escHtml(equip)}">設備：${escHtml(equip)}</span></div>` : '';
   return `<div class="m-fixed-block">
     <div class="m-fixed-row m-main"><span>${escHtml(date)}</span><span>${escHtml(stalls)}</span></div>
-    <div class="m-fixed-row m-equip-row"><span title="${escHtml(equip)}">設備：${escHtml(equip)}</span></div>
+    ${equipHtml}
     ${addonHtml}
     <div class="m-fixed-pay">繳費(含押金)：<b>${escHtml(pay)}</b></div>
   </div>`;
@@ -5408,7 +5410,7 @@ function openRegDetail(regId){
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-size:18px;color:var(--md)">繳費</span><span style="background:${pb.bg};color:${pb.c};font-size:18px;font-weight:900;border-radius:20px;padding:4px 11px">${pb.t}</span></div>
       <div style="font-size:18px;color:var(--md)">審核：<strong>${escHtml(reg.status||'')}</strong></div>
       <div style="font-size:18px;color:var(--md)">攤位數：<strong>${reg.stallCount||1} 攤</strong></div>
-      ${reg.equipmentText?`<div style="font-size:18px;color:var(--md)">設備：<strong>${escHtml(reg.equipmentText)}</strong></div>`:''}
+      ${mRecordEquipText(reg)?`<div style="font-size:18px;color:var(--md)">設備：<strong>${escHtml(mRecordEquipText(reg))}</strong></div>`:''}
       ${reg.total>0?`<div style="font-size:19px;color:var(--g);font-weight:900">應繳金額：NT$ ${Number(reg.total||0).toLocaleString()}</div>`:''}
       ${reg.transferStatus?`<div style="font-size:17px;color:#b45309;font-weight:900">退款狀態：${escHtml(reg.transferStatus)}</div>`:''}
     </div>
