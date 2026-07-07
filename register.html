@@ -1336,6 +1336,11 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-fixed-row span{background:#f8fbf5!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
 .m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .m-fixed-pay b{font-weight:950!important;color:#111!important}
+/* 20260708：我的紀錄設備列只顯示一個正式結果，避免「設備：設備資料...／加購：無」重複標題 */
+.m-fixed-row.m-equip-row{grid-template-columns:1fr!important}
+.m-fixed-row.m-equip-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.35!important}
+.m-fixed-row.m-addon-row{grid-template-columns:1fr!important}
+.m-fixed-row.m-addon-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.35!important}
 .m-record-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important;gap:6px!important;margin-top:auto!important}
 .m-record-actions .m-action-btn{width:100%!important;min-height:34px!important;padding:7px 6px!important;border-radius:12px!important;font-size:13px!important;white-space:nowrap!important}
 .m-record-alert{border-radius:10px!important;padding:7px 8px!important;font-size:12.5px!important;font-weight:950!important;text-align:center!important}
@@ -5040,11 +5045,21 @@ function mObjectQtyText(v){
   });
   return parts.join('、');
 }
+function mCleanRecordEquipText(v){
+  let s=String(v===undefined||v===null?'':v).trim();
+  if(!s) return '';
+  // Worker 應回傳「桌×1、椅×2」；這裡只做防呆清理，不在前台推算正式設備。
+  s=s.replace(/^(設備資料|設備|總設備|內含設備|加購設備|加租設備)\s*[:：]\s*/g,'').trim();
+  s=s.replace(/^(依本場設定|依本場報名資料與主辦公告|依主辦公告)$/,'').trim();
+  if(/^(無|沒有|未加購|不需|none)$/i.test(s)) return '無';
+  return s;
+}
 function mRecordEquipText(r){
   // 我的紀錄設備只能顯示 Worker 從資料庫整理好的正式結果，不在前台推算、不顯示工程文字。
-  const direct=String(mFirstVal(r,['equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'')||'').trim();
-  if(direct) return direct;
-  return '設備資料同步中';
+  const direct=mFirstVal(r,['equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'');
+  const cleaned=mCleanRecordEquipText(direct);
+  if(cleaned) return cleaned;
+  return '請重新整理後查看設備資料';
 }
 function mRecordAddonText(r){ return String(mFirstVal(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_text','addons_text','addon_qty_text'],'無')||'無'); }
 function mRecordStallText(r){
@@ -5114,9 +5129,13 @@ function mRecordFixedBlockHtml(r){
   const equip=mRecordEquipText(r);
   const addon=mRecordAddonText(r);
   const pay=mRecordPayText(r);
+  const addonClean=String(addon||'').trim();
+  const addonHtml=(addonClean && !/^(無|沒有|未加購|不需|none)$/i.test(addonClean))
+    ? `<div class="m-fixed-row m-addon-row"><span title="${escHtml(addonClean)}">加購：${escHtml(addonClean)}</span></div>` : '';
   return `<div class="m-fixed-block">
     <div class="m-fixed-row m-main"><span>${escHtml(date)}</span><span>${escHtml(stalls)}</span></div>
-    <div class="m-fixed-row"><span title="${escHtml(equip)}">設備：${escHtml(equip)}</span><span title="${escHtml(addon)}">加購：${escHtml(addon)}</span></div>
+    <div class="m-fixed-row m-equip-row"><span title="${escHtml(equip)}">設備：${escHtml(equip)}</span></div>
+    ${addonHtml}
     <div class="m-fixed-pay">繳費(含押金)：<b>${escHtml(pay)}</b></div>
   </div>`;
 }
