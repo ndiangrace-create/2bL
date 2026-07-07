@@ -312,6 +312,17 @@ button,a,[onclick]{touch-action:manipulation}
 /* 20260706 取消報名彈窗：按鈕固定並排，避免手機被吃掉 */
 .cancel-modal-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:16px!important}
 .cancel-modal-actions button{width:100%!important;min-width:0!important;white-space:normal!important;line-height:1.35!important}
+#cancelModal .modal-box{max-height:calc(100vh - 38px)!important;overflow-y:auto!important;padding-bottom:16px!important}
+#cancelModal .cancel-modal-actions{position:sticky!important;bottom:0!important;background:var(--wh)!important;padding-top:10px!important;padding-bottom:2px!important;z-index:2!important}
+.pre-notice-card{background:#fff;border:1.5px solid #d0e8d8;border-radius:16px;padding:14px;margin:10px 0;line-height:1.75;font-size:16px;color:var(--dk)}
+.pre-notice-row{display:grid;grid-template-columns:92px 1fr;gap:8px;border-bottom:1px dashed #e8efe4;padding:7px 0}
+.pre-notice-row:last-child{border-bottom:0}
+.pre-notice-row b{color:var(--md)}
+.pre-notice-actions{display:grid;grid-template-columns:1fr;gap:9px;margin-top:12px}
+.pre-notice-actions button{width:100%;border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:900;cursor:pointer}
+.pre-notice-actions .line{background:#06C755;color:#fff}
+.pre-notice-actions .info{background:#eef6e6;color:#234;border:1.5px solid #b9d3a5}
+.payment-copy-btn{width:100%;background:#2d6a4f;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer;margin:0 0 10px}
 .cancel-bundle-notice{display:none;background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:12px 14px;margin-bottom:14px;color:#6b4a00;font-size:14px;line-height:1.65;font-weight:800}
 .cancel-bundle-notice ul{margin:6px 0 0 18px;padding:0}
 .cancel-bundle-notice li{margin:2px 0}
@@ -1676,8 +1687,9 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <div id="paySuccessArea" style="display:none">
       <div style="font-size:22px;font-weight:900;color:#b45309;margin-bottom:4px">⚠️ 付款回報已送出，尚未完成付款確認</div>
       <div style="font-size:17px;color:var(--dk);font-weight:900;margin-bottom:12px;line-height:1.55">請不要直接關閉此畫面。請先複製下方付款卡片，並連同付款截圖一起傳至官方 LINE。主辦確認入帳後，狀態才會更新為「已繳費」。</div>
-      <pre id="paymentCopyCard" onclick="copyPaymentCard()" style="white-space:pre-wrap;background:#fff;border:1.5px solid #d0e8d8;border-radius:14px;padding:14px;font-size:17px;line-height:1.55;color:#1a1a18;font-family:inherit;cursor:pointer;margin:0 0 12px"></pre>
-      <div style="font-size:16px;color:var(--md);font-weight:900;margin-bottom:12px">👇 請點一下上方付款卡片框框，即可複製內容。請連同付款截圖一起傳至官方 LINE。</div>
+      <pre id="paymentCopyCard" onclick="copyPaymentCard()" style="white-space:pre-wrap;background:#fff;border:1.5px solid #d0e8d8;border-radius:14px;padding:14px;font-size:17px;line-height:1.55;color:#1a1a18;font-family:inherit;cursor:pointer;margin:0 0 10px"></pre>
+      <button type="button" class="payment-copy-btn" onclick="copyPaymentCard()">複製付款卡片內容</button>
+      <div style="font-size:16px;color:var(--md);font-weight:900;margin-bottom:12px;line-height:1.55">請複製付款卡片內容，並連同付款截圖一起傳至官方 LINE。</div>
       <button type="button" onclick="openLine()" style="width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">前往 LINE 客服</button>
       <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">我已傳 LINE，關閉</button>
     </div>
@@ -1704,6 +1716,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <button class="btn-s2" onclick="closeModal('cancelModal')" style="padding:12px;font-size:14px">返回，不取消</button>
       <button id="cancelSubmitBtn" onclick="doSubmitCancel()" disabled style="padding:12px;font-size:14px;font-weight:700;background:var(--rd);color:#fff;border:none;border-radius:10px;cursor:not-allowed;opacity:.5">我已了解，送出取消申請</button>
     </div>
+  </div>
+</div>
+<div class="modal-overlay" id="preNoticeModal" onclick="if(event.target===this)closeModal('preNoticeModal')">
+  <div class="modal-box">
+    <div class="modal-title">行前通知</div>
+    <div id="preNoticeBody"></div>
+    <button class="btn-s2" onclick="closeModal('preNoticeModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">關閉</button>
   </div>
 </div>
 <div class="modal-overlay" id="seatPreviewModal" onclick="if(event.target===this)closeModal('seatPreviewModal')">
@@ -4964,7 +4983,7 @@ function mSessionDateLine(d){
 }
 function mRecordDateText(r){
   const s=mSessionForReg(r);
-  const dates=Array.isArray(s.dates)?s.dates:[];
+  const dates=Array.isArray(s.dates)&&s.dates.length?s.dates:(Array.isArray(r.sessionDates)?r.sessionDates:[]);
   const selected=Array.isArray(r.selectedDates)?r.selectedDates.map(String).filter(Boolean):[];
   if(dates.length){
     const chosen=selected.length ? dates.filter(d=>selected.includes(String(d.date||d.day||''))) : dates.slice(0,1);
@@ -4979,7 +4998,7 @@ function mRecordDateText(r){
 }
 function mRecordLocationText(r){
   const s=mSessionForReg(r);
-  return mFirstVal(r,['location','sessionLocation','venue','place','address'], '') || mFirstVal(s,['location','sessionLocation','venue','place','address'], '活動地點請見公告');
+  return mFirstVal(r,['location','sessionLocation','venue','sessionVenue','place','address'], '') || mFirstVal(s,['location','sessionLocation','venue','place','address'], '活動地點請見公告');
 }
 function mRecordCover(r){
   const s=mSessionForReg(r);
@@ -5003,7 +5022,29 @@ function mShortDateRange(v){
   if(uniq.length===1) return uniq[0];
   return s.replace(/20\d{2}[\/\-\.年]/g,'').replace(/月/g,'/').replace(/日/g,'').replace(/\s+/g,' ').trim() || '未設定';
 }
-function mRecordEquipText(r){ return String(mFirstVal(r,['equipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'無')||'無'); }
+function mObjectQtyText(v){
+  const obj=(v&&typeof v==='object')?v:null;
+  if(!obj) return '';
+  if(Array.isArray(obj)) return obj.map(x=>String(x&&x.name?x.name:x||'').trim()).filter(Boolean).join('、');
+  const parts=[];
+  Object.entries(obj).forEach(([k,val])=>{
+    if(val===undefined||val===null||val===''||val===false) return;
+    if(typeof val==='object' && !Array.isArray(val)){
+      const n=Number(val.qty||val.count||val.num||0);
+      if(n>0) parts.push(k+'×'+n);
+      return;
+    }
+    const n=Number(val);
+    if(!Number.isNaN(n)){ if(n>0) parts.push(k+'×'+n); }
+    else if(String(val).trim()) parts.push(k+'：'+String(val).trim());
+  });
+  return parts.join('、');
+}
+function mRecordEquipText(r){
+  const direct=String(mFirstVal(r,['equipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'')||'').trim();
+  if(direct) return direct;
+  return mObjectQtyText(r&&r.equip) || mObjectQtyText(r&&r.equipment) || '無';
+}
 function mRecordAddonText(r){ return String(mFirstVal(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_text','addons_text','addon_qty_text'],'無')||'無'); }
 function mRecordStallText(r){
   const v=mFirstVal(r,['stallCount','stall_count','stalls','boothCount','booth_count'],'');
@@ -5013,6 +5054,53 @@ function mRecordPayText(r){
   const v=mFirstVal(r,['total','totalAmount','amount','receivableAmount','registration_total_amount'],'');
   if(v!=='' && v!==undefined && v!==null && !Number.isNaN(Number(v))) return 'NT$ '+Number(v).toLocaleString('zh-TW');
   return String(r.payStatus||r.paymentStatus||'資料庫未提供');
+}
+function canViewPreNoticeReg(reg){
+  if(!reg || isCancelledReg(reg)) return false;
+  const ps=String(reg.payStatus||reg.paymentStatus||'').trim();
+  return isPaidText(ps) || ps==='免費';
+}
+function officialGroupUrl(){
+  const t=ST.tenant||{};
+  const fromDb=t.officialGroupUrl || t.official_group_url || t.bigGroupUrl || t.big_group_url || t.groupUrl || t.group_url || '';
+  if(fromDb) return fromDb;
+  if(String(TENANT_ID||'')==='tuibile') return 'https://line.me/ti/g2/cp-K_Los4J2zBc6rGcRA14TJCx3e99v0i4p-hQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default';
+  return LINE_URL || '';
+}
+function officialGroupName(){
+  const t=ST.tenant||{};
+  return t.officialGroupName || t.official_group_name || '全台市集藝文資訊中心 大群組';
+}
+function openOfficialGroup(){
+  const url=officialGroupUrl();
+  if(!url){ toast('此主辦尚未設定官方群組或 LINE，請聯繫主辦'); return; }
+  window.open(url,'_blank','noopener');
+}
+function openPreEventNotice(regId){
+  const r=findMyRegById(regId);
+  if(!r){ toast('找不到報名資料，請重新整理我的紀錄'); return; }
+  const body=$('preNoticeBody');
+  if(!body) return;
+  const groupUrl=officialGroupUrl();
+  const groupBtn=groupUrl?`<button class="line" onclick="openOfficialGroup()">${escHtml(officialGroupName())}</button>`:'';
+  body.innerHTML=`
+    <div class="pre-notice-card">
+      <div class="pre-notice-row"><b>場次</b><span>${escHtml(r.sessionName||r.sesName||'場次')}</span></div>
+      <div class="pre-notice-row"><b>日期</b><span>${escHtml(mRecordDateText(r))}</span></div>
+      <div class="pre-notice-row"><b>地點</b><span>${escHtml(mRecordLocationText(r))}</span></div>
+      <div class="pre-notice-row"><b>報到時間</b><span>活動前 60 分鐘開始報到</span></div>
+      <div class="pre-notice-row"><b>設備</b><span>${escHtml(mRecordEquipText(r))}</span></div>
+    </div>
+    <div style="background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:14px;padding:12px;font-size:16px;font-weight:900;line-height:1.7;color:#5b4630">
+      已完成繳費，請務必查看下方行前規範。後續提醒與現場異動，均以官方大群組統一公告為主。
+    </div>
+    <div class="pre-notice-actions">
+      ${groupBtn}
+      <button class="info" onclick="openSupportFaqCard('faqCheckin')">查看報到／撤場／保證金</button>
+      <button class="info" onclick="openSupportFaqCard('faqRefund')">查看市集規範／退款與參與須知</button>
+      <button class="info" onclick="openSupportFaqCard('faqNotice')">查看寄放／公告說明</button>
+    </div>`;
+  openModal('preNoticeModal');
 }
 function mRecordFixedBlockHtml(r){
   const date=mShortDateRange(mRecordDateText(r));
@@ -5055,12 +5143,13 @@ function renderMyRegs(regs){
     const locationText=escHtml(mRecordLocationText(r));
     const cover=escHtml(mRecordCover(r));
     const note=escHtml(pill.note||'');
-    const canPay=canPayReg(r), canCancel=canDirectCancelReg(r), canRefund=canRefundReg(r);
+    const canPay=canPayReg(r), canCancel=canDirectCancelReg(r), canRefund=canRefundReg(r), canPreNotice=canViewPreNoticeReg(r);
     const statusMsg = isCancelledReg(r)?`<div class="m-record-alert muted">已取消，報名紀錄保留</div>`:(isPendingPayText(r.payStatus)?`<div class="m-record-alert warn">已回報，等待主辦確認</div>`:'');
     let actions='';
     if(canPay) actions+=`<button class="m-action-btn" onclick="showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:var(--g);color:#fff;border:none">前往繳費</button>`;
+    if(canPreNotice) actions+=`<button class="m-action-btn" onclick="openPreEventNotice('${r.id}')" style="background:var(--g);color:#fff;border:none">查看行前通知</button>`;
     if(canCancel) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,false)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">取消報名</button>`;
-    if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">申請退費</button>`;
+    if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:#fff;color:#777;border:1.5px solid #ddd">取消／退費說明</button>`;
     return `<div class="m-record-card m-record-card-lite">
       <div class="m-record-top">
         <div class="m-record-thumb"><img src="${cover}" alt="" onerror="this.src='IP指引.png'"></div>
@@ -5280,6 +5369,7 @@ function openRegDetail(regId){
   const canPay = canPayReg(reg);
   const canCancel = canDirectCancelReg(reg);
   const canRefund = canRefundReg(reg);
+  const canPreNotice = canViewPreNoticeReg(reg);
   const modal=document.createElement('div');
   modal.id='regDetailModal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:flex;align-items:flex-end;justify-content:center';
@@ -5301,8 +5391,9 @@ function openRegDetail(regId){
     ${canPay?`<button onclick="document.getElementById('regDetailModal').remove();showPayPage('${reg.id}',this.dataset.ses,'${Number(reg.total||0)}');" data-ses="${escHtml(reg.sessionName||reg.sesName||'場次')}" style="width:100%;background:var(--g);color:#fff;border:none;padding:13px;border-radius:10px;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:8px">前往繳費</button>`:''}
     ${isCancelledReg(reg)?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已取消，報名紀錄保留</div>`:(isPendingPayText(reg.payStatus)?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已回報，等待主辦確認</div>`:'')}
     ${stallSelectionHtml(reg)}
+    ${canPreNotice?`<button onclick="openPreEventNotice('${reg.id}');document.getElementById('regDetailModal').remove();" style="width:100%;background:var(--g);color:#fff;border:none;padding:13px;border-radius:10px;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:8px">查看行前通知</button>`:''}
     ${canCancel?`<button onclick="cancelMyReg('${reg.id}',this.dataset.ses,false);document.getElementById('regDetailModal').remove();" data-ses="${escHtml(reg.sessionName||reg.sesName||'')}" style="width:100%;background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd);padding:12px;border-radius:10px;font-size:17px;font-weight:900;cursor:pointer;margin-bottom:8px">取消報名</button>`:''}
-    ${canRefund?`<button onclick="cancelMyReg('${reg.id}',this.dataset.ses,true);document.getElementById('regDetailModal').remove();" data-ses="${escHtml(reg.sessionName||reg.sesName||'')}" style="width:100%;background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd);padding:12px;border-radius:10px;font-size:17px;font-weight:900;cursor:pointer;margin-bottom:8px">申請取消／退款</button>`:''}
+    ${canRefund?`<button onclick="cancelMyReg('${reg.id}',this.dataset.ses,true);document.getElementById('regDetailModal').remove();" data-ses="${escHtml(reg.sessionName||reg.sesName||'')}" style="width:100%;background:#fff;color:#777;border:1.5px solid #ddd;padding:12px;border-radius:10px;font-size:17px;font-weight:900;cursor:pointer;margin-bottom:8px">取消／退費說明</button>`:''}
     <button onclick="document.getElementById('regDetailModal').remove()" style="width:100%;background:#f0f0f0;color:#888;border:none;padding:12px;border-radius:10px;font-size:16px;cursor:pointer">關閉</button>
   </div>`;
   modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
@@ -5318,7 +5409,7 @@ async function cancelMyReg(regId, sesName, isRefund){
   $('cancelModalSesName').textContent=(isRefund?'申請取消／退款：':'取消報名：')+'「'+sesName+'」';
   $('cancelConfirmCheck').checked=false;
   $('cancelSubmitBtn').disabled=true;
-  $('cancelSubmitBtn').textContent=isBundle?(isRefund?'確認申請整組退款':'確認取消整組報名'):(isRefund?'送出退款申請':'確認取消報名');
+  $('cancelSubmitBtn').textContent=isBundle?(isRefund?'確認申請整組退款':'確認取消整組報名'):(isRefund?'確認申請退費':'確認取消報名');
   const refundPolicy=$('cancelRefundPolicy');
   const directPolicy=$('cancelDirectPolicy');
   const confirmLabel=$('cancelConfirmLabel');
@@ -5376,7 +5467,7 @@ async function doSubmitCancel(){
       const gid=cur&&cur.bundleGroupId?String(cur.bundleGroupId):'';
       const isBundle=gid&&(ST.regs||[]).filter(r=>String(r.bundleGroupId||'')===gid).length>1;
       btn.disabled=false;
-      btn.textContent=isBundle?(ST._pendingCancelIsRefund?'確認申請整組退款':'確認取消整組報名'):(ST._pendingCancelIsRefund?'送出退款申請':'確認取消報名');
+      btn.textContent=isBundle?(ST._pendingCancelIsRefund?'確認申請整組退款':'確認取消整組報名'):(ST._pendingCancelIsRefund?'確認申請退費':'確認取消報名');
     }
   }
 }
@@ -5391,8 +5482,12 @@ let ST_currentPaymentInfo = null;
 function findMyRegById(regId){ return (ST.regs||[]).find(r=>String(r.id)===String(regId)) || null; }
 function paymentAllowedMethodsFromReg(reg){
   const p=(reg&&reg.paymentProfile)||{};
-  const a=reg&&reg.allowedPaymentMethods || p.allowedMethods || {};
-  return {bank:a.bank!==false, linepay:!!a.linepay, card:!!a.card};
+  const a=(reg&&reg.allowedPaymentMethods) || p.allowedMethods || {};
+  const lp=p.linepay||{};
+  const card=p.card||{};
+  const hasLineUrl=!!(lp.url||lp.linepayUrl||lp.linepay_url||lp.link);
+  const hasCardUrl=!!(card.url||card.cardUrl||card.card_url||card.ecpayUrl||card.link);
+  return {bank:a.bank!==false, linepay:!!a.linepay || hasLineUrl, card:!!a.card || hasCardUrl};
 }
 function bankInfoHtmlFromPayment(reg){
   const p=(reg&&reg.paymentProfile)||{};
@@ -5437,8 +5532,8 @@ function showPayPage(regId, sesName, amount){
 function getPayLink(method){
   const reg=findMyRegById(ST_currentPayRegId)||{};
   const p=reg.paymentProfile||{};
-  if(method==='LINE Pay') return (p.linepay&&p.linepay.url)||'';
-  if(method==='信用卡付款') return (p.card&&p.card.url)||'';
+  if(method==='LINE Pay'){ const x=p.linepay||{}; return x.url||x.linepayUrl||x.linepay_url||x.link||''; }
+  if(method==='信用卡付款'){ const x=p.card||{}; return x.url||x.cardUrl||x.card_url||x.ecpayUrl||x.link||''; }
   const hit=(PAY_METHODS||[]).find(x=>x && x.name===method);
   return (hit&&hit.url)||'';
 }
@@ -5607,6 +5702,7 @@ if(document.readyState==='loading'){
         ST.bundles=[];
       }
       if(boot.tenant){
+        ST.tenant = boot.tenant;
         // 動態更新 LINE_URL
         if(boot.tenant.name) document.title = boot.tenant.name + '｜報名系統';
         if(boot.tenant.lineUrl) LINE_URL = boot.tenant.lineUrl;
