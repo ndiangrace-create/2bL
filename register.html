@@ -1336,7 +1336,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-fixed-row span{background:#f8fbf5!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
 .m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .m-fixed-pay b{font-weight:950!important;color:#111!important}
-/* 20260708：我的紀錄設備列只顯示一個正式結果，避免「設備：設備資料...／加購：無」重複標題 */
+/* 20260708：我的紀錄設備列只顯示一個正式結果，避免重複標題 */
 .m-fixed-row.m-equip-row{grid-template-columns:1fr!important}
 .m-fixed-row.m-equip-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.35!important}
 .m-fixed-row.m-addon-row{grid-template-columns:1fr!important}
@@ -5050,7 +5050,7 @@ function mCleanRecordEquipText(v){
   if(!s) return '';
   // Worker 應回傳「桌×1、椅×2」；這裡只做防呆清理，不在前台推算正式設備。
   s=s.replace(/^(設備資料|設備|總設備|內含設備|加購設備|加租設備)\s*[:：]\s*/g,'').trim();
-  s=s.replace(/^(依本場設定|依本場報名資料與主辦公告|依主辦公告)$/,'').trim();
+  s=s.replace(/^依.*(?:設定|公告)$/,'').trim();
   if(/^(無|沒有|未加購|不需|none)$/i.test(s)) return '無';
   return s;
 }
@@ -5059,7 +5059,7 @@ function mRecordEquipText(r){
   // 如果 Worker 沒回傳正確設備，前台不顯示任何假文字、不顯示提醒字樣。
   const direct=mFirstVal(r,['equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','selectedEquipmentText','equipment_text','daily_equipment_text'],'');
   const cleaned=mCleanRecordEquipText(direct);
-  if(cleaned && !/^(設備資料.*|依本場設定|依本場報名資料與主辦公告|依主辦公告)$/i.test(cleaned)) return cleaned;
+  if(cleaned && !/^(設備資料.*|依.*(?:設定|公告))$/i.test(cleaned)) return cleaned;
   return '';
 }
 function mRecordAddonText(r){ return String(mFirstVal(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_text','addons_text','addon_qty_text'],'無')||'無'); }
@@ -5133,7 +5133,8 @@ function mRecordFixedBlockHtml(r){
   const addonClean=String(addon||'').trim();
   const addonHtml=(addonClean && !/^(無|沒有|未加購|不需|none)$/i.test(addonClean))
     ? `<div class="m-fixed-row m-addon-row"><span title="${escHtml(addonClean)}">加購：${escHtml(addonClean)}</span></div>` : '';
-  const equipHtml=equip ? `<div class="m-fixed-row m-equip-row"><span title="${escHtml(equip)}">設備：${escHtml(equip)}</span></div>` : '';
+  // 20260708：設備位置固定保留；只顯示 Worker 回傳的正式設備名單，不顯示任何提示假字。
+  const equipHtml=`<div class="m-fixed-row m-equip-row"><span title="${escHtml(equip)}">設備：${equip ? escHtml(equip) : ''}</span></div>`;
   return `<div class="m-fixed-block">
     <div class="m-fixed-row m-main"><span>${escHtml(date)}</span><span>${escHtml(stalls)}</span></div>
     ${equipHtml}
