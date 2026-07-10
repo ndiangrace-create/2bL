@@ -3102,7 +3102,7 @@ function renderHomeFallbackSessions(){
     el.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center;line-height:1.7">目前沒有開放報名場次<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>';
     return;
   }
-  el.innerHTML=open.slice(0,10).map(s=>renderSessionCard(s)).join('');
+  el.innerHTML=open.map(s=>renderSessionCard(s)).join('');
 }
 function _legacyHomeFallbackCard(){}
 function renderBundleSection(){ const o=document.getElementById('bundleSection'); if(o) o.remove(); }
@@ -3176,23 +3176,9 @@ async function filterCat(type, el){
   list.innerHTML = data.map(s=>renderSessionCard(s)).join('');
 }
 function renderEvents(){
-  const el=$('eventsList');
-  if(!el) return;
-  const evs=Array.isArray(ST.events)?ST.events:[];
-  if(!evs.length){ renderHomeFallbackSessions(); return; }
-  el.innerHTML=evs.map(e=>{
-    const cover=e.cover?`<img src="${esc(e.cover)}" alt="" onerror="this.parentElement.innerHTML='<div class=event-cover-placeholder>🎪</div>'">`:`<div class="event-cover-placeholder">🎪</div>`;
-    return `<div class="event-card" style="cursor:default">
-      <div class="event-cover">${cover}<div class="event-status-tag">報名中</div></div>
-      <div class="event-info">
-        <div class="event-name">${esc(e.title||'主題活動')}</div>
-        ${e.location?`<div class="event-meta">📍 ${esc(e.location)}</div>`:''}
-        ${e.desc?`<div class="event-meta">${esc(String(e.desc).slice(0,24))}</div>`:''}
-        <button type="button" onclick="openEventFromButton(event,'${esc(e.id)}')" style="margin-top:8px;width:100%;border:none;border-radius:10px;background:var(--g);color:#fff;font-size:16px;font-weight:900;padding:9px 10px;font-family:inherit;cursor:pointer">查看場次</button>
-      </div>
-    </div>`;
-  }).join('');
-  setTimeout(enableDragScroll, 100);
+  // 近期場次：永遠列出所有開放場次（近的在上），不再因為有主題活動就只顯示主題卡。
+  // 主題活動仍可從各場次卡的主題色／分類進入，且主題頁點進去照常顯示該主題場次。
+  renderHomeFallbackSessions();
 }
 function openEventFromButton(ev,eventId){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
