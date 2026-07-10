@@ -83,8 +83,9 @@ const API='https://2bl-v7.ndiangrace.workers.dev';
 const TENANT='tuibile';
 const LS_TOKEN='2bl_onsite_admin_token';
 const LS_EMAIL='2bl_onsite_email';
+const LS_OPERATOR='2bl_onsite_operator';
 let token='', email='', me=null, sessions=[], regs=[], currentSession=null;
-let passcode='';
+let passcode='', operatorName='';
 function $(id){return document.getElementById(id)}
 function money(n){return 'NT$ '+(Number(n)||0).toLocaleString('zh-TW')}
 function dt(v){if(!v)return '—'; try{return new Date(v).toLocaleString('zh-TW',{hour12:false})}catch(e){return v}}
@@ -93,8 +94,10 @@ function equipText(v){let o=v; if(typeof o==='string'){try{o=JSON.parse(o||'{}')
 function showMsg(t,type='ok'){ $('msg').innerHTML=t?`<div class="${type==='err'?'err':'okmsg'}">${esc(t)}</div>`:''; if(t) setTimeout(()=>$('msg').innerHTML='',2600)}
 async function apiGet(action, extra={}){const u=new URL(API); u.searchParams.set('action',action); u.searchParams.set('tenant',TENANT); u.searchParams.set('token',token); u.searchParams.set('email',email||'_'); if(passcode) u.searchParams.set('passcode',passcode); Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v)); const r=await fetch(u); const j=await r.json().catch(()=>null); if(!r.ok||j?.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
 async function apiPost(action, body={}){const r=await fetch(API+'?action='+encodeURIComponent(action),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,tenant:TENANT,token,email:email||'_',passcode})}); const j=await r.json().catch(()=>null); if(!r.ok||j?.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
-function logout(){localStorage.removeItem(LS_TOKEN);localStorage.removeItem(LS_EMAIL);location.href='onsite.html'}
-async function enterByPasscode(){ const code=($('pcInput').value||'').trim(); if(!/^\d{4}$/.test(code)){ $('loginErr').textContent='請輸入 4 位數字通行碼'; $('loginErr').classList.remove('hidden'); return; } try{ const r=await apiGet('onsitePasscodeVerify',{code}); passcode=code; email='_'; $('who').textContent=(r.assignee?r.assignee+'·現場碼':'現場人員')+(r.sessionName?'｜'+r.sessionName:''); $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('sessionsView').classList.add('hidden'); const bb=$('backBtn'); if(bb) bb.style.display='none'; currentSession={id:r.sessionId,name:r.sessionName}; await openSession(r.sessionId); }catch(e){ $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden'); } }
+function logout(){localStorage.removeItem(LS_TOKEN);localStorage.removeItem(LS_EMAIL);localStorage.removeItem(LS_OPERATOR);location.href='onsite.html'}
+function ensureOperatorName(){ let n=(localStorage.getItem(LS_OPERATOR)||'').trim(); while(!n){ n=(prompt('請輸入你的名字（現場報到記錄用，只需填一次）：')||'').trim(); } localStorage.setItem(LS_OPERATOR,n); operatorName=n; return n; }
+function changeOperatorName(){ const n=(prompt('換人操作？輸入新的名字：',operatorName||'')||'').trim(); if(!n) return; localStorage.setItem(LS_OPERATOR,n); operatorName=n; if(passcode){ $('who').textContent='現場碼｜操作人：'+n+(currentSession&&currentSession.name?'｜'+currentSession.name:''); } showMsg('已切換操作人：'+n); }
+async function enterByPasscode(){ const code=($('pcInput').value||'').trim(); if(!/^\d{4}$/.test(code)){ $('loginErr').textContent='請輸入 4 位數字通行碼'; $('loginErr').classList.remove('hidden'); return; } try{ const r=await apiGet('onsitePasscodeVerify',{code}); passcode=code; email='_'; const who=ensureOperatorName(); $('who').innerHTML=esc('現場碼｜操作人：'+who+(r.sessionName?'｜'+r.sessionName:''))+' <a href="javascript:void(0)" onclick="changeOperatorName()" style="text-decoration:underline">換人</a>'; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('sessionsView').classList.add('hidden'); const bb=$('backBtn'); if(bb) bb.style.display='none'; currentSession={id:r.sessionId,name:r.sessionName}; await openSession(r.sessionId); }catch(e){ $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden'); } }
 function handleCallback(){const u=new URL(location.href); const t=u.searchParams.get('admin_token'); const tenant=u.searchParams.get('tenant'); const err=u.searchParams.get('login_error'); if(err){$('loginErr').textContent='登入失敗：'+err; $('loginErr').classList.remove('hidden')} if(t){localStorage.setItem(LS_TOKEN,t); if(tenant)localStorage.setItem('2bl_onsite_tenant',tenant); history.replaceState({},'',location.pathname);}}
 async function boot(){handleCallback(); token=localStorage.getItem(LS_TOKEN)||''; $('googleLogin').href=API+'/auth/google/unified/start?tenant='+encodeURIComponent(TENANT)+'&next=onsite'; if(!token){$('loginView').classList.remove('hidden');return} try{me=await apiGet('adminMe',{email:'_'}); email=me.email; localStorage.setItem(LS_EMAIL,email); $('who').textContent=`${me.display_name||me.email}｜${me.role||''}`; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); await loadSessions();}catch(e){localStorage.removeItem(LS_TOKEN); $('loginView').classList.remove('hidden'); $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden')}}
 async function loadSessions(){try{sessions=await apiGet('onsiteSessions'); renderSessions()}catch(e){showMsg(e.message,'err')}}
@@ -158,7 +161,7 @@ async function mark(id,mode){
   };
   if(confirmMsgs[mode] && !confirm(confirmMsgs[mode])) return;
   const note=needNote.includes(mode)?prompt('可輸入現場備註（可留空）',''):'';
-  try{await apiPost('onsiteMark',{regId:id,mode,note}); showMsg('已更新'); if(currentSession) await openSession(currentSession.id)}catch(e){showMsg(e.message,'err')}
+  try{await apiPost('onsiteMark',{regId:id,mode,note,operatorName}); showMsg('已更新'); if(currentSession) await openSession(currentSession.id)}catch(e){showMsg(e.message,'err')}
 }
 boot();
 </script>
