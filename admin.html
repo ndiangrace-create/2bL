@@ -2035,7 +2035,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field full"><button type="button" class="btn secondary" style="width:100%" onclick="openSessionBundleModal(\''+attr(sid)+'\')">🎫 組合報名設定（連動場次）</button></div>'
   +'<div class="form-field full"><label>本場收款設定</label><select id="set_paymentProfileId" onchange="updatePaymentProfilePreview()">'+paymentProfileOptionsHtml(paymentProfiles,currentPaymentProfileId)+'</select><div id="set_paymentProfilePreview">'+paymentProfilePreviewHtml(currentPaymentProfileId)+'</div><div class="sub">付款帳戶、LINE Pay、信用卡都以資料庫收款設定為準；前台只讀取付款快照。</div></div>'
   +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:128px">'+safe(s.desc||s.description||'')+'</textarea></div>'
-  +'<div class="form-field full"><label>主視覺圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"></div>'
+  +'<div class="form-field full"><label>主視覺圖 URL</label><input id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"><div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap"><button type="button" class="btn secondary" style="padding:8px 14px" onclick="document.getElementById(\'coverFileInput\').click()">📤 上傳圖片</button><input type="file" id="coverFileInput" accept="image/*" style="display:none" onchange="uploadCoverFile(this)"><span style="font-size:12px;color:#888">上傳後自動填入永久網址，不會過期消失</span></div><img id="coverPreview" src="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'" style="'+((s.cover||s.coverUrl||s.cover_url)?'':'display:none;')+'max-width:220px;border-radius:10px;margin-top:8px" onerror="this.style.display=\'none\'"></div>'
   +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位</label>'+coorgInputsHtml(s)+'</div></div></div>'
   +'</div></div>'
   +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
@@ -2496,6 +2496,26 @@ async function deleteSessionUI(sid){
   if(!confirm('確定刪除這個場次嗎？此動作無法復原（若已有報名資料，建議改用封存）。')) return;
   try{ await apiPost({action:'deleteSession', sessionId:sid, id:sid}); toast('已刪除場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }
   catch(e){ toast('刪除失敗：'+e.message,6000); }
+}
+async function uploadCoverFile(input){
+  const f = input && input.files && input.files[0];
+  if(!f) return;
+  if(f.size > 5*1024*1024){ toast('圖片請小於 5MB'); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try{
+      toast('上傳中…');
+      const res = await apiPost({action:'uploadCover', image: reader.result});
+      if(res && res.url){
+        if($('set_cover')) $('set_cover').value = res.url;
+        const pv=$('coverPreview'); if(pv){ pv.src=res.url; pv.style.display='block'; }
+        toast('已上傳，網址已填入');
+      } else { toast('上傳失敗'+(res&&res.error?('：'+res.error):''),6000); }
+    }catch(e){ toast('上傳失敗：'+(e&&e.message?e.message:e),6000); }
+    finally{ input.value=''; }
+  };
+  reader.onerror = ()=>{ toast('讀取圖片失敗'); input.value=''; };
+  reader.readAsDataURL(f);
 }
 async function newSessionFull(){
   try{
