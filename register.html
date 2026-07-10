@@ -1680,6 +1680,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <label style="font-size:17px;color:var(--md);font-weight:800">帳號末五碼 *</label>
         <input type="text" id="payLastFive" placeholder="例如 12345" inputmode="numeric" maxlength="5" style="margin:4px 0 14px;font-size:18px;padding:12px;width:100%;box-sizing:border-box;border:1.5px solid #d0e8d8;border-radius:10px">
       </div>
+      <div id="payFormError" style="display:none;background:#fdecea;border:1.5px solid #f5b5ae;color:#b3261e;border-radius:12px;padding:12px 14px;margin:4px 0 10px;font-size:16px;font-weight:900;line-height:1.6"></div>
       <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px">
         <button type="button" id="immediatePayBtn" onclick="openExternalPay()" class="btn-p" style="width:100%;font-size:18px;padding:13px">立即付款</button>
         <button type="button" id="reportPaymentBtn" onclick="submitPaymentForm()" style="width:100%;background:#40916c;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">我已完成付款，回報付款</button>
@@ -4926,7 +4927,7 @@ function memberLogout(){
 function isPaidText(v){ return String(v||'').indexOf('已繳費')>=0 || String(v||'')==='免費'; }
 function isPendingPayText(v){ return String(v||'').trim()==='待確認'; }
 function isCancelledReg(reg){ return String(reg?.status||'').trim()==='已取消'; }
-function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus); }
+function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus) && !(String(reg.seatChoiceIntent||'')==='paid' && String(reg.seatChoiceStatus||'')!=='reserved'); }
 function canRefundReg(reg){ return reg && !isCancelledReg(reg) && isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費' && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
 function canDirectCancelReg(reg){ return reg && !isCancelledReg(reg) && ['待審核','已錄取'].includes(String(reg.status||'')) && !isPaidText(reg.payStatus) && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
 function isExpiredIso(v){ return !!v && Date.parse(v) <= Date.now(); }
@@ -5551,13 +5552,11 @@ let ST_currentPaymentInfo = null;
 
 function findMyRegById(regId){ return (ST.regs||[]).find(r=>String(r.id)===String(regId)) || null; }
 function paymentAllowedMethodsFromReg(reg){
+  // 以後端「可用付款方式」勾選旗標為唯一真實來源（與 worker.js _paymentMethodsAllowed 對齊）。
+  // 不可用「有沒有連結」推斷是否開放，否則主辦填了連結卻沒勾，攤友會選到被後端打回的方式。
   const p=(reg&&reg.paymentProfile)||{};
   const a=(reg&&reg.allowedPaymentMethods) || p.allowedMethods || {};
-  const lp=p.linepay||{};
-  const card=p.card||{};
-  const hasLineUrl=!!(lp.url||lp.linepayUrl||lp.linepay_url||lp.link);
-  const hasCardUrl=!!(card.url||card.cardUrl||card.card_url||card.ecpayUrl||card.link);
-  return {bank:a.bank!==false, linepay:!!a.linepay || hasLineUrl, card:!!a.card || hasCardUrl};
+  return {bank:a.bank!==false, linepay:!!a.linepay, card:!!a.card};
 }
 function bankInfoHtmlFromPayment(reg){
   const p=(reg&&reg.paymentProfile)||{};
@@ -5596,6 +5595,7 @@ function showPayPage(regId, sesName, amount){
   }
   $('payFormArea').style.display='block';
   $('paySuccessArea').style.display='none';
+  if(typeof clearPayFormError==='function') clearPayFormError();
   onPayMethodChange();
   $('payModal').classList.add('show');
 }
@@ -5626,20 +5626,27 @@ function openExternalPay(){
   window.open(url,'_blank');
   toast('付款完成後請截圖，並回來完成付款回報',5000);
 }
+function showPayFormError(msg){
+  const el=$('payFormError');
+  if(el){ el.textContent=msg; el.style.display='block'; try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }
+  else { toast('❌ '+msg); }
+}
+function clearPayFormError(){ const el=$('payFormError'); if(el){ el.style.display='none'; el.textContent=''; } }
 async function submitPaymentForm(){
+  clearPayFormError();
   const method = $('payMethod')?.value || 'ATM 轉帳';
   const isBank = method.includes('ATM') || method.includes('銀行') || method.includes('轉帳') || method.includes('匯款');
   const lastFive = isBank ? ($('payLastFive')?.value.trim() || '') : '';
   const amount = ST_currentPayAmount;
-  if(isBank && !lastFive){ toast('請填寫帳號末五碼'); return; }
-  if(!amount || amount<=0){ toast('金額錯誤'); return; }
+  if(isBank && !lastFive){ showPayFormError('請填寫帳號末五碼'); return; }
+  if(!amount || amount<=0){ showPayFormError('金額異常，請聯繫該場次官方 LINE 客服'); return; }
   const btn = $('reportPaymentBtn');
   if(btn){ btn.disabled=true; btn.textContent='回報中…'; }
   try{
     const res = await apiPost({action:'submitPayment',regId:ST_currentPayRegId,method,lastFive,amount,email:ST.member?.email||ST.memberEmail||''});
-    if(res.error){toast('❌ '+res.error);return;}
+    if(res.error){ showPayFormError(res.error); return; }
     const cardText = res.lineCardText || res.paymentLineCardText || '';
-    if(!cardText){ toast('⚠️ 付款卡片產生失敗，請聯繫客服'); return; }
+    if(!cardText){ showPayFormError('付款卡片產生失敗，請聯繫該場次官方 LINE 客服'); return; }
     ST_currentPaymentCard = cardText;
     showPaymentSuccess(cardText);
     if(ST.memberEmail){
