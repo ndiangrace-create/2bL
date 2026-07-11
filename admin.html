@@ -2164,6 +2164,8 @@ async function saveSessionSettings(sid,btn){
     if(modules.seats || $('set_seatPricingEnabled')) await saveSessionSeatSettings(sid);
     AdminSessionSeatMapDirty=false;
     toast('已儲存場次設定'); await refreshCurrentSessionOnly();
+    closeAllPanels();   // 儲存成功後自動回場次總覽，不必再手動「返回上一頁」
+    renderSessions();
   }catch(e){toast('儲存失敗：'+e.message,8000)}finally{btn.disabled=false;btn.textContent=old;}
 }
 async function openSessionCreatePanel(){
