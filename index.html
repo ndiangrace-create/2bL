@@ -4778,12 +4778,14 @@ function mRecordEquipText(r){
   if(hasIncluded && hasExtra) return `${included}，另加 ${extra}`;
   if(hasIncluded) return included;
   if(hasExtra) return `加購：${extra}`;
-  return '依本場報名資料與主辦公告';
+  return '本場不含設備（請自備）';
 }
 function mCleanEquipDisplayText(txt){
   let s=String(txt||'').trim();
   s=s.replace(/^總設備\s*[:：]\s*/,'').replace(/^加購\s*[:：]\s*/,'').trim();
-  if(!s || s==='無' || s==='依本場設定') return '請重新整理後查看設備資料';
+  // 後端算出「無」＝該場內含設備為 0 且攤友未加租 → 就是不含設備，不是載入失敗
+  if(s==='無' || s==='依本場設定') return '本場不含設備（請自備）';
+  if(!s) return '本場不含設備（請自備）';
   return s;
 }
 function mPreNoticeEquipDisplayText(r){
