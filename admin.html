@@ -2125,7 +2125,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field full"><button type="button" class="btn secondary" style="width:100%" onclick="openSessionBundleModal(\''+attr(sid)+'\')">🎫 組合報名設定（連動場次）</button></div>'
   +'<div class="form-field full"><label>本場收款設定</label><select id="set_paymentProfileId" onchange="updatePaymentProfilePreview()">'+paymentProfileOptionsHtml(paymentProfiles,currentPaymentProfileId)+'</select><div id="set_paymentProfilePreview">'+paymentProfilePreviewHtml(currentPaymentProfileId)+'</div><div class="sub">付款帳戶、LINE Pay、信用卡都以資料庫收款設定為準；前台只讀取付款快照。</div></div>'
   +'<div class="form-field full"><label>場次說明</label><textarea id="set_desc" style="min-height:128px">'+safe(s.desc||s.description||'')+'</textarea></div>'
-  +'<div class="form-field full"><label>主視覺圖片</label><input type="hidden" id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"><div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap"><button type="button" class="btn secondary" style="padding:8px 14px" onclick="document.getElementById(\'coverFileInput\').click()">📤 上傳圖片</button><input type="file" id="coverFileInput" accept="image/*" style="display:none" onchange="uploadCoverFile(this)"><span style="font-size:12px;color:#888">上傳後自動存檔，永久有效</span></div><img id="coverPreview" src="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'" style="'+((s.cover||s.coverUrl||s.cover_url)?'':'display:none;')+'max-width:220px;border-radius:10px;margin-top:8px" onerror="this.style.display=\'none\'"></div>'
+  +'<div class="form-field full"><label>主視覺圖片</label><input type="hidden" id="set_cover" value="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'"><div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap"><button type="button" class="btn secondary" style="padding:8px 14px" onclick="document.getElementById(\'coverFileInput\').click()">📤 上傳圖片</button><input type="file" id="coverFileInput" accept="image/*" style="display:none" onchange="uploadCoverFile(this)"><span style="font-size:12px;color:#888">自動裁成 1:1（四周補白、不裁切）並壓縮，永久有效</span></div><img id="coverPreview" src="'+attr(s.cover||s.coverUrl||s.cover_url||'')+'" style="'+((s.cover||s.coverUrl||s.cover_url)?'':'display:none;')+'width:180px;height:180px;object-fit:contain;background:#fff;border:1px solid #EADFC8;border-radius:10px;margin-top:8px" onerror="this.style.display=\'none\'"></div>'
   +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位</label>'+coorgInputsHtml(s)+'</div></div></div>'
   +'</div></div>'
   +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
@@ -2587,25 +2587,73 @@ async function deleteSessionUI(sid){
   try{ await apiPost({action:'deleteSession', sessionId:sid, id:sid}); toast('已刪除場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }
   catch(e){ toast('刪除失敗：'+e.message,6000); }
 }
+// 主視覺上傳：自動補白成 1:1（不裁切、完整保留原圖），並自動壓到 5MB 以下
+function makeSquarePaddedImage(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('讀取圖片失敗'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('圖片格式不支援'));
+      img.onload = () => {
+        try{
+          const MAX_SIDE = 1600;                       // 邊長上限，避免過大
+          const side = Math.min(Math.max(img.width, img.height), MAX_SIDE);
+          const cv = document.createElement('canvas');
+          cv.width = side; cv.height = side;
+          const ctx = cv.getContext('2d');
+          ctx.fillStyle = '#ffffff';                   // 補白底
+          ctx.fillRect(0, 0, side, side);
+          // 等比例縮放，置中，四周補白，完整保留原圖不裁切
+          const scale = Math.min(side / img.width, side / img.height);
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, Math.round((side - w) / 2), Math.round((side - h) / 2), w, h);
+          // 自動壓到 5MB 以下：先降品質，仍過大再降尺寸
+          const LIMIT = 5 * 1024 * 1024;
+          const sizeOf = (d) => Math.ceil((d.length - (d.indexOf(',') + 1)) * 3 / 4);
+          let out = cv.toDataURL('image/jpeg', 0.92);
+          const qualities = [0.85, 0.75, 0.65, 0.55];
+          for (const q of qualities) { if (sizeOf(out) <= LIMIT) break; out = cv.toDataURL('image/jpeg', q); }
+          let cur = cv;
+          while (sizeOf(out) > LIMIT && cur.width > 600) {
+            const next = document.createElement('canvas');
+            next.width = Math.round(cur.width * 0.8);
+            next.height = next.width;
+            const nctx = next.getContext('2d');
+            nctx.fillStyle = '#ffffff';
+            nctx.fillRect(0, 0, next.width, next.height);
+            nctx.imageSmoothingQuality = 'high';
+            nctx.drawImage(cur, 0, 0, next.width, next.height);
+            cur = next;
+            out = cur.toDataURL('image/jpeg', 0.8);
+          }
+          if (sizeOf(out) > LIMIT) return reject(new Error('圖片太大，請先自行縮小後再上傳'));
+          resolve(out);
+        }catch(e){ reject(e); }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 async function uploadCoverFile(input){
   const f = input && input.files && input.files[0];
   if(!f) return;
-  if(f.size > 5*1024*1024){ toast('圖片請小於 5MB'); input.value=''; return; }
-  const reader = new FileReader();
-  reader.onload = async () => {
-    try{
-      toast('上傳中…');
-      const res = await apiPost({action:'uploadCover', image: reader.result});
-      if(res && res.url){
-        if($('set_cover')) $('set_cover').value = res.url;
-        const pv=$('coverPreview'); if(pv){ pv.src=res.url; pv.style.display='block'; }
-        toast('已上傳，網址已填入');
-      } else { toast('上傳失敗'+(res&&res.error?('：'+res.error):''),6000); }
-    }catch(e){ toast('上傳失敗：'+(e&&e.message?e.message:e),6000); }
-    finally{ input.value=''; }
-  };
-  reader.onerror = ()=>{ toast('讀取圖片失敗'); input.value=''; };
-  reader.readAsDataURL(f);
+  if(!/^image\//.test(f.type||'')){ toast('請選擇圖片檔'); input.value=''; return; }
+  try{
+    toast('圖片處理中…');
+    const dataUrl = await makeSquarePaddedImage(f);   // 自動補白成 1:1 並壓縮
+    toast('上傳中…');
+    const res = await apiPost({action:'uploadCover', image: dataUrl});
+    if(res && res.url){
+      if($('set_cover')) $('set_cover').value = res.url;
+      const pv=$('coverPreview'); if(pv){ pv.src=res.url; pv.style.display='block'; }
+      toast('已上傳（已自動調成 1:1）');
+    } else { toast('上傳失敗'+(res&&res.error?('：'+res.error):''),6000); }
+  }catch(e){ toast('上傳失敗：'+(e&&e.message?e.message:e),6000); }
+  finally{ input.value=''; }
 }
 async function newSessionFull(){
   try{
