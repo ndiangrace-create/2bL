@@ -1218,7 +1218,9 @@ function weekdayLabelFromDate(v){
 }
 function sessionDateRows(s){
   const out=[];
-  const push=v=>{ const label=(typeof v==='object')?(v.label||v.date||v.value||''):v; if(label) out.push(label); };
+  // 日期優先；「顯示名」（label，例如「六」「日」）只是附註，不可覆蓋日期。
+  // 原本 v.label 優先，導致有填顯示名的場次只看到「六/日」，與其他場次不一致。
+  const push=v=>{ const label=(typeof v==='object')?(v.date||v.value||v.label||''):v; if(label) out.push(label); };
   if(Array.isArray(s?.dates)) s.dates.forEach(push);
   else if(Array.isArray(s?.dates_json)) s.dates_json.forEach(push);
   else if(s?.date) push(s.date);
@@ -1244,7 +1246,7 @@ function sessionDateEquipHtml(s,e,sid=''){
 }
 function dailyChipHtml(rows,text,sid=''){
   if(Array.isArray(rows)&&rows.length){
-    return rows.map(r=>'<button type="button" class="chip blue click metric-click" onclick="openEquipmentPanel(\''+attr(sid)+'\',\''+attr(r.date||r.key||'')+'\',\''+attr(weekdayLabelFromDate(r.label||r.date||'每日'))+'\')" title="只看 '+safe(weekdayLabelFromDate(r.label||r.date))+' 設備名單"><span class="m-label">'+safe(weekdayLabelFromDate(r.label||r.date||'每日'))+'</span><b>攤 '+num(r.stallCount||0)+'｜'+safe(r.equipmentText||'無')+'</b></button>').join('');
+    return rows.map(r=>'<button type="button" class="chip blue click metric-click" onclick="openEquipmentPanel(\''+attr(sid)+'\',\''+attr(r.date||r.key||'')+'\',\''+attr(weekdayLabelFromDate(r.date||r.label||'每日'))+'\')" title="只看 '+safe(weekdayLabelFromDate(r.date||r.label))+' 設備名單"><span class="m-label">'+safe(weekdayLabelFromDate(r.date||r.label||'每日'))+'</span><b>攤 '+num(r.stallCount||0)+'｜'+safe(r.equipmentText||'無')+'</b></button>').join('');
   }
   return '<button type="button" class="chip gray click metric-click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看每日設備報表"><span class="m-label">每日</span><b>'+safe(text||'無')+'</b></button>';
 }
@@ -1402,11 +1404,11 @@ function regDateText(r){
   const raw = r.selectedDates || r.selected_dates || r.selected_dates_json || r.dates || r.dates_json || r.date || '';
   const arr = safeJson(raw, raw);
   if (Array.isArray(arr)) {
-    const out = arr.map(d => typeof d === 'object' ? (d.label || d.date || d.value || '') : String(d || '')).filter(Boolean);
+    const out = arr.map(d => typeof d === 'object' ? (d.date || d.value || d.label || '') : String(d || '')).filter(Boolean);
     return out.join('、') || '未設定';
   }
   if (typeof arr === 'object' && arr) {
-    const out = Object.values(arr).map(d => typeof d === 'object' ? (d.label || d.date || d.value || '') : String(d || '')).filter(Boolean);
+    const out = Object.values(arr).map(d => typeof d === 'object' ? (d.date || d.value || d.label || '') : String(d || '')).filter(Boolean);
     return out.join('、') || '未設定';
   }
   return String(raw || '未設定');
