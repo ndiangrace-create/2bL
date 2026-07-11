@@ -2563,6 +2563,7 @@ function openSessionById(id){
 }
 
 function navTo(tab, opts={}){
+  if(typeof removePayCartBar==='function' && tab!=='member') removePayCartBar();
   const el=$('page'+tab.charAt(0).toUpperCase()+tab.slice(1));
   if(!el) return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -4944,8 +4945,11 @@ function renderMyRegs(regs){
 }
 
 // ── 合併繳費（購物車）：勾選多筆一起繳，省手續費 ──
+function removePayCartBar(){ const b=document.getElementById('payCartBar'); if(b) b.remove(); }
 function updatePayCart(){
+  // 僅在「我的紀錄」頁顯示；其他頁一律移除，避免長駐畫面底部
   const cbs=[...document.querySelectorAll('.m-cart-cb')];
+  if(!cbs.length){ removePayCartBar(); return; }
   const picked=cbs.filter(c=>c.checked).map(c=>c.value);
   let bar=$('payCartBar');
   if(picked.length<2){ if(bar) bar.remove(); return; }
