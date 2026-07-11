@@ -312,8 +312,11 @@ button,a,[onclick]{touch-action:manipulation}
 /* 20260706 取消報名彈窗：按鈕固定並排，避免手機被吃掉 */
 .cancel-modal-actions{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;margin-top:16px!important}
 .cancel-modal-actions button{width:100%!important;min-width:0!important;white-space:normal!important;line-height:1.35!important}
-#cancelModal .modal-box{max-height:calc(100vh - 38px)!important;overflow-y:auto!important;padding-bottom:16px!important}
-#cancelModal .cancel-modal-actions{position:sticky!important;bottom:0!important;background:var(--wh)!important;padding-top:10px!important;padding-bottom:2px!important;z-index:2!important}
+#cancelModal .modal-box{max-height:calc(100vh - 38px)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;padding-bottom:16px!important}
+/* 內容可捲動，按鈕列永遠釘在彈窗底部（原本 sticky 在捲動容器內黏不住，按鈕被長內容推出畫面） */
+#cancelModal .modal-box > .modal-title{flex:0 0 auto}
+#cancelModal .cancel-scroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+#cancelModal .cancel-modal-actions{flex:0 0 auto!important;position:static!important;background:var(--wh)!important;padding-top:12px!important;padding-bottom:2px!important;border-top:1px solid #eee!important;z-index:2!important}
 .pre-notice-card{background:#fff;border:1.5px solid #d0e8d8;border-radius:16px;padding:14px;margin:10px 0;line-height:1.75;font-size:16px;color:var(--dk)}
 .pre-notice-row{display:grid;grid-template-columns:92px 1fr;gap:8px;border-bottom:1px dashed #e8efe4;padding:7px 0}
 .pre-notice-row:last-child{border-bottom:0}
@@ -1703,6 +1706,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 <div class="modal-overlay" id="cancelModal" onclick="if(event.target===this)closeModal('cancelModal')">
   <div class="modal-box">
     <div class="modal-title">取消報名確認</div>
+    <div class="cancel-scroll">
     <div style="font-size:18px;font-weight:700;color:var(--dk);margin-bottom:12px" id="cancelModalSesName"></div>
     <div id="cancelRefundPolicy" style="background:var(--rdp);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.9;color:var(--dk)">
       <div style="font-weight:700;margin-bottom:6px;color:var(--rd)">取消報名前請先確認以下退款原則：</div>
@@ -1717,6 +1721,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <input type="checkbox" id="cancelConfirmCheck" onchange="onCancelCheckChange()" style="width:18px;height:18px;flex-shrink:0;accent-color:var(--rd);margin-top:1px">
       <span id="cancelConfirmLabel">我已了解取消與退款規則，仍要送出取消申請</span>
     </label>
+    </div>
     <div class="modal-actions cancel-modal-actions">
       <button id="cancelSubmitBtn" onclick="doSubmitCancel()" disabled style="padding:14px;font-size:16px;font-weight:900;background:var(--rd);color:#fff;border:none;border-radius:10px;cursor:not-allowed;opacity:.5">我已了解，送出取消申請</button>
       <button class="btn-s2" onclick="closeModal('cancelModal')" style="padding:12px;font-size:14px">返回，不取消</button>
