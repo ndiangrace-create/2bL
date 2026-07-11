@@ -3177,11 +3177,6 @@ async function filterCat(type, el){
   data=sortSessionsByUpcoming(data);
   list.innerHTML = data.map(s=>renderSessionCard(s)).join('');
 }
-function renderEvents(){
-  // 近期場次：永遠列出所有開放場次（近的在上），不再因為有主題活動就只顯示主題卡。
-  // 主題活動仍可從各場次卡的主題色／分類進入，且主題頁點進去照常顯示該主題場次。
-  renderHomeFallbackSessions();
-}
 function openEventFromButton(ev,eventId){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
   openEvent(eventId);
@@ -5923,7 +5918,7 @@ if(document.readyState==='loading'){
     if(el){
       const sessions=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(openSess));
       if(sessions.length){
-        el.innerHTML=sessions.slice(0,12).map(s=>renderSessionCard(s)).join('');
+        el.innerHTML=sessions.map(s=>renderSessionCard(s)).join('');
       } else {
         el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:15px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#2a6a10;font-weight:800;cursor:pointer">重新載入</span></div>';
       }
