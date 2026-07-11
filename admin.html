@@ -1196,11 +1196,8 @@ function regSessionId(r){ return String(r.sessionId||r.session_id||r.sessionID||
 function sessionById(id){ for(const s of AdminState.sessions){ if(sessionId(s)===String(id)) return s; } return {}; }
 function isArchived(s){ return ['封存','隱藏','已封存'].includes(String(s.status||'')); }
 function isClosed(s){ return ['關閉','已關閉','停用','已截止'].includes(String(s.status||'')); }
-function formatDate(s){ if(s.dateText) return s.dateText; if(s.date) return String(s.date); if(Array.isArray(s.dates)){ const arr=[]; for(const d of s.dates){ arr.push(typeof d==='object' ? (d.date||'') : d); } return arr.join('、')||'未設定日期'; } return '未設定日期'; }
 function textFromMap(v){ if(v===undefined||v===null||v==='') return '資料庫未提供'; if(typeof v === 'string') return safe(v); const parts=[]; for(const k in v){ if(Number(v[k])>0) parts.push(safe(k)+'×'+safe(v[k])); } return parts.join('、') || '無'; }
 function equipText(v){ return textFromMap(v); } // 設備文字格式化相容函式
-function equipDailyHtml(rows, fallback){ if(Array.isArray(rows)&&rows.length){ return rows.map(r=>safe(r.label||r.date||'日期')+'：攤數 '+safe(r.stallCount||0)+'，'+safe(r.equipmentText||textFromMap(r.equipmentMap))).join('<br>'); } return safe(fallback||'無'); }
-function equipDailyText(rows, fallback){ if(Array.isArray(rows)&&rows.length){ return rows.map(r=>(r.label||r.date||'日期')+'：攤數 '+(r.stallCount||0)+'，'+(r.equipmentText||textFromMap(r.equipmentMap))).join('｜'); } return String(fallback||'無'); }
 function nz(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
 function getStats(s){ const st=s.stats||{}; return { total: nz(st.registrationTotal ?? s.registrationTotal ?? s.total), pending: nz(st.pendingReview ?? s.pendingReview ?? s.pending), approved: nz(st.approved ?? s.approved), unpaid: nz(st.unpaid ?? s.unpaid), paymentPending: nz(st.paymentPending ?? s.paymentPending ?? s.pendingPayment), paid: nz(st.paid ?? s.paid), free: nz(st.free ?? s.free), checked: nz(st.checkedIn ?? s.checkedIn ?? s.seated), refund: nz(st.refund ?? s.refund ?? s.refundReq) }; }
 function getFinance(s){ const f=s.finance||{}; return {deposit:nz(f.depositTotal ?? s.depositTotal), receivable:nz(f.receivableTotal ?? s.receivableTotal ?? s.invoiceTotal), received:nz(f.receivedTotal ?? s.receivedTotal ?? s.revenue), unreceived:nz(f.unreceivedTotal ?? s.unreceivedTotal)}; }
@@ -1292,8 +1289,6 @@ function sessionThumbUrl(s){
 }
 
 function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current'; const list=[]; for(const s of AdminState.sessions){ if(mode==='current' && isArchived(s)) continue; if(mode==='archived' && !isArchived(s)) continue; if(kw && ![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw)) continue; list.push(s); } if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;} const sorted=sortNearestFirst(list, sessionSortTs); let out=''; for(const s of sorted) out += renderSessionCard(s); box.innerHTML=out; }
-function statButton(label,value,kind,sid,filter){ const disabled = value===undefined || value===null || value===''; const shown = disabled ? '—' : safe(value); return '<button class="stat click '+kind+'" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'\','+(Number(value)||0)+')"><b>'+shown+'</b><span>'+safe(label)+'</span></button>'; }
-
 function renderSessionCard(s){
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
@@ -1404,7 +1399,6 @@ function regDateText(r){
 function regDatesText(r){ return regDateText(r); }
 try{ window.regDatesText = regDatesText; }catch(e){}
 function regCreatedText(r){ return r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '—'; }
-function regAmount(r){ return Number(r.amount ?? r.totalAmount ?? r.total_amount ?? r.receivableAmount ?? r.registration_total_amount ?? r.total ?? 0) || 0; }
 function invoiceBrief(r){ const parts=[]; if(r.taxId) parts.push('統編 '+r.taxId); if(r.invoiceTitle) parts.push(r.invoiceTitle); if(r.invoiceEmail) parts.push(r.invoiceEmail); return parts.join('｜') || '—'; }
 
 function adminShortDateRange(v){
@@ -1627,10 +1621,6 @@ async function openFinancePanel(sid){
 }
 
 function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) return '<div class="empty">資料庫目前未提供資料</div>'; let h='<div class="table-wrap"><table class="mini-table"><thead><tr>'; for(const x of heads) h+='<th>'+safe(x)+'</th>'; h+='</tr></thead><tbody>'; for(const r of rows){ h+='<tr>'; for(const k of keys){ const v=['amount','receivable','received','transferDue','deposit'].includes(k)?money(r[k]):safe(r[k]||''); h+='<td>'+v+'</td>'; } h+='</tr>'; } return h+'</tbody></table></div>'; }
-function sessionJsonPretty(v, fallback){
-  const obj=safeJson(v, fallback);
-  try{return JSON.stringify(obj===undefined?fallback:obj,null,2);}catch(e){return JSON.stringify(fallback,null,2);}
-}
 function sessionField(s, ...keys){ for(const k of keys){ if(s && s[k]!==undefined && s[k]!==null) return s[k]; } return ''; }
 function sessionBool(v, def=false){ if(v===undefined||v===null||v==='') return def; if(typeof v==='boolean') return v; const s=String(v).trim(); return ['1','true','是','開啟','啟用','yes','on'].includes(s); }
 function sessionDates(s){ return safeJson(sessionField(s,'dates','datesJson','dates_json'), []); }
@@ -1638,25 +1628,12 @@ function sessionModules(s){ return safeJson(sessionField(s,'modules','modulesJso
 function sessionEquip(s){ return safeJson(sessionField(s,'equip','equipJson','equip_json'), {}); }
 function sessionAddons(s){ return safeJson(sessionField(s,'addons','addonsJson','addons_json'), []); }
 function sessionInvoiceTax(s){ return safeJson(sessionField(s,'invoiceTax','invoiceTaxJson','invoice_tax_json'), {enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false}); }
-function sessionStallList(s){ const raw=sessionField(s,'stallList','stallListJson','stall_list_json'); const arr=safeJson(raw, raw||[]); if(Array.isArray(arr)) return arr; if(typeof arr==='string') return arr.split(/[\n,，]/).map(x=>x.trim()).filter(Boolean); return []; }
-function parseJsonField(id, fallback, label){ const raw=$(id)?.value||''; if(!raw.trim()) return fallback; try{return JSON.parse(raw);}catch(e){ throw new Error((label||id)+' JSON 格式錯誤：'+e.message); } }
-function lineListFromField(id){ return String($(id)?.value||'').split(/[\n,，]/).map(x=>x.trim()).filter(Boolean); }
 const ADMIN_EQUIP_NAMES=['桌','椅','帳篷','電力','衣桿','網架'];
 function sessionPortalList(s){
   const raw = sessionField(s,'portals','portalList') || s.portals || '';
   if(Array.isArray(raw)) return raw.map(x=>String(x).trim()).filter(Boolean);
   return String(raw||'').split(',').map(x=>x.trim()).filter(Boolean);
 }
-function portalCheckHtml(key,label,portals){
-  const on = (portals||[]).includes(label) || (portals||[]).includes(key);
-  return '<label style="display:flex;align-items:center;gap:8px;margin:0;font-weight:900;white-space:nowrap"><input type="checkbox" id="portal_'+key+'" data-portal-label="'+attr(label)+'" '+(on?'checked':'')+'> '+safe(label)+'</label>';
-}
-function collectSessionPortals(){
-  const arr=[];
-  ['market','experience','consign','collab'].forEach(k=>{ const el=$('portal_'+k); if(el && el.checked) arr.push(el.dataset.portalLabel || k); });
-  return arr;
-}
-
 function entryTypeMap(entry){
   const v=String(entry||'').trim();
   if(v==='體驗活動') return '體驗活動';
@@ -1747,10 +1724,6 @@ function collectSessionEquip(){
     };
   });
   return out;
-}
-function moduleCheckHtml(key,label,mods){
-  const on = mods && mods[key]!==false;
-  return '<label class="tight-check"><input type="checkbox" id="mod_'+key+'" '+(on?'checked':'')+'> '+safe(label)+'</label>';
 }
 function agreementTemplateOptionsHtml(templates, s){
   const currentVersion = String(s.agreementVersion||s.agreement_version||'').trim();
@@ -2168,20 +2141,6 @@ async function saveSessionSettings(sid,btn){
     renderSessions();
   }catch(e){toast('儲存失敗：'+e.message,8000)}finally{btn.disabled=false;btn.textContent=old;}
 }
-async function openSessionCreatePanel(){
-  openPanel('新增場次','建立一個新的場次','<div class="loading">主題活動載入中…</div>');
-  const evs=await api({action:'getEventsAdmin'}).catch(()=>AdminState.events||[]);
-  AdminState.events=Array.isArray(evs)?evs:[];
-  $('panelBody').innerHTML='<div class="form-grid">'
-    +'<div class="form-field manual-field"><label>場次名稱</label><input id="new_name"></div>'
-    +'<div class="form-field choice-field"><label>所屬主題活動</label><select id="new_eventId">'+sessionEventOptionsHtml(AdminState.events||[],'')+'</select></div>'
-    +'<div class="form-field choice-field"><label>入口分類</label><select id="new_entry">'+entryOptionsHtml('市集報名')+'</select></div>'
-    +'<div class="form-field manual-field"><label>地點</label><input id="new_venue"></div>'
-    +'<div class="form-field"><label>攤位費</label><input id="new_fee" type="number" value="0"></div>'
-    +'<div class="form-field"><label>押金</label><input id="new_deposit" type="number" value="0"></div>'
-    +'<div class="form-field full"><label>說明</label><textarea id="new_desc"></textarea></div>'
-    +'</div><div class="card-actions"><button class="btn" onclick="createSession(this)">建立場次</button></div>';
-}
 async function createSession(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…'; try{ const entry=($('new_entry')?.value||'市集報名').trim(); await apiPost({action:'createSession',eventId:($('new_eventId')?.value||'').trim(),name:$('new_name').value.trim(),type:entryTypeMap(entry),portals:[entry],venue:$('new_venue').value.trim(),fee:$('new_fee').value,deposit:$('new_deposit').value,desc:$('new_desc').value}); toast('已建立場次'); closeAllPanels(); await refreshSessionsOverview(); }catch(e){toast('建立失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
 
 async function downloadSessionExcel(sid){ try{ const data=await api({action:'downloadSession',sessionId:sid}); const name=(data.filename)||(((data.session&&data.session.name)||sessionName(sessionById(sid))||sid)+'_完整名單.xlsx'); if(data.xlsxBase64){ const bin=atob(data.xlsxBase64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); const blob=new Blob([bytes],{type:data.mime||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name.endsWith('.xlsx')?name:name+'.xlsx'; a.click(); URL.revokeObjectURL(a.href); return; } const _csvCell=(v)=>{ v=(v==null?'':String(v)); return /[",\n]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v; };
@@ -2192,8 +2151,6 @@ async function downloadSessionExcel(sid){ try{ const data=await api({action:'dow
     const cblob=new Blob([csv],{type:'text/csv;charset=utf-8'});
     const ca=document.createElement('a'); ca.href=URL.createObjectURL(cblob); ca.download=(name||'名單').replace(/\.xlsx$/,'')+'.csv'; ca.click(); URL.revokeObjectURL(ca.href);
     toast('已下載名單（CSV，可用 Excel 開啟）'); }catch(e){toast('下載失敗：'+e.message,6000)} }
-
-function csvCell(v){ const s=String(v??''); return '"'+s.replace(/"/g,'""')+'"'; }
 
 function overviewMetricCards(title,d){
   d=d||{}; const tip='onclick="toast(\'跨場次數字請看下方各場次摘要；單場數字可點進明細\',4200)"';
@@ -2257,19 +2214,6 @@ function todoLabelFromKind(kind){
 function todoNextText(kind){
   return {pending:'請主辦決定',unpaid:'等待攤商付款',paymentPending:'請主辦對帳',checkin:'活動當日報到',refund:'請處理退費',dataIssue:'請補齊或修正資料',equipment:'確認每日與整場設備',all:'請確認狀態'}[kind] || '請確認狀態';
 }
-function todoFlowHtml(kind){
-  const steps=[['pending','待審核'],['unpaid','待付款'],['paymentPending','付款待確認'],['checkin','待報到'],['refund','退費待處理'],['dataIssue','資料異常'],['equipment','設備待確認']];
-  const idx=steps.findIndex(x=>x[0]===kind);
-  let out='<div class="todo-flow" aria-label="待辦流程">';
-  steps.forEach((st,i)=>{
-    const cls = i===idx ? 'active' : (idx>=0 && i<idx ? 'done' : '');
-    const alert = (st[0]==='dataIssue' && i===idx) ? ' alert' : '';
-    out+='<span class="todo-flow-step '+cls+alert+'">'+safe(st[1])+'</span>';
-    if(i<steps.length-1) out+='<span class="todo-flow-arrow">›</span>';
-  });
-  out+='</div>';
-  return out;
-}
 function todoSocialLinks(r){
   const fb=normalizeMemberFb(r.fb||r.fbUrl||r.fb_url||r.facebook||r.facebook_url||'');
   const ig=normalizeMemberIg(r.ig||r.igUrl||r.ig_url||r.instagram||r.instagram_url||'');
@@ -2309,12 +2253,6 @@ function todoFirstValue(r,keys){
   }
   return '';
 }
-function todoAmountText(r){
-  const v=todoFirstValue(r,['amount','totalAmount','total_amount','receivableAmount','registration_total_amount','total']);
-  if(v!=='' && v!==undefined && v!==null) return money(v);
-  const pay=String(r.paymentStatus||r.payStatus||r.payment_status||'').trim();
-  return pay || '資料庫未提供';
-}
 function regAddonText(r){
   const direct = todoFirstValue(r,['addonText','addonsText','selectedAddonsText','addonQtyText','addon_qty_text','addon_text','addons_text']);
   if(direct) return String(direct);
@@ -2346,10 +2284,6 @@ function regAddonText(r){
     });
   }
   return parts.length ? parts.join('、') : '無';
-}
-function todoCompactValue(v,fallback='未設定'){
-  const s=String(v===undefined||v===null?'':v).trim();
-  return s || fallback;
 }
 function renderTodoRows(rows){
   let out='';
@@ -2538,52 +2472,6 @@ async function loadCompanySettings(){ try{ const c=await api({action:'getCompany
 async function saveCompanySettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'saveCompanySettings',systemName:$('co_system').value,companyName:$('co_name').value,serviceEmail:$('co_email').value,serviceLine:$('co_line').value,phone:$('co_phone').value,website:$('co_site').value,loginText:$('co_login').value}); toast('公司資料已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
 function openHomepageSettings(){ openPanel('公告 / 首頁顯示','首頁封面、公告與小圖（主題活動圖片已移至「場次」頁上方）','<div class="form-grid"><div class="form-field full"><label>登入頁 / 品牌 Logo 網址</label><input id="home_logo"></div><div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div><div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div><div class="form-field full" style="border-top:1px dashed var(--line);padding-top:12px"><b>前台小圖 / IP 圖片網址</b><div class="sub">這些會存進資料庫 tenant config，不寫死在 register.html；之後換檔小圖不會消失。</div></div><div class="form-field"><label>首頁歡迎小圖 URL</label><input id="home_mascotHome" placeholder="IP歡迎.png 或圖片網址"></div><div class="form-field"><label>市集/指引小圖 URL</label><input id="home_mascotPortal" placeholder="IP指引.png 或圖片網址"></div><div class="form-field"><label>會員資料小圖 URL</label><input id="home_mascotMember" placeholder="IP資料.png 或圖片網址"></div><div class="form-field"><label>客服小圖 URL</label><input id="home_mascotSupport" placeholder="IP客服.png 或圖片網址"></div><div class="form-field"><label>我的紀錄小圖 URL</label><input id="home_mascotProfile" placeholder="IP會員.png 或圖片網址"></div><div class="form-field"><label>報名彈窗小圖 URL</label><input id="home_mascotModal" placeholder="IP報名.png 或圖片網址"></div></div><div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div>'); loadHomepageSettings(); }
 async function loadHomepageSettings(){ try{ const c=await api({action:'getSiteConfig'}); $('home_hero').value=c.heroImg||''; $('home_info').value=c.infoText||''; $('home_logo').value=c.logoUrl||''; const set=(id,v)=>{ const el=$(id); if(el) el.value=v||''; }; set('home_mascotHome',c.mascotHome); set('home_mascotPortal',c.mascotPortal); set('home_mascotMember',c.mascotMember); set('home_mascotSupport',c.mascotSupport); set('home_mascotProfile',c.mascotProfile); set('home_mascotModal',c.mascotModal); }catch(e){toast('首頁設定載入失敗：'+e.message,6000)} }
-async function openBundleSettings(){
-  openPanel('場次組合','把多個場次綁成套組、設組合攤位費；攤商可一次報名（其他規則同單場，同進退）','<div class="loading">載入中…</div>');
-  try{
-    if(!Array.isArray(AdminState.sessions)||!AdminState.sessions.length){ try{ await refreshSessionsOverview(); }catch(_e){} }
-    const list=await api({action:'getBundles'});
-    AdminState.bundles=Array.isArray(list)?list:[];
-    renderBundlePanel();
-  }catch(e){ $('panelBody').innerHTML='<div class="empty">載入失敗：'+safe(e.message)+'</div>'; }
-}
-function renderBundlePanel(){
-  const el=$('panelBody'); if(!el) return;
-  const sess=(AdminState.sessions||[]);
-  const bundles=(AdminState.bundles||[]);
-  const sessOpts=sess.map(s=>'<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:15px"><input type="checkbox" class="bnd-sess" value="'+attr(s.id)+'" style="width:18px;height:18px"> '+safe(s.name||s.id)+'</label>').join('');
-  let html='<div class="report-card" style="margin-bottom:14px"><div class="report-title">新增套組</div>'
-    +'<div class="form-field full"><label>套組名稱</label><input id="bnd_name" placeholder="例：幻日祭雙日套組"></div>'
-    +'<div class="form-field full"><label>組合攤位費（總額；押金各場另加 500）</label><input id="bnd_price" type="number" value="0"></div>'
-    +'<div class="form-field full"><label>綁定場次（勾 2 個以上）</label><div style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px 12px">'+(sessOpts||'目前沒有場次')+'</div></div>'
-    +'<div class="card-actions"><button class="btn" onclick="saveBundleUI(this)">建立套組</button></div></div>';
-  html+='<div class="report-card"><div class="report-title">現有套組</div>';
-  if(!bundles.length){ html+='<div class="empty">尚無套組</div>'; }
-  else { html+=bundles.map(bd=>{
-    const names=(bd.sessionIds||[]).map(id=>{ const s=sess.find(x=>String(x.id)===String(id)); return s?(s.name||id):id; }).join('、');
-    return '<div class="card" style="padding:12px;margin-bottom:8px"><b>'+safe(bd.name)+'</b>'
-      +'<div style="font-size:13px;color:#666;margin-top:4px">場次：'+safe(names)+'</div>'
-      +'<div style="font-size:15px;color:#2a6a10;font-weight:900;margin-top:2px">組合攤位費 NT$ '+(Number(bd.bundlePrice||0).toLocaleString())+'</div>'
-      +'<div style="margin-top:8px"><button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteBundleUI(\''+attr(bd.id)+'\',this)">刪除套組</button></div></div>';
-  }).join(''); }
-  html+='</div>';
-  el.innerHTML=html;
-}
-async function saveBundleUI(btn){
-  const name=($('bnd_name')?$('bnd_name').value:'').trim();
-  const price=Number($('bnd_price')?$('bnd_price').value:0)||0;
-  const sids=Array.from(document.querySelectorAll('.bnd-sess:checked')).map(x=>x.value);
-  if(!name){ toast('請填套組名稱'); return; }
-  if(sids.length<2){ toast('請勾至少 2 個場次'); return; }
-  const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…';
-  try{ await apiPost({action:'saveBundle', name, bundlePrice:price, sessionIds:sids}); const list=await api({action:'getBundles'}); AdminState.bundles=Array.isArray(list)?list:[]; renderBundlePanel(); toast('已建立套組'); }
-  catch(e){ toast('建立失敗：'+e.message,6000); btn.disabled=false; btn.textContent=old; }
-}
-async function deleteBundleUI(id, btn){
-  if(!confirm('確定刪除這個套組？（不影響已報名的攤商）')) return;
-  try{ await apiPost({action:'deleteBundle', id}); const list=await api({action:'getBundles'}); AdminState.bundles=Array.isArray(list)?list:[]; renderBundlePanel(); toast('已刪除'); }
-  catch(e){ toast('刪除失敗：'+e.message,6000); }
-}
 async function deleteSessionUI(sid){
   if(!confirm('確定刪除這個場次嗎？此動作無法復原（若已有報名資料，建議改用封存）。')) return;
   try{ await apiPost({action:'deleteSession', sessionId:sid, id:sid}); toast('已刪除場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }
