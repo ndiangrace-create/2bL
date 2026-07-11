@@ -5783,8 +5783,10 @@ if(document.readyState==='loading'){
 // ────────────────────────────────────────────────────────────────
 (function(){
   const portalTypeMap = {'市集報名':['市集場次'],'體驗活動':['活動報名','體驗活動'],'通路寄賣':['通路寄賣'],'合作洽詢':['合作申請']};
-  // 開放狀態判斷唯一來源：一律用 isOpenSession（避免首頁與主題頁對「開放」認定不一致）
-  function openSess(s){ return isOpenSession(s); }
+  // 開放狀態判斷唯一來源（與上方 isOpenSession 同一份規則：未設定或報名中／開放中皆為開放）。
+  // 注意：這裡不可呼叫 isOpenSession，因為下方 window.isOpenSession = openSess 會覆蓋它，
+  // 互相呼叫會造成無限遞迴、前台卡在載入中。
+  function openSess(s){ const st=String(s?.status||'').trim(); return !st || st==='報名中' || st==='開放中'; }
   function asArr(v){ return Array.isArray(v)?v:[]; }
   function uniqueSessions(list){ return [...new Map(asArr(list).filter(Boolean).map(s=>[String(s.id),s])).values()]; }
   function saveEmail(email){ try{ localStorage.setItem('tb_member_email', email||''); localStorage.removeItem('tb_member'); }catch(e){} }
