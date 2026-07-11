@@ -2179,7 +2179,9 @@ document.addEventListener('keydown', e=>{
 // ── 長按 Hero 進後台入口：3秒 ──
 let _logoHoldTimer = null;
 function buildAdminUrl(extra=''){
-  const base = location.origin + location.pathname.replace('register.html','admin.html');
+  // 一律以網站根目錄組出後台網址；不可用 pathname 替換檔名：
+  // 前台首頁已改為根目錄（/），replace('register.html', …) 會替換不到而原地跳轉。
+  const base = location.origin + '/admin.html';
   const qs = new URLSearchParams(location.search);
   if(extra) qs.set('entry', extra);
   const query = qs.toString();
@@ -2199,7 +2201,7 @@ let _staffHoldTimer = null;
 function startStaffHold(e){
   _staffHoldTimer = setTimeout(()=>{
     if(confirm('進入現場工作人員入口？')){
-      const base = location.origin + location.pathname.replace('register.html','onsite.html');
+      const base = location.origin + '/onsite.html';
       const qs = new URLSearchParams(location.search); const query = qs.toString();
       location.href = base + (query ? '?' + query : '');
     }
@@ -2289,7 +2291,10 @@ function buildFrontShareUrl(kind, id){
   }else if(kind === 'member'){
     qs.set('page', 'member');
   }
-  return location.origin + location.pathname + '?' + qs.toString();
+  // 分享網址一律指向網站根目錄（例如 https://2b-love.com/?...），
+  // 不使用 location.pathname：若從 /register.html 之類的舊路徑分享，
+  // 該檔一旦改名或移除，先前發出去的連結就會 404。根目錄永遠有效。
+  return location.origin + '/?' + qs.toString();
 }
 function cleanFrontHomeUrl(){
   try{
@@ -2337,6 +2342,19 @@ function shareFrontToLine(title, url, copyMsg){
   }
   copyFrontShareLink(url, copyMsg || '已複製連結，請貼到 LINE 分享');
 }
+// 分享連結專用載入遮罩：避免「先閃首頁、再跳場次」的畫面跳動
+function showDeepLinkLoading(){
+  if(document.getElementById('deepLinkLoading')) return;
+  const d=document.createElement('div');
+  d.id='deepLinkLoading';
+  d.style.cssText='position:fixed;inset:0;z-index:9999;background:var(--wh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px';
+  d.innerHTML='<div style="width:44px;height:44px;border:4px solid var(--c1);border-top-color:var(--g);border-radius:50%;animation:dlspin .8s linear infinite"></div>'
+    +'<div style="font-size:16px;font-weight:900;color:var(--muted)">活動載入中…</div>'
+    +'<style>@keyframes dlspin{to{transform:rotate(360deg)}}</style>';
+  document.body.appendChild(d);
+  setTimeout(hideDeepLinkLoading, 8000);   // 保險：最多 8 秒一定移除，不卡死
+}
+function hideDeepLinkLoading(){ const d=document.getElementById('deepLinkLoading'); if(d) d.remove(); }
 function clearFrontPageStateForDeepLink(){
   const d = readFrontDeepLink();
   if(!d.hasDeepLink) return;
@@ -5595,10 +5613,14 @@ if(document.readyState==='loading'){
   const rawTab = (savedState && savedState.tab) || localStorage.getItem('2bl_current_tab') || 'home';
   const lastTab = deepLink.hasDeepLink ? 'home' : ((rawTab === 'myregs') ? 'member' : rawTab);
 
+  // 分享連結：先蓋一層載入畫面，避免使用者看到首頁閃一下才跳到場次
+  if(deepLink.hasDeepLink) showDeepLinkLoading();
+
   await loadHome();
 
-  if(deepLink.sessionId){ await openSession(deepLink.sessionId); return; }
-  if(deepLink.eventId){ await openEvent(deepLink.eventId); return; }
+  if(deepLink.sessionId){ await openSession(deepLink.sessionId); hideDeepLinkLoading(); return; }
+  if(deepLink.eventId){ await openEvent(deepLink.eventId); hideDeepLinkLoading(); return; }
+  hideDeepLinkLoading();
 
   // 還原頁面：非分享連結一律回到單一首頁；避免上次停留的報名表或舊場次列表蓋回首頁。
   if(lastTab === 'member' && savedEmail){

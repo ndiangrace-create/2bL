@@ -1772,14 +1772,32 @@ function syncAgreementTemplateSelection(){
   if($('agreementVersionPreview')) $('agreementVersionPreview').textContent=ver||'請選擇版本';
 }
 
+// 時間下拉：強制 24 小時制。
+// 原本用 <input type="time">，其顯示格式由手機系統決定；
+// 若手機設為 12 小時制，17:00 會顯示成「5:00」，主辦容易誤判成早上五點。
+function timeOptionsHtml(selected){
+  const cur = String(selected || '').trim();
+  let html = '';
+  for (let h = 0; h < 24; h++) {
+    for (const m of ['00', '30']) {
+      const v = String(h).padStart(2, '0') + ':' + m;
+      html += '<option value="' + v + '"' + (v === cur ? ' selected' : '') + '>' + v + '</option>';
+    }
+  }
+  // 若原本存的時間不是整點/半點（例如 13:15），保留該值，避免存檔後被改掉
+  if (cur && html.indexOf('value="' + cur + '"') < 0) {
+    html = '<option value="' + cur + '" selected>' + cur + '</option>' + html;
+  }
+  return html;
+}
 let sessionDateRowIdx=0;
 function sessionDateRowHtml(d={},idx){
   d = d || {};
   return '<div class="date-line-row" data-idx="'+idx+'">'
     +'<input id="set_date_date_'+idx+'" type="date" value="'+attr(d.date||'')+'" title="日期">'
     +'<input id="set_date_label_'+idx+'" value="'+attr(d.label||'')+'" placeholder="顯示名" title="顯示名稱，可空白">'
-    +'<input id="set_date_start_'+idx+'" type="time" value="'+attr(d.start||'10:00')+'" title="開始時間">'
-    +'<input id="set_date_end_'+idx+'" type="time" value="'+attr(d.end||'18:00')+'" title="結束時間">'
+    +'<select id="set_date_start_'+idx+'" title="開始時間">'+timeOptionsHtml(d.start||'10:00')+'</select>'
+    +'<select id="set_date_end_'+idx+'" title="結束時間">'+timeOptionsHtml(d.end||'18:00')+'</select>'
     +'<input id="set_date_fee_'+idx+'" type="number" value="'+attr(Number(d.fee||0)||0)+'" placeholder="單日費用" title="單日費用">'
     +'<input id="set_date_limit_'+idx+'" type="number" value="'+attr(Number(d.limit||0)||0)+'" placeholder="名額" title="名額">'
     +'<button type="button" class="btn secondary small" onclick="removeSessionDateRow('+idx+')">刪</button>'
