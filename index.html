@@ -2981,6 +2981,11 @@ function renderAnnouncements(list){
 
 
 
+// 主題底下的開放場次數（主題是系列，不是單一場次，故不顯示日期時間）
+function eventSessionCount(eventId){
+  const all = (ST.allSessionsData||[]).filter(s=>String(s.eventId||'')===String(eventId) && isOpenSession(s));
+  return all.length;
+}
 function isOpenSession(s){
   const st=String(s?.status||'').trim();
   return !st || st==='報名中' || st==='開放中';
@@ -5521,57 +5526,6 @@ if(document.readyState==='loading'){
       renderAnnouncements(asArr(boot.announcements)); renderEvents(); return boot;
     }catch(e){ console.error('[frontBootstrap failed]', e); const sessions=await api({action:'getSessions', _t:Date.now()}); ST.allSessionsData=uniqueSessions(sessions).filter(openSess); ST.sessions=ST.allSessionsData; ST.events=[]; ST.bundles=[]; renderEvents(); }
   };
-  function frontShortDate(v){
-    if(!v) return '';
-    const s=String(v).trim();
-    if(!s) return '';
-    if(/^\d{4}[-/]\d{1,2}[-/]\d{1,2}/.test(s)) return s.slice(5,10).replace('-','/');
-    return s;
-  }
-  function frontTimeRange(start,end){
-    const a=String(start||'').trim();
-    const b=String(end||'').trim();
-    if(a&&b) return a+'～'+b;
-    return a||b||'';
-  }
-  function frontSessionInfo(s){
-    const dates=asArr(s&&s.dates);
-    let date='', time='';
-    if(dates.length>1){
-      date=frontShortDate(dates[0]?.date)+'～'+frontShortDate(dates[dates.length-1]?.date);
-      time=frontTimeRange(dates[0]?.start||dates[0]?.startTime, dates[0]?.end||dates[0]?.endTime);
-    }else if(dates.length===1){
-      const d=dates[0]||{};
-      date=frontShortDate(d.date);
-      time=frontTimeRange(d.start||d.startTime, d.end||d.endTime);
-    }
-    if(!date){
-      const start=s?.date||s?.startDate||s?.start_date||s?.eventDate||s?.event_date||'';
-      const end=s?.endDate||s?.end_date||'';
-      date=end&&String(end)!==String(start)?frontShortDate(start)+'～'+frontShortDate(end):frontShortDate(start);
-    }
-    if(!time) time=frontTimeRange(s?.startTime||s?.start_time||s?.time, s?.endTime||s?.end_time);
-    const location=s?.venue||s?.location||s?.place||s?.address||'';
-    return {date,time,location};
-  }
-  function frontEventInfo(e){
-    const eventId=String(e&&e.id||'');
-    const related=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===eventId&&openSess(s)));
-    const first=related[0]||null;
-    const fromSession=first?frontSessionInfo(first):{date:'',time:'',location:''};
-    let date=fromSession.date;
-    let time=fromSession.time;
-    let location=e?.location||e?.venue||fromSession.location||'';
-    if(!date){
-      const start=e?.date||e?.startDate||e?.start_date||e?.eventDate||e?.event_date||'';
-      const end=e?.endDate||e?.end_date||'';
-      date=end&&String(end)!==String(start)?frontShortDate(start)+'～'+frontShortDate(end):frontShortDate(start);
-    }
-    if(!time) time=frontTimeRange(e?.startTime||e?.start_time||e?.time, e?.endTime||e?.end_time);
-    if(!location) location=fromSession.location;
-    return {date,time,location};
-  }
-
   window.renderEvents = function(){
     // ── 精選主題活動（ST.events 活動層）──
     const fl=$('featuredEventsList');
@@ -5579,7 +5533,6 @@ if(document.readyState==='loading'){
       const events=asArr(ST.events);
       if(events.length){
         fl.innerHTML=events.map(e=>{
-          const info=frontEventInfo(e);
           const coverHtml=e.cover
             ?`<img src="${esc(e.cover)}" alt="" style="width:100%;height:104px;object-fit:cover;background:#DDEAD1;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
             :``;
@@ -5590,11 +5543,11 @@ if(document.readyState==='loading'){
             ${coverHtml}${placeholderHtml}
             <button onclick="event.stopPropagation();shareEvent('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔗</button>
             <div style="padding:10px">
-              <div style="font-size:15px;font-weight:900;color:#111;line-height:1.3;min-height:38px">${esc(e.title||'')}</div>
-              ${info.date?`<div style="font-size:12px;color:#555;margin-top:5px;line-height:1.45">📅 ${esc(info.date)}</div>`:''}
-              ${info.time?`<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.45">⏰ ${esc(info.time)}</div>`:''}
-              ${info.location?`<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.45">📍 ${esc(info.location)}</div>`:''}
-              <button onclick="event.stopPropagation();registerFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:#DCD7ED;color:#111;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">立即報名</button>
+              <div style="font-size:15px;font-weight:900;color:var(--txt);line-height:1.3">${esc(e.title||'')}</div>
+              ${e.location?`<div style="font-size:12px;color:var(--muted);margin-top:5px;line-height:1.45">📍 ${esc(e.location)}</div>`:''}
+              ${e.desc?`<div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45">${esc(e.desc)}</div>`:''}
+              <div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45">🎪 ${eventSessionCount(e.id)} 個場次</div>
+              <button onclick="event.stopPropagation();openActivityFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:var(--c5);color:var(--txt);font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">查看場次</button>
             </div>
           </div>`;
         }).join('');
