@@ -5059,6 +5059,8 @@ function mRecordEquipText(r){
   const direct=String(mFirstVal(r,['preNoticeEquipmentText','totalEquipmentText','equipmentText','wholeEquipmentText','dailyEquipmentText','equipText','equipment_text','daily_equipment_text'],'')||'').trim();
   if(mEquipTextIsUseful(direct)) return direct;
 
+  // 總設備一律以 Worker 從資料庫算好的為準（內含設備 × 攤位數 ＋ 加租設備）。
+  // 不可用前端自行推算的加購清單頂替，否則會漏掉場次內含的桌椅（曾造成「只顯示椅子」）。
   const included=mRecordIncludedEquipText(r);
   const extra=mRecordExtraEquipText(r);
   const hasIncluded=mEquipTextIsUseful(included);
@@ -5066,10 +5068,6 @@ function mRecordEquipText(r){
   if(hasIncluded && hasExtra) return `${included}，另加 ${extra}`;
   if(hasIncluded) return included;
   if(hasExtra) return `加購：${extra}`;
-
-  // 舊 Worker 尚未部署時的備援：只呈現「加購」，避免誤導成全部設備。
-  const legacy=mObjectQtyText(r&&r.equip) || mObjectQtyText(r&&r.equipment) || '';
-  if(legacy) return `加購：${legacy}`;
   return '依本場報名資料與主辦公告';
 }
 function mCleanEquipDisplayText(txt){
