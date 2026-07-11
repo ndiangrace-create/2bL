@@ -1338,6 +1338,8 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-fixed-row.m-equip-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:12.8px!important;line-height:1.35!important}
 .m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .m-fixed-pay b{font-weight:950!important;color:#111!important}
+.m-cart-pick{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:9px 11px;background:#f3f8f0;border:1.5px solid #cfe3c4;border-radius:10px;font-size:15px;font-weight:800;color:#3c5a33;cursor:pointer}
+.m-cart-pick input{width:19px;height:19px;accent-color:var(--g);cursor:pointer}
 .m-record-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important;gap:6px!important;margin-top:auto!important}
 .m-record-actions .m-action-btn{width:100%!important;min-height:34px!important;padding:7px 6px!important;border-radius:12px!important;font-size:13px!important;white-space:nowrap!important}
 .m-record-alert{border-radius:10px!important;padding:7px 8px!important;font-size:12.5px!important;font-weight:950!important;text-align:center!important}
@@ -2499,7 +2501,7 @@ function renderActCard(s, mode){
   const loc = s.location||s.venue||s.place||'';
   const fee = s.baseFee!=null ? 'NT$'+Number(s.baseFee).toLocaleString()+(s.hasFeeRange?'起':'') : (s.feeText||s.fee||'依項目計算');
   const regType = s.regType||s.type||s.category||'';
-  const cover = s.coverUrl||s.imageUrl||s.imgUrl||'';
+  const cover = s.cover||'';
   const isOpen = s.regOpen!==false && s.status!=='closed' && s.status!=='cancelled';
   const isClosed = !isOpen;
 
@@ -3251,7 +3253,7 @@ function myRegBadge(s){
 /* 20260705 前台主題色：同一主題活動固定同色，不用場次名稱判斷 */
 function getFrontSessionThemeInfo(s){
   try{
-    const eventId=String((s&& (s.eventId||s.event_id)) || '').trim();
+    const eventId=String((s&&s.eventId) || '').trim();
     const evt=(ST.events||[]).find(e=>String(e.id)===eventId);
     const rawTitle=String((evt&&(evt.title||evt.name)) || (s&&(s.eventTitle||s.event_title||s.themeTitle||s.theme_title)) || '').trim();
     const title=rawTitle || (eventId ? '主題活動' : '無主題');
@@ -3304,9 +3306,9 @@ function renderSessionCard(s){
     dateStr=String(s.date).slice(5).replace('-','/');
   }
   const placeStr=s.venue||s.location||s.place||'';
-  const eventId=String(s.eventId||s.event_id||'');
+  const eventId=String(s.eventId||'');
   const evt=(ST.events||[]).find(e=>String(e.id)===eventId);
-  const cover=s.coverUrl||s.cover||evt?.cover||'';
+  const cover=s.cover||evt?.cover||'';
   const bundleBadge=frontBundleBadgeHtml(s);
   const myBadge=myRegBadge(s);
   const coverEl=cover
@@ -3454,7 +3456,7 @@ function renderDynFormFull(s, isNew=false){
   const isCompany=!!vTaxId;
 
   ST.equipQty={};ST.addonQty={};ST.stallCount=1;
-  const cover=s.cover||s.coverUrl||'';
+  const cover=s.cover||'';
   buildFormHero(s,cover);
 
   // 取得日期字串
@@ -3961,7 +3963,7 @@ function openRegFormModal(){
     pageId: activePageBeforeReg ? activePageBeforeReg.id : '',
     portalTitle: ($('portalTitle')?.textContent || '').trim(),
     catFilter: ST.currentCatFilter || '',
-    eventId: ST.currentEvent ? (ST.currentEvent.id || '') : (ST.currentSession ? (ST.currentSession.eventId || ST.currentSession.event_id || '') : '')
+    eventId: ST.currentEvent ? (ST.currentEvent.id || '') : (ST.currentSession ? (ST.currentSession.eventId || '') : '')
   };
   // 切換到報名表頁面
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -4158,10 +4160,10 @@ function closeRegFormToSessionListAfterSubmit(sessionSnapshot, email){
     seen.add(key);
     return typeof isOpenSession === 'function' ? isOpenSession(item) : true;
   });
-  const eventId = String(s.eventId || s.event_id || returnState.eventId || '');
+  const eventId = String(s.eventId || returnState.eventId || '');
   let sessions = [];
   if(eventId){
-    sessions = all.filter(item=>String(item.eventId || item.event_id || '') === eventId);
+    sessions = all.filter(item=>String(item.eventId || '') === eventId);
   }
   if(!sessions.length && (returnState.catFilter || ST.currentCatFilter)){
     const cat = returnState.catFilter || ST.currentCatFilter;
@@ -4910,8 +4912,8 @@ function memberLogout(){
   toast('已登出');
 }
 
-function isPaidText(v){ return String(v||'').indexOf('已繳費')>=0 || String(v||'')==='免費'; }
-function isPendingPayText(v){ return String(v||'').trim()==='待確認'; }
+function isPaidText(v){ const s=String(v||'').trim(); return ['已繳費','已付款','付款完成','付款成功','paid','confirmed_paid','payment_confirmed'].includes(s) || s.indexOf('已繳費')>=0 || s.indexOf('已付款')>=0 || s==='免費'; }
+function isPendingPayText(v){ const s=String(v||'').trim(); return ['待確認','付款待確認','已回報'].includes(s); }
 function isCancelledReg(reg){ return String(reg?.status||'').trim()==='已取消'; }
 function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus) && !(String(reg.seatChoiceIntent||'')==='paid' && String(reg.seatChoiceStatus||'')!=='reserved'); }
 function canRefundReg(reg){ return reg && !isCancelledReg(reg) && isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費' && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
@@ -5204,6 +5206,7 @@ function renderMyRegs(regs){
     const statusMsg = isCancelledReg(r)?`<div class="m-record-alert muted">已取消，報名紀錄保留</div>`:(isPendingPayText(r.payStatus)?`<div class="m-record-alert warn">已回報，等待主辦確認</div>`:'');
     let actions='';
     if(canPay) actions+=`<button class="m-action-btn" onclick="showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:var(--g);color:#fff;border:none">前往繳費</button>`;
+    const cartBox = canPay ? `<label class="m-cart-pick"><input type="checkbox" class="m-cart-cb" value="${r.id}" onchange="updatePayCart()"> 一起繳費 <b>NT$${Number(r.total||0).toLocaleString()}</b></label>` : '';
     if(canPreNotice) actions+=`<button class="m-action-btn" onclick="openPreEventNotice('${r.id}')" style="background:var(--g);color:#fff;border:none">查看行前通知</button>`;
     if(canCancel) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,false)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">取消報名</button>`;
     if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:#fff;color:#777;border:1.5px solid #ddd">取消／退費說明</button>`;
@@ -5222,6 +5225,7 @@ function renderMyRegs(regs){
       ${mRecordFixedBlockHtml(r)}
       ${statusMsg}
       ${stallSelectionHtml(r)}
+      ${cartBox}
       ${actions?`<div class="m-record-actions">${actions}</div>`:''}
       <div class="m-record-id">報名編號：${escHtml(r.id)}</div>
     </div>`;
@@ -5229,6 +5233,33 @@ function renderMyRegs(regs){
   el.className='m-record-list m-record-grid';
   el.style.cssText='';
   handlePendingPayLink(ST.regs);
+  updatePayCart();
+}
+
+// ── 合併繳費（購物車）：勾選多筆一起繳，省手續費 ──
+function updatePayCart(){
+  const cbs=[...document.querySelectorAll('.m-cart-cb')];
+  const picked=cbs.filter(c=>c.checked).map(c=>c.value);
+  let bar=$('payCartBar');
+  if(picked.length<2){ if(bar) bar.remove(); return; }
+  const total=picked.reduce((s,id)=>{ const r=(ST.regs||[]).find(x=>String(x.id)===String(id)); return s+Number(r?.total||0); },0);
+  if(!bar){
+    bar=document.createElement('div');
+    bar.id='payCartBar';
+    bar.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:900;background:#fff;border-top:2px solid var(--g);box-shadow:0 -4px 20px rgba(0,0,0,.12);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap';
+    document.body.appendChild(bar);
+  }
+  bar.innerHTML=`<div style="font-size:17px;font-weight:900;color:#333">已選 ${picked.length} 場｜合計 <span style="color:var(--g)">NT$${total.toLocaleString()}</span></div>
+    <button type="button" onclick="startMergedPay()" style="background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit">一起繳費</button>`;
+}
+function getPayCartIds(){ return [...document.querySelectorAll('.m-cart-cb')].filter(c=>c.checked).map(c=>c.value); }
+function startMergedPay(){
+  const ids=getPayCartIds();
+  if(ids.length<2){ toast('請至少勾選兩場'); return; }
+  const total=ids.reduce((s,id)=>{ const r=(ST.regs||[]).find(x=>String(x.id)===String(id)); return s+Number(r?.total||0); },0);
+  const first=(ST.regs||[]).find(x=>String(x.id)===String(ids[0]));
+  ST_mergedPayIds=ids;
+  showPayPage(ids[0], `合併繳費（共 ${ids.length} 場）`, total, {merged:true, reg:first});
 }
 
 
@@ -5532,6 +5563,7 @@ async function doSubmitCancel(){
 // ── 繳費流程 ──
 let ST_currentPayRegId = '';
 let ST_currentPayAmount = 0;
+let ST_mergedPayIds = [];
 let ST_currentPaymentCard = '';
 let ST_currentPaymentInfo = null;
 
@@ -5564,12 +5596,14 @@ function paymentMethodOptionsForReg(reg){
   return opts || '<option value="">目前未開放付款方式</option>';
 }
 
-function showPayPage(regId, sesName, amount){
+function showPayPage(regId, sesName, amount, opts){
+  const merged = !!(opts && opts.merged);
+  if(!merged) ST_mergedPayIds = [];   // 單筆繳費：清除合併狀態，避免殘留造成誤判
   const reg=findMyRegById(regId) || {};
   ST_currentPayRegId = regId;
   ST_currentPayAmount = Number(amount)||Number(reg.total||reg.totalAmount||reg.amount||0)||0;
   ST_currentPaymentInfo = reg.paymentProfile || null;
-  $('payModalTitle').textContent = '前往繳費';
+  $('payModalTitle').textContent = merged ? `合併繳費（共 ${ST_mergedPayIds.length} 場）` : '前往繳費';
   $('payModalInfo').innerHTML = `<div><strong>${escHtml(sesName)}</strong></div><div style="font-size:20px;font-weight:900;color:var(--g);margin-top:2px">應繳金額：NT$ ${ST_currentPayAmount.toLocaleString()}</div>`;
   const bankEl=$('bankInfoDisplay'); if(bankEl) bankEl.innerHTML=bankInfoHtmlFromPayment(reg);
   const payLastEl = $('payLastFive');
@@ -5629,11 +5663,15 @@ async function submitPaymentForm(){
   const btn = $('reportPaymentBtn');
   if(btn){ btn.disabled=true; btn.textContent='回報中…'; }
   try{
-    const res = await apiPost({action:'submitPayment',regId:ST_currentPayRegId,method,lastFive,amount,email:ST.member?.email||ST.memberEmail||''});
+    const merged = Array.isArray(ST_mergedPayIds) && ST_mergedPayIds.length>1;
+    const res = merged
+      ? await apiPost({action:'submitPaymentBatch',regIds:ST_mergedPayIds,method,lastFive,email:ST.member?.email||ST.memberEmail||''})
+      : await apiPost({action:'submitPayment',regId:ST_currentPayRegId,method,lastFive,amount,email:ST.member?.email||ST.memberEmail||''});
     if(res.error){ showPayFormError(res.error); return; }
     const cardText = res.lineCardText || res.paymentLineCardText || '';
     if(!cardText){ showPayFormError('付款卡片產生失敗，請聯繫該場次官方 LINE 客服'); return; }
     ST_currentPaymentCard = cardText;
+    ST_mergedPayIds = [];
     showPaymentSuccess(cardText);
     if(ST.memberEmail){
       await safeGetMyRegs(ST.memberEmail);
@@ -5746,9 +5784,9 @@ if(document.readyState==='loading'){
 // DB-DRIVEN CORE PATCH 20260618：資料庫主導前台，不再靠零散前台狀態
 // ────────────────────────────────────────────────────────────────
 (function(){
-  const OPEN_STATUS = new Set(['報名中','開放中']);
   const portalTypeMap = {'市集報名':['市集場次'],'體驗活動':['活動報名','體驗活動'],'通路寄賣':['通路寄賣'],'合作洽詢':['合作申請']};
-  function openSess(s){ return OPEN_STATUS.has(String(s?.status||'')); }
+  // 開放狀態判斷唯一來源：一律用 isOpenSession（避免首頁與主題頁對「開放」認定不一致）
+  function openSess(s){ return isOpenSession(s); }
   function asArr(v){ return Array.isArray(v)?v:[]; }
   function uniqueSessions(list){ return [...new Map(asArr(list).filter(Boolean).map(s=>[String(s.id),s])).values()]; }
   function saveEmail(email){ try{ localStorage.setItem('tb_member_email', email||''); localStorage.removeItem('tb_member'); }catch(e){} }
@@ -5833,7 +5871,7 @@ if(document.readyState==='loading'){
   }
   function frontEventInfo(e){
     const eventId=String(e&&e.id||'');
-    const related=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||s.event_id||'')===eventId&&openSess(s)));
+    const related=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===eventId&&openSess(s)));
     const first=related[0]||null;
     const fromSession=first?frontSessionInfo(first):{date:'',time:'',location:''};
     let date=fromSession.date;
@@ -5893,7 +5931,7 @@ if(document.readyState==='loading'){
     setTimeout(enableDragScroll,100);
   };
   window.openSessionFromCard=function(ev,sessionId){ if(ev){ev.preventDefault();ev.stopPropagation();} openSession(sessionId); }; window.handleSessionTap=window.openSessionFromCard;
-  window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||s.event_id||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
+  window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
   window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
   const _oldCheckMemberStep=window.checkMemberStep; window.checkMemberStep=async function(){ const email=(($('step1Email')&&$('step1Email').value)||'').trim(); if(email) saveEmail(email); return _oldCheckMemberStep?_oldCheckMemberStep():undefined; };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
