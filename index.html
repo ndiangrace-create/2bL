@@ -2277,7 +2277,10 @@ function readFrontDeepLink(){
   const sessionId = p.get('ses') || p.get('session') || p.get('sessionId') || '';
   const eventId = p.get('event') || p.get('eventId') || p.get('activity') || '';
   const page = p.get('page') || p.get('view') || '';
-  return { sessionId, eventId, page, hasDeepLink: !!(sessionId || eventId) };
+  // 信件的「前往會員專區」連結帶的是 page=member（或舊版 member=1）。
+  // 原本 hasDeepLink 只看場次/主題，導致從信件點進來不會跳到「我的紀錄」，只停在首頁。
+  const isMember = page === 'member' || page === 'records' || p.get('member') === '1';
+  return { sessionId, eventId, page, isMember, hasDeepLink: !!(sessionId || eventId || isMember) };
 }
 function buildFrontShareUrl(kind, id){
   const qs = new URLSearchParams();
@@ -5620,6 +5623,7 @@ if(document.readyState==='loading'){
 
   if(deepLink.sessionId){ await openSession(deepLink.sessionId); hideDeepLinkLoading(); return; }
   if(deepLink.eventId){ await openEvent(deepLink.eventId); hideDeepLinkLoading(); return; }
+  if(deepLink.isMember){ navTo('member'); hideDeepLinkLoading(); return; }
   hideDeepLinkLoading();
 
   // 還原頁面：非分享連結一律回到單一首頁；避免上次停留的報名表或舊場次列表蓋回首頁。
