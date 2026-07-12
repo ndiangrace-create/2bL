@@ -1349,6 +1349,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-fixed-row.m-equip-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:12.8px!important;line-height:1.35!important}
 .m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .m-fixed-pay b{font-weight:950!important;color:#111!important}
+.m-bundle-note{margin:8px 0 4px;padding:9px 11px;background:#FAEEC7;border:1.5px solid #e8d9a0;border-radius:10px;font-size:13px;font-weight:800;color:#7a5c00;line-height:1.4}
 .m-cart-pick{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:9px 11px;background:#f3f8f0;border:1.5px solid #cfe3c4;border-radius:10px;font-size:15px;font-weight:800;color:#3c5a33;cursor:pointer}
 .m-cart-pick input{width:19px;height:19px;accent-color:var(--g);cursor:pointer}
 .m-record-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important;gap:6px!important;margin-top:auto!important}
@@ -4664,6 +4665,15 @@ function memberLogout(){
 function isPaidText(v){ const s=String(v||'').trim(); return ['已繳費','已付款','付款完成','付款成功','paid','confirmed_paid','payment_confirmed'].includes(s) || s.indexOf('已繳費')>=0 || s.indexOf('已付款')>=0 || s==='免費'; }
 function isPendingPayText(v){ const s=String(v||'').trim(); return ['待確認','付款待確認','已回報'].includes(s); }
 function isCancelledReg(reg){ return String(reg?.status||'').trim()==='已取消'; }
+// 組合套組（bundle_group_id 相同）為綁定優惠：必須「一起繳費」，不可單獨繳其中一場。
+// 否則等於用組合價只買單場（與退費同進退規則一致）。
+function bundleGroupOf(reg){ return String(reg && reg.bundleGroupId || '').trim(); }
+function sameBundleRegs(reg){
+  const g = bundleGroupOf(reg);
+  if(!g) return [reg];
+  return (ST.regs||[]).filter(r=>bundleGroupOf(r)===g);
+}
+function bundleUnpaidRegs(reg){ return sameBundleRegs(reg).filter(r=>canPayReg(r)); }
 function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus) && !(String(reg.seatChoiceIntent||'')==='paid' && String(reg.seatChoiceStatus||'')!=='reserved'); }
 function canRefundReg(reg){ return reg && !isCancelledReg(reg) && isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費' && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
 function canDirectCancelReg(reg){ return reg && !isCancelledReg(reg) && ['待審核','已錄取'].includes(String(reg.status||'')) && !isPaidText(reg.payStatus) && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
@@ -4936,8 +4946,14 @@ function renderMyRegs(regs){
     const canPay=canPayReg(r), canCancel=canDirectCancelReg(r), canRefund=canRefundReg(r), canPreNotice=canViewPreNoticeReg(r);
     const statusMsg = isCancelledReg(r)?`<div class="m-record-alert muted">已取消，報名紀錄保留</div>`:(isPendingPayText(r.payStatus)?`<div class="m-record-alert warn">已回報，等待主辦確認</div>`:'');
     let actions='';
-    if(canPay) actions+=`<button class="m-action-btn" onclick="showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:var(--g);color:#fff;border:none">前往繳費</button>`;
-    const cartBox = canPay ? `<label class="m-cart-pick"><input type="checkbox" class="m-cart-cb" value="${r.id}" onchange="updatePayCart()"> 一起繳費 <b>NT$${Number(r.total||0).toLocaleString()}</b></label>` : '';
+    const inBundle = canPay && !!bundleGroupOf(r);
+    if(canPay && inBundle){
+      actions+=`<button class="m-action-btn" onclick="startBundlePay('${r.id}')" style="background:var(--g);color:#fff;border:none">前往繳費（組合）</button>`;
+    } else if(canPay){
+      actions+=`<button class="m-action-btn" onclick="showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:var(--g);color:#fff;border:none">前往繳費</button>`;
+    }
+    // 組合套組必須整組一起繳，故不提供單筆勾選（避免只繳其中一場）
+    const cartBox = (canPay && !inBundle) ? `<label class="m-cart-pick"><input type="checkbox" class="m-cart-cb" value="${r.id}" onchange="updatePayCart()"> 一起繳費 <b>NT$${Number(r.total||0).toLocaleString()}</b></label>` : (inBundle ? `<div class="m-bundle-note">🎫 組合優惠：需與同組場次一起繳費</div>` : '');
     if(canPreNotice) actions+=`<button class="m-action-btn" onclick="openPreEventNotice('${r.id}')" style="background:var(--g);color:#fff;border:none">查看行前通知</button>`;
     if(canCancel) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,false)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">取消報名</button>`;
     if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:#fff;color:#777;border:1.5px solid #ddd">取消／退費說明</button>`;
@@ -4985,6 +5001,19 @@ function updatePayCart(){
   }
   bar.innerHTML=`<div style="font-size:17px;font-weight:900;color:#333">已選 ${picked.length} 場｜合計 <span style="color:var(--g)">NT$${total.toLocaleString()}</span></div>
     <button type="button" onclick="startMergedPay()" style="background:var(--g);color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit">一起繳費</button>`;
+}
+// 組合付款：自動把同組未繳的場次一起帶入合併繳費
+function startBundlePay(regId){
+  const reg=(ST.regs||[]).find(x=>String(x.id)===String(regId));
+  if(!reg){ toast('找不到報名'); return; }
+  const group=bundleUnpaidRegs(reg);
+  if(group.length<=1){
+    showPayPage(reg.id, reg.sessionName||'', Number(reg.total||0));
+    return;
+  }
+  const total=group.reduce((s,r)=>s+Number(r.total||0),0);
+  ST_mergedPayIds=group.map(r=>String(r.id));
+  showPayPage(group[0].id, `組合繳費（共 ${group.length} 場）`, total, {merged:true, reg:group[0]});
 }
 function getPayCartIds(){ return [...document.querySelectorAll('.m-cart-cb')].filter(c=>c.checked).map(c=>c.value); }
 function startMergedPay(){
