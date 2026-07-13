@@ -2839,13 +2839,31 @@ function getMemberEmail(){
   try{ return String(localStorage.getItem('tb_member_email')||'').trim(); }catch(e){ return ''; }
 }
 
+// ── 會員手機唯一來源 ──
+// 過去手機同時來自「呼叫端參數 / localStorage / ST.member」，呼叫端各自拼。
+// 取消報名、退款申請、付款回報後重新載入名單時漏傳手機 → 後端 hGetMyRegs 直接擋下，
+// 回「請提供 Email 與手機，才能查詢我的紀錄」，被誤會成報名紀錄不見了。
+// 一律改用本函式取值，不要再自行組合。
+function getMemberPhone(){
+  const a = (ST && ST.member && ST.member.phone) ? String(ST.member.phone).trim() : '';
+  if(a) return a;
+  return memberSafePhone();
+}
 async function safeGetMyRegs(email, phone){
   const el=$('myRegsList');
   const helper=$('memberRecordHelper');
+  // 呼叫端沒帶手機就自動補；補不到才顯示「請補上手機」，不讓後端回誤導紅字。
+  const ph = String(phone || getMemberPhone() || '').trim();
   if(helper) helper.classList.remove('show');
+  if(!ph){
+    ST.regs=[];
+    if(el) el.innerHTML='<div style="color:#777;font-size:15px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #dfead8;border-radius:18px;margin:0 16px">請補上手機號碼查詢報名紀錄。<br>系統需要 Email＋手機比對，避免資料被其他人看到。</div>';
+    if(helper) helper.classList.add('show');
+    return [];
+  }
   if(el) el.innerHTML='<div style="color:#999;font-size:16px;text-align:center;padding:22px">報名紀錄載入中…</div>';
   try{
-    const regs=await api({action:'getMyRegs',email,phone:phone||'',_t:Date.now()});
+    const regs=await api({action:'getMyRegs',email,phone:ph,_t:Date.now()});
     if(regs && regs.error){
       ST.regs=[];
       if(el){
@@ -2922,13 +2940,7 @@ async function safeLoadMemberPage(email, opts={}){
     toast('會員資料暫時載入失敗，報名紀錄會繼續載入');
   }
 
-  if(!lookupPhone){
-    const el=$('myRegsList');
-    if(el) el.innerHTML='<div style="color:#777;font-size:15px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #dfead8;border-radius:18px;margin:0 16px">請補上手機號碼查詢報名紀錄。<br>系統需要 Email＋手機比對，避免資料被其他人看到。</div>';
-    const helper=$('memberRecordHelper'); if(helper) helper.classList.add('show');
-    memberShowArea('regs');
-    return [];
-  }
+  // 手機為空的情況由 safeGetMyRegs 統一處理（同一提示只留一份）。
   const list=await safeGetMyRegs(email, lookupPhone);
   if(opts.forceRegs) switchMemberMode('regs');
   return list;
@@ -2979,7 +2991,7 @@ async function syncMemberRecordsFromDb(reason){
   const email=String(ST.memberEmail||memberSafeEmail()||'').trim();
   if(!email || !isMemberPageActive()) return [];
   console.log('[AA9 sync myRegs]', reason||'manual');
-  return safeGetMyRegs(email, memberSafePhone());
+  return safeGetMyRegs(email);
 }
 function scheduleMemberRecordsSync(reason, delay=120){
   clearTimeout(ST.__memberSyncTimer);
