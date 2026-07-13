@@ -1315,6 +1315,54 @@ function renderThemeFilter(){
 }
 function setThemeFilter(id){ AdminState.themeFilter=String(id||''); renderThemeFilter(); renderSessions(); }
 function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current'; const list=[]; for(const s of AdminState.sessions){ if(mode==='current' && isArchived(s)) continue; if(mode==='archived' && !isArchived(s)) continue; if(kw && ![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw)) continue; const tf=AdminState.themeFilter||''; if(tf && String(s.eventId||s.event_id||'')!==String(tf)) continue; list.push(s); } if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;} const sorted=sortNearestFirst(list, sessionSortTs); let out=''; for(const s of sorted) out += renderSessionCard(s); box.innerHTML=out; }
+// ── 場次短網址 ──────────────────────────────────────────────
+// 一個場次只會有一組短網址，後端以唯一索引保證；重複按只會取回同一組。
+// 點擊數由資料庫原子累加，不在前端計算。
+async function openShortLink(sid){
+  const s=AdminState.sessions.find(x=>String(sessionId(x))===String(sid));
+  const name=s?sessionName(s):'';
+  let d=$('shortLinkPanel');
+  if(!d){ d=document.createElement('div'); d.id='shortLinkPanel'; d.className='panel'; document.body.appendChild(d); }
+  d.innerHTML='<div class="panel-head"><div class="panel-head-in">'
+    +'<div><div class="panel-title">場次短網址</div><div class="panel-sub">'+safe(name)+'</div></div>'
+    +'<button class="xbtn" onclick="closeShortLink()">✕</button></div></div>'
+    +'<div class="panel-body"><div class="loading">產生中…</div></div>';
+  d.classList.add('show');
+  try{
+    const r=await apiPost({action:'createShortLink',sessionId:sid});
+    d.querySelector('.panel-body').innerHTML=
+       '<div class="notice"><div class="section-label">分享給攤友的短網址</div>'
+      +'<div style="font-size:21px;font-weight:950;word-break:break-all;margin:6px 0 12px">'+safe(r.url)+'</div>'
+      +'<div class="card-actions">'
+      +'<button class="btn" onclick="copyShortLink(\''+attr(r.url)+'\')">複製連結</button>'
+      +'<a class="btn secondary" href="'+attr(r.url)+'" target="_blank" rel="noopener">開啟測試</a>'
+      +'</div></div>'
+      +'<div class="notice">'
+      +'<div class="info-line"><span>累計點擊</span><span>'+(Number(r.clicks)||0)+' 次</span></div>'
+      +'<div class="info-line"><span>短碼</span><span>'+safe(r.code)+'</span></div>'
+      +'</div>'
+      +'<div class="todo-one-layer-note">同一場次只會有一組短網址，重複按不會產生新的。連結每被開啟一次，點擊數 +1。</div>';
+  }catch(e){
+    d.querySelector('.panel-body').innerHTML='<div class="empty">'+safe((e&&e.message)||e)+'</div>';
+  }
+}
+function closeShortLink(){ const d=$('shortLinkPanel'); if(d) d.classList.remove('show'); }
+function copyShortLink(url){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>toast('已複製短網址')).catch(()=>fallbackCopyShortLink(url));
+    return;
+  }
+  fallbackCopyShortLink(url);
+}
+function fallbackCopyShortLink(url){
+  const ta=document.createElement('textarea');
+  ta.value=url; ta.setAttribute('readonly','readonly');
+  ta.style.position='fixed'; ta.style.left='-9999px';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast('已複製短網址'); }
+  catch(e){ prompt('請複製此連結：', url); }
+  document.body.removeChild(ta);
+}
 function renderSessionCard(s){
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
@@ -1359,6 +1407,7 @@ function renderSessionCard(s){
           +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
           +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
           +'<button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
+          +'<button class="btn small" onclick="openShortLink(\''+attr(sid)+'\')">短網址</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button>'
