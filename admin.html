@@ -2396,6 +2396,20 @@ async function loadMembers(){
     box.innerHTML='<div class="empty">會員載入失敗：'+safe(e.message)+'</div>';
   }
 }
+// 免審核會員（fast_pass）：以資料庫 members.fast_pass 為準。
+// 開啟後，該會員報名「需審核」的場次也會直接錄取（老攤友免審），並自動寄出錄取通知信。
+async function toggleFastPass(email, enable, btn){
+  const e=String(email||'').trim();
+  if(!e || e==='—'){ toast('此會員沒有 Email，無法設定'); return; }
+  const on=(enable===true||enable==='true');
+  if(!confirm(on?('要將 '+e+' 設為「免審核會員」嗎？\n之後他報名需審核的場次會直接錄取。'):('要取消 '+e+' 的免審核嗎？'))) return;
+  const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
+  try{
+    await apiPost({action:'setFastPass', targetEmail:e, enable:on});
+    toast(on?'✅ 已設為免審核會員':'已取消免審核');
+    await loadMembers();
+  }catch(err){ toast('設定失敗：'+err.message,6000); btn.disabled=false; btn.textContent=old; }
+}
 function renderMembers(){
   const box=$('memberList');
   if(!box) return;
@@ -2417,14 +2431,16 @@ function renderMembers(){
     const cat=m.category||m.saleCategory||m.sellCategory||m.sell_category||'—';
     const intro=m.intro||m.brandIntro||m.description||m.brand_intro||'—';
     const updated=m.updatedAt||m.updated_at||m.joinedAt||m.joined_at||m.createdAt||m.created_at||'—';
+    const fp=(m.fastPass===true||m.fast_pass===true||m.fastPass==='true'||m.fast_pass==='true');
     html+='<article class="member-card member-card-lite">'
-      +'<div class="member-title" title="'+attr(brand)+'">'+safe(brand)+'</div>'
+      +'<div class="member-title" title="'+attr(brand)+'">'+safe(brand)+(fp?' <span class="tag green" style="font-size:11px">免審核</span>':'')+'</div>'
       +'<div class="member-icons">'+memberIconLinks(m)+'</div>'
       +'<div class="member-sub">'+safe(name)+'｜'+safe(phone)+'</div>'
       +'<div class="member-small-line" title="'+attr(email)+'">Email：'+safe(email)+'</div>'
       +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span></div>'
       +'<div class="member-note">'+safe(intro)+'</div>'
-      +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button></div>'
+      +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
+      +'<button class="btn small '+(fp?'':'secondary')+'" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核中':'設為免審核')+'</button></div>'
     +'</article>';
   }
   box.innerHTML=html;
@@ -2456,9 +2472,9 @@ function renderPaymentProfileManager(editId=''){
   const list=AdminState.paymentProfiles||[];
   const edit=list.find(x=>String(x.id)===String(editId))||{};
   const a=edit.allowedMethods||{bank:true}; const bank=edit.bankAccount||{}; const lp=edit.linepay||{}; const card=edit.card||{};
-  const cards=list.map(p=>{ const aa=p.allowedMethods||{}; const m=[aa.bank?'轉帳':'',aa.linepay?'LINE Pay':'',aa.card?'信用卡':''].filter(Boolean).join('、')||'未開放'; return '<div class="card" style="padding:14px"><b>'+safe(p.name||'未命名')+'</b> '+(p.isDefault?'<span class="tag ok">預設</span>':'')+(p.isEnabled===false?'<span class="tag bad">停用</span>':'')+'<div class="sub">'+safe(({tuibile_self:'兔彼樂自收',tuibile_agency:'兔彼樂代收',partner_self:'合作主辦自收'}[p.mode]||p.mode||''))+'｜'+safe(m)+'</div><div class="sub">帳戶：'+safe((p.bankAccount||{}).bankName||'未設定')+' / '+safe((p.bankAccount||{}).accountName||'')+'</div><div class="card-actions"><button class="btn small secondary" onclick="renderPaymentProfileManager(\''+attr(p.id)+'\')">編輯</button>'+(!p.isDefault?'<button class="btn small danger" onclick="disablePaymentProfile(\''+attr(p.id)+'\')">停用</button>':'')+'</div></div>'; }).join('') || '<div class="empty">目前沒有收款設定</div>';
+  const cards=list.map(p=>{ const aa=p.allowedMethods||{}; const m=[aa.bank?'轉帳':'',aa.linepay?'LINE Pay':'',aa.card?'信用卡':''].filter(Boolean).join('、')||'未開放'; return '<div class="card" style="padding:14px"><b>'+safe(p.name||'未命名')+'</b> '+(p.isDefault?'<span class="tag ok">預設</span>':'')+(p.isEnabled===false?'<span class="tag bad">停用</span>':'')+'<div class="sub">'+safe(({tuibile_self:'兔彼樂自收',tuibile_agency:'兔彼樂代收',partner_self:'合作主辦自收'}[p.mode]||p.mode||''))+'｜'+safe(m)+'</div><div class="sub">帳戶：'+safe((p.bankAccount||{}).bankName||'未設定')+' / '+safe((p.bankAccount||{}).accountName||'')+'</div><div class="card-actions"><button class="btn small '+(String(p.id)===String(editId)?'':'secondary')+'" onclick="renderPaymentProfileManager(\''+attr(p.id)+'\')">'+(String(p.id)===String(editId)?'✏️ 編輯中':'編輯')+'</button>'+(!p.isDefault?'<button class="btn small danger" onclick="disablePaymentProfile(\''+attr(p.id)+'\')">停用</button>':'')+'</div></div>'; }).join('') || '<div class="empty">目前沒有收款設定</div>';
   $('panelBody').innerHTML='<div class="notice">本區資料會寫入資料庫。場次指定收款設定後，錄取／付款時會保存付款快照；前台不自行判斷帳戶。</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:14px">'+cards+'</div>'
-    +'<div class="report-card"><div class="report-title">'+(edit.id?'編輯收款設定':'新增收款設定')+'</div><div class="form-grid">'
+    +'<div class="report-card" id="ppEditCard"><div class="report-title">'+(edit.id?'編輯收款設定':'新增收款設定')+'</div><div class="form-grid">'
     +'<input type="hidden" id="pp_id" value="'+attr(edit.id||'')+'">'
     +'<div class="form-field"><label>收款設定名稱</label><input id="pp_name" value="'+attr(edit.name||'')+'" placeholder="例：合作主辦A收款"></div>'
     +'<div class="form-field"><label>收款模式</label><select id="pp_mode">'+paymentModeOptions(edit.mode||'tuibile_self')+'</select></div>'
@@ -2470,6 +2486,8 @@ function renderPaymentProfileManager(editId=''){
     +'<div class="form-field"><label>信用卡顯示名稱</label><input id="pp_cardName" value="'+attr(card.displayName||'信用卡')+'"></div><div class="form-field"><label>信用卡付款連結／說明</label><input id="pp_cardUrl" value="'+attr(card.url||'')+'"></div>'
     +'<div class="form-field full"><label>備註</label><textarea id="pp_note">'+safe(edit.note||'')+'</textarea></div>'
     +'</div><div class="card-actions"><button class="btn" onclick="savePaymentProfile(this)">儲存收款設定</button><button class="btn secondary" onclick="renderPaymentProfileManager()">清空新增</button></div></div>';
+  // 手機版：編輯表單在頁面下方，按「編輯」後若不捲動會像沒反應
+  if(editId){ setTimeout(()=>{ const el=$('ppEditCard'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }, 60); }
 }
 async function savePaymentProfile(btn){
   const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
