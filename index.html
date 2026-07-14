@@ -4918,7 +4918,7 @@ function mRecordPayText(r){
     if(paid>0 && due>0) t+='（已繳 NT$ '+paid.toLocaleString('zh-TW')+'，待補繳 NT$ '+due.toLocaleString('zh-TW')+'）';
     return t;
   }
-  return String(r.payStatus||r.paymentStatus||'資料庫未提供');
+  return String(r.payStatus||r.paymentStatus||'請聯繫客服');
 }
 function canViewPreNoticeReg(reg){
   if(!reg || isCancelledReg(reg)) return false;

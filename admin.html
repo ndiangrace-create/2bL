@@ -1024,7 +1024,7 @@
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 搜尋攤友 → 一鍵報到。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">工讀生入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
-    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button></div></section>
+    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
 </section>
 
@@ -1046,7 +1046,7 @@ AdminState.tenantId = sessionStorage.getItem(TENANT_KEY)||urlParams.get('tenant'
 function endpoint(){return API.replace(/\/+$/,'');}
 function safe(v){return String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function attr(v){return safe(v).replace(/`/g,'&#96;');}
-function money(v){ if(v===undefined||v===null||v==='') return '資料庫未提供'; const n=Number(v); if(Number.isNaN(n)) return safe(v); return 'NT$ '+n.toLocaleString('zh-TW'); }
+function money(v){ if(v===undefined||v===null||v==='') return '金額異常'; const n=Number(v); if(Number.isNaN(n)) return safe(v); return 'NT$ '+n.toLocaleString('zh-TW'); }
 function num(v){ return (v===undefined||v===null||v==='') ? '—' : safe(v); }
 function toast(msg,dur=2600){const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._timer); toast._timer=setTimeout(()=>t.classList.remove('show'),dur);}
 
@@ -1206,7 +1206,7 @@ function regSessionId(r){ return String(r.sessionId||r.session_id||r.sessionID||
 function sessionById(id){ for(const s of AdminState.sessions){ if(sessionId(s)===String(id)) return s; } return {}; }
 function isArchived(s){ return ['封存','隱藏','已封存'].includes(String(s.status||'')); }
 function isClosed(s){ return ['關閉','已關閉','停用','已截止'].includes(String(s.status||'')); }
-function textFromMap(v){ if(v===undefined||v===null||v==='') return '資料庫未提供'; if(typeof v === 'string') return safe(v); const parts=[]; for(const k in v){ if(Number(v[k])>0) parts.push(safe(k)+'×'+safe(v[k])); } return parts.join('、') || '無'; }
+function textFromMap(v){ if(v===undefined||v===null||v==='') return '設備異常'; if(typeof v === 'string') return safe(v); const parts=[]; for(const k in v){ if(Number(v[k])>0) parts.push(safe(k)+'×'+safe(v[k])); } return parts.join('、') || '無'; }
 function equipText(v){ return textFromMap(v); } // 設備文字格式化相容函式
 function nz(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
 function getStats(s){ const st=s.stats||{}; return { total: nz(st.registrationTotal ?? s.registrationTotal ?? s.total), pending: nz(st.pendingReview ?? s.pendingReview ?? s.pending), approved: nz(st.approved ?? s.approved), unpaid: nz(st.unpaid ?? s.unpaid), paymentPending: nz(st.paymentPending ?? s.paymentPending ?? s.pendingPayment), paid: nz(st.paid ?? s.paid), free: nz(st.free ?? s.free), checked: nz(st.checkedIn ?? s.checkedIn ?? s.seated), refund: nz(st.refund ?? s.refund ?? s.refundReq) }; }
@@ -1363,6 +1363,49 @@ function fallbackCopyShortLink(url){
   catch(e){ prompt('請複製此連結：', url); }
   document.body.removeChild(ta);
 }
+// ── 系統異常紀錄 ───────────────────────────────────────────────
+// 過去所有錯誤只寫進 console，攤友看到「異常」，你我都只能猜。
+// 現在每一筆都留下「什麼時候、哪個功能、哪一筆報名、什麼錯誤」，截圖給工程師就能直接查。
+function errLogRow(e){
+  const t=e.createdAt ? new Date(e.createdAt).toLocaleString('zh-TW') : '';
+  const who=[e.email, e.regId, e.sessionId].filter(Boolean).map(safe).join('｜');
+  const det=(e.detail && Object.keys(e.detail).length)
+    ? '<div class="sub" style="margin-top:4px">'+safe(JSON.stringify(e.detail))+'</div>' : '';
+  return '<div class="card" style="padding:12px">'
+    +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+    +'<b>'+safe(e.source||'未知功能')+(e.action?'（'+safe(e.action)+'）':'')+'</b>'
+    +'<span class="sub">'+safe(t)+'</span></div>'
+    +'<div style="margin-top:6px;word-break:break-all">'+safe(e.message||'')+'</div>'
+    +(who?'<div class="sub" style="margin-top:4px">'+who+'</div>':'')
+    +det+'</div>';
+}
+async function openErrorLogs(){
+  openPanel('系統異常','出錯時留下的紀錄：哪個功能、哪一筆、什麼錯誤','<div class="loading">載入中…</div>');
+  await loadErrorLogs();
+}
+async function loadErrorLogs(){
+  try{
+    const rows=await api({action:'getErrorLogs',limit:200,_t:Date.now()});
+    const list=Array.isArray(rows)?rows:[];
+    const head='<div class="filter-row">'
+      +'<button class="btn secondary" onclick="loadErrorLogs()">重新整理</button>'
+      +'<button class="btn secondary" onclick="purgeErrorLogs(30)">清除 30 天前</button>'
+      +'</div>';
+    $('panelBody').innerHTML = head + (list.length
+      ? '<div class="cards">'+list.map(errLogRow).join('')+'</div>'
+      : '<div class="empty">目前沒有異常紀錄。</div>');
+  }catch(e){
+    $('panelBody').innerHTML='<div class="empty">異常紀錄載入失敗：'+safe((e&&e.message)||e)+'</div>';
+  }
+}
+async function purgeErrorLogs(days){
+  if(!confirm('確定清除 '+days+' 天前的異常紀錄？這個動作無法復原。')) return;
+  try{
+    const r=await apiPost({action:'purgeErrorLogs',days});
+    toast('已清除 '+((r&&r.deleted)||0)+' 筆');
+    await loadErrorLogs();
+  }catch(e){ toast('清除失敗：'+((e&&e.message)||e)); }
+}
 function renderSessionCard(s){
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
@@ -1501,7 +1544,7 @@ function adminPaymentText(r){
   const v=todoFirstValue(r,['amount','totalAmount','total_amount','receivableAmount','registration_total_amount','total']);
   if(v!=='' && v!==undefined && v!==null) return money(v);
   const pay=String(r.paymentStatus||r.payStatus||r.payment_status||'').trim();
-  return pay || '資料庫未提供';
+  return pay || '狀態異常';
 }
 function adminRegFixedBlockHtml(r){
   const date=adminShortDateRange(regDateText(r));
@@ -1580,7 +1623,7 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
     const html='<div class="readable-detail">'
       +'<div class="report-card"><div class="report-title">退費處理</div>'
       +'<div class="kv"><div class="k">已繳金額</div><div id="refundPaidText">'+money(paid)+'</div>'
-      +'<div class="k">活動日期</div><div>'+safe(sug.eventDate||'資料庫未提供')+'</div>'
+      +'<div class="k">活動日期</div><div>'+safe(sug.eventDate||'日期異常')+'</div>'
       +'<div class="k">退費規則</div><div>'+safe(sug.refundRuleLabel||'主辦手動確認')+'</div>'
       +'<div class="k">距活動日</div><div>'+(sug.daysBefore===null||sug.daysBefore===undefined?'無法判斷':safe(sug.daysBefore)+' 天')+'</div></div>'
       +'</div>'
@@ -2045,7 +2088,7 @@ async function saveSessionSeatMapOnly(sid,btn){
 
 async function openSessionSettings(sid){
   AdminState.currentSessionId=sid; AdminState.currentLayer='sessionSettings'; const s=sessionById(sid);
-  openPanel(sessionName(s)+'｜場次設定','僅還原場次設定內容：舊版緊密規則；其他頁面不動。','<div class="loading">設定載入中…</div>');
+  openPanel(sessionName(s)+'｜場次設定','','<div class="loading">設定載入中…</div>');
   try{
     const rows=await api({action:'getSession',sessionId:sid}).catch(()=>null);
     const d=(Array.isArray(rows)?rows[0]:rows)||s;
@@ -2089,7 +2132,7 @@ function normalizeSessionAddonItem(x={},i=0){
 }
 function sessionAddonsFormHtml(addons){
   AdminSessionAddonItems=(Array.isArray(addons)?addons:[]).map((x,i)=>normalizeSessionAddonItem(x,i)).filter(x=>x.name);
-  return '<div class="compact-actions"><button type="button" class="btn secondary small" onclick="addSessionAddonRow()">＋ 新增加購</button></div><div class="addon-head-row"><span>項目名稱</span><span>單價</span><span>開放</span><span></span></div><div id="set_addonRows"></div><div class="sub">沒有加購就保持空白；不顯示 JSON 語法，不自動帶預設項目。</div>';
+  return '<div class="compact-actions"><button type="button" class="btn secondary small" onclick="addSessionAddonRow()">＋ 新增加購</button></div><div class="addon-head-row"><span>項目名稱</span><span>單價</span><span>開放</span><span></span></div><div id="set_addonRows"></div><div class="sub"></div>';
 }
 function renderSessionAddonRows(items){
   AdminSessionAddonItems=(Array.isArray(items)?items:[]).map((x,i)=>normalizeSessionAddonItem(x,i)).filter(x=>x.name || x._new);
@@ -2173,7 +2216,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   const agreementRequired = s.agreementRequired!==undefined ? s.agreementRequired : (s.agreement_required!==undefined ? s.agreement_required : true);
   const seatPricing = s.seatPricingEnabled!==undefined ? s.seatPricingEnabled : s.seat_pricing_enabled;
   const currentAgreementVersion = String(s.agreementVersion||s.agreement_version||'').trim();
-  const equipmentBody = '<div class="form-field full"><label>基本配備說明</label><input id="set_basicEquip" value="'+attr(s.basicEquip||s.basic_equip||'')+'"><div class="sub">文字只做顯示說明；正式設備項目只讀資料庫 equip_json，不自動新增名稱。</div></div>'+sessionEquipFormHtml(equip);
+  const equipmentBody = '<div class="form-field full"><label>基本配備說明</label><input id="set_basicEquip" value="'+attr(s.basicEquip||s.basic_equip||'')+'"><div class="sub"></div></div>'+sessionEquipFormHtml(equip);
   const addonsBody = sessionAddonsFormHtml(addons);
   const invoiceBody = sessionInvoiceFormHtml(tax);
   const agreementBody = '<div class="form-grid"><div class="form-field"><label>選擇合約</label><select id="set_agreementTemplate" onchange="syncAgreementTemplateSelection()">'+agreementTemplateOptionsHtml(agreementTemplates,s)+'</select><div class="sub">目前版本：<span id="agreementVersionPreview">'+safe(currentAgreementVersion || '請選擇版本')+'</span></div></div><div class="form-field"><label>合約同意</label><label class="tight-check"><input type="checkbox" id="set_agreementRequired" '+(sessionBool(agreementRequired,true)?'checked':'')+'> 報名時要求同意合約</label></div><input type="hidden" id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"><input type="hidden" id="set_agreementVersion" value="'+attr(currentAgreementVersion)+'"></div><div class="compact-actions"><button type="button" class="btn secondary small" onclick="openInlineAgreementCreate()">＋ 新增本場次合約</button></div><div class="notice">合約正文在「後台設定 → 合約管理」新增或修改；場次設定只選套用版本。</div>';
