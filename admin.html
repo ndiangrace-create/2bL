@@ -2241,6 +2241,8 @@ function detectSessionVisualPresetLocal(s){
   return 'auto';
 }
 function aiVisualPresetLabel(v){ return ({auto:'自動判斷',ye_market:'耶市集｜淡綠手繪水彩',trip_market:'市集小旅行｜美式手繪',flip_market:'翻轉市集｜咖啡・環保・音樂・公園',fantasy_festival:'幻日祭｜二次元多元動漫'})[v]||v||'未設定'; }
+
+function isPlatformSuperAdmin(){ return String(AdminState.role||'').trim()==='platform_super_admin'; }
 function aiVisualPresetOptions(selected){
   const v=selected||'auto';
   const rows=[['auto','自動判斷品牌'],['ye_market','耶市集｜淡綠手繪水彩'],['trip_market','市集小旅行｜美式手繪'],['flip_market','翻轉市集｜咖啡・環保・音樂・公園'],['fantasy_festival','幻日祭｜二次元多元動漫']];
@@ -2249,9 +2251,12 @@ function aiVisualPresetOptions(selected){
 function sessionAiVisualSectionHtml(s){
   const sid=sessionId(s)||AdminState.currentSessionId;
   const preset=s.aiVisualPreset||s.ai_visual_preset||detectSessionVisualPresetLocal(s)||'auto';
+  if(!isPlatformSuperAdmin()){
+    return '<div class="report-card" id="aiVisualModule"><div class="report-title">✨ AI 自動產圖｜主視覺 1:1</div><div class="ai-visual-note">此功能僅限超級管理員使用。其他夥伴不可產圖、不可查看、不可刪除、不可設定 AI 主視覺。</div></div>';
+  }
   return '<div class="report-card" id="aiVisualModule">'
     +'<div class="report-title">✨ AI 自動產圖｜主視覺 1:1</div>'
-    +'<div class="ai-visual-note">固定一次生成 1 張。AI 只畫主視覺底圖；市集名稱、日期、地點由系統依資料庫正式資料疊加，避免 AI 錯字或日期跑掉。產圖會使用「已儲存」的場次資料，修改名稱／日期／地點後請先儲存；若喜歡這張圖，再設為此場次正式主圖。</div>'
+    +'<div class="ai-visual-note">僅限超級管理員使用。AI 會固定產出 1 張「市集氛圍感主視覺圖」；重點是市集攤位、活動氛圍、逛市集的人與現場感，不是一般風景圖、街景圖或車站鐵道圖。AI 只畫主視覺底圖；市集名稱、日期、地點由系統依資料庫正式資料疊加。產圖會使用「已儲存」的場次資料，修改名稱／日期／地點後請先儲存；若喜歡這張圖，再設為此場次正式主圖。</div>'
     +'<div class="ai-visual-toolbar"><div class="form-field"><label>品牌風格</label><select id="set_aiVisualPreset">'+aiVisualPresetOptions(preset)+'</select></div>'
     +'<button type="button" class="btn" onclick="generateSessionVisual(\''+attr(sid)+'\',this)">✨ 產生 1 張主視覺</button>'
     +'<button type="button" class="btn secondary" onclick="loadSessionVisualAssets(\''+attr(sid)+'\')">重新整理圖片</button></div>'
@@ -2287,11 +2292,12 @@ function renderSessionVisualAssets(sid, rows){
   }).join('');
 }
 async function loadSessionVisualAssets(sid){
-  const box=$('set_aiVisualAssets'); if(box) box.innerHTML='<div class="loading" style="grid-column:1/-1">圖片紀錄載入中…</div>';
+  const box=$('set_aiVisualAssets'); if(!isPlatformSuperAdmin()){ if(box) box.innerHTML='<div class="empty" style="grid-column:1/-1">此功能僅限超級管理員使用。</div>'; return; }
+  if(box) box.innerHTML='<div class="loading" style="grid-column:1/-1">圖片紀錄載入中…</div>';
   try{ const rows=await api({action:'getSessionVisualAssets',sessionId:sid}); renderSessionVisualAssets(sid,rows); }
   catch(e){ if(box) box.innerHTML='<div class="empty" style="grid-column:1/-1">AI 圖片讀取失敗：'+safe(e.message)+'</div>'; }
 }
-async function generateSessionVisual(sid,btn){
+async function generateSessionVisual(sid,btn){ if(!isPlatformSuperAdmin()){ toast('此功能僅限超級管理員使用',5000); return; }
   const old=btn.textContent;
   btn.disabled=true; btn.textContent='AI 產圖中…';
   const status=$('set_aiVisualStatus'); if(status) status.textContent='正在生成 1 張 1:1 主視覺，請保持此頁開啟。';
@@ -2304,7 +2310,7 @@ async function generateSessionVisual(sid,btn){
   }catch(e){ if(status) status.textContent='生成失敗：'+e.message; toast('AI 產圖失敗：'+e.message,9000); }
   finally{btn.disabled=false;btn.textContent=old;}
 }
-async function selectSessionMainVisual(sid,assetId,btn){
+async function selectSessionMainVisual(sid,assetId,btn){ if(!isPlatformSuperAdmin()){ toast('此功能僅限超級管理員使用',5000); return; }
   const old=btn.textContent; btn.disabled=true; btn.textContent='設定中…';
   try{
     const res=await apiPost({action:'setSessionMainVisual',sessionId:sid,assetId});
@@ -2316,7 +2322,7 @@ async function selectSessionMainVisual(sid,assetId,btn){
   }catch(e){toast('設定正式主圖失敗：'+e.message,8000);}
   finally{btn.disabled=false;btn.textContent=old;}
 }
-async function deleteSessionVisualAsset(sid,assetId,btn){
+async function deleteSessionVisualAsset(sid,assetId,btn){ if(!isPlatformSuperAdmin()){ toast('此功能僅限超級管理員使用',5000); return; }
   if(!confirm('刪除這張未選用的 AI 主視覺？')) return;
   const old=btn.textContent; btn.disabled=true; btn.textContent='刪除中…';
   try{ await apiPost({action:'deleteSessionVisualAsset',sessionId:sid,assetId}); toast('圖片已刪除'); await loadSessionVisualAssets(sid); }
