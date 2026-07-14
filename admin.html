@@ -1130,7 +1130,7 @@ function activeTenant(){ return AdminState.tenantId || 'tuibile'; }
 async function api(params={}){ const p={...params,tenant:params.tenant||activeTenant(),email:params.email||AdminState.email||'_',token:params.token||AdminState.token||'',_t:Date.now()}; const qs=new URLSearchParams(); for(const k in p){ const v=p[k]; if(v!==undefined&&v!==null) qs.set(k, typeof v==='object'?JSON.stringify(v):String(v)); } const r=await fetch(API+'?'+qs.toString(),{cache:'no-store'}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error) throw new Error(j.error||j.message||('連線失敗 '+r.status)); return unwrap(j); }
 async function apiPost(body={}){ const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,tenant:body.tenant||activeTenant(),email:body.email||AdminState.email,token:body.token||AdminState.token})}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error) throw new Error(j.error||j.message||('連線失敗 '+r.status)); return unwrap(j); }
 function startGoogleLogin(){ const t=activeTenant(); if(!t){showLoginError('網址缺少 tenant，無法登入');return;} location.href=endpoint()+'/auth/google/start?tenant='+encodeURIComponent(t); }
-async function handleOAuthCallback(){ const token=sessionStorage.getItem('2bl_admin_token_pending'); const loginError=sessionStorage.getItem('2bl_login_error_pending'); sessionStorage.removeItem('2bl_admin_token_pending'); sessionStorage.removeItem('2bl_login_error_pending'); if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內',staff_inactive:'此管理員帳號已停用',id_token_verify_failed:'Google 身份驗證失敗',google_cancelled:'Google 登入已取消',token_exchange_failed:'Google 登入流程錯誤'}[loginError]||('登入失敗：'+loginError));return false;} if(!token) return false; try{ const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json()); if(j.error||!j.email){showLoginError('無權限登入後台');return false;} AdminState.tenantId=j.tenant_id||activeTenant(); sessionStorage.setItem(TENANT_KEY,AdminState.tenantId); saveSession({email:j.email,token,role:j.role||j.normalized_role||'',name:j.display_name||j.name||j.email,tenantId:AdminState.tenantId}); if((j.normalized_role||j.role)==='onsite_staff'){ location.href='onsite.html?admin_token='+encodeURIComponent(token)+'&tenant='+encodeURIComponent(AdminState.tenantId); return true; } enterAdmin(); return true; }catch(e){showLoginError('登入驗證失敗：'+e.message);return false;} }
+async function handleOAuthCallback(){ const token=sessionStorage.getItem('2bl_admin_token_pending'); const loginError=sessionStorage.getItem('2bl_login_error_pending'); sessionStorage.removeItem('2bl_admin_token_pending'); sessionStorage.removeItem('2bl_login_error_pending'); if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內',staff_inactive:'此管理員帳號已停用',id_token_verify_failed:'Google 身份驗證失敗',google_cancelled:'Google 登入已取消',token_exchange_failed:'Google 登入流程錯誤'}[loginError]||('登入失敗：'+loginError));return false;} if(!token) return false; try{ const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json()); if(j.error||!j.email){showLoginError('無權限登入後台');return false;} AdminState.tenantId=j.tenant_id||activeTenant(); sessionStorage.setItem(TENANT_KEY,AdminState.tenantId); saveSession({email:j.email,token,role:j.normalized_role||j.role||'',name:j.display_name||j.name||j.email,tenantId:AdminState.tenantId}); if((j.normalized_role||j.role)==='onsite_staff'){ location.href='onsite.html?admin_token='+encodeURIComponent(token)+'&tenant='+encodeURIComponent(AdminState.tenantId); return true; } enterAdmin(); return true; }catch(e){showLoginError('登入驗證失敗：'+e.message);return false;} }
 function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classList.remove('hidden');}
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
@@ -2251,13 +2251,12 @@ function aiVisualPresetOptions(selected){
 function sessionAiVisualSectionHtml(s){
   const sid=sessionId(s)||AdminState.currentSessionId;
   const preset=s.aiVisualPreset||s.ai_visual_preset||detectSessionVisualPresetLocal(s)||'auto';
-  if(!isPlatformSuperAdmin()){
-    return '<div class="report-card" id="aiVisualModule"><div class="report-title">✨ AI 自動產圖｜主視覺 1:1</div><div class="ai-visual-note">此功能僅限超級管理員使用。其他夥伴不可產圖、不可查看、不可刪除、不可設定 AI 主視覺。</div></div>';
-  }
+  if(!isPlatformSuperAdmin()) return '';
   return '<div class="report-card" id="aiVisualModule">'
     +'<div class="report-title">✨ AI 自動產圖｜主視覺 1:1</div>'
-    +'<div class="ai-visual-note">僅限超級管理員使用。AI 會固定產出 1 張「市集氛圍感主視覺圖」；重點是市集攤位、活動氛圍、逛市集的人與現場感，不是一般風景圖、街景圖或車站鐵道圖。AI 只畫主視覺底圖；市集名稱、日期、地點由系統依資料庫正式資料疊加。產圖會使用「已儲存」的場次資料，修改名稱／日期／地點後請先儲存；若喜歡這張圖，再設為此場次正式主圖。</div>'
+    +'<div class="ai-visual-note">僅限平台超級管理員使用。AI 固定產出 1 張 1:1 市集氛圍感主視覺。耶市集會強制把正式 Logo 固定合成在中央，AI 只畫四周與本次主題相關的市集插畫；禁止一般風景圖、街景圖、車站、鐵道、平交道或與活動無關的空景。名稱、日期、地點以資料庫正式資料為準。</div>'
     +'<div class="ai-visual-toolbar"><div class="form-field"><label>品牌風格</label><select id="set_aiVisualPreset">'+aiVisualPresetOptions(preset)+'</select></div>'
+    +'<div class="form-field"><label>本次想畫什麼（可空白）</label><input id="set_aiVisualThemeNote" maxlength="400" placeholder="例如：秋日野餐、咖啡、音樂、環保二手、聖誕燈飾"></div>'
     +'<button type="button" class="btn" onclick="generateSessionVisual(\''+attr(sid)+'\',this)">✨ 產生 1 張主視覺</button>'
     +'<button type="button" class="btn secondary" onclick="loadSessionVisualAssets(\''+attr(sid)+'\')">重新整理圖片</button></div>'
     +'<div id="set_aiVisualStatus" class="sub"></div><div id="set_aiVisualAssets" class="ai-visual-grid"><div class="loading" style="grid-column:1/-1">圖片紀錄載入中…</div></div>'
@@ -2283,9 +2282,11 @@ function renderSessionVisualAssets(sid, rows){
   box.innerHTML=AdminSessionVisualAssets.map(a=>{
     const selected=!!(a.isSelected||a.is_selected);
     const url=a.publicUrl||a.public_url||'';
+    const presetKey=String(a.stylePreset||a.style_preset||'');
+    const overlayHtml=presetKey==='ye_market'?'':'<div class="ai-visual-overlay"><b>'+safe(meta.title)+'</b><span>'+safe(meta.date)+'</span><span>📍 '+safe(meta.location)+'</span></div>';
     return '<div class="ai-visual-card '+(selected?'selected':'')+'">'
       +'<div class="ai-visual-stage"><img src="'+attr(url)+'" alt="AI 主視覺 '+attr(a.variantNo||a.variant_no||'')+'" loading="lazy">'
-      +'<div class="ai-visual-overlay"><b>'+safe(meta.title)+'</b><span>'+safe(meta.date)+'</span><span>📍 '+safe(meta.location)+'</span></div></div>'
+      +overlayHtml+'</div>'
       +'<div class="ai-visual-meta"><span>'+safe(aiVisualPresetLabel(a.stylePreset||a.style_preset||''))+'｜版本 '+safe(a.variantNo||a.variant_no||'')+'</span>'+(selected?'<span class="ai-visual-selected-badge">正式主圖</span>':'')+'</div>'
       +'<div class="ai-visual-actions">'+(selected?'<button class="btn secondary small" disabled>已選用</button>':'<button class="btn small" onclick="selectSessionMainVisual(\''+attr(sid)+'\',\''+attr(a.id)+'\',this)">設為正式主圖</button><button class="btn danger small" onclick="deleteSessionVisualAsset(\''+attr(sid)+'\',\''+attr(a.id)+'\',this)">刪除</button>')+'</div>'
       +'</div>';
@@ -2303,7 +2304,8 @@ async function generateSessionVisual(sid,btn){ if(!isPlatformSuperAdmin()){ toas
   const status=$('set_aiVisualStatus'); if(status) status.textContent='正在生成 1 張 1:1 主視覺，請保持此頁開啟。';
   try{
     const preset=$('set_aiVisualPreset')?.value||'auto';
-    const res=await apiPost({action:'generateSessionVisual',sessionId:sid,stylePreset:preset});
+    const visualThemeNote=$('set_aiVisualThemeNote')?.value?.trim()||'';
+    const res=await apiPost({action:'generateSessionVisual',sessionId:sid,stylePreset:preset,visualThemeNote});
     if(status) status.textContent='已完成 1 張主視覺，可直接設為正式主圖。';
     toast('AI 主視覺已完成 1 張',4200);
     await loadSessionVisualAssets(sid);
