@@ -4735,9 +4735,17 @@ function bundleLegsHtml(legs, totalAll){
       <div class="m-bundle-leg-row">設備：${equip}</div>
     </div>`;
   }).join('');
+  // 應收(total) 是主辦拆帳看的；已繳(paid) 是實際收到的錢；待補 = 應收 − 已繳。
+  // 只有「已單場報過、後來併入套組」的人才會出現落差，一般報名 paid=0 或已全繳，不顯示這兩行。
+  const paidAll=legs.reduce((n,x)=>n+Number(x.paid||0),0);
+  const dueAll=legs.reduce((n,x)=>n+Number(x.due||0),0);
+  const extra = paidAll>0 && dueAll>0
+    ? `<div class="m-fixed-pay">已繳：<b>NT$ ${paidAll.toLocaleString()}</b>　待補繳：<b>NT$ ${dueAll.toLocaleString()}</b></div>`
+    : '';
   return `<div class="m-fixed-block">
     ${rows}
     <div class="m-fixed-pay">繳費(含押金)：<b>NT$ ${Number(totalAll||0).toLocaleString()}</b>（組合合計）</div>
+    ${extra}
   </div>`;
 }
 function bundleGroupOf(reg){ return String(reg && reg.bundleGroupId || '').trim(); }
@@ -4903,7 +4911,13 @@ function mRecordStallText(r){
 }
 function mRecordPayText(r){
   const v=mFirstVal(r,['total','totalAmount','amount','receivableAmount','registration_total_amount'],'');
-  if(v!=='' && v!==undefined && v!==null && !Number.isNaN(Number(v))) return 'NT$ '+Number(v).toLocaleString('zh-TW');
+  if(v!=='' && v!==undefined && v!==null && !Number.isNaN(Number(v))){
+    let t='NT$ '+Number(v).toLocaleString('zh-TW');
+    // 已繳與應收有落差（併入套組補差額）時要講清楚，否則攤友會以為要再付一次全額。
+    const paid=Number(r.paid||0), due=Number(r.due||0);
+    if(paid>0 && due>0) t+='（已繳 NT$ '+paid.toLocaleString('zh-TW')+'，待補繳 NT$ '+due.toLocaleString('zh-TW')+'）';
+    return t;
+  }
   return String(r.payStatus||r.paymentStatus||'資料庫未提供');
 }
 function canViewPreNoticeReg(reg){
