@@ -2251,9 +2251,9 @@ function sessionAiVisualSectionHtml(s){
   const preset=s.aiVisualPreset||s.ai_visual_preset||detectSessionVisualPresetLocal(s)||'auto';
   return '<div class="report-card" id="aiVisualModule">'
     +'<div class="report-title">✨ AI 自動產圖｜主視覺 1:1</div>'
-    +'<div class="ai-visual-note">固定一次生成 2 張、二選一。AI 只畫主視覺底圖；市集名稱、日期、地點由系統依資料庫正式資料疊加，避免 AI 錯字或日期跑掉。產圖會使用「已儲存」的場次資料，修改名稱／日期／地點後請先儲存；選定後會同步成此場次正式主圖。</div>'
+    +'<div class="ai-visual-note">固定一次生成 1 張。AI 只畫主視覺底圖；市集名稱、日期、地點由系統依資料庫正式資料疊加，避免 AI 錯字或日期跑掉。產圖會使用「已儲存」的場次資料，修改名稱／日期／地點後請先儲存；若喜歡這張圖，再設為此場次正式主圖。</div>'
     +'<div class="ai-visual-toolbar"><div class="form-field"><label>品牌風格</label><select id="set_aiVisualPreset">'+aiVisualPresetOptions(preset)+'</select></div>'
-    +'<button type="button" class="btn" onclick="generateSessionVisual(\''+attr(sid)+'\',this)">✨ 產生 2 張主視覺</button>'
+    +'<button type="button" class="btn" onclick="generateSessionVisual(\''+attr(sid)+'\',this)">✨ 產生 1 張主視覺</button>'
     +'<button type="button" class="btn secondary" onclick="loadSessionVisualAssets(\''+attr(sid)+'\')">重新整理圖片</button></div>'
     +'<div id="set_aiVisualStatus" class="sub"></div><div id="set_aiVisualAssets" class="ai-visual-grid"><div class="loading" style="grid-column:1/-1">圖片紀錄載入中…</div></div>'
     +'</div>';
@@ -2273,7 +2273,7 @@ function aiVisualPreviewMeta(){
 function renderSessionVisualAssets(sid, rows){
   AdminSessionVisualAssets=Array.isArray(rows)?rows:[];
   const box=$('set_aiVisualAssets'); if(!box) return;
-  if(!AdminSessionVisualAssets.length){ box.innerHTML='<div class="empty" style="grid-column:1/-1">尚未生成 AI 主視覺。設定好場次名稱、日期、地點後即可產生 2 張。</div>'; return; }
+  if(!AdminSessionVisualAssets.length){ box.innerHTML='<div class="empty" style="grid-column:1/-1">尚未生成 AI 主視覺。設定好場次名稱、日期、地點後即可產生 1 張。</div>'; return; }
   const meta=aiVisualPreviewMeta();
   box.innerHTML=AdminSessionVisualAssets.map(a=>{
     const selected=!!(a.isSelected||a.is_selected);
@@ -2294,12 +2294,12 @@ async function loadSessionVisualAssets(sid){
 async function generateSessionVisual(sid,btn){
   const old=btn.textContent;
   btn.disabled=true; btn.textContent='AI 產圖中…';
-  const status=$('set_aiVisualStatus'); if(status) status.textContent='正在生成 2 張 1:1 主視覺，請保持此頁開啟。';
+  const status=$('set_aiVisualStatus'); if(status) status.textContent='正在生成 1 張 1:1 主視覺，請保持此頁開啟。';
   try{
     const preset=$('set_aiVisualPreset')?.value||'auto';
     const res=await apiPost({action:'generateSessionVisual',sessionId:sid,stylePreset:preset});
-    if(status) status.textContent='已完成 2 張主視覺，請選 1 張設為正式主圖。';
-    toast('AI 主視覺已完成 2 張，請二選一',4200);
+    if(status) status.textContent='已完成 1 張主視覺，可直接設為正式主圖。';
+    toast('AI 主視覺已完成 1 張',4200);
     await loadSessionVisualAssets(sid);
   }catch(e){ if(status) status.textContent='生成失敗：'+e.message; toast('AI 產圖失敗：'+e.message,9000); }
   finally{btn.disabled=false;btn.textContent=old;}
