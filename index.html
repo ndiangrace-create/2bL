@@ -3282,7 +3282,7 @@ function showEmailStep(s){
       <div class="fcard-t" style="background:#DDEAD1;color:#111">🔍 先查找會員資料</div>
       <div class="fcard-body">
         <div style="font-size:16px;color:#555;margin-bottom:12px;line-height:1.7">
-          輸入 <b>Email 或手機</b> 查找既有會員資料。<br>
+          輸入 <b>Email＋手機</b> 查找既有會員資料。<br>
           ・找到資料 → 自動帶入，不用每次重填<br>
           ・找不到資料 → 先建立會員資料，再填本次報名內容
         </div>
@@ -3310,13 +3310,14 @@ async function checkMemberStep(){
   const statusEl=$('step1Status');
   const email=(emailEl?.value||'').trim();
   const phone=(phoneEl?.value||'').trim();
+  // B-01：只憑 Email 就能撈出別人的姓名／手機／統編＝個資外洩。Email＋手機兩者都必填。
   const hasEmail = !!email && /\S+@\S+\.\S+/.test(email);
-  if(!hasEmail && !phone){
-    if(errEl) errEl.textContent='請至少填寫 Email 或手機';
+  if(!hasEmail){
+    if(errEl) errEl.textContent='請填寫正確 Email';
     return;
   }
-  if(email && !hasEmail){
-    if(errEl) errEl.textContent='Email 格式不正確；若不確定可先只填手機查找。';
+  if(!phone){
+    if(errEl) errEl.textContent='請填寫手機號碼';
     return;
   }
   if(errEl) errEl.textContent='';
@@ -3325,7 +3326,7 @@ async function checkMemberStep(){
   const checkBtn=document.querySelector('#dynForm .btn-submit');
   if(checkBtn){ checkBtn.disabled=true; checkBtn.textContent='查詢中…'; }
   try{
-    const member=await api({action:'getMember',email:hasEmail?email:'',phone,_t:Date.now()});
+    const member=await api({action:'getMember',email,phone,_t:Date.now()});
     if(member && !member.error && (member.email || member.phone || member.name || member.brand || member.brand_name)){
       ST.member={...member};
       ST.memberEmail=String(member.email||email||'').trim();
@@ -3489,7 +3490,7 @@ function renderDynFormFull(s, isNew=false){
       ST.equipQty[k]=frontEquipFreeTotal(k,v,s);
       const icon=Object.entries(equipIcons).find(([key])=>k.includes(key))?.[1]||'📦';
       const hasIncl=Number(v.incl)>0;
-      const inclNote=hasIncl?`<span class="qty-name-incl">（本次含${v.incl}）</span>`:'';
+      const inclNote=hasIncl?`<span class="qty-name-incl">（每攤含${v.incl}）</span>`:'';
       const priceTxt=Number(v.price)>0?` NT$${v.price}`:'';
       html+=`<div class="qty-row" style="display:grid;grid-template-columns:1fr;gap:8px;align-items:stretch">
         <div class="qty-name-wrap" style="min-width:0"><span class="qty-icon">${icon}</span><span class="qty-name">${esc(k)}${priceTxt}</span>${inclNote}</div>
@@ -3582,7 +3583,7 @@ function renderDynFormFull(s, isNew=false){
   if(isNew){
     html+=`<div class="form-card-new card-green">
       <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-green)">${cardNum}</span>建立會員資料</div>
-      <div style="font-size:14px;color:#555;background:#fff;border:1.5px solid #DDEAD1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:800">Email 會綁定您的會員 ID；下次可用 Email 或手機查找資料，不用重填。</div>
+      <div style="font-size:14px;color:#555;background:#fff;border:1.5px solid #DDEAD1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:800">Email 會綁定您的會員 ID；下次可用 Email＋手機查找資料，不用重填。</div>
       <label>Email *</label><input type="email" id="f_email" value="${esc(email)}" inputmode="email" placeholder="your@email.com">
       <label>手機 *</label><input type="tel" id="f_phone" value="${esc(V.phone||'')}" inputmode="tel" placeholder="09xxxxxxxx">
       <label>攤位／品牌名稱 *</label><input type="text" id="f_brand" value="${esc(V.brand||V.brand_name||'')}" placeholder="品牌名稱">
@@ -3752,7 +3753,27 @@ function adjStall(delta){
   const isMkt=sType==='市集場次'||sType==='通路寄賣';
   // 上限從後台場次設定讀取，不硬編碼
   const maxN=Number(s.maxStalls)>0?Number(s.maxStalls):999;
-  ST.stallCount=Math.max(1,Math.min(maxN,(ST.stallCount||1)+delta));
+  const oldCount=Math.max(Number(ST.stallCount)||1,1);
+  const nextCount=Math.max(1,Math.min(maxN,oldCount+delta));
+  if(nextCount===oldCount) return;
+
+  // B-04：ST.equipQty 是「總量」。改攤數時若只重算內含量，攤友原本額外加租的數量會被吃掉
+  // （1攤含1桌＋加租1桌＝2；改成2攤時應為3桌，不是2桌）。先記下加租量，換算完再加回去。
+  const extras={};
+  Object.entries(s.equip||{}).forEach(([k,def])=>{
+    if(!def || def.open===false || def.open==='false') return;
+    const oldBase=frontEquipFreeTotal(k,def,s,oldCount);
+    const oldSelected=Number((ST.equipQty||{})[k]||0);
+    extras[k]=Math.max(0, oldSelected-oldBase);
+  });
+
+  ST.stallCount=nextCount;
+  if(!ST.equipQty) ST.equipQty={};
+  Object.entries(s.equip||{}).forEach(([k,def])=>{
+    if(!def || def.open===false || def.open==='false') return;
+    ST.equipQty[k]=frontEquipFreeTotal(k,def,s,nextCount)+(extras[k]||0);
+  });
+
   const stallUnit=isMkt?'攤':sType==='活動報名'?'份':'份';
   const el=$('stallDisplay');
   if(el) el.textContent=ST.stallCount+' '+stallUnit;
@@ -3889,7 +3910,7 @@ async function openMemberEditModal(forceMsg){
 
   let m = ST.member || {email};
   try{
-    const fresh = await api({action:'getMember', email, _t:Date.now()});
+    const fresh = await api({action:'getMember', email, phone:getMemberPhone(), _t:Date.now()});
     if(fresh && !fresh.error){
       m = {...m, ...fresh, email:fresh.email||email};
       ST.member = m;
@@ -3924,6 +3945,9 @@ async function saveMemberEdit(){
   if(!email){ toast('請先登入'); restore(); return; }
   const body = {
     action:'saveMember', email,
+    // authPhone＝目前已驗證的舊手機（用來證明是本人）；phone＝要存進去的新手機。
+    // 兩者不可混用：拿新手機驗自己＝誰都能改別人的資料。
+    authPhone:   getMemberPhone(),
     name:        ($('editName')?.value||'').trim(),
     phone:       ($('editPhone')?.value||'').trim(),
     brand:       ($('editBrand')?.value||'').trim(),
@@ -3941,8 +3965,11 @@ async function saveMemberEdit(){
   try{
     const res=await apiPost(body);
     if(!res || res.error){ toast('❌ 儲存失敗：'+(res?.error||'請稍後再試')); restore(); return; }
-    const fresh=await api({action:'getMember', email, _t:Date.now()});
+    // 手機可能剛被改掉：改用「儲存後的新手機」重新讀，並同步成之後的登入手機。
+    const savedPhone = body.phone || getMemberPhone();
+    const fresh=await api({action:'getMember', email, phone:savedPhone, _t:Date.now()});
     if(fresh && !fresh.error){
+      memberSavePhone(savedPhone);
       ST.member={...(ST.member||{}),...fresh,email:fresh.email||email};
     }else{
       ST.member={...(ST.member||{}),...body,email};
@@ -4239,8 +4266,12 @@ function adjAddon(i,delta){
 }
 
 
-function frontEquipFreeTotal(k, def, session){
-  return Math.max(0, frontEffectiveEquipIncl(k, def, session?.basicEquip||session?.basic_equip||''));
+// B-04：內含總量 = 每攤內含數 × 攤位數。內含量的唯一計算入口，
+// 其他地方一律呼叫本函式，不可自己再寫一次（過去 adjEquip / updateFee 各算各的，才會少乘攤數）。
+function frontEquipFreeTotal(k, def, session, stallCount){
+  const stalls=Math.max(Number(stallCount ?? ST.stallCount ?? 1)||1, 1);
+  const inclPerStall=Math.max(0, frontEffectiveEquipIncl(k, def, session?.basicEquip||session?.basic_equip||''));
+  return inclPerStall*stalls;
 }
 function ensureIncludedEquipQty(){
   const s=ST.currentSession||{};
@@ -4284,8 +4315,7 @@ function adjEquip(k,delta){
   if(elNum) elNum.textContent=next;
   // 動態更新說明：已含幾件、額外幾件
   const _ed=(s?.equip||{})[k]||{};
-  const inclPerStall=frontEffectiveEquipIncl(k,_ed,s?.basicEquip||s?.basic_equip||'');
-  const inclFree=inclPerStall;
+  const inclFree=frontEquipFreeTotal(k,_ed,s,stalls);   // 內含總量＝每攤內含 × 攤位數
   const extra=Math.max(0,next-inclFree);
   const price=Number(_ed.price)||0;
   const hintId='eq_hint_'+k.replace(/[^a-zA-Z0-9]/g,'_');
@@ -4340,9 +4370,9 @@ function updateFee(){
   let equipTotal=0;
   Object.entries(s.equip||{}).forEach(([k,v])=>{
     if(v&&v.open){
-      const incl=frontEffectiveEquipIncl(k,v,s?.basicEquip||s?.basic_equip||'');
+      const inclTotal=frontEquipFreeTotal(k,v,s,stalls);   // 內含總量＝每攤內含 × 攤位數
       const want=ST.equipQty[k]||0;
-      const extra=Math.max(0, want-incl);  // 只算超過內含的部分
+      const extra=Math.max(0, want-inclTotal);  // 只算超過內含總量的部分
       equipTotal+=(v.price||0)*extra;
     }
   });
@@ -4379,9 +4409,9 @@ function updateFee(){
   Object.entries(_s.equip||{}).forEach(([k,v])=>{
     if(!v||!v.open) return;
     const _stalls=ST.stallCount||1;
-    const _incl=frontEffectiveEquipIncl(k,v,_s.basicEquip||_s.basic_equip||'');
+    const _inclTotal=frontEquipFreeTotal(k,v,_s,_stalls);
     const _want=ST.equipQty[k]||0;
-    const _extra=Math.max(0,_want-_incl);
+    const _extra=Math.max(0,_want-_inclTotal);
     const _sub=(Number(v.price)||0)*_extra;
     const _el=$('eqTotal_'+k);
     if(_el){
@@ -4625,7 +4655,7 @@ async function submitReg(ev){
     }
     // 會員資料改成背景更新，不讓 getMember 卡住成功畫面
     setTimeout(()=>{
-      api({action:'getMember',email}).then(updatedMember=>{
+      api({action:'getMember',email,phone}).then(updatedMember=>{
         if(updatedMember&&!updatedMember.error){
           ST.member=updatedMember;
           try{localStorage.setItem('tb_member_email',email||'');}catch(e){}
@@ -5187,11 +5217,12 @@ async function openStallPickerForReg(regId){
   $('stallConfirmBtn').style.opacity='.5';
   openModal('stallPickerModal');
   try{
-    const res=await api({action:'getSeatMap',sessionId:reg.sessionId,_t:Date.now()});
+    const res=await api({action:'getSeatMap',sessionId:reg.sessionId,regId:reg.id,email:getMemberEmail(),phone:getMemberPhone(),_t:Date.now()});
     if(res.error){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--rd);font-size:15px;text-align:center;padding:16px">'+escHtml(res.error)+'</div>'; return; }
     const paidSeats=(Array.isArray(res.seats)?res.seats:[]).filter(s=>s.type==='paid'&&s.active);
     const list=paidSeats.map(s=>s.code);
-    const taken={}; paidSeats.forEach(s=>{ if(s.occupied) taken[s.code]={status:s.status==='預留'?'reserved':'paid',regId:s.regId}; });
+    // B-02：公開 API 不再回傳 regId／email；「這格是不是我的」改由後端驗證後給 mine 旗標。
+    const taken={}; paidSeats.forEach(s=>{ if(s.occupied) taken[s.code]={status:s.status==='預留'?'reserved':'paid',mine:!!s.mine}; });
     ST._stallPick.seatMap=res; ST._stallPick.seatMeta=Object.fromEntries(paidSeats.map(s=>[s.code,s]));
     ST._stallPickerMapUrl=res.mapUrl||'';
     if($('stallPickerMap')) $('stallPickerMap').innerHTML=res.mapUrl?`<div style="border:1px solid #ddd;border-radius:12px;overflow:hidden;background:#fff"><img src="${escHtml(res.mapUrl)}" style="width:100%;display:block"></div><button type="button" onclick="openSeatMapZoom('picker')" style="width:100%;background:var(--c-green);color:#111;border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:950;margin-top:8px">🔍 放大查看場地圖</button>`:`<div style="font-size:13px;color:#777;background:#f7f7f7;border-radius:10px;padding:10px;text-align:center">此場次尚未上傳已編號場地圖，請依號碼清單選擇。</div>`;
@@ -5227,7 +5258,7 @@ function renderStallPickerGrid(){
   }
   $('stallGrid').innerHTML=(pick.stallList||[]).map(num=>{
     const info=taken[num];
-    const mine=info && String(info.regId||'')===String(reg.id||'');
+    const mine=!!(info && info.mine);
     const blocked=info && !mine;
     const on=selected.includes(num);
     const price=(pick.seatMeta&&pick.seatMeta[num]&&Number(pick.seatMeta[num].price)>0)?Number(pick.seatMeta[num].price):0;
@@ -5267,7 +5298,7 @@ async function submitSelectedStalls(){
   const btn=$('stallConfirmBtn');
   if(btn){ btn.disabled=true; btn.textContent='送出中…'; }
   try{
-    const res=await apiPost({action:'claimPaidSeat',regId:reg.id,sessionId:reg.sessionId,seats:selected,email:getMemberEmail()});
+    const res=await apiPost({action:'claimPaidSeat',regId:reg.id,sessionId:reg.sessionId,seats:selected,email:getMemberEmail(),phone:getMemberPhone()});
     if(res.error){ toast('❌ '+res.error); return; }
     closeModal('stallPickerModal');
     toast('✅ 已完成加價選位');
@@ -5365,7 +5396,7 @@ async function doSubmitCancel(){
   try{
     const action=ST._pendingCancelIsRefund?'applyRefund':'cancelReg';
     const em=getMemberEmail();
-    const res=await apiPost({action,regId,email:em});
+    const res=await apiPost({action,regId,email:em,phone:getMemberPhone()});
     if(res&&res.error){toast('❌ '+res.error,7000);return;}
     closeModal('cancelModal');
     const n=Number(res&&res.affectedCount?res.affectedCount:1);
@@ -5492,8 +5523,9 @@ async function submitPaymentForm(){
   try{
     const merged = Array.isArray(ST_mergedPayIds) && ST_mergedPayIds.length>1;
     const res = merged
-      ? await apiPost({action:'submitPaymentBatch',regIds:ST_mergedPayIds,method,lastFive,email:getMemberEmail()})
-      : await apiPost({action:'submitPayment',regId:ST_currentPayRegId,method,lastFive,amount,email:getMemberEmail()});
+      // B-06：正式金額只由後端從 DB 取，前端 amount 只能拿來顯示，不再送出。
+      ? await apiPost({action:'submitPaymentBatch',regIds:ST_mergedPayIds,method,lastFive,email:getMemberEmail(),phone:getMemberPhone()})
+      : await apiPost({action:'submitPayment',regId:ST_currentPayRegId,method,lastFive,email:getMemberEmail(),phone:getMemberPhone()});
     if(res.error){ showPayFormError(res.error); return; }
     const cardText = res.lineCardText || res.paymentLineCardText || '';
     if(!cardText){ showPayFormError('付款卡片產生失敗，請聯繫該場次官方 LINE 客服'); return; }
@@ -5530,18 +5562,10 @@ async function copyPaymentCard(){
   if(_email){ ST.memberEmail=_email; memberSaveEmail(_email); if($('loginEmail')) $('loginEmail').value=_email; }
   if(isMemberLink || _payRegId){
     setTimeout(async()=>{
+      // B-02：原本會用 regId 向公開 API 反查 Email（等於任何人拿到 regId 就能拿到 Email）。
+      // 已移除。舊信件裡的 ?pay=REG_ID 仍可用：regId 先記著，等使用者用 Email＋手機登入後，
+      // 由 handlePendingPayLink(regs) 在自己的名單裡比對出這筆，再開啟付款／詳情。
       let email = _email || ST.memberEmail || memberSafeEmail();
-      if(!email && _payRegId){
-        try{
-          const lookup = await api({action:'getRegLookup',regId:_payRegId,_t:Date.now()});
-          if(lookup && !lookup.error && lookup.email){
-            email = String(lookup.email||'').trim();
-            ST.memberEmail = email;
-            memberSaveEmail(email);
-            if($('loginEmail')) $('loginEmail').value = email;
-          }
-        }catch(e){ console.warn('[deep link getRegLookup failed]', e); }
-      }
       if(email){
         await safeLoadMemberPage(email,{navOptions:{noPush:true}});
       }else{
@@ -5588,7 +5612,7 @@ function initFrontApp(){
       if(d&&d.email){
         ST.memberEmail=d.email;
         ST.member=null;
-        api({action:'getMember',email:d.email,_t:Date.now()}).then(m=>{ if(m&&!m.error) ST.member=m; }).catch(()=>{});
+        api({action:'getMember',email:d.email,phone:getMemberPhone(),_t:Date.now()}).then(m=>{ if(m&&!m.error) ST.member=m; }).catch(()=>{});
       }
     }
   }catch(e){}
