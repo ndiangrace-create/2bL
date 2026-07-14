@@ -2338,6 +2338,40 @@ function copyFrontShareLink(url, msg){
   catch(e){ prompt('請複製此連結：', url); }
   document.body.removeChild(ta);
 }
+// ── 分享面板 ──────────────────────────────────────────────────
+// 舊版只能開 LINE，且分享的是又長又醜的 ?page=session&ses=SES_xxx 網址。
+// 改成：先取短網址（一場只有一組，後端保證），面板可直接複製貼到任何社團／IG／Threads，
+// 也保留 LINE 一鍵分享。取不到短網址時退回長網址，不會讓分享功能整個壞掉。
+async function openSharePanel(kind, id, title){
+  const longUrl = buildFrontShareUrl(kind, id);
+  let d=$('sharePanel');
+  if(!d){ d=document.createElement('div'); d.id='sharePanel'; document.body.appendChild(d); }
+  d.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center';
+  const box=(inner)=>'<div style="background:var(--wh);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:22px 18px 26px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+    +'<b style="font-size:18px">分享活動</b>'
+    +'<button onclick="closeSharePanel()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">✕</button>'
+    +'</div>'+inner+'</div>';
+  d.innerHTML=box('<div style="text-align:center;color:var(--muted);padding:18px">連結準備中…</div>');
+  d.onclick=(e)=>{ if(e.target===d) closeSharePanel(); };
+
+  let url=longUrl;
+  if(kind==='session'){
+    try{
+      const r=await api({action:'getSessionShortLink',sessionId:id,_t:Date.now()});
+      if(r && !r.error && r.url) url=r.url;
+    }catch(e){ /* 取不到就用長網址，分享不能因此壞掉 */ }
+  }
+  const t=(title||'兔彼樂活動').trim();
+  d.innerHTML=box(
+     '<div style="background:var(--c3);border-radius:14px;padding:14px;word-break:break-all;font-weight:900;font-size:16px;margin-bottom:14px">'+escHtml(url)+'</div>'
+    +'<button onclick="copyFrontShareLink(\''+escHtml(url)+'\',\'已複製連結\')" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--c1);font-weight:900;font-size:16px;cursor:pointer;margin-bottom:10px">複製連結</button>'
+    +'<button onclick="shareFrontToLine(\''+escHtml(t).replace(/'/g,"")+'\',\''+escHtml(url)+'\')" style="width:100%;padding:14px;border:1.5px solid var(--border);border-radius:14px;background:var(--wh);font-weight:900;font-size:16px;cursor:pointer">分享到 LINE</button>'
+    +'<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:12px">複製後可貼到 Facebook 社團、IG、Threads 或任何地方</div>'
+  );
+}
+function closeSharePanel(){ const d=$('sharePanel'); if(d) d.remove(); }
+
 function shareFrontToLine(title, url, copyMsg){
   const cleanTitle = (title || '兔彼樂活動').trim();
   const lineUrl = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(cleanTitle);
@@ -2568,8 +2602,7 @@ function renderActCard(s, mode){
 // ── 分享（卡片版）── 
 function shareSessionCard(id, name, event){
   if(event) event.stopPropagation();
-  const url = buildFrontShareUrl('session', id);
-  shareFrontToLine(name, url, '已複製活動連結，請貼到 LINE 分享');
+  openSharePanel('session', id, name);
 }
 
 // ── 收藏 ──
@@ -4113,8 +4146,7 @@ window.addEventListener('popstate', function(e){
 function shareCurrentSession(){
   const s=ST.currentSession;
   if(!s) return;
-  const url=buildFrontShareUrl('session', s.id);
-  shareFrontToLine(s.name||'報名表', url, '已複製連結，請貼到 LINE 分享');
+  openSharePanel('session', s.id, s.name||'報名表');
 }
 
 async function openSession(sessionId){
@@ -5796,8 +5828,7 @@ function shareEvent(eventId, eventName){
 
 // 分享場次
 function shareSession(sesId, sesName){
-  const url = buildFrontShareUrl('session', sesId);
-  shareFrontToLine(sesName||'場次活動', url, '已複製場次連結，請貼到 LINE 分享');
+  openSharePanel('session', sesId, sesName||'場次活動');
 }
 
 
