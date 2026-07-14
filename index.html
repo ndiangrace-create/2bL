@@ -447,7 +447,6 @@ button,a,[onclick]{touch-action:manipulation}
   #regFormModal .reg-form-content > div:last-child{grid-column:2;padding:0 0 40px!important}
 }
 .act-name{font-size:22px;font-weight:900;color:#111;line-height:1.3;margin-bottom:8px}
-.act-price{font-size:20px;font-weight:900;color:#111;margin-bottom:6px}
 .act-meta-row{display:flex;align-items:flex-start;gap:8px;font-size:15px;color:#555;margin-bottom:4px}
 .act-meta-icon{font-size:16px;flex-shrink:0;margin-top:1px}
 .act-desc{font-size:15px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
@@ -3398,11 +3397,9 @@ function renderDynFormFull(s, isNew=false){
     const d=dates[0];
     dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
   }
-  const feeStr=Number(s.fee)>0?'NT$'+Number(s.fee).toLocaleString()+'／攤':'免費';
   const sType=s.type||'市集場次';
   const isCollab=sType==='合作申請';
   const isMkt=sType==='市集場次'||sType==='通路寄賣';
-  const stallUnit=isMkt?'攤':'份';
   const equipDefs=Object.entries(s.equip||{}).filter(([k,v])=>v&&(v.open===true||v.open==='true'));
   const addons=(s.addons||[]).map((a,i)=>({...a,_idx:i})).filter(a=>a.open===true||a.open==='true');
 
@@ -3443,7 +3440,6 @@ function renderDynFormFull(s, isNew=false){
   html+=`<div class="form-card-new">
     <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
     <div class="act-name">${esc(s.name||'')}</div>
-    <div class="act-price">${esc(feeStr)}</div>
     ${dateStr?`<div class="act-meta-row"><span class="act-meta-icon">📅</span><span>${esc(dateStr)}</span></div>`:''}
     ${s.venue?`<div class="act-meta-row"><span class="act-meta-icon">📍</span><span>${esc(s.venue)+(s.region&&s.region!==s.venue?' · '+s.region:'')}</span></div>`:''}
     ${s.description?`<div class="act-desc">${esc(s.description)}</div>`:''}
@@ -3774,11 +3770,9 @@ function adjStall(delta){
     ST.equipQty[k]=frontEquipFreeTotal(k,def,s,nextCount)+(extras[k]||0);
   });
 
-  const stallUnit=isMkt?'攤':sType==='活動報名'?'份':'份';
+  // 數字欄位只放純數字，不接「攤／份」單位（單位已寫在標題「報名數量」旁）。
   const el=$('stallDisplay');
-  if(el) el.textContent=ST.stallCount+' '+stallUnit;
-  const inp=$('stallInput');
-  if(inp) inp.value=ST.stallCount;
+  if(el) el.textContent=String(ST.stallCount);
   ensureIncludedEquipQty();
   updateFee();
 }
