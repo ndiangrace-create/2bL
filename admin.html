@@ -1472,7 +1472,7 @@ function renderSessionCard(s){
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button>'
-          +'<button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteSessionUI(\''+attr(sid)+'\')">刪除</button>'
+          +(isPlatformSuperAdmin()?'<button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteSessionUI(\''+attr(sid)+'\')">刪除</button>':'')
         +'</div>'
       +'</div>'
     +'</div>'
@@ -2763,7 +2763,14 @@ async function saveCompanySettings(btn){ const old=btn.textContent; btn.disabled
 function openHomepageSettings(){ openPanel('公告 / 首頁顯示','首頁封面、公告與小圖（主題活動圖片已移至「場次」頁上方）','<div class="form-grid"><div class="form-field full"><label>登入頁 / 品牌 Logo 網址</label><input id="home_logo"></div><div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div><div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div><div class="form-field full" style="border-top:1px dashed var(--line);padding-top:12px"><b>前台小圖 / IP 圖片網址</b><div class="sub">這些會存進資料庫 tenant config，不寫死在 register.html；之後換檔小圖不會消失。</div></div><div class="form-field"><label>首頁歡迎小圖 URL</label><input id="home_mascotHome" placeholder="IP歡迎.png 或圖片網址"></div><div class="form-field"><label>市集/指引小圖 URL</label><input id="home_mascotPortal" placeholder="IP指引.png 或圖片網址"></div><div class="form-field"><label>會員資料小圖 URL</label><input id="home_mascotMember" placeholder="IP資料.png 或圖片網址"></div><div class="form-field"><label>客服小圖 URL</label><input id="home_mascotSupport" placeholder="IP客服.png 或圖片網址"></div><div class="form-field"><label>我的紀錄小圖 URL</label><input id="home_mascotProfile" placeholder="IP會員.png 或圖片網址"></div><div class="form-field"><label>報名彈窗小圖 URL</label><input id="home_mascotModal" placeholder="IP報名.png 或圖片網址"></div></div><div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div>'); loadHomepageSettings(); }
 async function loadHomepageSettings(){ try{ const c=await api({action:'getSiteConfig'}); $('home_hero').value=c.heroImg||''; $('home_info').value=c.infoText||''; $('home_logo').value=c.logoUrl||''; const set=(id,v)=>{ const el=$(id); if(el) el.value=v||''; }; set('home_mascotHome',c.mascotHome); set('home_mascotPortal',c.mascotPortal); set('home_mascotMember',c.mascotMember); set('home_mascotSupport',c.mascotSupport); set('home_mascotProfile',c.mascotProfile); set('home_mascotModal',c.mascotModal); }catch(e){toast('首頁設定載入失敗：'+e.message,6000)} }
 async function deleteSessionUI(sid){
-  if(!confirm('確定刪除這個場次嗎？此動作無法復原（若已有報名資料，建議改用封存）。')) return;
+  // 場次刪除僅限平台超級管理員；後端也會再擋一次（前端隱藏只是輔助）。
+  if(!isPlatformSuperAdmin()){ toast('場次刪除僅限平台超級管理員，請改用「封存」',5000); return; }
+  const ses=(AdminState.sessions||[]).find(x=>String(sessionId(x))===String(sid));
+  const nm=ses?sessionName(ses):'這個場次';
+  if(!confirm('確定刪除場次「'+nm+'」嗎？\n\n此動作無法復原，報名資料會一併消失。\n若只是不再開放，請改用「封存」。')) return;
+  // 打字二次確認：避免誤按 confirm 就刪掉整場資料。
+  const typed=prompt('刪除後無法復原。若確定刪除，請輸入「刪除」二字：');
+  if(String(typed||'').trim()!=='刪除'){ toast('已取消，未刪除'); return; }
   try{ await apiPost({action:'deleteSession', sessionId:sid, id:sid}); toast('已刪除場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }
   catch(e){ toast('刪除失敗：'+e.message,6000); }
 }
