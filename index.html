@@ -342,6 +342,40 @@ button,a,[onclick]{touch-action:manipulation}
 .f-row{margin-bottom:14px}
 .f-label{font-size:13px;font-weight:700;margin-bottom:6px;color:var(--txt)}
 .f-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--wh);color:var(--txt)}
+
+/* ═══════════════════════════════════════════════════════════
+   長輩友善：只放大「報名時要讀、要點」的欄位與標籤。
+   刻意不改標題、卡片、版面結構 → 布局不會亂跳。
+   手機字級一律 ≥17px：iOS 在 <16px 時會自動縮放畫面、造成點欄位時亂跳，
+   拉到 17px 以上就從根本避免這個問題。box-sizing 統一，放大 padding 也不撐破。
+   ═══════════════════════════════════════════════════════════ */
+input, select, textarea, .f-input{
+  box-sizing:border-box !important;
+  font-size:17px !important;      /* 電腦：15→17 */
+  padding:14px 14px !important;   /* 電腦：加高，好點 */
+  line-height:1.4 !important;
+}
+.f-label, label{
+  font-size:16px !important;      /* 標籤：13→16，看得清楚 */
+  line-height:1.5 !important;
+}
+/* 欄位下方的說明小字 */
+.f-hint, .field-hint, .hint, .form-hint, .sub-note, .note-sm{
+  font-size:14px !important;
+}
+/* 手機再放大一級（長輩多用手機） */
+@media(max-width:600px){
+  input, select, textarea, .f-input{
+    font-size:19px !important;    /* 手機：拉到 19，也避開 iOS 自動縮放 */
+    padding:16px 15px !important; /* 手機：格子更高更好點 */
+  }
+  .f-label, label{
+    font-size:18px !important;    /* 手機標籤：18 */
+  }
+  .f-hint, .field-hint, .hint, .form-hint, .sub-note, .note-sm{
+    font-size:15px !important;
+  }
+}
 .f-input:focus{outline:none;border-color:var(--c1)}
 .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(30,30,26,.85);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
