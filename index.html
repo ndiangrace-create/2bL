@@ -5008,24 +5008,18 @@ function openOfficialGroup(){
   window.open(url,'_blank','noopener');
 }
 function openPreNoticeSupport(id){
-  // 行前通知裡的規範按鈕直接銜接既有客服說明，不重做第二套規範。
-  closeModal('preNoticeModal');
-  setTimeout(()=>{
-    try{
-      // 手機版先切到客服頁，再打開對應說明卡片；避免看起來只是跳回我的紀錄。
-      if(typeof navToTab === 'function') navToTab('support');
-      setTimeout(()=>{
-        if(typeof openSupportFaqCard === 'function' && document.getElementById(id)){
-          openSupportFaqCard(id);
-        }else{
-          toast('已切到客服說明，請點選對應項目');
-        }
-      }, 120);
-    }catch(e){
-      console.warn('[openPreNoticeSupport]', e);
-      toast('客服說明開啟失敗，請切到客服頁查看');
+  // 直接把說明疊在「行前通知」上面（不關閉行前通知，其 z-index 8000 > 5000）。
+  // 看完關閉說明即回到原本三顆按鈕，可接著點下一個，不再繞回我的紀錄。
+  try{
+    if(typeof openSupportFaqCard === 'function' && document.getElementById(id)){
+      openSupportFaqCard(id);
+    }else{
+      toast('說明開啟失敗，請至客服頁查看');
     }
-  }, 80);
+  }catch(e){
+    console.warn('[openPreNoticeSupport]', e);
+    toast('說明開啟失敗，請至客服頁查看');
+  }
 }
 
 function openPreEventNotice(regId){
