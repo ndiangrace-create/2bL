@@ -1043,7 +1043,7 @@
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 搜尋攤友 → 一鍵報到。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">工讀生入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
-    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
+    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
 </section>
 
@@ -2729,6 +2729,51 @@ async function savePaymentProfile(btn){
 }
 async function disablePaymentProfile(id){ if(!confirm('停用後新場次不可選用；舊付款快照不會被改動。確定停用？')) return; try{ await apiPost({action:'disablePaymentProfile',id}); toast('已停用'); await openPaymentSettings(); }catch(e){ toast('停用失敗：'+e.message,6000); } }
 
+let AdminVenueMaps=[];
+async function openVenueMaps(){
+  openPanel('常用場地圖','存放並重用場地圖；新增請到「場次設定 → 選位/攤位 → 存成常用圖」','<div class="loading">載入常用場地圖…</div>');
+  try{
+    const r=await api({action:'listVenueMaps'});
+    AdminVenueMaps=(r&&r.maps)||[];
+    renderVenueMapsPanel();
+  }catch(e){ const b=$('panelBody'); if(b) b.innerHTML='<div class="empty">常用場地圖載入失敗，請稍後再試。</div>'; }
+}
+function renderVenueMapsPanel(){
+  const b=$('panelBody'); if(!b) return;
+  const maps=AdminVenueMaps||[];
+  if(!maps.length){ b.innerHTML='<div class="empty">目前沒有常用場地圖。<br>到「場次設定 → 選位/攤位 → 存成常用圖」即可新增。</div>'; return; }
+  b.innerHTML='<div class="sub" style="margin-bottom:10px">新增請到「場次設定 → 選位/攤位 → 存成常用圖」；此處可預覽、改名、刪除。</div>'+maps.map(function(m){
+    let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
+    const url=m.seat_map_url||'';
+    return '<div class="report-card" style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'
+      +'<div><b style="font-size:17px">'+safe(m.name)+'</b><div class="sub">攤位 '+seats.length+' 個</div></div>'
+      +'<div style="display:flex;gap:6px">'
+      +'<button type="button" class="btn secondary small" onclick="renameVenueMapFromPanel(\''+attr(m.id)+'\')">改名</button>'
+      +'<button type="button" class="btn secondary small" onclick="deleteVenueMapFromPanel(\''+attr(m.id)+'\')">刪除</button>'
+      +'</div></div>'
+      +(url?'<div style="margin-top:8px"><img src="'+attr(url)+'" alt="場地圖" style="width:100%;border:1px solid #eee;border-radius:10px;display:block"></div>':'<div class="sub" style="margin-top:6px">（未附場地圖圖片）</div>')
+      +'</div>';
+  }).join('');
+}
+async function renameVenueMapFromPanel(id){
+  const m=(AdminVenueMaps||[]).find(x=>String(x.id)===String(id));
+  if(!m){ toast('找不到該常用圖'); return; }
+  const name=(prompt('輸入新名稱：', m.name||'')||'').trim();
+  if(!name || name===m.name) return;
+  if((AdminVenueMaps||[]).some(x=>String(x.id)!==String(id) && x.name===name)){ if(!confirm('已有同名常用圖，繼續會覆蓋它，確定？')) return; }
+  let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
+  try{
+    await apiPost({action:'saveVenueMap',name:name,mapUrl:m.seat_map_url||'',seats:seats});
+    await apiPost({action:'deleteVenueMap',mapId:m.id});
+    toast('已改名為：'+name);
+    await openVenueMaps();
+  }catch(e){ toast('改名失敗：'+e.message,7000); }
+}
+async function deleteVenueMapFromPanel(id){
+  if(!confirm('確定刪除這張常用場地圖？（不影響已套用的場次）')) return;
+  try{ await apiPost({action:'deleteVenueMap',mapId:id}); toast('已刪除'); await openVenueMaps(); }catch(e){ toast('刪除失敗：'+e.message,7000); }
+}
 async function openEmailTemplates(){ openPanel('信件模板','正式模板管理，不是測試信','<div class="loading">載入信件模板…</div>'); try{ const rows=await api({action:'getEmailTemplates'}); renderEmailTemplates(rows); }catch(e){$('panelBody').innerHTML='<div class="empty">信件模板載入失敗，請稍後再試。</div>'; } }
 function renderEmailTemplates(rows){
   const vars='可用變數：[主辦名稱] [顯示名稱] [場次名稱] [報名日期] [活動日期] [攤位數] [設備] [應繳金額] [退費金額] [地點] [原場次] [新場次] [選擇期限]。按鈕可用：[按鈕:前往我的紀錄]、[按鈕:加入官方LINE]。';
