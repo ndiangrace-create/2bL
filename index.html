@@ -5624,11 +5624,31 @@ function showPaymentSuccess(cardText){
   const card=$('paymentCopyCard');
   if(card) card.textContent=cardText||'';
 }
-async function copyPaymentCard(){
+function copyPaymentCard(){
   const text = ST_currentPaymentCard || $('paymentCopyCard')?.textContent || '';
   if(!text){ toast('沒有可複製的付款卡片'); return; }
-  try{ await navigator.clipboard.writeText(text); toast('已複製付款卡片，請貼到官方 LINE，並一起傳付款截圖'); }
-  catch(e){ toast('請長按卡片文字複製'); }
+  const done=()=>{
+    toast('已複製付款卡片，請貼到官方 LINE，並一起傳付款截圖');
+    const b=document.querySelector('.payment-copy-btn');
+    if(b){ const o=b.getAttribute('data-label')||b.textContent; b.setAttribute('data-label',o); b.textContent='✓ 已複製！請貼到官方 LINE'; b.disabled=true; setTimeout(()=>{ b.textContent=o; b.disabled=false; },2200); }
+  };
+  const fallback=()=>{
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text; ta.setAttribute('readonly','readonly');
+      ta.style.position='fixed'; ta.style.left='-9999px'; ta.style.top='0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select(); try{ ta.setSelectionRange(0,text.length); }catch(_e){}
+      let ok=false; try{ ok=document.execCommand('copy'); }catch(_e){}
+      document.body.removeChild(ta);
+      if(ok) done(); else prompt('請長按下方文字全選、複製，貼到官方 LINE：', text);
+    }catch(_e){ prompt('請長按下方文字全選、複製，貼到官方 LINE：', text); }
+  };
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(fallback);
+    } else { fallback(); }
+  }catch(_e){ fallback(); }
 }
 
 // ── URL 深連結：信件按鈕 / 查看報名紀錄 / 前往繳費 ──
