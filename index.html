@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>活動報名系統</title>
 <style>
 :root{
@@ -44,22 +44,22 @@ button,a,[onclick]{touch-action:manipulation}
 .logo-wrap{display:flex;align-items:center;gap:8px;flex:1}
 .logo-img{height:36px;width:auto;border-radius:8px}
 .logo-text{display:flex;flex-direction:column}
-.logo-name{font-size:16px;font-weight:900;color:var(--txt)}
-.logo-sub{font-size:16px;color:var(--muted)}
-.header-login-btn{background:var(--c1);border:none;border-radius:20px;padding:6px 14px;font-size:16px;font-weight:700;color:var(--s-ok);cursor:pointer;font-family:inherit}
+.logo-name{font-size:15px;font-weight:900;color:var(--txt)}
+.logo-sub{font-size:10px;color:var(--muted)}
+.header-login-btn{background:var(--c1);border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--s-ok);cursor:pointer;font-family:inherit}
 
 /* ── Hero ── */
 .hero{display:none}
 .hero-bg-img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
 .hero-mascot{display:none}
 .hero-info-band{background:var(--c2);padding:8px 16px;display:flex;align-items:center;gap:8px}
-.hero-info-band strong{font-size:16px;font-weight:700;color:#6a4a00}
+.hero-info-band strong{font-size:13px;font-weight:700;color:#6a4a00}
 
 /* ── 分類區塊 ── */
 .section{padding:16px}
 .section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .section-title{font-size:16px;font-weight:900;color:var(--txt)}
-.section-more{font-size:16px;color:var(--s-ok);font-weight:700;cursor:pointer}
+.section-more{font-size:12px;color:var(--s-ok);font-weight:700;cursor:pointer}
 
 .cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(min-width:600px){.cat-grid{grid-template-columns:repeat(4,1fr)}}
@@ -71,8 +71,8 @@ button,a,[onclick]{touch-action:manipulation}
 .cat-card.active{box-shadow:0 0 0 3px var(--c1)}
 .cat-btn{border:none;background:transparent;width:100%;cursor:pointer;font-family:inherit}
 .cat-icon{font-size:28px;margin-bottom:6px}
-.cat-name{font-size:16px;font-weight:900;color:var(--txt)}
-.cat-sub{font-size:16px;color:var(--muted);margin-top:2px}
+.cat-name{font-size:14px;font-weight:900;color:var(--txt)}
+.cat-sub{font-size:10px;color:var(--muted);margin-top:2px}
 
 /* ── 活動卡片（JS 動態產出相容）── */
 .event-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .15s}
@@ -80,10 +80,10 @@ button,a,[onclick]{touch-action:manipulation}
 .event-cover{position:relative;height:140px;background:var(--c1);overflow:hidden}
 .event-cover img{width:100%;height:100%;object-fit:cover}
 .event-cover-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:var(--c1)}
-.event-status-tag{position:absolute;top:8px;right:8px;background:var(--c1);color:var(--s-ok);padding:2px 8px;border-radius:20px;font-size:16px;font-weight:700}
+.event-status-tag{position:absolute;top:8px;right:8px;background:var(--c1);color:var(--s-ok);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
 .event-info{padding:12px}
-.event-name{font-size:16px;font-weight:900;color:var(--txt);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.event-meta{font-size:16px;color:var(--muted);margin-bottom:4px}
+.event-name{font-size:15px;font-weight:900;color:var(--txt);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-meta{font-size:12px;color:var(--muted);margin-bottom:4px}
 .session-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;cursor:pointer}
 .session-card:hover{border-color:var(--c1)}
 /* ── 活動卡片 ── */
@@ -93,8 +93,8 @@ button,a,[onclick]{touch-action:manipulation}
 .event-card-h .ec-thumb{height:100px;background:var(--c1);overflow:hidden;position:relative}
 .event-card-h .ec-thumb img{width:100%;height:100%;object-fit:cover}
 .event-card-h .ec-body{padding:10px}
-.event-card-h .ec-title{font-size:16px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.event-card-h .ec-meta{font-size:16px;color:var(--muted);margin-top:3px}
+.event-card-h .ec-title{font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-card-h .ec-meta{font-size:10px;color:var(--muted);margin-top:3px}
 
 .event-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
 .event-card{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;cursor:pointer}
@@ -102,12 +102,12 @@ button,a,[onclick]{touch-action:manipulation}
 .ec-thumb-sq{width:72px;height:72px;border-radius:var(--r-sm);background:var(--c1);flex-shrink:0;overflow:hidden}
 .ec-thumb-sq img{width:100%;height:100%;object-fit:cover}
 .ec-info{flex:1;min-width:0}
-.ec-info .ec-title{font-size:16px;font-weight:700;color:var(--txt);margin-bottom:4px}
-.ec-info .ec-meta{font-size:16px;color:var(--muted);margin-bottom:6px}
+.ec-info .ec-title{font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px}
+.ec-info .ec-meta{font-size:11px;color:var(--muted);margin-bottom:6px}
 .ec-info .ec-tags{display:flex;gap:6px;flex-wrap:wrap}
 
 /* ── 狀態標籤 ── */
-.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:16px;font-weight:700}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
 .tag-ok{background:var(--s-ok-bg);color:var(--s-ok)}
 .tag-warn{background:var(--s-warn-bg);color:var(--s-warn)}
 .tag-err{background:var(--s-err-bg);color:var(--s-err)}
@@ -115,35 +115,35 @@ button,a,[onclick]{touch-action:manipulation}
 .tag-free{background:var(--c3);color:#1a4a6a}
 
 /* ── 按鈕 ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:var(--r-sm);font-size:16px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
 .btn-primary{background:#7fb069;color:var(--s-ok)}
 .btn-secondary{background:var(--c3);color:#1a4a6a}
 .btn-danger{background:var(--c4);color:var(--s-err)}
 .btn-grey{background:#f0f0ee;color:var(--muted)}
 .btn-full{width:100%}
-.btn-sm{padding:6px 12px;font-size:16px}
+.btn-sm{padding:6px 12px;font-size:12px}
 
 /* ── 客服頁 ── */
 .support-hero{background:var(--c5);padding:20px 16px;display:flex;align-items:center;gap:14px}
 .support-hero-mascot{width:80px;height:80px;object-fit:contain;flex-shrink:0}
 .support-hero-text h2{font-size:18px;font-weight:900;color:#3a2a6a}
-.support-hero-text p{font-size:16px;color:#6a5a9a;margin-top:4px}
+.support-hero-text p{font-size:13px;color:#6a5a9a;margin-top:4px}
 .support-line-btn{background:var(--c1);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;margin:0 16px;cursor:pointer;border:none;font-family:inherit;width:calc(100% - 32px)}
 .support-line-btn .line-icon{width:36px;height:36px;background:#06C755;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .support-line-btn .line-text{text-align:left}
-.support-line-btn .line-text strong{display:block;font-size:16px;font-weight:900;color:var(--txt)}
-.support-line-btn .line-text span{font-size:16px;color:var(--muted)}
+.support-line-btn .line-text strong{display:block;font-size:14px;font-weight:900;color:var(--txt)}
+.support-line-btn .line-text span{font-size:11px;color:var(--muted)}
 .support-list{padding:10px 16px;display:flex;flex-direction:column;gap:8px}
 .support-item{background:var(--wh);border-radius:var(--r);border:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer}
 .support-item-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.support-item-text h4{font-size:16px;font-weight:700;color:var(--txt)}
-.support-item-text p{font-size:16px;color:var(--muted);margin-top:2px}
+.support-item-text h4{font-size:14px;font-weight:700;color:var(--txt)}
+.support-item-text p{font-size:11px;color:var(--muted);margin-top:2px}
 .support-arrow{margin-left:auto;color:var(--muted);font-size:16px}
 .support-faq{margin:0 16px;background:var(--wh);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
 .faq-item{padding:14px;border-bottom:1px solid var(--border);cursor:pointer}
 .faq-item:last-child{border-bottom:none}
-.faq-q{font-size:16px;font-weight:700;color:var(--txt)}
-.faq-a{font-size:16px;color:var(--muted);margin-top:6px;display:none;line-height:1.6}
+.faq-q{font-size:13px;font-weight:700;color:var(--txt)}
+.faq-a{font-size:12px;color:var(--muted);margin-top:6px;display:none;line-height:1.6}
 .faq-item.open .faq-a{display:block}
 
 
@@ -199,7 +199,7 @@ button,a,[onclick]{touch-action:manipulation}
   color:#111;
 }
 .support-modal-sub{
-  font-size:16px;
+  font-size:14px;
   color:#666;
   margin-top:4px;
   line-height:1.5;
@@ -239,7 +239,7 @@ button,a,[onclick]{touch-action:manipulation}
   margin-bottom:8px;
 }
 .support-modal-a{
-  font-size:16px;
+  font-size:15px;
   color:#555;
   line-height:1.75;
   font-weight:650;
@@ -278,8 +278,8 @@ button,a,[onclick]{touch-action:manipulation}
 /* ── 底部導覽（四顆）── */
 .bottom-fixed{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--border);z-index:100;padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:2px;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
 @media(min-width:600px){}
-.bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:16px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
-.bot-btn .bot-label{font-size:16px;font-weight:900;white-space:nowrap}
+.bot-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 4px;border-radius:12px;font-size:15px;font-weight:900;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .2s}
+.bot-btn .bot-label{font-size:15px;font-weight:900;white-space:nowrap}
 .bot-btn.active{background:var(--btn-color,#DDEAD1);color:#111}
 .bot-icon{display:none}
 
@@ -294,10 +294,10 @@ button,a,[onclick]{touch-action:manipulation}
 .form-hero{position:relative;min-height:120px;background:var(--c3);overflow:hidden}
 .form-hero-overlay{position:absolute;bottom:0;left:0;right:0;padding:16px;background:linear-gradient(0deg,rgba(0,0,0,.45) 0%,transparent 100%)}
 .form-hero-title{color:#fff;font-size:17px;font-weight:700;line-height:1.3}
-.form-hero-meta{color:rgba(255,255,255,.85);font-size:16px;margin-top:4px}
+.form-hero-meta{color:rgba(255,255,255,.85);font-size:13px;margin-top:4px}
 .form-wrap{padding:12px 14px 16px}
 .fcard{background:var(--wh);border-radius:var(--r-sm);border:1px solid var(--border);margin-bottom:10px;overflow:hidden}
-.fcard-hd{padding:12px 14px;font-size:16px;font-weight:700;background:var(--c1);color:var(--s-ok)}
+.fcard-hd{padding:12px 14px;font-size:14px;font-weight:700;background:var(--c1);color:var(--s-ok)}
 .fcard-body{padding:12px 14px}
 .fee-box{background:var(--c2);border-radius:var(--r-sm);padding:12px;margin:8px 0}
 .reg-actions{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
@@ -334,14 +334,14 @@ button,a,[onclick]{touch-action:manipulation}
 .pre-notice-actions .line{background:#06C755;color:#fff}
 .pre-notice-actions .info{background:#eef6e6;color:#234;border:1.5px solid #b9d3a5}
 .payment-copy-btn{width:100%;background:#2d6a4f;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer;margin:0 0 10px}
-.cancel-bundle-notice{display:none;background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:12px 14px;margin-bottom:14px;color:#6b4a00;font-size:16px;line-height:1.65;font-weight:800}
+.cancel-bundle-notice{display:none;background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:12px 14px;margin-bottom:14px;color:#6b4a00;font-size:14px;line-height:1.65;font-weight:800}
 .cancel-bundle-notice ul{margin:6px 0 0 18px;padding:0}
 .cancel-bundle-notice li{margin:2px 0}
-@media(max-width:420px){.cancel-modal-actions{gap:8px!important}.cancel-modal-actions button{font-size:16px!important;padding:12px 8px!important}}
+@media(max-width:420px){.cancel-modal-actions{gap:8px!important}.cancel-modal-actions button{font-size:13px!important;padding:12px 8px!important}}
 
 .f-row{margin-bottom:14px}
-.f-label{font-size:16px;font-weight:700;margin-bottom:6px;color:var(--txt)}
-.f-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:16px;font-family:inherit;background:var(--wh);color:var(--txt)}
+.f-label{font-size:13px;font-weight:700;margin-bottom:6px;color:var(--txt)}
+.f-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--wh);color:var(--txt)}
 
 /* ═══════════════════════════════════════════════════════════
    長輩友善：只放大「報名時要讀、要點」的欄位與標籤。
@@ -361,7 +361,7 @@ input, select, textarea, .f-input{
 }
 /* 欄位下方的說明小字 */
 .f-hint, .field-hint, .hint, .form-hint, .sub-note, .note-sm{
-  font-size:16px !important;
+  font-size:14px !important;
 }
 /* 手機再放大一級（長輩多用手機） */
 @media(max-width:600px){
@@ -373,16 +373,16 @@ input, select, textarea, .f-input{
     font-size:18px !important;    /* 手機標籤：18 */
   }
   .f-hint, .field-hint, .hint, .form-hint, .sub-note, .note-sm{
-    font-size:16px !important;
+    font-size:15px !important;
   }
 }
 .f-input:focus{outline:none;border-color:var(--c1)}
-.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(30,30,26,.85);color:#fff;padding:10px 20px;border-radius:20px;font-size:16px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(30,30,26,.85);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .agree-section{background:var(--c2);border-radius:var(--r-sm);padding:14px;margin:12px 0}
 .agree-link{color:var(--s-ok);font-weight:700;cursor:pointer;text-decoration:underline}
 .stall-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;margin:10px 0}
-.stall-cell{height:52px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;cursor:pointer;background:var(--wh);transition:all .15s}
+.stall-cell{height:52px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;background:var(--wh);transition:all .15s}
 .stall-cell.taken{background:#f0f0ee;color:#bbb;cursor:not-allowed;border-color:#e0e0dc}
 .stall-cell.selected{background:var(--c1);border-color:var(--gl);color:var(--s-ok)}
 .notif-area,.pageNotif,.pageExplore{display:none!important}
@@ -407,12 +407,12 @@ input, select, textarea, .f-input{
 .ses-card-body{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .ses-card-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ses-card-name{font-size:18px;font-weight:900;color:var(--txt)}
-.ses-card-meta{font-size:16px;color:var(--muted)}
+.ses-card-meta{font-size:14px;color:var(--muted)}
 .ses-card-fee{font-size:18px;font-weight:900;color:var(--s-ok)}
 .ses-card-actions{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border);background:#fafaf8}
-.ses-reg-btn{flex:1;background:var(--c1);border:none;border-radius:10px;padding:12px;font-size:16px;font-weight:900;color:var(--s-ok);cursor:pointer;font-family:inherit;text-align:center}
+.ses-reg-btn{flex:1;background:var(--c1);border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:900;color:var(--s-ok);cursor:pointer;font-family:inherit;text-align:center}
 .ses-reg-btn:hover{background:var(--gl)}
-.ses-share-btn{background:none;border:1.5px solid var(--border);border-radius:10px;padding:11px 16px;font-size:16px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap}
+.ses-share-btn{background:none;border:1.5px solid var(--border);border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap}
 .ses-share-btn:hover{border-color:var(--c1);color:var(--s-ok)}
 /* 電腦版：左圖右文+右側按鈕 */
 @media(min-width:600px){
@@ -421,11 +421,11 @@ input, select, textarea, .f-input{
   .ses-card-initial{font-size:40px}
   .ses-card-body{padding:14px 16px;justify-content:center}
   .ses-card-name{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ses-card-meta{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ses-card-meta{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ses-card-fee{font-size:16px}
   .ses-card-actions{flex-direction:column;border-top:none;border-left:1px solid var(--border);padding:14px 16px;background:transparent;justify-content:center;width:100px;flex-shrink:0}
-  .ses-reg-btn{flex:0;width:100%;padding:10px;font-size:16px}
-  .ses-share-btn{width:100%;justify-content:center;padding:8px;font-size:16px}
+  .ses-reg-btn{flex:0;width:100%;padding:10px;font-size:14px}
+  .ses-share-btn{width:100%;justify-content:center;padding:8px;font-size:13px}
 }
 
 /* ── 精選主題活動卡片 ── */
@@ -434,9 +434,9 @@ input, select, textarea, .f-input{
 .feat-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .feat-initial{font-size:36px;font-weight:900;color:var(--s-ok);position:relative;z-index:1}
 .feat-body{padding:10px 10px 12px}
-.feat-title{font-size:16px;font-weight:900;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
-.feat-meta{font-size:16px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
-.feat-btn{width:100%;border:none;background:var(--c1);color:var(--s-ok);border-radius:8px;padding:7px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.feat-title{font-size:14px;font-weight:900;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.feat-meta{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.feat-btn{width:100%;border:none;background:var(--c1);color:var(--s-ok);border-radius:8px;padding:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
 
 /* ══ 報名表單新版 CSS ══ */
 :root{
@@ -468,7 +468,7 @@ input, select, textarea, .f-input{
 .form-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .form-card-num{width:30px;height:30px;border-radius:50%;background:var(--c-pink);color:#111;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:8px}
 .form-card-title-new{font-size:20px;font-weight:900;color:#111;display:flex;align-items:center;gap:8px}
-.edit-pill-btn{border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:6px 14px;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
+.edit-pill-btn{border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:6px 14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
 /* 活動資訊 */
 .act-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:12px}
 @media (min-width:900px){
@@ -481,21 +481,21 @@ input, select, textarea, .f-input{
   #regFormModal .reg-form-content > div:last-child{grid-column:2;padding:0 0 40px!important}
 }
 .act-name{font-size:22px;font-weight:900;color:#111;line-height:1.3;margin-bottom:8px}
-.act-meta-row{display:flex;align-items:flex-start;gap:8px;font-size:16px;color:#555;margin-bottom:4px}
+.act-meta-row{display:flex;align-items:flex-start;gap:8px;font-size:15px;color:#555;margin-bottom:4px}
 .act-meta-icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.act-desc{font-size:16px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.act-desc{font-size:15px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
 /* 設備確認 */
 .qty-row{display:flex;align-items:center;gap:8px;min-height:52px;border-bottom:1px solid rgba(0,0,0,.06);padding:4px 0}
 .qty-row:last-child{border-bottom:0}
 .qty-icon{font-size:22px;flex-shrink:0}
 .qty-name-wrap{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
-.qty-name{font-size:16px;font-weight:800;color:#111;white-space:nowrap}
-.qty-name-incl{font-size:16px;font-weight:700;color:#5a8a3c;white-space:nowrap}
+.qty-name{font-size:15px;font-weight:800;color:#111;white-space:nowrap}
+.qty-name-incl{font-size:13px;font-weight:700;color:#5a8a3c;white-space:nowrap}
 .qty-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .qty-btn{width:32px;height:32px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:#111;font-size:20px;font-weight:900;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
 .qty-btn:active{background:var(--c-purple)}
 .qty-num{min-width:32px;text-align:center;font-size:18px;font-weight:900;color:#111}
-.qty-total{font-size:16px;font-weight:800;color:#111;white-space:nowrap;text-align:right;flex-shrink:0}
+.qty-total{font-size:14px;font-weight:800;color:#111;white-space:nowrap;text-align:right;flex-shrink:0}
 .qty-input{display:none}
 /* 總計費用 */
 .total-new{background:linear-gradient(135deg,#fff,var(--c-yellow));border:1.5px solid var(--c-yellow);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px}
@@ -504,17 +504,17 @@ input, select, textarea, .f-input{
 .total-final-label{font-size:18px;font-weight:900}
 .total-final-amt{font-size:30px;font-weight:900;color:#111}
 /* 會員/發票資料 */
-.info-grid-new{display:grid;grid-template-columns:80px 1fr;gap:6px 10px;font-size:16px}
+.info-grid-new{display:grid;grid-template-columns:80px 1fr;gap:6px 10px;font-size:15px}
 .info-label-new{color:#555;font-weight:700}
 .info-value-new{color:#111;font-weight:800}
 .social-row{display:flex;gap:8px;align-items:center;margin-top:8px}
 .social-icon-new{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:1.5px solid var(--line);background:#fff;text-decoration:none;font-weight:700}
 /* 合約 */
 .contract-open-btn{width:100%;height:48px;border:0;border-radius:14px;background:var(--c-purple);color:#111;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit}
-.contract-done-badge{background:var(--c-green);color:#111;border-radius:16px;padding:6px 14px;font-size:16px;font-weight:900;display:none}
+.contract-done-badge{background:var(--c-green);color:#111;border-radius:16px;padding:6px 14px;font-size:14px;font-weight:900;display:none}
 /* 備註 */
 .note-textarea{width:100%;min-height:96px;border:1.5px solid var(--line);border-radius:14px;padding:12px;font-size:16px;resize:none;background:#fff;font-family:inherit}
-.note-count{text-align:right;font-size:16px;color:var(--muted);margin-top:4px}
+.note-count{text-align:right;font-size:13px;color:var(--muted);margin-top:4px}
 /* 送出按鈕 */
 .submit-btn-new{width:100%;height:56px;border:0;border-radius:18px;background:var(--c-pink);color:#111;font-size:20px;font-weight:900;cursor:pointer;font-family:inherit;transition:opacity .2s}
 .submit-btn-new:disabled{opacity:.45;cursor:not-allowed}
@@ -549,11 +549,11 @@ input, select, textarea, .f-input{
 }
 .ses-list-body{flex:1;min-width:0}
 .ses-list-name{font-size:17px;font-weight:900;color:#111;line-height:1.3;margin-bottom:4px}
-.ses-list-meta{font-size:16px;color:#555;line-height:1.5}
+.ses-list-meta{font-size:13px;color:#555;line-height:1.5}
 .ses-list-fee{font-size:16px;font-weight:900;color:#111;margin-top:4px}
 .ses-list-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
-.ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
-.ses-list-reg{min-width:88px;height:42px;border-radius:12px;border:none;background:#DCD7ED;color:#111;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0 12px}
+.ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
+.ses-list-reg{min-width:88px;height:42px;border-radius:12px;border:none;background:#DCD7ED;color:#111;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0 12px}
 
 /* 20260705 前台電腦版：近期場次改小卡片 Grid，同主題同色；手機版不動 */
 :root{
@@ -575,7 +575,7 @@ input, select, textarea, .f-input{
   background:var(--theme-accent,#DCD7ED);
   color:#111;
   padding:3px 9px;
-  font-size:16px;
+  font-size:12px;
   font-weight:900;
   line-height:1.2;
   margin-bottom:6px;
@@ -593,7 +593,7 @@ input, select, textarea, .f-input{
   color:#7a5200;
   border:1px solid rgba(190,145,45,.35);
   padding:3px 9px;
-  font-size:16px;
+  font-size:12px;
   font-weight:900;
   line-height:1.25;
   margin-top:5px;
@@ -669,12 +669,12 @@ input, select, textarea, .f-input{
     min-height:40px;
   }
   .ses-list-meta{
-    font-size:16px!important;
+    font-size:12px!important;
     line-height:1.45!important;
     min-height:34px!important;
   }
   .ses-list-fee{
-    font-size:16px!important;
+    font-size:15px!important;
     color:#111!important;
     margin-top:2px!important;
   }
@@ -698,7 +698,7 @@ input, select, textarea, .f-input{
     height:34px!important;
     border-radius:11px!important;
     background:#fff!important;
-    font-size:16px!important;
+    font-size:13px!important;
   }
   .ses-list-reg{
     width:100%!important;
@@ -706,7 +706,7 @@ input, select, textarea, .f-input{
     min-width:0!important;
     border-radius:11px!important;
     background:#DCD7ED!important;
-    font-size:16px!important;
+    font-size:13px!important;
   }
   [data-front-session-card]{
     flex-direction:column!important;
@@ -792,13 +792,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .hc-cat-card.c-pink{ background:linear-gradient(135deg,#fff,#FAE1DD); }
 .hc-cat-card img{ width:56px; height:72px; object-fit:contain; flex-shrink:0; }
 .hc-cat-title{ font-size:20px; font-weight:900; line-height:1.2; color:#111; }
-.hc-cat-sub{ font-size:16px; color:#555; margin-top:4px; line-height:1.4; }
+.hc-cat-sub{ font-size:13px; color:#555; margin-top:4px; line-height:1.4; }
 
 /* ── section head ── */
 .hc-section{ padding:0 18px 16px; }
 .hc-section-head{ display:flex; align-items:center; justify-content:space-between; margin:4px 0 12px; }
 .hc-section-title{ font-size:21px; font-weight:900; color:#111; }
-.hc-section-more{ font-size:16px; font-weight:900; color:#5b8b49; cursor:pointer; }
+.hc-section-more{ font-size:15px; font-weight:900; color:#5b8b49; cursor:pointer; }
 
 /* ── 精選主題活動 ── */
 .hc-feature-row{
@@ -821,12 +821,12 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .hc-theme-img{ height:100px; background:#DDEAD1; overflow:hidden; }
 .hc-theme-img img{ width:100%; height:100%; object-fit:cover; }
 .hc-theme-body{ padding:10px; text-align:center; }
-.hc-theme-name{ font-size:16px; font-weight:900; line-height:1.3; margin-bottom:8px; color:#111; }
-.hc-theme-desc{ font-size:16px; color:#666; line-height:1.4; margin-bottom:8px; }
+.hc-theme-name{ font-size:15px; font-weight:900; line-height:1.3; margin-bottom:8px; color:#111; }
+.hc-theme-desc{ font-size:12px; color:#666; line-height:1.4; margin-bottom:8px; }
 .hc-theme-btn{
   height:34px; border-radius:16px; background:#91B574; color:#fff;
   display:flex; align-items:center; justify-content:center;
-  font-size:16px; font-weight:900; cursor:pointer; border:none;
+  font-size:14px; font-weight:900; cursor:pointer; border:none;
   font-family:inherit; width:100%;
 }
 
@@ -852,20 +852,20 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 }
 .hc-session-thumb img{ width:100%; height:100%; object-fit:cover; }
 .hc-session-name{ font-size:17px; font-weight:900; line-height:1.25; color:#111; margin-bottom:4px; }
-.hc-session-meta{ font-size:16px; color:#555; line-height:1.5; }
+.hc-session-meta{ font-size:12px; color:#555; line-height:1.5; }
 .hc-session-price{ font-size:16px; font-weight:900; color:#5b8b49; margin-top:4px; }
 .hc-session-actions{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
 .hc-share-btn{
   width:32px; height:32px; border-radius:50%;
   border:1px solid rgba(0,0,0,.1); background:#fff;
   display:flex; align-items:center; justify-content:center;
-  font-size:16px; cursor:pointer;
+  font-size:14px; cursor:pointer;
 }
 .hc-reg-btn{
   min-width:82px; height:40px; border-radius:13px;
   background:#91B574; color:#fff;
   display:flex; align-items:center; justify-content:center;
-  font-size:16px; font-weight:900; cursor:pointer;
+  font-size:15px; font-weight:900; cursor:pointer;
   border:none; font-family:inherit; white-space:nowrap;
 }
 
@@ -929,14 +929,14 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   width:28px; height:28px; border-radius:50%;
   background:#91B574; color:#fff;
   display:flex; align-items:center; justify-content:center;
-  font-weight:900; font-size:16px; flex-shrink:0;
+  font-weight:900; font-size:14px; flex-shrink:0;
 }
 .hc-step-name{ font-size:18px; font-weight:900; color:#111; }
 
 /* ── 設備表格 ── */
-.hc-equip-table{ width:100%; border-collapse:collapse; font-size:16px; }
+.hc-equip-table{ width:100%; border-collapse:collapse; font-size:14px; }
 .hc-equip-table th{
-  color:#888; font-size:16px; font-weight:900;
+  color:#888; font-size:12px; font-weight:900;
   text-align:left; padding:6px 4px;
   border-bottom:1px solid rgba(0,0,0,.06);
 }
@@ -949,14 +949,14 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 }
 .hc-qty-btn{
   display:inline-flex; align-items:center; justify-content:center;
-  width:28px; height:32px; font-weight:900; font-size:16px;
+  width:28px; height:32px; font-weight:900; font-size:15px;
   background:none; border:none; cursor:pointer; font-family:inherit; color:#333;
 }
 .hc-qty-num{
   min-width:30px; height:32px;
   border-left:1px solid rgba(0,0,0,.12); border-right:1px solid rgba(0,0,0,.12);
   display:inline-flex; align-items:center; justify-content:center;
-  font-weight:900; font-size:16px;
+  font-weight:900; font-size:15px;
 }
 
 /* ── 費用總計 ── */
@@ -969,13 +969,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .hc-total-final-amount{ font-size:28px; font-weight:900; color:#5b8b49; }
 
 /* ── 會員/發票資料 ── */
-.hc-info-grid{ display:grid; grid-template-columns:80px 1fr; gap:7px 10px; font-size:16px; }
+.hc-info-grid{ display:grid; grid-template-columns:80px 1fr; gap:7px 10px; font-size:15px; }
 .hc-info-label{ color:#666; font-weight:700; }
 .hc-info-value{ color:#111; font-weight:700; }
 .hc-edit-btn{
   margin-left:auto; padding:6px 14px;
   border:1px solid rgba(0,0,0,.1); background:#fff;
-  border-radius:16px; font-size:16px; font-weight:900;
+  border-radius:16px; font-size:14px; font-weight:900;
   cursor:pointer; font-family:inherit;
 }
 
@@ -987,22 +987,22 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .hc-contract-cta{
   height:40px; padding:0 16px; border-radius:12px;
   border:none; background:#91B574; color:#fff;
-  font-size:16px; font-weight:900; cursor:pointer; font-family:inherit;
+  font-size:14px; font-weight:900; cursor:pointer; font-family:inherit;
 }
 .hc-contract-done-badge{
   display:none; background:#DDEAD1; color:#2a6a10;
   border-radius:16px; padding:4px 12px;
-  font-size:16px; font-weight:900;
+  font-size:13px; font-weight:900;
 }
 
 /* ── 備註 ── */
 .hc-note-textarea{
   width:100%; min-height:82px;
   border:1px solid rgba(0,0,0,.1); border-radius:14px;
-  padding:12px; font-size:16px; resize:none;
+  padding:12px; font-size:15px; resize:none;
   background:#fff; font-family:inherit; color:#111;
 }
-.hc-note-count{ text-align:right; font-size:16px; color:#aaa; margin-top:4px; }
+.hc-note-count{ text-align:right; font-size:12px; color:#aaa; margin-top:4px; }
 
 /* ── 送出按鈕 ── */
 .hc-submit-btn{
@@ -1038,9 +1038,9 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-hero-brand{ margin:0; font-size:16px; font-weight:700; color:#2f6d28; }
 .m-hero-profile .m-hero-brand{ color:#5a42a8; }
 .m-hero-actions{ display:flex; flex-direction:column; gap:10px; flex-shrink:0; }
-.m-btn-edit-green{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #b9d3a5; color:#3f7a2a; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
-.m-btn-edit-purple{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #cdbef0; color:#7656c6; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
-.m-btn-logout{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #f2b4be; color:#d9485f; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
+.m-btn-edit-green{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #b9d3a5; color:#3f7a2a; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; }
+.m-btn-edit-purple{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #cdbef0; color:#7656c6; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; }
+.m-btn-logout{ min-width:72px; height:42px; border-radius:14px; background:#fff; border:1.5px solid #f2b4be; color:#d9485f; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; }
 .m-tabs{ display:grid; grid-template-columns:1fr 1fr; margin:0 16px 16px; border-radius:18px; overflow:hidden; border:1px solid #dfe5d6; }
 .m-tab{ height:54px; border:none; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; background:#fff; color:#888; display:flex; align-items:center; justify-content:center; gap:6px; }
 .m-tab.active-record{ background:#eef6e6; color:#4d7a33; }
@@ -1051,18 +1051,18 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-record-thumb{ width:100px; height:86px; border-radius:16px; overflow:hidden; background:#DDEAD1; flex-shrink:0; }
 .m-record-thumb img{ width:100%; height:100%; object-fit:cover; }
 .m-record-name{ font-size:21px; font-weight:900; line-height:1.3; margin-bottom:6px; color:#111; }
-.m-record-meta{ font-size:16px; color:#555; line-height:1.5; }
+.m-record-meta{ font-size:15px; color:#555; line-height:1.5; }
 .m-record-arrow{ font-size:28px; color:#bbb; line-height:1; text-align:right; margin-top:4px; }
 .m-record-bottom{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.m-status-pill{ display:inline-flex; align-items:center; gap:5px; height:34px; border-radius:16px; padding:0 12px; font-size:16px; font-weight:900; white-space:nowrap; }
-.m-status-note{ font-size:16px; color:#666; flex:1; }
-.m-action-btn{ height:40px; padding:0 16px; border-radius:14px; border:none; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; white-space:nowrap; margin-left:auto; }
+.m-status-pill{ display:inline-flex; align-items:center; gap:5px; height:34px; border-radius:16px; padding:0 12px; font-size:14px; font-weight:900; white-space:nowrap; }
+.m-status-note{ font-size:15px; color:#666; flex:1; }
+.m-action-btn{ height:40px; padding:0 16px; border-radius:14px; border:none; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; white-space:nowrap; margin-left:auto; }
 .m-helper-record{ margin:18px 16px 0; border-radius:22px; padding:18px; background:#f3effe; border:1px solid #d8c8f8; display:none; grid-template-columns:100px 1fr; gap:16px; align-items:center; }
 .m-helper-record.show{ display:grid; }
 .m-helper-record-ip{ width:100px; height:120px; object-fit:contain; }
 .m-helper-record-title{ font-size:18px; font-weight:900; margin:0 0 8px; line-height:1.4; color:#111; }
-.m-helper-record-text{ font-size:16px; color:#555; line-height:1.55; margin:0 0 12px; }
-.m-helper-record-btn{ height:42px; padding:0 18px; border:none; border-radius:14px; background:#9c7ce3; color:#fff; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
+.m-helper-record-text{ font-size:14px; color:#555; line-height:1.55; margin:0 0 12px; }
+.m-helper-record-btn{ height:42px; padding:0 18px; border:none; border-radius:14px; background:#9c7ce3; color:#fff; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
 .m-profile-section{ padding:0 16px; }
 .m-profile-card{ border-radius:22px; padding:18px; margin-bottom:16px; }
 .m-profile-card-purple{ background:#fcfaff; border:1px solid #d8c8f8; }
@@ -1079,14 +1079,14 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-profile-row-label{ font-size:16px; color:#888; font-weight:700; width:80px; flex-shrink:0; }
 .m-profile-row-value{ font-size:17px; font-weight:700; color:#111; flex:1; word-break:break-word; }
 .m-social-row{ display:flex; gap:8px; }
-.m-social-icon{ width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; text-decoration:none; border:1px solid rgba(0,0,0,.1); }
+.m-social-icon{ width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; text-decoration:none; border:1px solid rgba(0,0,0,.1); }
 .m-full-btn{ width:100%; height:46px; border-radius:16px; border:none; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; }
 .m-full-btn-purple{ background:#ece5fb; color:#7357bb; }
 .m-full-btn-blue{ background:#e2f0fb; color:#4e78a5; }
 .m-helper-profile{ margin:0 0 16px; border-radius:22px; padding:16px; background:#fff9e6; border:1px solid #f0d48d; display:grid; grid-template-columns:58px 1fr; gap:14px; align-items:center; }
 .m-helper-profile-icon{ width:58px; height:58px; border-radius:16px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; border:1px solid #f0d48d; }
 .m-helper-profile-title{ font-size:16px; font-weight:900; line-height:1.5; margin:0 0 6px; color:#111; }
-.m-helper-profile-text{ font-size:16px; color:#666; margin:0; line-height:1.5; }
+.m-helper-profile-text{ font-size:13px; color:#666; margin:0; line-height:1.5; }
 
 
 /* ===== 會員資料頁新版樣式 ===== */
@@ -1095,7 +1095,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   min-width:88px; height:46px; border-radius:16px; background:#fff;
   display:inline-flex; align-items:center; justify-content:center; gap:6px;
 }
-.m-btn-edit-green::before,.m-btn-edit-purple::before{ content:"✎"; font-size:16px; }
+.m-btn-edit-green::before,.m-btn-edit-purple::before{ content:"✎"; font-size:15px; }
 .m-btn-logout::before{ content:"↪"; font-size:16px; }
 .m-btn-edit-green{ border:1.5px solid #b9d3a5; color:#3f7a2a; }
 .m-btn-edit-purple{ border:1.5px solid #cdbef0; color:#7656c6; }
@@ -1139,7 +1139,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-profile-socials{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
 .m-profile-socials a,.m-profile-socials span{
   width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  text-decoration:none; font-size:16px; font-weight:900; border:1.5px solid rgba(0,0,0,.12); background:#fff;
+  text-decoration:none; font-size:14px; font-weight:900; border:1.5px solid rgba(0,0,0,.12); background:#fff;
   box-shadow:0 1px 4px rgba(0,0,0,.05);
 }
 .m-profile-socials .fb{ color:#1877f2; }
@@ -1162,17 +1162,17 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-profile-helper-box{ display:grid; grid-template-columns:84px 1fr; gap:14px; align-items:center; }
 .m-profile-helper-box img{ width:84px; height:84px; object-fit:contain; }
 .m-profile-helper-title{ font-size:18px; font-weight:900; color:#111; line-height:1.55; margin:0 0 6px; }
-.m-profile-helper-sub{ font-size:16px; color:#666; line-height:1.6; margin:0; }
+.m-profile-helper-sub{ font-size:14px; color:#666; line-height:1.6; margin:0; }
 .m-profile-missing-tip{
   margin:0 16px 14px; background:#fff8df; border:1.5px solid #f0d37a; color:#6b4e00;
-  border-radius:14px; padding:12px 14px; font-size:16px; font-weight:800; line-height:1.7;
+  border-radius:14px; padding:12px 14px; font-size:15px; font-weight:800; line-height:1.7;
 }
 @media (max-width:640px){
   .m-hero{ grid-template-columns:88px 1fr; }
   .m-hero-actions{ grid-column:1 / -1; justify-content:flex-end; }
   .m-profile-view-body{ padding:14px 14px 116px; }
   .m-profile-view-item{ grid-template-columns:24px 88px 1fr; gap:10px; }
-  .m-profile-view-item-label{ font-size:16px; }
+  .m-profile-view-item-label{ font-size:15px; }
   .m-profile-view-item-value{ font-size:17px; }
   .m-profile-view-figure{ width:110px; height:110px; }
   .m-profile-helper-box{ grid-template-columns:72px 1fr; }
@@ -1208,11 +1208,11 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-helper-profile-display{border-radius:22px;border:1.5px solid #f1d38a;background:linear-gradient(135deg,#fffaf0,#fff4d8);padding:16px;display:grid;grid-template-columns:70px 1fr;gap:14px;align-items:center}
 .m-helper-profile-display .helper-icon{width:70px;height:70px;border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;border:1px solid rgba(240,190,70,.35)}
 .m-helper-profile-display h3{margin:0 0 6px;font-size:18px;line-height:1.45;font-weight:950;color:#111}
-.m-helper-profile-display p{margin:0;font-size:16px;line-height:1.55;color:#666;font-weight:700}
+.m-helper-profile-display p{margin:0;font-size:14px;line-height:1.55;color:#666;font-weight:700}
 @media(max-width:430px){
   .m-profile-section{padding:0 16px}
   .m-profile-info-row{grid-template-columns:28px 82px 1fr;gap:7px}
-  .m-profile-info-row .label{font-size:16px}
+  .m-profile-info-row .label{font-size:15px}
   .m-profile-info-row .value{font-size:16px}
   .m-profile-card-ip{width:106px;height:126px;right:2px}
   .m-profile-display-card.has-ip .m-profile-info-box{padding-right:88px}
@@ -1253,7 +1253,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 @media(max-width:430px){
   .m-profile-info-box{padding:14px 12px !important;}
   .m-profile-info-row{grid-template-columns:26px minmax(76px,88px) minmax(0,1fr) !important;gap:7px !important;}
-  .m-profile-info-row .label{font-size:16px !important;}
+  .m-profile-info-row .label{font-size:15px !important;}
   .m-profile-info-row .value{font-size:16px !important;}
   .m-profile-card-ip{width:78px !important;height:86px !important;margin:-6px 8px -2px auto !important;}
 }
@@ -1291,10 +1291,10 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   width:42px;height:42px;border-radius:14px;border:1.5px solid #eadff8;background:#fff;color:#7357bb;font-size:24px;font-weight:900;line-height:1;cursor:pointer;
 }
 .member-edit-note{
-  background:#f4eefc;border:1px solid #dac9f4;color:#5c458e;border-radius:16px;padding:10px 12px;margin-bottom:12px;font-size:16px;font-weight:800;line-height:1.6;
+  background:#f4eefc;border:1px solid #dac9f4;color:#5c458e;border-radius:16px;padding:10px 12px;margin-bottom:12px;font-size:14px;font-weight:800;line-height:1.6;
 }
 .member-edit-hint{
-  display:none;background:#fff1f1;border:1.5px solid #f0b7b7;color:#b33333;border-radius:16px;padding:10px 12px;margin-bottom:12px;font-size:16px;font-weight:850;line-height:1.6;
+  display:none;background:#fff1f1;border:1.5px solid #f0b7b7;color:#b33333;border-radius:16px;padding:10px 12px;margin-bottom:12px;font-size:15px;font-weight:850;line-height:1.6;
 }
 .member-edit-card{
   border-radius:22px;padding:15px;margin-bottom:12px;background:#fff;border:1.5px solid #e6ddf7;box-shadow:0 5px 14px rgba(65,45,105,.05);
@@ -1313,7 +1313,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .member-edit-grid.one{grid-template-columns:1fr;}
 .member-edit-field{min-width:0;}
 #memberEditModal label.member-edit-label{
-  display:block;font-size:16px;color:#666;font-weight:850;margin:0 0 6px;line-height:1.35;
+  display:block;font-size:14px;color:#666;font-weight:850;margin:0 0 6px;line-height:1.35;
 }
 #memberEditModal input,
 #memberEditModal textarea{
@@ -1325,7 +1325,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   border-color:#b49de8;box-shadow:0 0 0 3px rgba(180,157,232,.16);
 }
 .member-edit-required{
-  color:#b33333;font-size:16px;font-weight:850;margin:-4px 0 10px;line-height:1.5;
+  color:#b33333;font-size:13px;font-weight:850;margin:-4px 0 10px;line-height:1.5;
 }
 .member-edit-actions{
   position:sticky;bottom:-28px;background:linear-gradient(180deg,rgba(252,251,255,0),#fcfbff 24%);padding:18px 0 2px;margin-top:6px;
@@ -1334,7 +1334,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   width:100%;height:50px;border:none;border-radius:18px;background:#DCD7ED;color:#4e3c82;font-size:18px;font-weight:950;font-family:inherit;cursor:pointer;box-shadow:0 4px 10px rgba(80,60,120,.12);
 }
 #saveMemberBtn.member-edit-save:disabled{opacity:.65;cursor:not-allowed;}
-.member-edit-success{display:none;text-align:center;color:#2f7a35;font-weight:900;padding:9px;font-size:16px;}
+.member-edit-success{display:none;text-align:center;color:#2f7a35;font-weight:900;padding:9px;font-size:14px;}
 @media(max-width:430px){
   #memberEditModal .member-edit-box{max-height:86vh;padding:12px 14px 26px;border-radius:26px 26px 0 0;}
   .member-edit-grid{grid-template-columns:1fr;}
@@ -1380,17 +1380,17 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-fixed-row span{background:#f8fbf5!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
 .m-fixed-row.m-equip-row{grid-template-columns:1fr!important}
 .m-fixed-row.m-equip-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:12.8px!important;line-height:1.35!important}
-.m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:16px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .m-fixed-pay b{font-weight:950!important;color:#111!important}
 .m-bundle-leg{padding:9px 0;border-bottom:1px dashed #e8e8e4}
 .m-bundle-leg:last-of-type{border-bottom:none}
-.m-bundle-leg-name{font-size:16px;font-weight:950;color:#2b2b2b;margin-bottom:3px}
+.m-bundle-leg-name{font-size:15px;font-weight:950;color:#2b2b2b;margin-bottom:3px}
 .m-bundle-leg-row{font-size:13.5px;color:#666;font-weight:700;line-height:1.5}
-.m-bundle-note{margin:8px 0 4px;padding:9px 11px;background:#FAEEC7;border:1.5px solid #e8d9a0;border-radius:10px;font-size:16px;font-weight:800;color:#7a5c00;line-height:1.4}
-.m-cart-pick{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:9px 11px;background:#f3f8f0;border:1.5px solid #cfe3c4;border-radius:10px;font-size:16px;font-weight:800;color:#3c5a33;cursor:pointer}
+.m-bundle-note{margin:8px 0 4px;padding:9px 11px;background:#FAEEC7;border:1.5px solid #e8d9a0;border-radius:10px;font-size:13px;font-weight:800;color:#7a5c00;line-height:1.4}
+.m-cart-pick{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:9px 11px;background:#f3f8f0;border:1.5px solid #cfe3c4;border-radius:10px;font-size:15px;font-weight:800;color:#3c5a33;cursor:pointer}
 .m-cart-pick input{width:19px;height:19px;accent-color:var(--g);cursor:pointer}
 .m-record-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(72px,1fr))!important;gap:6px!important;margin-top:auto!important}
-.m-record-actions .m-action-btn{width:100%!important;min-height:34px!important;padding:7px 6px!important;border-radius:12px!important;font-size:16px!important;white-space:nowrap!important}
+.m-record-actions .m-action-btn{width:100%!important;min-height:34px!important;padding:7px 6px!important;border-radius:12px!important;font-size:13px!important;white-space:nowrap!important}
 .m-record-alert{border-radius:10px!important;padding:7px 8px!important;font-size:12.5px!important;font-weight:950!important;text-align:center!important}
 .m-record-alert.muted{background:#f3f4f6!important;color:#666!important}
 .m-record-alert.warn{background:#fff8ed!important;color:#92400e!important}
@@ -1423,7 +1423,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
   <!-- 資訊帶 -->
   <div id="siteInfoBand" style="background:var(--c2);padding:8px 16px">
-    <strong data-site-info-text style="font-size:16px;color:#6a4a00">探索活動，找到屬於你的市集旅程</strong>
+    <strong data-site-info-text style="font-size:14px;color:#6a4a00">探索活動，找到屬於你的市集旅程</strong>
   </div>
 
   <!-- 四大分類入口 -->
@@ -1434,7 +1434,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <img src="IP歡迎.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
       <div>
         <div style="font-size:18px;font-weight:900;color:#111">市集</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">市集報名</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">市集報名</div>
       </div>
     </div>
 
@@ -1443,7 +1443,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <img src="IP指引.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
       <div>
         <div style="font-size:18px;font-weight:900;color:#111">寄賣</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">攤位寄賣</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">攤位寄賣</div>
       </div>
     </div>
 
@@ -1452,7 +1452,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <img src="IP資料.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
       <div>
         <div style="font-size:18px;font-weight:900;color:#111">體驗</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">體驗活動</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">體驗活動</div>
       </div>
     </div>
 
@@ -1461,7 +1461,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <img src="IP會員.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
       <div>
         <div style="font-size:18px;font-weight:900;color:#111">合作</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">合作洽詢</div>
+        <div style="font-size:13px;color:#555;margin-top:3px">合作洽詢</div>
       </div>
     </div>
 
@@ -1473,7 +1473,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div style="font-size:20px;font-weight:900;color:#111">精選主題活動</div>
     </div>
     <div id="featuredEventsList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none">
-      <div style="padding:20px;color:#aaa;font-size:16px">載入中…</div>
+      <div style="padding:20px;color:#aaa;font-size:14px">載入中…</div>
     </div>
   </div>
 
@@ -1483,7 +1483,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div style="font-size:20px;font-weight:900;color:#111">近期場次</div>
     </div>
     <div id="eventsList">
-      <div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>
+      <div style="padding:20px;color:#aaa;font-size:14px;text-align:center">載入中…</div>
     </div>
   </div>
 
@@ -1497,7 +1497,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <span class="title" id="portalTitle">場次列表</span>
   </div>
   <div style="padding:0 16px 100px" id="portalSessionList">
-    <div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>
+    <div style="padding:20px;color:#aaa;font-size:13px;text-align:center">載入中…</div>
   </div>
 </div>
 <!-- ══ 報名表 Modal ══ -->
@@ -1506,7 +1506,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <!-- 頂部標題列 -->
     <div style="display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fff;border-radius:22px 22px 0 0;position:sticky;top:0;z-index:10">
       <button onclick="closeRegFormModal()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;color:var(--md)">←</button>
-      <span id="formBackTitle" style="font-size:16px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dk)">報名表</span>
+      <span id="formBackTitle" style="font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dk)">報名表</span>
       <button onclick="shareCurrentSession()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;color:var(--md)" title="分享">🔗</button>
     </div>
     <!-- 可捲動內容區 -->
@@ -1515,7 +1515,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <div class="form-hero-placeholder">🎪</div>
       </div>
       <div class="form-wrap">
-        <div id="formError" style="display:none;background:#fff0f0;border:1.5px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:16px;font-weight:600;color:#c0392b"></div>
+        <div id="formError" style="display:none;background:#fff0f0;border:1.5px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:#c0392b"></div>
         <div id="dynForm"></div>
       </div>
       <div style="padding:12px 16px 40px">
@@ -1532,7 +1532,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div id="agreementModalTitle" style="font-size:16px;font-weight:800;color:#1b4332">📋 報名合約</div>
       <button onclick="closeAgreementModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1">×</button>
     </div>
-    <div id="agreementModalBody" style="overflow-y:auto;padding:18px 20px;font-size:16px;line-height:1.9;white-space:pre-wrap;word-break:break-word;flex:1;color:#333">
+    <div id="agreementModalBody" style="overflow-y:auto;padding:18px 20px;font-size:13px;line-height:1.9;white-space:pre-wrap;word-break:break-word;flex:1;color:#333">
       <div style="color:#aaa;text-align:center;padding:40px 0">載入中…</div>
     </div>
     <div style="padding:14px 20px;border-top:1px solid #eee;flex-shrink:0;background:#fff">
@@ -1565,13 +1565,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     </div>
     <div class="mcard" style="border-radius:22px;border:1px solid #d8e8cf;box-shadow:0 4px 14px rgba(79,122,51,.08)">
       <div style="background:#fff;border:1.5px solid #DDEAD1;border-radius:16px;padding:14px;margin-bottom:14px">
-        <label style="font-size:16px;font-weight:900;color:#333">Email</label>
+        <label style="font-size:14px;font-weight:900;color:#333">Email</label>
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <label style="font-size:16px;font-weight:900;color:#333">手機</label>
+        <label style="font-size:14px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
-      <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
+      <div id="memberLoginErr" style="font-size:13px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
   </div>
 
@@ -1725,7 +1725,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <div style="font-size:16px;color:#8a6d3b;background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:900">付款前請先注意：完成付款後，請務必截圖保留付款證明。付款完成後請回到「我的紀錄」按「我已完成付款，回報付款」，並將付款卡片與付款截圖一起傳至官方 LINE。主辦確認入帳後，狀態才會更新為「已繳費」。</div>
       <div id="bankPayBox" style="background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:12px;padding:12px;margin-bottom:12px;font-size:17px;line-height:1.65;color:#5a3a05">
         <div style="font-weight:900;font-size:18px;margin-bottom:4px">ATM 轉帳</div>
-        <div id="bankInfoDisplay" style="color:#aaa;font-size:16px">付款資訊載入中…</div>
+        <div id="bankInfoDisplay" style="color:#aaa;font-size:15px">付款資訊載入中…</div>
       </div>
       <div id="payLastFiveWrap">
         <label style="font-size:17px;color:var(--md);font-weight:800">帳號末五碼 *</label>
@@ -1754,23 +1754,23 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <div class="modal-title">取消報名確認</div>
     <div class="cancel-scroll">
     <div style="font-size:18px;font-weight:700;color:var(--dk);margin-bottom:12px" id="cancelModalSesName"></div>
-    <div id="cancelRefundPolicy" style="background:var(--rdp);border-radius:12px;padding:14px;margin-bottom:14px;font-size:16px;line-height:1.9;color:var(--dk)">
+    <div id="cancelRefundPolicy" style="background:var(--rdp);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.9;color:var(--dk)">
       <div style="font-weight:700;margin-bottom:6px;color:var(--rd)">取消報名前請先確認以下退款原則：</div>
       <div>1. 活動前 7 日以上取消<br><span style="color:var(--md)">酌收行政處理費 NT$500，餘額退還。</span></div>
       <div style="margin-top:6px">2. 活動前 3～6 日取消<br><span style="color:var(--md)">退還報名費 50%，保證金不退還。</span></div>
       <div style="margin-top:6px">3. 活動前 3 日內取消或活動當日未出席<br><span style="color:var(--md)">報名費與保證金皆不退還。</span></div>
       <div style="margin-top:6px">4. 因天災、疫情或其他不可抗力因素導致活動取消<br><span style="color:var(--md)">主辦單位將依實際情況安排延期，或辦理部分退費。</span></div>
     </div>
-    <div id="cancelDirectPolicy" style="display:none;background:#f8f8f8;border-radius:12px;padding:14px;margin-bottom:14px;font-size:16px;line-height:1.8;color:var(--dk)">尚未完成付款，取消後此報名紀錄將保留，不涉及金流。</div>
+    <div id="cancelDirectPolicy" style="display:none;background:#f8f8f8;border-radius:12px;padding:14px;margin-bottom:14px;font-size:15px;line-height:1.8;color:var(--dk)">尚未完成付款，取消後此報名紀錄將保留，不涉及金流。</div>
     <div id="cancelBundleNotice" class="cancel-bundle-notice"></div>
-    <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border:1.5px solid #e8b5b5;border-radius:10px;cursor:pointer;font-size:16px;color:var(--dk);margin-bottom:14px">
+    <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border:1.5px solid #e8b5b5;border-radius:10px;cursor:pointer;font-size:13px;color:var(--dk);margin-bottom:14px">
       <input type="checkbox" id="cancelConfirmCheck" onchange="onCancelCheckChange()" style="width:18px;height:18px;flex-shrink:0;accent-color:var(--rd);margin-top:1px">
       <span id="cancelConfirmLabel">我已了解取消與退款規則，仍要送出取消申請</span>
     </label>
     </div>
     <div class="modal-actions cancel-modal-actions">
       <button id="cancelSubmitBtn" onclick="doSubmitCancel()" disabled style="padding:15px;font-size:17px;font-weight:900;background:var(--rd);color:#ffffff;border:none;border-radius:10px;cursor:not-allowed;opacity:.45;width:100%">我已了解，送出取消申請</button>
-      <button class="btn-s2" onclick="closeModal('cancelModal')" style="padding:12px;font-size:16px">返回，不取消</button>
+      <button class="btn-s2" onclick="closeModal('cancelModal')" style="padding:12px;font-size:14px">返回，不取消</button>
     </div>
   </div>
 </div>
@@ -1788,7 +1788,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <button type="button" class="seat-preview-close" onclick="closeModal('seatPreviewModal')" aria-label="關閉">×</button>
     </div>
     <div class="seat-preview-scroll">
-      <div style="font-size:16px;color:#555;line-height:1.7;margin-bottom:10px">
+      <div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:10px">
         此畫面僅供報名前查看位置配置；正式加價選位將於錄取後 24 小時內，在「我的紀錄」完成選位與付款。
       </div>
       <button type="button" onclick="closeModal('seatPreviewModal')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;margin:0 0 12px">返回報名表</button>
@@ -1804,7 +1804,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 <div class="modal-overlay" id="stallPickerModal" onclick="if(event.target===this)closeModal('stallPickerModal')">
   <div class="modal-box" style="max-width:820px;max-height:92vh;padding-bottom:18px">
     <div class="modal-title" id="stallPickerTitle">加價選位</div>
-    <div id="stallPickerHint" style="font-size:16px;color:var(--md);margin-bottom:12px">請先看上方已編號場地圖，再從下方加價位置清單選號碼。</div>
+    <div id="stallPickerHint" style="font-size:15px;color:var(--md);margin-bottom:12px">請先看上方已編號場地圖，再從下方加價位置清單選號碼。</div>
     <div id="stallSelectedSummary" style="background:#fff8ed;border:2px solid #f59e0b;color:#7c2d12;border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:17px;font-weight:950;text-align:center">尚未選擇位置</div>
     <div id="stallPickerMap" style="margin-bottom:12px"></div>
     <div id="stallGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
@@ -1819,18 +1819,18 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   <div style="background:#fff;width:100%;height:100%;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #eee;background:#fff;flex-shrink:0">
       <div style="font-size:18px;font-weight:950;flex:1" id="seatMapZoomTitle">放大查看場地圖</div>
-      <button type="button" onclick="adjustSeatMapZoom(-0.35)" style="border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 10px;font-size:16px;font-weight:900">－</button>
-      <button type="button" onclick="adjustSeatMapZoom(0.35)" style="border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 10px;font-size:16px;font-weight:900">＋</button>
-      <button type="button" onclick="closeModal('seatMapZoomModal')" style="border:none;background:var(--c-green);color:#111;border-radius:10px;padding:9px 12px;font-size:16px;font-weight:950">返回選位</button>
+      <button type="button" onclick="adjustSeatMapZoom(-0.35)" style="border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 10px;font-size:15px;font-weight:900">－</button>
+      <button type="button" onclick="adjustSeatMapZoom(0.35)" style="border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 10px;font-size:15px;font-weight:900">＋</button>
+      <button type="button" onclick="closeModal('seatMapZoomModal')" style="border:none;background:var(--c-green);color:#111;border-radius:10px;padding:9px 12px;font-size:15px;font-weight:950">返回選位</button>
     </div>
-    <div style="font-size:16px;color:#666;padding:8px 12px;background:#f7f7f7;line-height:1.5;flex-shrink:0">可左右滑動查看長條圖；按 ＋ 可放大號碼。回到選位後，下方只會開放加價位置可點選。</div>
+    <div style="font-size:13px;color:#666;padding:8px 12px;background:#f7f7f7;line-height:1.5;flex-shrink:0">可左右滑動查看長條圖；按 ＋ 可放大號碼。回到選位後，下方只會開放加價位置可點選。</div>
     <div id="seatMapZoomScroller" style="flex:1;overflow:auto;background:#fff;padding:12px">
       <img id="seatMapZoomImg" src="" alt="場地圖" style="display:block;max-width:none;width:160%;height:auto;transform-origin:top left">
     </div>
   </div>
 </div>
 
-<div id="toast" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;font-size:16px;z-index:9999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
+<div id="toast" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
 
 
 
@@ -2300,7 +2300,7 @@ const _urlParams = new URLSearchParams(window.location.search);
 })();
 const TENANT_ID = sessionStorage.getItem('2bl_tenant') || _urlParams.get('tenant') || _urlParams.get('tenantId') || 'tuibile';
 if (!TENANT_ID) {
-  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#b45309;font-size:16px;text-align:center;padding:24px">⚠️ 連結有誤，請透過活動頁面進入報名。<br><small style="color:#888;font-size:16px;margin-top:8px;display:block">（缺少 tenant 參數）</small></div>';
+  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#b45309;font-size:16px;text-align:center;padding:24px">⚠️ 連結有誤，請透過活動頁面進入報名。<br><small style="color:#888;font-size:13px;margin-top:8px;display:block">（缺少 tenant 參數）</small></div>';
   throw new Error('缺少 tenant 參數，終止載入');
 }
 // LINE_URL / LINEPAY_LINK / CARDPAY_LINK 一律由 frontBootstrap 依 tenant 設定載入
@@ -2401,7 +2401,7 @@ async function openSharePanel(kind, id, title){
      '<div style="background:var(--c3);border-radius:14px;padding:14px;word-break:break-all;font-weight:900;font-size:16px;margin-bottom:14px">'+escHtml(url)+'</div>'
     +'<button onclick="copyFrontShareLink(\''+escHtml(url)+'\',\'已複製連結\')" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--c1);font-weight:900;font-size:16px;cursor:pointer;margin-bottom:10px">複製連結</button>'
     +'<button onclick="shareFrontToLine(\''+escHtml(t).replace(/'/g,"")+'\',\''+escHtml(url)+'\')" style="width:100%;padding:14px;border:1.5px solid var(--border);border-radius:14px;background:var(--wh);font-weight:900;font-size:16px;cursor:pointer">分享到 LINE</button>'
-    +'<div style="text-align:center;color:var(--muted);font-size:16px;margin-top:12px">複製後可貼到 Facebook 社團、IG、Threads 或任何地方</div>'
+    +'<div style="text-align:center;color:var(--muted);font-size:13px;margin-top:12px">複製後可貼到 Facebook 社團、IG、Threads 或任何地方</div>'
   );
 }
 function closeSharePanel(){ const d=$('sharePanel'); if(d) d.remove(); }
@@ -2561,7 +2561,7 @@ function renderRecentSessions(){
     });
   sessions = sortSessionsByUpcoming(sessions);
   if(!sessions.length){
-    el.innerHTML='<div style="text-align:center;color:#aaa;font-size:16px;padding:20px">目前無近期活動</div>';
+    el.innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:20px">目前無近期活動</div>';
     return;
   }
   el.innerHTML = sessions.map(s=>renderActCard(s,'full')).join('');
@@ -2784,7 +2784,7 @@ function renderMemberProfile(){
     memberProfileSocialHtml('fb', fb, 'Facebook'),
     memberProfileSocialHtml('ig', ig, 'Instagram'),
     memberProfileSocialHtml('web', web, '官網')
-  ].filter(Boolean).join('') || '<span style="color:#999;font-size:16px;font-weight:800">尚未填寫</span>';
+  ].filter(Boolean).join('') || '<span style="color:#999;font-size:15px;font-weight:800">尚未填寫</span>';
 
   const invoiceType = memberDisplayValue(m, ['invoiceType','invoice_type'], '電子發票');
   const taxId = memberDisplayValue(m, ['taxId','tax_id'], '—');
@@ -2796,7 +2796,7 @@ function renderMemberProfile(){
   const hasBrand  = !!memberVal(m,'brand','brandName','brand_name');
   const hasSocial = !!(fb || ig);
   const warn = (!hasName || !hasBrand || !hasSocial) ? `
-    <div style="background:#fff3cd;border:1.5px solid #f0d37a;color:#6b4e00;border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:16px;font-weight:850;line-height:1.65">
+    <div style="background:#fff3cd;border:1.5px solid #f0d37a;color:#6b4e00;border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:15px;font-weight:850;line-height:1.65">
       請補齊會員資料：${!hasName?'姓名 ':''}${!hasBrand?'品牌名稱 ':''}${!hasSocial?'FB 或 IG ':''}<br>
       補齊並儲存後，報名表會自動帶入資料。
     </div>` : '';
@@ -2923,7 +2923,7 @@ async function safeGetMyRegs(email, phone){
   if(helper) helper.classList.remove('show');
   if(!ph){
     ST.regs=[];
-    if(el) el.innerHTML='<div style="color:#777;font-size:16px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #dfead8;border-radius:18px;margin:0 16px">請補上手機號碼查詢報名紀錄。<br>系統需要 Email＋手機比對，避免資料被其他人看到。</div>';
+    if(el) el.innerHTML='<div style="color:#777;font-size:15px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #dfead8;border-radius:18px;margin:0 16px">請補上手機號碼查詢報名紀錄。<br>系統需要 Email＋手機比對，避免資料被其他人看到。</div>';
     if(helper) helper.classList.add('show');
     return [];
   }
@@ -2933,7 +2933,7 @@ async function safeGetMyRegs(email, phone){
     if(regs && regs.error){
       ST.regs=[];
       if(el){
-        el.innerHTML=`<div style="color:#c0392b;font-size:16px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #f2c7c7;border-radius:18px;margin:0 16px">${escHtml(regs.error)}<br>請確認 Email 與手機是否與報名時一致。</div>`;
+        el.innerHTML=`<div style="color:#c0392b;font-size:15px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #f2c7c7;border-radius:18px;margin:0 16px">${escHtml(regs.error)}<br>請確認 Email 與手機是否與報名時一致。</div>`;
       }
       if(helper) helper.classList.add('show');
       return [];
@@ -3076,7 +3076,7 @@ function renderAnnouncements(list){
   if(!list.length){ el.style.display='none'; return; }
   el.style.display='block';
   el.innerHTML = list.map(a=>`
-    <div style="background:var(--ylp);border-left:4px solid var(--yl);border-radius:8px;padding:10px 14px;margin-bottom:6px;font-size:16px">
+    <div style="background:var(--ylp);border-left:4px solid var(--yl);border-radius:8px;padding:10px 14px;margin-bottom:6px;font-size:13px">
       <div style="font-weight:700;color:var(--dk);margin-bottom:2px">${a.title||''}</div>
       <div style="color:var(--md);line-height:1.5">${a.content||''}</div>
       ${a.url?`<a href="${a.url}" target="_blank" style="color:var(--g);font-size:16px;font-weight:800">${a.urlText||'查看詳情'} →</a>`:''}
@@ -3147,7 +3147,7 @@ function renderHomeFallbackSessions(){
   if(!el) return;
   const open=sortSessionsByUpcoming((ST.allSessionsData||[]).filter(isOpenSession));
   if(!open.length){
-    el.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前沒有開放報名場次<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>';
+    el.innerHTML='<div style="padding:20px;color:#aaa;font-size:15px;text-align:center;line-height:1.7">目前沒有開放報名場次<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>';
     return;
   }
   el.innerHTML=open.map(s=>renderSessionCard(s)).join('');
@@ -3159,7 +3159,7 @@ async function filterCat(type, el){
   const title = $('portalTitle');
   if(title) title.textContent = type;
   const list = $('portalSessionList');
-  if(list) list.innerHTML = '<div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>';
+  if(list) list.innerHTML = '<div style="padding:20px;color:#aaa;font-size:15px;text-align:center">載入中…</div>';
   const _catBgMap={'市集報名':'#F2EEED','體驗活動':'#F4EBE4','通路寄賣':'#EAE0D7','合作洽詢':'#EBEBE9'};
   const _catBg=_catBgMap[type]||'';
   const _portalPageEl=$('pagePortal');
@@ -3181,7 +3181,7 @@ async function filterCat(type, el){
   }
   if(!list) return;
   if(!data.length){
-    list.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前無開放場次<br><button type="button" onclick="loadHome().then(()=>filterCat(ST.currentCatFilter))" style="margin-top:10px;border:none;border-radius:10px;background:var(--g);color:#fff;padding:9px 14px;font-weight:800;font-size:16px">重新載入</button></div>';
+    list.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前無開放場次<br><button type="button" onclick="loadHome().then(()=>filterCat(ST.currentCatFilter))" style="margin-top:10px;border:none;border-radius:10px;background:var(--g);color:#fff;padding:9px 14px;font-weight:800;font-size:15px">重新載入</button></div>';
     return;
   }
   data=sortSessionsByUpcoming(data);
@@ -3193,7 +3193,7 @@ async function openEvent(eventId){
   const title=$('portalTitle');
   if(title) title.textContent=evt?evt.title:'場次列表';
   const list=$('portalSessionList');
-  if(list) list.innerHTML='<div style="padding:20px;text-align:center;color:#aaa;font-size:16px">載入中…</div>';
+  if(list) list.innerHTML='<div style="padding:20px;text-align:center;color:#aaa;font-size:15px">載入中…</div>';
   const _evtBgMap={'耶市集':'#E6F1ED','幻日祭':'#EBE2E5'};
   const _evtBg=evt?Object.entries(_evtBgMap).find(([k])=>(evt.title||'').includes(k)):null;
   const _bg=_evtBg?_evtBg[1]:'';
@@ -3240,7 +3240,7 @@ function myRegBadge(s){
   if(t==='已取消') label='已取消·可重報';
   else if(t==='未錄取') label='未錄取';
   else label='你已報名·'+t;
-  return `<span style="display:inline-flex;align-items:center;gap:3px;background:${p.bg};color:${p.color};border:1px solid ${p.border};padding:1px 8px;border-radius:5px;font-size:16px;font-weight:700;flex-shrink:0">${p.icon?p.icon+' ':''}${esc(label)}</span>`;
+  return `<span style="display:inline-flex;align-items:center;gap:3px;background:${p.bg};color:${p.color};border:1px solid ${p.border};padding:1px 8px;border-radius:5px;font-size:14px;font-weight:700;flex-shrink:0">${p.icon?p.icon+' ':''}${esc(label)}</span>`;
 }
 
 
@@ -3309,7 +3309,7 @@ function renderSessionCard(s){
     ? `<img src="${esc(cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
     : `<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
   const actionHtml=closed
-    ? `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:34px;border-radius:11px;background:#eee;color:#999;font-size:16px;font-weight:900">${full?'名額已滿':'已關閉'}</span>`
+    ? `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:34px;border-radius:11px;background:#eee;color:#999;font-size:13px;font-weight:900">${full?'名額已滿':'已關閉'}</span>`
     : `<button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>`;
   return `<div class="ses-list-card ${themeClass}" data-session-id="${esc(s.id)}" onclick="${closed?'':'openActivityFromHome(null,\''+esc(s.id)+'\')'}" style="${closed?'opacity:.62;':''}">
     <div class="ses-list-img">${coverEl}</div>
@@ -3331,7 +3331,7 @@ function renderAllSessions(){
   const el=$('allSessionsList');
   if(!el) return;
   const list=(ST.allSessionsData||[]).filter(isOpenSession);
-  if(!list.length){ el.innerHTML='<div style="color:#aaa;font-size:16px;text-align:center;padding:20px">目前無開放場次</div>'; return; }
+  if(!list.length){ el.innerHTML='<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">目前無開放場次</div>'; return; }
   el.innerHTML=list.map(s=>renderSessionCard(s)).join('');
 }
 
@@ -3361,7 +3361,7 @@ function showEmailStep(s){
           value="${esc(ST.member?.phone||memberSafePhone()||'')}"
           onkeydown="if(event.key==='Enter')checkMemberStep()">
         <div id="step1Err" class="err"></div>
-        <div id="step1Status" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:16px;font-weight:700;line-height:1.6"></div>
+        <div id="step1Status" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700;line-height:1.6"></div>
         <button class="btn-submit" type="button" onclick="checkMemberStep()" style="margin-top:14px">
           查詢 / 繼續 →
         </button>
@@ -3522,7 +3522,7 @@ function renderDynFormFull(s, isNew=false){
       </label>`;
     });
     if(s.fee>0){
-      html+=`<div id="fullPkgHint" style="display:none;background:var(--c-green);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:16px;font-weight:700;color:#111">
+      html+=`<div id="fullPkgHint" style="display:none;background:var(--c-green);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700;color:#111">
         🎉 全程參加優惠 NT$${s.fee}／攤
       </div>`;
     }
@@ -3591,11 +3591,11 @@ function renderDynFormFull(s, isNew=false){
       const _myB=(ST.bundles||[]).filter(b=>(b.sessions||[]).some(x=>String(x.id)===String(s.id)));
       if(_myB.length){
         ST.bundleAddon='';
-        html+=`<div class="form-card-new card-blue" style="margin-top:12px"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">＋</span>加報其他場次（組合優惠）</div><div style="font-size:16px;color:#c0392b;background:#fff5f5;border:1px solid #f0c0c0;border-radius:10px;padding:8px 10px;margin-bottom:8px">⚠️ 加報屬「組合報名，同進退」：退場即整組退出、組合優惠失效；若只需單場，請取消後重新報名單場。</div>`;
+        html+=`<div class="form-card-new card-blue" style="margin-top:12px"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">＋</span>加報其他場次（組合優惠）</div><div style="font-size:13px;color:#c0392b;background:#fff5f5;border:1px solid #f0c0c0;border-radius:10px;padding:8px 10px;margin-bottom:8px">⚠️ 加報屬「組合報名，同進退」：退場即整組退出、組合優惠失效；若只需單場，請取消後重新報名單場。</div>`;
         _myB.forEach(b=>{
           const _o=(b.sessions||[]).filter(x=>String(x.id)!==String(s.id));
           const _nm=_o.map(x=>esc(x.name)).join('、');
-          html+=`<label style="display:flex;align-items:flex-start;gap:10px;background:#fff;border:1.5px solid var(--c-blue);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;font-size:16px;font-weight:700;color:#111"><input type="checkbox" class="bundleAddonChk" value="${esc(b.id)}" onchange="onBundleAddonChange(this)" style="width:20px;height:20px;margin-top:2px"><span>加報：${_nm}<br><span style="font-weight:900;color:#b26a00">一起報名組合價 NT$ ${Number(b.bundlePrice||0).toLocaleString()}</span>（共 ${(_o.length+1)} 場，押金各場另計；勾選後這張表單一次報名全部）</span></label>`;
+          html+=`<label style="display:flex;align-items:flex-start;gap:10px;background:#fff;border:1.5px solid var(--c-blue);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;font-size:15px;font-weight:700;color:#111"><input type="checkbox" class="bundleAddonChk" value="${esc(b.id)}" onchange="onBundleAddonChange(this)" style="width:20px;height:20px;margin-top:2px"><span>加報：${_nm}<br><span style="font-weight:900;color:#b26a00">一起報名組合價 NT$ ${Number(b.bundlePrice||0).toLocaleString()}</span>（共 ${(_o.length+1)} 場，押金各場另計；勾選後這張表單一次報名全部）</span></label>`;
         });
         html+=`</div>`;
       }
@@ -3605,7 +3605,7 @@ function renderDynFormFull(s, isNew=false){
       ST.seatChoiceIntent = 'auto';
       html+=`<div class="form-card-new card-blue" style="margin-top:12px">
         <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">＋</span>加價選位告知</div>
-        <div style="font-size:16px;line-height:1.8;color:#333;margin-bottom:10px;background:#fff;border:1.5px solid var(--c-blue);border-radius:14px;padding:12px">
+        <div style="font-size:15px;line-height:1.8;color:#333;margin-bottom:10px;background:#fff;border:1.5px solid var(--c-blue);border-radius:14px;padding:12px">
           <b>本場次有開放加價選位。</b><br>
           錄取後 24 小時內，可至「我的紀錄」選擇加價位置並完成付款，即可保留位置。<br>
           超過期限未完成選位與付款，位置將釋出，且同場次不可再加購選位。<br>
@@ -3616,7 +3616,7 @@ function renderDynFormFull(s, isNew=false){
           我要加價選位（錄取後可在「我的紀錄」挑位置）
         </label>
         <button type="button" onclick="previewSeatMap('${s.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;margin-bottom:4px;box-shadow:0 3px 0 rgba(0,0,0,.08)">🗺️ 查看場地圖與加價位置</button>
-        <div style="font-size:16px;line-height:1.6;color:#666;margin-top:6px">此處僅供報名前查看位置配置；正式選位在錄取後的「我的紀錄」完成。</div>
+        <div style="font-size:13px;line-height:1.6;color:#666;margin-top:6px">此處僅供報名前查看位置配置；正式選位在錄取後的「我的紀錄」完成。</div>
       </div>`;
     }
 
@@ -3646,7 +3646,7 @@ function renderDynFormFull(s, isNew=false){
   if(isNew){
     html+=`<div class="form-card-new card-green">
       <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-green)">${cardNum}</span>建立會員資料</div>
-      <div style="font-size:16px;color:#555;background:#fff;border:1.5px solid #DDEAD1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:800">Email 會綁定您的會員 ID；下次可用 Email＋手機查找資料，不用重填。</div>
+      <div style="font-size:14px;color:#555;background:#fff;border:1.5px solid #DDEAD1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:800">Email 會綁定您的會員 ID；下次可用 Email＋手機查找資料，不用重填。</div>
       <label>Email *</label><input type="email" id="f_email" value="${esc(email)}" inputmode="email" placeholder="your@email.com">
       <label>手機 *</label><input type="tel" id="f_phone" value="${esc(V.phone||'')}" inputmode="tel" placeholder="09xxxxxxxx">
       <label>攤位／品牌名稱 *</label><input type="text" id="f_brand" value="${esc(V.brand||V.brand_name||'')}" placeholder="品牌名稱">
@@ -3708,7 +3708,7 @@ function renderDynFormFull(s, isNew=false){
   if(customFields.length){
     customFields.forEach((f,i)=>{
       html+=`<div class="form-card-new">
-        <div class="form-card-title-new" style="font-size:17px;margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:16px">必填</span>`:''}</div>`;
+        <div class="form-card-title-new" style="font-size:17px;margin-bottom:10px">${esc(f.label)}${f.required?` <span style="color:#e74c3c;font-size:14px">必填</span>`:''}</div>`;
       if(f.type==='select'&&f.options){
         html+=`<select id="cf_${i}" style="width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:inherit;background:#fff">
           <option value="">請選擇</option>
@@ -3729,7 +3729,7 @@ function renderDynFormFull(s, isNew=false){
       <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-purple)">${cardNum+2}</span>合約</div>
       <span class="contract-done-badge" id="contractDoneBadge">✅ 已完成合約同意</span>
     </div>
-    <p style="font-size:16px;color:#555;margin-bottom:12px">請先查看合約內容，完成同意後才能送出報名。</p>
+    <p style="font-size:15px;color:#555;margin-bottom:12px">請先查看合約內容，完成同意後才能送出報名。</p>
     <button type="button" class="contract-open-btn" onclick="openAgreementModal()">查看合約內容 ›</button>
   </div>`;
 
@@ -3737,7 +3737,7 @@ function renderDynFormFull(s, isNew=false){
   html+=`<div class="form-card-new card-pink">
     <div class="form-card-title-new" style="margin-bottom:10px">
       <span class="form-card-num" style="background:var(--c-pink)">${cardNum+3}</span>
-      備註留言 <span style="font-size:16px;font-weight:500;color:var(--muted)">選填</span>
+      備註留言 <span style="font-size:14px;font-weight:500;color:var(--muted)">選填</span>
     </div>
     <textarea id="f_note" class="note-textarea" maxlength="200" placeholder="如有特殊需求或想跟主辦說的話，請在這裡留言…" oninput="document.getElementById('noteCount').textContent=this.value.length+' / 200'"></textarea>
     <div class="note-count" id="noteCount">0 / 200</div>
@@ -4262,14 +4262,14 @@ function showAlreadyRegistered(s,reg){
     <div class="fcard" style="border:2px solid var(--yl)">
       <div class="fcard-t" style="background:#fffaed;color:#92400e">✋ 您已報名此場次</div>
       <div class="fcard-body">
-        <div style="font-size:16px;color:var(--md);margin-bottom:8px">
+        <div style="font-size:14px;color:var(--md);margin-bottom:8px">
           場次：<strong>${esc(s.name||'')}</strong>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;background:#f9f9f9;border-radius:10px;padding:10px 14px;margin-bottom:12px">
-          <span style="font-size:16px">狀態</span>
-          <span style="font-size:16px;font-weight:800;color:${statusColor}">${reg.status||'待審核'}</span>
+          <span style="font-size:13px">狀態</span>
+          <span style="font-size:13px;font-weight:800;color:${statusColor}">${reg.status||'待審核'}</span>
         </div>
-        <div style="font-size:16px;color:var(--lt);line-height:1.7;margin-bottom:14px">
+        <div style="font-size:15px;color:var(--lt);line-height:1.7;margin-bottom:14px">
           如需修改品牌介紹等資料，請至「我的紀錄」查看。<br>
           如需取消，請聯繫主辦單位。
         </div>
@@ -4614,7 +4614,7 @@ function showSubmitOverlay(msg){
     ov=document.createElement('div');
     ov.id='submitOverlay';
     ov.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,.88);z-index:999999;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center';
-    ov.innerHTML='<div style="background:#fff;border:3px solid #DDEAD1;border-radius:22px;padding:28px 22px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.18)"><div id="submitOverlayIcon" style="font-size:46px;margin-bottom:12px">⏳</div><div id="submitOverlayText" style="font-size:22px;font-weight:950;line-height:1.6;color:#111"></div><div id="submitOverlaySub" style="font-size:16px;color:#666;margin-top:8px;line-height:1.6">請不要重複點擊或關閉頁面</div></div>';
+    ov.innerHTML='<div style="background:#fff;border:3px solid #DDEAD1;border-radius:22px;padding:28px 22px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.18)"><div id="submitOverlayIcon" style="font-size:46px;margin-bottom:12px">⏳</div><div id="submitOverlayText" style="font-size:22px;font-weight:950;line-height:1.6;color:#111"></div><div id="submitOverlaySub" style="font-size:15px;color:#666;margin-top:8px;line-height:1.6">請不要重複點擊或關閉頁面</div></div>';
     document.body.appendChild(ov);
   }
   const t=document.getElementById('submitOverlayText');
@@ -4626,7 +4626,7 @@ async function submitReg(ev){
   if(ev && ev.preventDefault) ev.preventDefault();
   const btn=$('submitBtn');
   if(ST.__submitting){ toast('報名送出中，請稍候…'); return false; }
-  const showFormError=(msg)=>{const el=$('formError');if(el){el.style.display='block';el.innerHTML='❌ 錯誤：'+msg+'<br><span style="font-size:16px;font-weight:400;color:#666">（截圖此錯誤訊息，方便排查）</span>'; try{el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}}};
+  const showFormError=(msg)=>{const el=$('formError');if(el){el.style.display='block';el.innerHTML='❌ 錯誤：'+msg+'<br><span style="font-size:14px;font-weight:400;color:#666">（截圖此錯誤訊息，方便排查）</span>'; try{el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}}};
   const hideFormError=()=>{const el=$('formError');if(el)el.style.display='none';};
   const restoreBtn=()=>{ ST.__submitting=false; hideSubmitOverlay(); if(btn){ btn.disabled=false; btn.textContent='送出報名'; btn.style.opacity='1'; } };
   // 按下按鈕立刻給回饋，確認 onclick 有觸發
@@ -4844,12 +4844,12 @@ function stallSelectionHtml(reg){
     return `<div style="background:var(--c-green);color:#111;border:2px solid #9fb59c;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:900;line-height:1.6">✅ 已保留加價位置：${escHtml(reg.stallNumber)}<br><small>請於 ${escHtml(deadlineText)} 前完成付款回報，逾期釋出且同場不可再加購。</small></div>`;
   }
   if(String(reg.seatChoiceStatus||'')==='released' || (reg.seatSelectionDeadline && isExpiredIso(reg.seatSelectionDeadline))){
-    return `<div style="background:var(--c-pink);color:#6b2b2b;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:900;line-height:1.6">加價選位期限已過，系統將依付款確認順序安排位置。</div>`;
+    return `<div style="background:var(--c-pink);color:#6b2b2b;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:15px;font-weight:900;line-height:1.6">加價選位期限已過，系統將依付款確認順序安排位置。</div>`;
   }
   if(canSelectStallReg(reg)){
-    return `<div style="background:var(--c-blue);border-radius:14px;padding:10px 12px;margin-top:10px;line-height:1.6"><div style="font-size:16px;font-weight:900;color:#333">本場可加價選位，請於 ${escHtml(deadlineText)} 前完成選位與付款。</div><button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:11px;margin-top:8px;font-size:17px;font-weight:950">選擇加價位置</button></div>`;
+    return `<div style="background:var(--c-blue);border-radius:14px;padding:10px 12px;margin-top:10px;line-height:1.6"><div style="font-size:15px;font-weight:900;color:#333">本場可加價選位，請於 ${escHtml(deadlineText)} 前完成選位與付款。</div><button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:11px;margin-top:8px;font-size:17px;font-weight:950">選擇加價位置</button></div>`;
   }
-  return `<div style="background:#fff;border:1px solid #eee;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:800;color:#555;line-height:1.6">不加價選位將依付款確認順序安排位置。</div>`;
+  return `<div style="background:#fff;border:1px solid #eee;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:15px;font-weight:800;color:#555;line-height:1.6">不加價選位將依付款確認順序安排位置。</div>`;
 }
 function payBadge(reg){
   if(isCancelledReg(reg)) return {t:'已取消',bg:'#eeeeee',c:'#777777'};
@@ -5257,17 +5257,17 @@ async function previewSeatMap(sessionId){
     const paidList=paidSeats.map(s=>{
       const code=String(s.code||s.stallNo||'').trim();
       const price=Number(s.price||0);
-      return `<div style="border:2px solid #d9b96e;background:var(--c-yellow);color:#111;border-radius:16px;padding:10px 12px;margin:4px;font-size:16px;font-weight:950;min-width:108px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.04)"><span style="font-size:22px">${escHtml(code)}</span><br><small style="font-size:16px;font-weight:900;color:#555">錄取後可選</small>${price>0?`<br><small style="font-size:16px;font-weight:900;color:#111">+NT$${price}</small>`:''}</div>`;
+      return `<div style="border:2px solid #d9b96e;background:var(--c-yellow);color:#111;border-radius:16px;padding:10px 12px;margin:4px;font-size:16px;font-weight:950;min-width:108px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.04)"><span style="font-size:22px">${escHtml(code)}</span><br><small style="font-size:13px;font-weight:900;color:#555">錄取後可選</small>${price>0?`<br><small style="font-size:13px;font-weight:900;color:#111">+NT$${price}</small>`:''}</div>`;
     }).join('');
     const occupiedPaid=seats.filter(s=>s.type==='paid'&&s.active&&s.occupied).length;
     body.innerHTML=map
       ? `<div style="border-radius:14px;overflow:hidden;border:1px solid #ddd;background:#fff;margin-bottom:8px"><img src="${escHtml(map)}" style="width:100%;display:block"></div>
          <button type="button" onclick="openSeatMapZoom('preview')" style="width:100%;background:var(--c-green);color:#111;border:2px solid #9fb59c;border-radius:14px;padding:12px;font-size:16px;font-weight:950;margin:8px 0 10px">🔍 放大查看場地圖</button>
-         <div style="font-size:16px;color:#666;margin:8px 0 8px;font-weight:900;line-height:1.6">號碼狀態：自動 ${stats.auto}｜加價可選 ${paidSeats.length}｜加價已占用 ${occupiedPaid}｜不開放 ${stats.closed}｜服務台 ${stats.service}</div>
-         <div style="background:var(--c-blue);border:1.5px solid #b8c9d4;color:#333;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:16px;font-weight:900;line-height:1.7">本畫面僅供報名前查看位置配置；正式加價選位將於錄取後 24 小時內，在「我的紀錄」完成選位與付款。</div>
-         <div style="font-size:16px;font-weight:950;color:#333;margin:10px 0 6px">錄取後可選的加價位置</div>
-         <div style="display:flex;flex-wrap:wrap;gap:4px">${paidList||'<div style="width:100%;color:#777;background:#f7f7f7;border-radius:12px;padding:14px;text-align:center;font-size:16px">此場次目前沒有可選的加價位置。</div>'}</div>
-         <div style="font-size:16px;color:#666;line-height:1.6;margin-top:10px;background:#f7fff9;border-radius:12px;padding:10px">自動排位號碼只供查看，不開放指定；若不加價，系統將依付款確認順序安排位置。</div>`
+         <div style="font-size:13px;color:#666;margin:8px 0 8px;font-weight:900;line-height:1.6">號碼狀態：自動 ${stats.auto}｜加價可選 ${paidSeats.length}｜加價已占用 ${occupiedPaid}｜不開放 ${stats.closed}｜服務台 ${stats.service}</div>
+         <div style="background:var(--c-blue);border:1.5px solid #b8c9d4;color:#333;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:15px;font-weight:900;line-height:1.7">本畫面僅供報名前查看位置配置；正式加價選位將於錄取後 24 小時內，在「我的紀錄」完成選位與付款。</div>
+         <div style="font-size:15px;font-weight:950;color:#333;margin:10px 0 6px">錄取後可選的加價位置</div>
+         <div style="display:flex;flex-wrap:wrap;gap:4px">${paidList||'<div style="width:100%;color:#777;background:#f7f7f7;border-radius:12px;padding:14px;text-align:center;font-size:15px">此場次目前沒有可選的加價位置。</div>'}</div>
+         <div style="font-size:13px;color:#666;line-height:1.6;margin-top:10px;background:#f7fff9;border-radius:12px;padding:10px">自動排位號碼只供查看，不開放指定；若不加價，系統將依付款確認順序安排位置。</div>`
       : `<div style="padding:20px;text-align:center;color:#777">此場次尚未上傳已編號場地圖</div>`;
   }catch(e){ body.innerHTML='<div style="color:var(--rd);padding:16px">場地圖載入失敗</div>'; }
 }
@@ -5285,27 +5285,27 @@ async function openStallPickerForReg(regId){
   if(reg.stallNumber){ toast('已完成選位，如需換位請聯繫主辦'); return; }
   ST._stallPick={reg, selected:[]};
   $('stallPickerTitle').textContent='加價選位｜'+(reg.sessionName||reg.sesName||'場次');
-  $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:16px;text-align:center;padding:16px">載入攤位中…</div>';
+  $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:15px;text-align:center;padding:16px">載入攤位中…</div>';
   if($('stallPickerMap')) $('stallPickerMap').innerHTML='';
   $('stallConfirmBtn').disabled=true;
   $('stallConfirmBtn').style.opacity='.5';
   openModal('stallPickerModal');
   try{
     const res=await api({action:'getSeatMap',sessionId:reg.sessionId,regId:reg.id,email:getMemberEmail(),phone:getMemberPhone(),_t:Date.now()});
-    if(res.error){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--rd);font-size:16px;text-align:center;padding:16px">'+escHtml(res.error)+'</div>'; return; }
+    if(res.error){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--rd);font-size:15px;text-align:center;padding:16px">'+escHtml(res.error)+'</div>'; return; }
     const paidSeats=(Array.isArray(res.seats)?res.seats:[]).filter(s=>s.type==='paid'&&s.active);
     const list=paidSeats.map(s=>s.code);
     // B-02：公開 API 不再回傳 regId／email；「這格是不是我的」改由後端驗證後給 mine 旗標。
     const taken={}; paidSeats.forEach(s=>{ if(s.occupied) taken[s.code]={status:s.status==='預留'?'reserved':'paid',mine:!!s.mine}; });
     ST._stallPick.seatMap=res; ST._stallPick.seatMeta=Object.fromEntries(paidSeats.map(s=>[s.code,s]));
     ST._stallPickerMapUrl=res.mapUrl||'';
-    if($('stallPickerMap')) $('stallPickerMap').innerHTML=res.mapUrl?`<div style="border:1px solid #ddd;border-radius:12px;overflow:hidden;background:#fff"><img src="${escHtml(res.mapUrl)}" style="width:100%;display:block"></div><button type="button" onclick="openSeatMapZoom('picker')" style="width:100%;background:var(--c-green);color:#111;border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:950;margin-top:8px">🔍 放大查看場地圖</button>`:`<div style="font-size:16px;color:#777;background:#f7f7f7;border-radius:10px;padding:10px;text-align:center">此場次尚未上傳已編號場地圖，請依號碼清單選擇。</div>`;
-    if(!list.length){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:16px;text-align:center;padding:16px">此場次尚未建立可選攤位</div>'; return; }
+    if($('stallPickerMap')) $('stallPickerMap').innerHTML=res.mapUrl?`<div style="border:1px solid #ddd;border-radius:12px;overflow:hidden;background:#fff"><img src="${escHtml(res.mapUrl)}" style="width:100%;display:block"></div><button type="button" onclick="openSeatMapZoom('picker')" style="width:100%;background:var(--c-green);color:#111;border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:950;margin-top:8px">🔍 放大查看場地圖</button>`:`<div style="font-size:13px;color:#777;background:#f7f7f7;border-radius:10px;padding:10px;text-align:center">此場次尚未上傳已編號場地圖，請依號碼清單選擇。</div>`;
+    if(!list.length){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:15px;text-align:center;padding:16px">此場次尚未建立可選攤位</div>'; return; }
     ST._stallPick.stallList=list;
     ST._stallPick.taken=taken;
     renderStallPickerGrid();
   }catch(e){
-    $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--rd);font-size:16px;text-align:center;padding:16px">攤位載入失敗</div>';
+    $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--rd);font-size:15px;text-align:center;padding:16px">攤位載入失敗</div>';
   }
 }
 function renderStallPickerGrid(){
@@ -5341,7 +5341,7 @@ function renderStallPickerGrid(){
     const border=on?'#1b4332':(blocked?'#f3b5ad':'#cfe5d6');
     const label=blocked?normalizeStallStatus(info.status):(on?'✅ 已選':'可選');
     const shadow=on?'box-shadow:0 0 0 3px rgba(45,106,79,.18);':'';
-    return `<button type="button" ${blocked?'disabled':''} onclick="toggleStallPick('${escHtml(num)}')" style="border:2.5px solid ${border};background:${bg};color:${color};border-radius:12px;padding:10px 5px;font-size:16px;font-weight:950;min-height:58px;${shadow}${blocked?'opacity:.75;cursor:not-allowed':'cursor:pointer'}"><div style="font-size:19px;line-height:1.1">${escHtml(num)}</div><div style="font-size:16px;font-weight:900;margin-top:3px">${label}${price>0?'｜+NT$'+price:''}</div></button>`;
+    return `<button type="button" ${blocked?'disabled':''} onclick="toggleStallPick('${escHtml(num)}')" style="border:2.5px solid ${border};background:${bg};color:${color};border-radius:12px;padding:10px 5px;font-size:15px;font-weight:950;min-height:58px;${shadow}${blocked?'opacity:.75;cursor:not-allowed':'cursor:pointer'}"><div style="font-size:19px;line-height:1.1">${escHtml(num)}</div><div style="font-size:11px;font-weight:900;margin-top:3px">${label}${price>0?'｜+NT$'+price:''}</div></button>`;
   }).join('');
   const btn=$('stallConfirmBtn');
   btn.disabled=selected.length!==max;
@@ -5404,11 +5404,16 @@ function openRegDetail(regId){
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-size:18px;color:var(--md)">繳費</span><span style="background:${pb.bg};color:${pb.c};font-size:18px;font-weight:900;border-radius:20px;padding:4px 11px">${pb.t}</span></div>
       <div style="font-size:18px;color:var(--md)">審核：<strong>${escHtml(reg.status||'')}</strong></div>
       <div style="font-size:18px;color:var(--md)">攤位數：<strong>${reg.stallCount||1} 攤</strong></div>
+      ${reg.seatPricingEnabled ? (
+        reg.stallNumber
+          ? `<div style="font-size:19px;color:var(--g);font-weight:900">您的攤位：${escHtml(reg.stallNumber)}</div>`+(reg.seatMapUrl?`<div style="margin-top:6px"><div style="font-size:14px;color:var(--md);margin-bottom:4px">場地圖</div><img src="${escHtml(reg.seatMapUrl)}" alt="場地圖" style="width:100%;border:1px solid #eee;border-radius:10px;display:block"></div>`:'')
+          : ((canViewPreNoticeReg(reg) && String(reg.seatChoiceIntent||'auto')!=='paid') ? `<div style="font-size:18px;color:var(--md)">攤位號碼：<strong>將於活動前公布</strong><div style="font-size:14px;color:var(--lt);margin-top:2px">排定後會在此顯示，並隨行前通知一起寄給您</div></div>` : '')
+      ) : ''}
       ${reg.equipmentText?`<div style="font-size:18px;color:var(--md)">設備：<strong>${escHtml(reg.equipmentText)}</strong></div>`:''}
       ${reg.total>0?`<div style="font-size:19px;color:var(--g);font-weight:900">應繳金額：NT$ ${Number(reg.total||0).toLocaleString()}</div>`:''}
       ${reg.transferStatus?`<div style="font-size:17px;color:#b45309;font-weight:900">退款狀態：${escHtml(reg.transferStatus)}</div>`:''}
     </div>
-    <div style="font-size:16px;color:var(--lt);margin-bottom:12px">報名編號：${reg.id}</div>
+    <div style="font-size:14px;color:var(--lt);margin-bottom:12px">報名編號：${reg.id}</div>
     ${canPay?`<button onclick="document.getElementById('regDetailModal').remove();showPayPage('${reg.id}',this.dataset.ses,'${Number(reg.total||0)}');" data-ses="${escHtml(reg.sessionName||reg.sesName||'場次')}" style="width:100%;background:var(--g);color:#fff;border:none;padding:13px;border-radius:10px;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:8px">前往繳費</button>`:''}
     ${isCancelledReg(reg)?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已取消，報名紀錄保留</div>`:(isPendingPayText(reg.payStatus)?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已回報，等待主辦確認</div>`:'')}
     ${stallSelectionHtml(reg)}
@@ -5719,7 +5724,7 @@ if(document.readyState==='loading'){
   function readEmail(){ try{ return localStorage.getItem('tb_member_email')||''; }catch(e){ return ''; } }
   window.isOpenSession = openSess;
   window.loadHome = async function(){
-    const evEl=$('eventsList'); if(evEl) evEl.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px">載入中…</div>';
+    const evEl=$('eventsList'); if(evEl) evEl.innerHTML='<div style="padding:20px;color:#aaa;font-size:13px">載入中…</div>';
     try{ const boot = await api({action:'frontBootstrap', tenant:TENANT_ID, _t:Date.now()});
       ST.events=asArr(boot.events); ST.sessions=uniqueSessions(boot.sessions).filter(openSess); ST.allSessionsData=ST.sessions;
       try{
@@ -5777,18 +5782,18 @@ if(document.readyState==='loading'){
           </div>`;
           return `<div style="position:relative;min-width:155px;max-width:165px;background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;flex-shrink:0" onclick="openActivityFromHome('${esc(e.id)}')">
             ${coverHtml}${placeholderHtml}
-            <button onclick="event.stopPropagation();shareEvent('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px">🔗</button>
+            <button onclick="event.stopPropagation();shareEvent('${esc(e.id)}','${esc(e.title||'')}')" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔗</button>
             <div style="padding:10px">
-              <div style="font-size:16px;font-weight:900;color:var(--txt);line-height:1.3">${esc(e.title||'')}</div>
-              ${e.location?`<div style="font-size:16px;color:var(--muted);margin-top:5px;line-height:1.45">📍 ${esc(e.location)}</div>`:''}
-              ${e.desc?`<div style="font-size:16px;color:var(--muted);margin-top:3px;line-height:1.45">${esc(e.desc)}</div>`:''}
-              <div style="font-size:16px;color:var(--muted);margin-top:3px;line-height:1.45">🎪 ${eventSessionCount(e.id)} 個場次</div>
-              <button onclick="event.stopPropagation();openActivityFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:var(--c5);color:var(--txt);font-size:16px;font-weight:900;cursor:pointer;font-family:inherit">查看場次</button>
+              <div style="font-size:15px;font-weight:900;color:var(--txt);line-height:1.3">${esc(e.title||'')}</div>
+              ${e.location?`<div style="font-size:12px;color:var(--muted);margin-top:5px;line-height:1.45">📍 ${esc(e.location)}</div>`:''}
+              ${e.desc?`<div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45">${esc(e.desc)}</div>`:''}
+              <div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45">🎪 ${eventSessionCount(e.id)} 個場次</div>
+              <button onclick="event.stopPropagation();openActivityFromHome('${esc(e.id)}')" style="width:100%;min-height:38px;margin-top:8px;border:none;border-radius:12px;background:var(--c5);color:var(--txt);font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">查看場次</button>
             </div>
           </div>`;
         }).join('');
       } else {
-        fl.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px">目前無主題活動</div>';
+        fl.innerHTML='<div style="padding:20px;color:#aaa;font-size:14px">目前無主題活動</div>';
       }
     }
 
@@ -5799,7 +5804,7 @@ if(document.readyState==='loading'){
       if(sessions.length){
         el.innerHTML=sessions.map(s=>renderSessionCard(s)).join('');
       } else {
-        el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:16px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#2a6a10;font-weight:800;cursor:pointer">重新載入</span></div>';
+        el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:15px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#2a6a10;font-weight:800;cursor:pointer">重新載入</span></div>';
       }
     }
     setTimeout(enableDragScroll,100);
