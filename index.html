@@ -2466,7 +2466,7 @@ function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v
 // 活動限定拍照框（H5：問卷 → 相機 → 套框 → 下載／分享）
 // ══════════════════════════════════════════════════════════════
 const PHOTO_DONE_KEY='2bl_photo_lead_done';
-let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null};
+let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1};
 async function loadPhotoFrames(){
   try{ const r=await apiPost({action:'listActivePhotoFrames'}); ST.photoFrames=(r&&r.frames)||[]; }
   catch(e){ ST.photoFrames=[]; }
@@ -2506,6 +2506,19 @@ async function openPhotoFrameByLink(){
     return true;
   }catch(e){ toast&&toast((e&&e.message)?e.message:'拍照框無法開啟'); return false; }
 }
+function applyPhotoZoom(){
+  const v=document.getElementById('pfVideo'); if(!v) return;
+  const z=Number(PF.zoom)||1;
+  const mirror=(PF.facing==='user')?-1:1;
+  v.style.transform='scale('+(mirror*z)+','+z+')';
+  v.style.transformOrigin='center center';
+}
+function setPhotoZoom(v){ PF.zoom=Math.min(2,Math.max(0.5,Number(v)||1)); applyPhotoZoom(); }
+async function flipPhotoCamera(){
+  PF.facing=(PF.facing==='user')?'environment':'user';
+  stopPhotoCamera();
+  await startPhotoCamera();
+}
 function isInAppBrowser(){ return /Line\/|FBAN|FBAV|Instagram|MicroMessenger|KAKAOTALK/i.test(navigator.userAgent||''); }
 function ensurePhotoModal(){
   if(document.getElementById('photoModal')) return;
@@ -2537,6 +2550,13 @@ function ensurePhotoModal(){
        +'<video id="pfVideo" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video>'
        +'<img id="pfFrameImg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none">'
      +'</div>'
+     +'<div id="pfCtrl" style="display:flex;align-items:center;gap:10px;margin-top:10px">'
+       +'<button id="pfFlipBtn" onclick="flipPhotoCamera()" style="font-size:16px;font-weight:800;padding:12px 14px;border:0;border-radius:12px;background:#D9E5EE;cursor:pointer;white-space:nowrap">切換鏡頭</button>'
+       +'<div style="flex:1;display:flex;align-items:center;gap:8px">'
+         +'<span style="font-size:15px;color:#666">縮小</span>'
+         +'<input id="pfZoom" type="range" min="0.5" max="2" step="0.05" value="1" oninput="setPhotoZoom(this.value)" style="flex:1">'
+         +'<span style="font-size:15px;color:#666">放大</span>'
+       +'</div></div>'
      +'<div id="pfCamMsg" style="display:none;font-size:16px;background:#FAE1DD;border-radius:12px;padding:12px;margin-top:10px"></div>'
      +'<div id="pfPickWrap" style="display:none;margin-top:10px"><label style="display:block;font-size:17px;font-weight:800;padding:14px;border:2px dashed #bbb;border-radius:14px;text-align:center;cursor:pointer">從相簿選照片套框<input type="file" accept="image/*" style="display:none" onchange="pickPhotoFile(this)"></label></div>'
      +'<button id="pf_shootBtn" onclick="takePhoto()" style="width:100%;font-size:20px;font-weight:900;padding:16px;border:0;border-radius:14px;background:#DDEAD1;margin-top:12px;cursor:pointer">拍照</button>'
@@ -2600,6 +2620,7 @@ function showPhotoFallback(msg){
   const m=document.getElementById('pfCamMsg');
   if(m){ m.style.display=''; m.innerHTML=esc(msg)+'<br>請改用 Safari 或 Chrome 開啟本頁，或直接從相簿選一張照片套框。'; }
   const w=document.getElementById('pfPickWrap'); if(w) w.style.display='';
+  const c=document.getElementById('pfCtrl'); if(c) c.style.display='none';
   const b=document.getElementById('pf_shootBtn'); if(b) b.style.display='none';
 }
 async function startPhotoCamera(){
@@ -2610,14 +2631,28 @@ async function startPhotoCamera(){
   const msg=document.getElementById('pfCamMsg'); if(msg) msg.style.display='none';
   const pick=document.getElementById('pfPickWrap'); if(pick) pick.style.display='none';
   const shoot=document.getElementById('pf_shootBtn'); if(shoot) shoot.style.display='';
+  const ctrl=document.getElementById('pfCtrl'); if(ctrl) ctrl.style.display='';
   if(isInAppBrowser()){ showPhotoFallback('LINE／IG 內建瀏覽器無法開啟相機。'); return; }
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showPhotoFallback('這個瀏覽器不支援相機。'); return; }
-  try{
-    PF.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1080},height:{ideal:1920}},audio:false});
-    const v=document.getElementById('pfVideo');
-    v.srcObject=PF.stream; v.muted=true; v.setAttribute('playsinline','');
-    await v.play().catch(()=>{});
-  }catch(e){ showPhotoFallback('無法開啟相機（可能未允許權限）。'); }
+  const v=document.getElementById('pfVideo');
+  // 要求直式畫面：手機自拍鏡頭預設是橫的，被裁成直式會只剩中間一小塊（臉超大）
+  const tries=[
+    {facingMode:{ideal:PF.facing},width:{ideal:1080},height:{ideal:1920},aspectRatio:{ideal:9/16}},
+    {facingMode:{ideal:PF.facing},width:{ideal:720},height:{ideal:1280}},
+    {facingMode:PF.facing},
+    true
+  ];
+  let ok=false;
+  for(const cfg of tries){
+    try{
+      PF.stream=await navigator.mediaDevices.getUserMedia({video:cfg,audio:false});
+      v.srcObject=PF.stream; v.muted=true; v.setAttribute('playsinline','');
+      await v.play().catch(()=>{});
+      ok=true; break;
+    }catch(e){}
+  }
+  if(!ok){ showPhotoFallback('無法開啟相機（可能未允許權限）。'); return; }
+  applyPhotoZoom();
 }
 function pickPhotoFile(input){
   const f=input&&input.files&&input.files[0]; if(!f) return;
@@ -2625,9 +2660,10 @@ function pickPhotoFile(input){
   r.onload=function(){ const im=new Image(); im.onload=function(){ PF.pickedImg=im; takePhoto(); }; im.src=r.result; };
   r.readAsDataURL(f);
 }
-function pfDrawCover(ctx,src,sw,sh,W,H){
+function pfDrawCover(ctx,src,sw,sh,W,H,zoom){
   if(!sw||!sh) return;
-  const scale=Math.max(W/sw,H/sh), dw=sw*scale, dh=sh*scale;
+  const z=Number(zoom)||1;
+  const scale=Math.max(W/sw,H/sh)*z, dw=sw*scale, dh=sh*scale;
   ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh);
 }
 async function takePhoto(){
@@ -2636,8 +2672,12 @@ async function takePhoto(){
   const ctx=c.getContext('2d');
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
   const v=document.getElementById('pfVideo');
-  if(PF.pickedImg){ pfDrawCover(ctx,PF.pickedImg,PF.pickedImg.naturalWidth,PF.pickedImg.naturalHeight,W,H); }
-  else if(v && v.videoWidth){ pfDrawCover(ctx,v,v.videoWidth,v.videoHeight,W,H); }
+  const z=Number(PF.zoom)||1;
+  if(PF.pickedImg){ pfDrawCover(ctx,PF.pickedImg,PF.pickedImg.naturalWidth,PF.pickedImg.naturalHeight,W,H,1); }
+  else if(v && v.videoWidth){
+    if(PF.facing==='user'){ ctx.save(); ctx.translate(W,0); ctx.scale(-1,1); pfDrawCover(ctx,v,v.videoWidth,v.videoHeight,W,H,z); ctx.restore(); }
+    else { pfDrawCover(ctx,v,v.videoWidth,v.videoHeight,W,H,z); }
+  }
   else { toast&&toast('尚未取得影像'); return; }
   if(PF.frame && PF.frame.frameUrl){
     await new Promise(function(res){
@@ -2653,7 +2693,7 @@ async function takePhoto(){
   stopPhotoCamera();
   showPhotoSection('preview');
 }
-function retakePhoto(){ PF.pickedImg=null; PF.shotDataUrl=''; startPhotoCamera(); }
+function retakePhoto(){ PF.pickedImg=null; PF.shotDataUrl=''; startPhotoCamera(); const zs=document.getElementById('pfZoom'); if(zs) zs.value=PF.zoom; }
 function photoFileName(){
   const n=(PF.frame&&PF.frame.name?PF.frame.name:'活動拍照').replace(/[\\/:*?"<>|]/g,'');
   const d=new Date(); const z=x=>String(x).padStart(2,'0');
