@@ -1976,7 +1976,7 @@ function moveSessionSeatRow(i,dir){ const a=AdminSessionSeatItems; const j=i+dir
 function expandStallCodes(input){ const out=[]; const seen=new Set(); String(input||'').split(/[,\s，、]+/).forEach(function(raw){ const tok=raw.trim(); if(!tok) return; const m=tok.match(/^([^\d]*?)(\d+)\s*[-~～]\s*([^\d]*?)(\d+)$/); if(m && (m[1]===m[3]||m[3]==='')){ const pf=m[1]; const a=parseInt(m[2],10),b=parseInt(m[4],10); const lo=Math.min(a,b),hi=Math.max(a,b); if(hi-lo>500){ if(!seen.has(tok)){seen.add(tok);out.push(tok);} return; } for(let k=lo;k<=hi;k++){ const c=pf+k; if(!seen.has(c)){seen.add(c);out.push(c);} } } else { if(!seen.has(tok)){seen.add(tok);out.push(tok);} } }); return out; }
 function addSeatsByRange(){ const raw=String(($('set_seatRange')||{}).value||'').trim(); if(!raw){ toast('請輸入範圍，例如 A1-A5,B1-B5,D1-D6'); return; } const codes=expandStallCodes(raw); if(!codes.length){ toast('無法解析範圍'); return; } let added=0; codes.forEach(function(code){ if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code:code,type:'auto',price:0,active:true,note:'',category:'',order:AdminSessionSeatItems.length+1}); added++; } }); renderSessionSeatRows(AdminSessionSeatItems); if($('set_seatRange')) $('set_seatRange').value=''; toast('已建立 '+added+' 個號碼'); }
 function currentSeatSid(){ return String(($('set_sessionId')||{}).value||'').trim(); }
-async function loadVenueMapList(){ try{ const r=await api({action:'listVenueMaps'}); const maps=(r&&r.maps)||[]; const sel=$('set_venueMapSel'); if(sel){ sel.innerHTML='<option value="">— 選擇常用圖 —</option>'+maps.map(m=>`<option value="${attr(m.id)}">${safe(m.name)}</option>`).join(''); } }catch(e){} }
+async function loadVenueMapList(){ try{ const r=await apiPost({action:'listVenueMaps'}); const maps=(r&&r.maps)||[]; const sel=$('set_venueMapSel'); if(sel){ sel.innerHTML='<option value="">— 選擇常用圖 —</option>'+maps.map(m=>`<option value="${attr(m.id)}">${safe(m.name)}</option>`).join(''); } }catch(e){} }
 async function applyVenueMapNow(){ const sid=currentSeatSid(); const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇常用圖'); return; } if(!confirm('套用後會以常用圖的圖片與攤位清單覆蓋本場目前設定，確定？')) return; try{ await apiPost({action:'applyVenueMap',sessionId:sid,mapId}); toast('已套用常用圖'); await loadSessionSeatSettings(sid, (typeof sessionById==='function'?sessionById(sid):null)||{}); }catch(e){ toast('套用失敗：'+e.message,7000); } }
 async function saveVenueMapNow(){ const name=prompt('把目前的場地圖與攤位清單存成常用圖，請命名（例如：高雄美麗島 A區）'); if(!name) return; const mapUrl=String(($('set_seatMapUrl')||{}).value||'').trim(); const seats=collectSessionSeatItems(); if(!mapUrl && !seats.length){ toast('目前沒有地圖或攤位可存'); return; } try{ await apiPost({action:'saveVenueMap',name:name,mapUrl:mapUrl,seats:seats}); toast('已存成常用圖：'+name); await loadVenueMapList(); }catch(e){ toast('儲存失敗：'+e.message,7000); } }
 async function deleteVenueMapNow(){ const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇要刪除的常用圖'); return; } if(!confirm('確定刪除這張常用圖？（不影響已套用的場次）')) return; try{ await apiPost({action:'deleteVenueMap',mapId:mapId}); toast('已刪除'); await loadVenueMapList(); }catch(e){ toast('刪除失敗：'+e.message,7000); } }
@@ -2733,10 +2733,10 @@ let AdminVenueMaps=[];
 async function openVenueMaps(){
   openPanel('常用場地圖','存放並重用場地圖；新增請到「場次設定 → 選位/攤位 → 存成常用圖」','<div class="loading">載入常用場地圖…</div>');
   try{
-    const r=await api({action:'listVenueMaps'});
+    const r=await apiPost({action:'listVenueMaps'});
     AdminVenueMaps=(r&&r.maps)||[];
     renderVenueMapsPanel();
-  }catch(e){ const b=$('panelBody'); if(b) b.innerHTML='<div class="empty">常用場地圖載入失敗，請稍後再試。</div>'; }
+  }catch(e){ const b=$('panelBody'); if(b) b.innerHTML='<div class="empty">常用場地圖載入失敗<div class="sub" style="margin-top:8px;color:#b4413c">原因：'+safe(e&&e.message?e.message:String(e))+'</div><div class="sub" style="margin-top:6px">若顯示「未知動作」或「連線失敗」，代表後端 worker.js 尚未更新到最新版。</div></div>'; }
 }
 function renderVenueMapsPanel(){
   const b=$('panelBody'); if(!b) return;
