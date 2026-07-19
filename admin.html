@@ -1037,12 +1037,14 @@
       <button id="tab-todos" class="tab" onclick="switchPage('todos')">待辦</button>
       <button id="tab-onsite" class="tab" onclick="switchPage('onsite')">現場</button>
       <button id="tab-members" class="tab" onclick="switchPage('members')">會員</button>
+      <button id="tab-leads" class="tab" onclick="switchPage('leads')">活動</button>
       <button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
     </nav>
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 搜尋攤友 → 一鍵報到。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">工讀生入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
+    <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
     <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
 </section>
@@ -1133,10 +1135,10 @@ function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classLi
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function saveAdminPageState(page){ try{ const p=page||AdminState.currentPage||'sessions'; const L=AdminState.currentLayer||'root'; const st={page:p, layer:L, sid:AdminState.currentSessionId||'', filter:AdminState.currentFilter||'', dateKey:(L==='equipment')?(AdminState._navDateKey||''):'', dateLabel:(L==='equipment')?(AdminState._navDateLabel||''):'', updatedAt:Date.now()}; localStorage.setItem(ADMIN_PAGE_STATE_KEY, JSON.stringify(st)); }catch(e){} }
-function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','members','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
+function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','members','leads','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
 async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜20260701設定修正版'; await refreshSessionsOverview(); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
-function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','settings'].forEach(p=>{ $('page-'+p).classList.toggle('hidden',p!==page); $('tab-'+p).classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); }
+function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','leads','settings'].forEach(p=>{ const pg=$('page-'+p), tb=$('tab-'+p); if(pg) pg.classList.toggle('hidden',p!==page); if(tb) tb.classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); if(page==='leads') loadLeads(); }
 
 // ── 現場報到頁（重用後端 checkin 動作） ──
 function loadOnsite(){
@@ -2729,9 +2731,81 @@ async function savePaymentProfile(btn){
 }
 async function disablePaymentProfile(id){ if(!confirm('停用後新場次不可選用；舊付款快照不會被改動。確定停用？')) return; try{ await apiPost({action:'disablePaymentProfile',id}); toast('已停用'); await openPaymentSettings(); }catch(e){ toast('停用失敗：'+e.message,6000); } }
 
+let AdminLeads=[]; let AdminLeadStats={}; let AdminLeadFilter='all';
+async function loadLeads(){
+  const box=$('leadList'); if(box) box.innerHTML='<div class="loading">載入活動名單中…</div>';
+  try{
+    const r=await apiPost({action:'listContactLeads'});
+    AdminLeads=(r&&r.contacts)||[]; AdminLeadStats=r||{};
+    renderLeads();
+  }catch(e){
+    if(box) box.innerHTML='<div class="empty">活動名單載入失敗<div class="sub" style="margin-top:8px;color:#b4413c">原因：'+safe(e&&e.message?e.message:String(e))+'</div><div class="sub" style="margin-top:6px">若顯示「未知動作」，代表後端 worker.js 尚未更新到最新版。</div></div>';
+  }
+}
+function setLeadFilter(v){ AdminLeadFilter=v; renderLeads(); }
+function leadMatches(c){
+  if(AdminLeadFilter==='consent') return !!c.consent;
+  if(AdminLeadFilter==='public') return !!c.isPublic;
+  if(AdminLeadFilter==='vendor') return !!c.isVendor;
+  return true;
+}
+function renderLeads(){
+  const st=$('leadStats');
+  if(st) st.textContent='共 '+(AdminLeadStats.total||0)+' 人｜願意收訊息 '+(AdminLeadStats.consent_total||0)
+    +'｜民眾 '+(AdminLeadStats.public_total||0)+'｜攤商 '+(AdminLeadStats.vendor_total||0)
+    +'｜兩者都是 '+(AdminLeadStats.both_total||0);
+  const fb=$('leadFilters');
+  if(fb){
+    const mk=(v,t)=>'<button type="button" class="btn '+(AdminLeadFilter===v?'':'secondary')+' small" onclick="setLeadFilter(\''+v+'\')">'+t+'</button>';
+    fb.innerHTML=mk('all','全部')+mk('consent','願意收訊息')+mk('public','民眾')+mk('vendor','攤商')
+      +'<button type="button" class="btn secondary small" onclick="exportLeadsCsv()">匯出 CSV</button>';
+  }
+  const kw=String(($('leadSearch')||{}).value||'').trim().toLowerCase();
+  const list=(AdminLeads||[]).filter(leadMatches).filter(function(c){
+    if(!kw) return true;
+    return [c.name,c.email,c.phone,c.brand].some(v=>String(v||'').toLowerCase().includes(kw));
+  });
+  const box=$('leadList'); if(!box) return;
+  if(!list.length){ box.innerHTML='<div class="empty">目前沒有符合條件的名單。<br>拍照框有人填寫、或有人報名成為會員後，這裡就會出現。</div>'; return; }
+  box.innerHTML=list.map(function(c){
+    const role=(c.isPublic&&c.isVendor)?'民眾＋攤商':(c.isVendor?'攤商':'民眾');
+    const roleBg=(c.isPublic&&c.isVendor)?'#DCD7ED':(c.isVendor?'#D9E5EE':'#DDEAD1');
+    const t=String(c.lastAt||'').replace('T',' ').slice(0,16);
+    return '<div class="report-card" style="margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+        +'<div><b style="font-size:16px">'+safe(c.name||'（未填姓名）')+'</b> '
+          +'<span class="chip" style="background:'+roleBg+'">'+role+'</span>'
+          +(c.consent?' <span class="chip" style="background:#FAEEC7">願意收訊息</span>':'')
+          +(c.brand?'<div class="sub">品牌：'+safe(c.brand)+'</div>':'')
+          +'<div class="sub">'+safe(c.email||'')+(c.phone?'｜'+safe(c.phone):'')+'</div>'
+          +(c.sources&&c.sources.length?'<div class="sub">來源：'+safe(c.sources.join('、'))+'</div>':'')
+        +'</div>'
+        +'<div class="sub">'+safe(t)+'</div>'
+      +'</div></div>';
+  }).join('');
+}
+function exportLeadsCsv(){
+  const kw=String(($('leadSearch')||{}).value||'').trim().toLowerCase();
+  const list=(AdminLeads||[]).filter(leadMatches).filter(function(c){
+    if(!kw) return true;
+    return [c.name,c.email,c.phone,c.brand].some(v=>String(v||'').toLowerCase().includes(kw));
+  });
+  if(!list.length){ toast('目前沒有可匯出的名單'); return; }
+  const head=['姓名','Email','手機','品牌','身分','願意收訊息','來源','最近互動'];
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=list.map(c=>[c.name,c.email,c.phone,c.brand,((c.isPublic&&c.isVendor)?'民眾＋攤商':(c.isVendor?'攤商':'民眾')),(c.consent?'是':'否'),(c.sources||[]).join('、'),String(c.lastAt||'').replace('T',' ').slice(0,16)].map(q).join(','));
+  const csv='\ufeff'+[head.map(q).join(',')].concat(rows).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='活動名單_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('已匯出 '+list.length+' 筆');
+}
 let AdminPhotoFrames=[]; let AdminPhotoLeads=[];
 function pfScopeLabel(f){
-  const t=String(f.scope_type||'all');
+  const t=String(f.scope_type||'none');
+  if(t==='none') return '獨立連結／QR（不綁場次）';
   if(t==='session'){ const x=(AdminState.sessions||[]).find(v=>String(v.id)===String(f.scope_session_id)); return '場次：'+(x?x.name:f.scope_session_id||'未指定'); }
   if(t==='event'){ const x=(AdminState.events||[]).find(v=>String(v.id)===String(f.scope_event_id)); return '活動：'+(x?x.name:f.scope_event_id||'未指定'); }
   return '全站通用';
@@ -2793,6 +2867,7 @@ function renderPhotoFramesPanel(totalLeads){
         +'<div class="sub">收到 '+(f.lead_count||0)+' 筆／願意收訊息 '+(f.consent_count||0)+'</div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
         +'<button type="button" class="btn secondary small" onclick="togglePhotoFrameActive(\''+attr(f.id)+'\')">'+(active?'停用':'啟用')+'</button>'
+        +'<button type="button" class="btn secondary small" onclick="showPhotoFrameLink(\''+attr(f.id)+'\')">連結／QR</button>'
         +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\''+attr(f.id)+'\')">名單</button>'
         +'<button type="button" class="btn secondary small" onclick="openPhotoFrameForm(\''+attr(f.id)+'\')">編輯</button>'
         +'<button type="button" class="btn secondary small" onclick="deletePhotoFrameNow(\''+attr(f.id)+'\')">刪除</button>'
@@ -2800,11 +2875,45 @@ function renderPhotoFramesPanel(totalLeads){
       +'</div></div>';
   }).join('');
 }
+function photoFrameLink(id){ return location.origin.replace(/\/$/,'')+'/?pf='+encodeURIComponent(id); }
+function showPhotoFrameLink(id){
+  const f=(AdminPhotoFrames||[]).find(x=>String(x.id)===String(id)); if(!f) return;
+  const url=photoFrameLink(id);
+  const qr='https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=10&data='+encodeURIComponent(url);
+  let d=document.getElementById('pfLinkOverlay');
+  if(!d){
+    d=document.createElement('div'); d.id='pfLinkOverlay';
+    d.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(20,20,20,.9);display:none;align-items:center;justify-content:center;padding:14px';
+    d.innerHTML='<div style="background:#fff;border-radius:16px;padding:16px;width:min(420px,94vw);text-align:center">'
+      +'<b id="pfLinkTitle" style="font-size:18px">專屬連結／QR</b>'
+      +'<div id="pfLinkQrBox" style="margin:12px 0"><img id="pfLinkQr" style="width:220px;height:220px;background:#f5f5f5;border-radius:10px" onerror="this.style.display=\'none\'"></div>'
+      +'<input id="pfLinkInput" readonly style="width:100%;font-size:15px;padding:10px;border:1px solid #ddd;border-radius:10px;text-align:center">'
+      +'<div class="sub" style="margin-top:6px">民眾掃 QR 或點連結即可直接拍照，不需要場次、不需登入。</div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px">'
+      +'<button type="button" class="btn small" style="flex:1" onclick="copyPhotoFrameLink()">複製連結</button>'
+      +'<button type="button" class="btn secondary small" style="flex:1" onclick="document.getElementById(\'pfLinkOverlay\').style.display=\'none\'">關閉</button></div></div>';
+    document.body.appendChild(d);
+  }
+  if(d.parentElement!==document.body) document.body.appendChild(d);
+  document.getElementById('pfLinkTitle').textContent=(f.name||'拍照框')+'｜專屬連結／QR';
+  const qrImg=document.getElementById('pfLinkQr'); qrImg.style.display=''; qrImg.src=qr;
+  document.getElementById('pfLinkInput').value=url;
+  d.style.display='flex';
+}
+function copyPhotoFrameLink(){
+  const el=document.getElementById('pfLinkInput'); if(!el) return;
+  const txt=el.value;
+  const done=()=>toast('已複製連結');
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>{ el.select(); document.execCommand('copy'); done(); }); }
+    else { el.select(); document.execCommand('copy'); done(); }
+  }catch(e){ el.select(); }
+}
 function pfLocalValue(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return ''; const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; }
 function openPhotoFrameForm(id){
   const f=(AdminPhotoFrames||[]).find(x=>String(x.id)===String(id))||{};
   const sessions=(AdminState.sessions||[]), events=(AdminState.events||[]);
-  const scope=String(f.scope_type||'all');
+  const scope=String(f.scope_type||'none');
   const html='<input type="hidden" id="pf_id" value="'+attr(f.id||'')+'">'
     +'<div class="form-field full"><label>框名稱</label><input id="pf_name" value="'+attr(f.name||'')+'" placeholder="例：幻日祭8月限定框"></div>'
     +'<div class="form-field full"><label>拍照框 PNG（1080×1920 直式、透明底）</label>'
@@ -2812,19 +2921,21 @@ function openPhotoFrameForm(id){
       +'<input type="hidden" id="pf_url" value="'+attr(f.frame_url||'')+'">'
       +'<div id="pf_preview" style="margin-top:8px;background:#f5f5f5;border-radius:10px;padding:8px;text-align:center;'+(f.frame_url?'':'display:none')+'"><img id="pf_previewImg" src="'+attr(f.frame_url||'')+'" style="max-height:220px;max-width:100%;border-radius:8px"></div>'
       +'<div class="sub">中間留透明給人像；四周放視覺。建議 1MB 以內。</div></div>'
-    +'<div class="form-field full"><label>適用範圍</label><select id="pf_scope" onchange="pfScopeChanged()">'
-      +'<option value="all"'+(scope==='all'?' selected':'')+'>全站通用</option>'
+    +'<div class="form-field full"><label>要出現在哪裡</label><select id="pf_scope" onchange="pfScopeChanged()">'
+      +'<option value="none"'+(scope==='none'?' selected':'')+'>只用專屬連結／QR（不綁場次，最單純）</option>'
+      +'<option value="all"'+(scope==='all'?' selected':'')+'>全站通用（每張活動卡都出現）</option>'
       +'<option value="event"'+(scope==='event'?' selected':'')+'>指定活動</option>'
-      +'<option value="session"'+(scope==='session'?' selected':'')+'>指定場次</option></select></div>'
+      +'<option value="session"'+(scope==='session'?' selected':'')+'>指定場次</option></select>'
+      +'<div class="sub">不論選哪一種，這張框都有自己的專屬連結／QR 可用。</div></div>'
     +'<div class="form-field full" id="pf_eventWrap" style="'+(scope==='event'?'':'display:none')+'"><label>選擇活動</label><select id="pf_eventId">'
       +'<option value="">— 請選擇 —</option>'+events.map(e=>'<option value="'+attr(e.id)+'"'+(String(f.scope_event_id||'')===String(e.id)?' selected':'')+'>'+safe(e.name)+'</option>').join('')+'</select></div>'
     +'<div class="form-field full" id="pf_sessionWrap" style="'+(scope==='session'?'':'display:none')+'"><label>選擇場次</label><select id="pf_sessionId">'
       +'<option value="">— 請選擇 —</option>'+sessions.map(x=>'<option value="'+attr(x.id)+'"'+(String(f.scope_session_id||'')===String(x.id)?' selected':'')+'>'+safe(x.name)+'</option>').join('')+'</select></div>'
-    +'<div class="form-field full"><label><input type="checkbox" id="pf_unlimited" '+((f.is_unlimited===true||f.is_unlimited==='true')?'checked':'')+' onchange="pfUnlimitedChanged()"> 無限期（永遠可用）</label></div>'
+    +'<label style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:#2C2C2C;padding:6px 0"><input type="checkbox" id="pf_unlimited" style="width:22px;height:22px;flex:0 0 auto;margin:0" '+((f.is_unlimited===true||f.is_unlimited==='true')?'checked':'')+' onchange="pfUnlimitedChanged()"><span>無限期（永遠可用）</span></label>'
     +'<div id="pf_timeWrap" style="'+((f.is_unlimited===true||f.is_unlimited==='true')?'display:none':'')+'">'
       +'<div class="form-field"><label>開放開始</label><input type="datetime-local" id="pf_start" value="'+attr(pfLocalValue(f.start_at))+'"></div>'
       +'<div class="form-field"><label>開放結束</label><input type="datetime-local" id="pf_end" value="'+attr(pfLocalValue(f.end_at))+'"></div></div>'
-    +'<div class="form-field full"><label><input type="checkbox" id="pf_active" '+((f.is_active===false||f.is_active==='false')?'':'checked')+'> 啟用（關掉就不顯示）</label></div>'
+    +'<label style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:#2C2C2C;padding:6px 0"><input type="checkbox" id="pf_active" style="width:22px;height:22px;flex:0 0 auto;margin:0" '+((f.is_active===false||f.is_active==='false')?'':'checked')+'><span>啟用（關掉就不顯示）</span></label>'
     +'<div style="display:flex;gap:8px;margin-top:14px"><button type="button" class="btn" onclick="savePhotoFrameNow()">儲存</button><button type="button" class="btn secondary" onclick="openPhotoFrames()">取消</button></div>';
   openPanel(id?'編輯拍照框':'新增拍照框','設定圖片、開放時間與適用範圍',html);
 }
@@ -2907,7 +3018,7 @@ function renderPhotoLeadsPanel(r){
   const filter='<div class="report-card" style="margin-bottom:12px">'
     +'<div class="form-field full"><label>依拍照框篩選</label><select onchange="AdminPhotoLeadFilter.frameId=this.value;reloadPhotoLeads()">'
       +'<option value="">全部</option>'+frames.map(f=>'<option value="'+attr(f.id)+'"'+(String(AdminPhotoLeadFilter.frameId)===String(f.id)?' selected':'')+'>'+safe(f.name)+'</option>').join('')+'</select></div>'
-    +'<div class="form-field full"><label><input type="checkbox" '+(AdminPhotoLeadFilter.consentOnly?'checked':'')+' onchange="AdminPhotoLeadFilter.consentOnly=this.checked;reloadPhotoLeads()"> 只看願意收到活動訊息的人</label></div>'
+    +'<label style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:#2C2C2C;padding:6px 0"><input type="checkbox" style="width:22px;height:22px;flex:0 0 auto;margin:0" '+(AdminPhotoLeadFilter.consentOnly?'checked':'')+' onchange="AdminPhotoLeadFilter.consentOnly=this.checked;reloadPhotoLeads()"><span>只看願意收到活動訊息的人</span></label>'
     +'<div class="sub">共 '+(r.total||0)+' 筆，其中 '+(r.consent_total||0)+' 筆願意收訊息</div>'
     +'<div class="sub">來源分布：'+srcLine+'</div>'
     +'<div style="margin-top:8px"><button type="button" class="btn small" onclick="exportPhotoLeadsCsv()">匯出 CSV</button> <button type="button" class="btn secondary small" onclick="openPhotoFrames()">返回拍照框</button></div></div>';

@@ -2492,6 +2492,20 @@ function photoFrameBtnHtml(s){
   const sid=String((s&&(s.id||s.sessionId))||'');
   return '<button class="act-card-detail" style="background:#DCD7ED" onclick="event.stopPropagation();openPhotoFlow(\''+esc(f.id)+'\',\''+esc(sid)+'\')">📸 領取限定拍照框</button>';
 }
+// 專屬連結／QR：網址帶 ?pf=<框編號> 就直接開拍照框（不需場次、不需登入）
+async function openPhotoFrameByLink(){
+  let id='';
+  try{ id=new URLSearchParams(location.search).get('pf')||''; }catch(e){ id=''; }
+  if(!id) return false;
+  try{
+    const r=await apiPost({action:'getPhotoFrameById',frameId:id});
+    const f=r&&r.frame;
+    if(!f||!f.frameUrl){ toast&&toast('這張拍照框目前未開放'); return false; }
+    ST.photoFrames=(ST.photoFrames||[]).filter(x=>String(x.id)!==String(f.id)).concat([f]);
+    openPhotoFlow(f.id,'');
+    return true;
+  }catch(e){ toast&&toast((e&&e.message)?e.message:'拍照框無法開啟'); return false; }
+}
 function isInAppBrowser(){ return /Line\/|FBAN|FBAV|Instagram|MicroMessenger|KAKAOTALK/i.test(navigator.userAgent||''); }
 function ensurePhotoModal(){
   if(document.getElementById('photoModal')) return;
@@ -6056,6 +6070,7 @@ if(document.readyState==='loading'){
   if(deepLink.hasDeepLink) showDeepLinkLoading();
 
   try{ await loadPhotoFrames(); }catch(e){}
+  try{ await openPhotoFrameByLink(); }catch(e){}
   await loadHome();
 
   if(deepLink.sessionId){ await openSession(deepLink.sessionId); hideDeepLinkLoading(); return; }
