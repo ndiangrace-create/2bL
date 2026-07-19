@@ -2741,14 +2741,27 @@ function pfTimeLabel(f){
   const fmt=v=>{ if(!v) return '不限'; const d=new Date(v); if(isNaN(d)) return String(v); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}/${z(d.getMonth()+1)}/${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; };
   return fmt(f.start_at)+' ～ '+fmt(f.end_at);
 }
-function pfIsLive(f){
-  if(f.is_active===false||f.is_active==='false') return false;
-  if(f.is_unlimited===true||f.is_unlimited==='true') return true;
+function pfStatus(f){
+  if(f.is_active===false||f.is_active==='false') return {live:false,txt:'已停用',color:'#eee'};
+  if(f.is_unlimited===true||f.is_unlimited==='true') return {live:true,txt:'進行中',color:'#DDEAD1'};
   const now=Date.now();
   const st=f.start_at?Date.parse(f.start_at):NaN, en=f.end_at?Date.parse(f.end_at):NaN;
-  if(!isNaN(st)&&now<st) return false;
-  if(!isNaN(en)&&now>en) return false;
-  return true;
+  if(!isNaN(st)&&now<st) return {live:false,txt:'尚未開始',color:'#FAEEC7'};
+  if(!isNaN(en)&&now>en) return {live:false,txt:'已結束',color:'#FAE1DD'};
+  return {live:true,txt:'進行中',color:'#DDEAD1'};
+}
+function pfIsLive(f){ return pfStatus(f).live; }
+async function togglePhotoFrameActive(id){
+  const f=(AdminPhotoFrames||[]).find(x=>String(x.id)===String(id)); if(!f) return;
+  const nowActive=!(f.is_active===false||f.is_active==='false');
+  try{
+    await apiPost({action:'savePhotoFrame',frameId:f.id,name:f.name,frameUrl:f.frame_url||'',
+      scopeType:f.scope_type||'all',scopeEventId:f.scope_event_id||'',scopeSessionId:f.scope_session_id||'',
+      isUnlimited:(f.is_unlimited===true||f.is_unlimited==='true'),
+      startAt:f.start_at||'',endAt:f.end_at||'',isActive:!nowActive});
+    toast(nowActive?'已停用':'已啟用');
+    await openPhotoFrames();
+  }catch(e){ toast('切換失敗：'+(e&&e.message?e.message:e),7000); }
 }
 async function openPhotoFrames(){
   openPanel('活動拍照框','民眾填簡短問卷即可用限定框拍照；名單可再行銷','<div class="loading">載入中…</div>');
@@ -2768,20 +2781,23 @@ function renderPhotoFramesPanel(totalLeads){
   const list=(AdminPhotoFrames||[]);
   if(!list.length){ b.innerHTML=head+'<div class="empty">還沒有拍照框。按「＋ 新增拍照框」建立第一張。</div>'; return; }
   b.innerHTML=head+list.map(function(f){
-    const live=pfIsLive(f);
-    return '<div class="report-card" style="margin-bottom:12px">'
-      +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:flex-start">'
-      +'<div><b style="font-size:17px">'+safe(f.name)+'</b> '
-      +'<span class="chip" style="background:'+(live?'#DDEAD1':'#eee')+'">'+(live?'進行中':'未啟用/已結束')+'</span>'
-      +'<div class="sub">'+safe(pfScopeLabel(f))+'｜'+safe(pfTimeLabel(f))+'</div>'
-      +'<div class="sub">收到 '+(f.lead_count||0)+' 筆，其中 '+(f.consent_count||0)+' 筆願意收訊息</div></div>'
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-      +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\''+attr(f.id)+'\')">名單</button>'
-      +'<button type="button" class="btn secondary small" onclick="openPhotoFrameForm(\''+attr(f.id)+'\')">編輯</button>'
-      +'<button type="button" class="btn secondary small" onclick="deletePhotoFrameNow(\''+attr(f.id)+'\')">刪除</button>'
-      +'</div></div>'
-      +(f.frame_url?'<div style="margin-top:8px;background:#f5f5f5;border-radius:10px;padding:8px;text-align:center"><img src="'+attr(f.frame_url)+'" alt="拍照框" style="max-height:220px;max-width:100%;border-radius:8px"></div>':'<div class="sub" style="margin-top:6px">（尚未上傳 PNG）</div>')
-      +'</div>';
+    const st=pfStatus(f);
+    const active=!(f.is_active===false||f.is_active==='false');
+    return '<div class="report-card" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-start">'
+      +(f.frame_url
+         ? '<img src="'+attr(f.frame_url)+'" alt="" style="width:54px;height:96px;object-fit:contain;background:#f2f2f2;border-radius:8px;flex:0 0 auto">'
+         : '<div style="width:54px;height:96px;background:#f2f2f2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto">📸</div>')
+      +'<div style="flex:1;min-width:0">'
+        +'<div><b style="font-size:16px">'+safe(f.name)+'</b> <span class="chip" style="background:'+st.color+'">'+st.txt+'</span></div>'
+        +'<div class="sub">'+safe(pfScopeLabel(f))+'｜'+safe(pfTimeLabel(f))+'</div>'
+        +'<div class="sub">收到 '+(f.lead_count||0)+' 筆／願意收訊息 '+(f.consent_count||0)+'</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
+        +'<button type="button" class="btn secondary small" onclick="togglePhotoFrameActive(\''+attr(f.id)+'\')">'+(active?'停用':'啟用')+'</button>'
+        +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\''+attr(f.id)+'\')">名單</button>'
+        +'<button type="button" class="btn secondary small" onclick="openPhotoFrameForm(\''+attr(f.id)+'\')">編輯</button>'
+        +'<button type="button" class="btn secondary small" onclick="deletePhotoFrameNow(\''+attr(f.id)+'\')">刪除</button>'
+        +'</div>'
+      +'</div></div>';
   }).join('');
 }
 function pfLocalValue(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return ''; const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; }
@@ -2852,7 +2868,7 @@ async function savePhotoFrameNow(){
     isUnlimited:unlimited,
     startAt:unlimited?'':toIso(($('pf_start')||{}).value),
     endAt:unlimited?'':toIso(($('pf_end')||{}).value),
-    isActive:!!($('pf_active')||{}).checked
+    isActive: $('pf_active') ? !!$('pf_active').checked : true
   };
   if(!body.name){ toast('請填框名稱'); return; }
   if(!body.frameUrl){ toast('請先上傳拍照框 PNG'); return; }
@@ -2945,16 +2961,33 @@ function renderVenueMapsPanel(){
   b.innerHTML=head+'<div class="sub" style="margin-bottom:10px">建好後，到場次設定的「選位/攤位」按「套用」即可整份帶入。</div>'+maps.map(function(m){
     let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
     const url=m.seat_map_url||'';
-    return '<div class="report-card" style="margin-bottom:12px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'
-      +'<div><b style="font-size:17px">'+safe(m.name)+'</b><div class="sub">攤位 '+seats.length+' 個</div></div>'
-      +'<div style="display:flex;gap:6px">'
-      +'<button type="button" class="btn secondary small" onclick="openVenueMapForm(\''+attr(m.id)+'\')">編輯</button>'
-      +'<button type="button" class="btn secondary small" onclick="deleteVenueMapFromPanel(\''+attr(m.id)+'\')">刪除</button>'
-      +'</div></div>'
-      +(url?'<div style="margin-top:8px"><img src="'+attr(url)+'" alt="場地圖" style="width:100%;border:1px solid #eee;border-radius:10px;display:block"></div>':'<div class="sub" style="margin-top:6px">（未附場地圖圖片）</div>')
-      +'</div>';
+    return '<div class="report-card" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-start">'
+      +(url
+         ? '<img src="'+attr(url)+'" alt="" onclick="previewVenueMapImg(\''+attr(url)+'\')" style="width:96px;height:72px;object-fit:cover;background:#f2f2f2;border-radius:8px;flex:0 0 auto;cursor:zoom-in">'
+         : '<div style="width:96px;height:72px;background:#f2f2f2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto">🗺️</div>')
+      +'<div style="flex:1;min-width:0">'
+        +'<div><b style="font-size:16px">'+safe(m.name)+'</b></div>'
+        +'<div class="sub">攤位 '+seats.length+' 個'+(url?'（點縮圖看大圖）':'')+'</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
+        +'<button type="button" class="btn secondary small" onclick="openVenueMapForm(\''+attr(m.id)+'\')">編輯</button>'
+        +'<button type="button" class="btn secondary small" onclick="deleteVenueMapFromPanel(\''+attr(m.id)+'\')">刪除</button>'
+        +'</div>'
+      +'</div></div>';
   }).join('');
+}
+function previewVenueMapImg(url){
+  if(!url) return;
+  let d=document.getElementById('vmPreviewOverlay');
+  if(!d){
+    d=document.createElement('div'); d.id='vmPreviewOverlay';
+    d.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(20,20,20,.9);display:none;align-items:center;justify-content:center;padding:14px;cursor:zoom-out';
+    d.onclick=function(){ d.style.display='none'; };
+    d.innerHTML='<img id="vmPreviewOverlayImg" style="max-width:96vw;max-height:92vh;border-radius:10px">';
+    document.body.appendChild(d);
+  }
+  if(d.parentElement!==document.body) document.body.appendChild(d);
+  document.getElementById('vmPreviewOverlayImg').src=url;
+  d.style.display='flex';
 }
 function openVenueMapForm(id){
   const m=(AdminVenueMaps||[]).find(x=>String(x.id)===String(id))||{};
