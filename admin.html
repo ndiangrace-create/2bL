@@ -891,6 +891,8 @@
 #page-todos #todoList.cards,
 #panelCards.cards,
 #memberList.member-list,
+#leadList,
+.mini-card-grid,
 .panel-body > .cards{
   display:grid!important;
   grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;
@@ -955,8 +957,18 @@
 .member-card-lite .member-note{margin-top:0!important;padding:7px 8px!important;border-radius:11px!important;font-size:12.5px!important;line-height:1.35!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
 .member-card-lite .member-actions{justify-content:stretch!important;margin-top:auto!important}
 .member-card-lite .member-actions .btn{width:100%!important;min-height:32px!important;padding:6px!important;font-size:12.5px!important}
+.mini-card-grid .member-card{padding:12px!important}
+.mini-card-grid .member-title{font-size:17px!important}
+.mini-card-grid .member-sub{font-size:13px!important;margin-top:4px!important}
+.mini-card-grid .member-card{overflow:hidden!important}
+.mini-card-grid .member-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin-top:10px!important;width:100%!important;justify-content:stretch!important}
+.mini-card-grid .member-actions .btn{white-space:nowrap!important;font-size:13px!important;padding:8px 4px!important;min-width:0!important;width:100%!important;min-height:38px!important}
+@media(max-width:860px){
+  .mini-card-grid .member-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .mini-card-grid .member-actions .btn{min-width:0!important;width:100%!important;font-size:14px!important}
+}
 @media(max-width:520px){
-  #page-todos #todoList.cards,#panelCards.cards,#memberList.member-list,.panel-body > .cards{grid-template-columns:1fr!important}
+  #page-todos #todoList.cards,#panelCards.cards,#memberList.member-list,#leadList,.mini-card-grid,.panel-body > .cards{grid-template-columns:1fr!important}
   .unified-reg-card,#page-todos .todo-card-lite,.member-card-lite{padding:11px!important}
 }
 
@@ -2854,7 +2866,7 @@ function renderPhotoFramesPanel(totalLeads){
     +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\'\')">查看全部名單（'+(totalLeads||0)+'）</button></div>';
   const list=(AdminPhotoFrames||[]);
   if(!list.length){ b.innerHTML=head+'<div class="empty">還沒有拍照框。按「＋ 新增拍照框」建立第一張。</div>'; return; }
-  b.innerHTML=head+'<div class="member-list">'+list.map(function(f){
+  b.innerHTML=head+'<div class="member-list mini-card-grid">'+list.map(function(f){
     const st=pfStatus(f);
     const active=!(f.is_active===false||f.is_active==='false');
     return '<article class="member-card member-card-lite">'
@@ -3065,7 +3077,7 @@ function renderVenueMapsPanel(){
   const maps=AdminVenueMaps||[];
   const head='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button type="button" class="btn small" onclick="openVenueMapForm(\'\')">＋ 新增常用場地圖</button></div>';
   if(!maps.length){ b.innerHTML=head+'<div class="empty">目前沒有常用場地圖。<br>按「＋ 新增常用場地圖」建立第一張，或在場次設定按「存成常用圖」。</div>'; return; }
-  b.innerHTML=head+'<div class="sub" style="margin-bottom:10px">建好後，到場次設定的「選位/攤位」按「套用」即可整份帶入。</div><div class="member-list">'+maps.map(function(m){
+  b.innerHTML=head+'<div class="sub" style="margin-bottom:10px">建好後，到場次設定的「選位/攤位」按「套用」即可整份帶入。</div><div class="member-list mini-card-grid">'+maps.map(function(m){
     let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
     const url=m.seat_map_url||'';
     return '<article class="member-card member-card-lite">'
