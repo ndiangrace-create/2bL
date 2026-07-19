@@ -2466,7 +2466,7 @@ function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v
 // 活動限定拍照框（H5：問卷 → 相機 → 套框 → 下載／分享）
 // ══════════════════════════════════════════════════════════════
 const PHOTO_DONE_KEY='2bl_photo_lead_done';
-let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null};
+let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null,fit:'contain'};
 async function loadPhotoFrames(){
   try{ const r=await apiPost({action:'listActivePhotoFrames'}); ST.photoFrames=(r&&r.frames)||[]; }
   catch(e){ ST.photoFrames=[]; }
@@ -2544,8 +2544,16 @@ function applyPhotoZoom(){
   const v=document.getElementById('pfVideo'); if(!v) return;
   const z=Number(PF.zoom)||1;
   const mirror=(PF.facing==='user')?-1:1;
+  v.style.objectFit=(PF.fit==='contain')?'contain':'cover';
   v.style.transform='scale('+(mirror*z)+','+z+')';
   v.style.transformOrigin='center center';
+  const info=document.getElementById('pfCamInfo');
+  if(info && v.videoWidth) info.textContent='鏡頭畫面 '+v.videoWidth+'×'+v.videoHeight+'（'+(PF.fit==='contain'?'完整不裁切':'填滿會裁切')+'）';
+}
+function togglePhotoFit(){
+  PF.fit=(PF.fit==='contain')?'cover':'contain';
+  const b=document.getElementById('pfFitBtn'); if(b) b.textContent=(PF.fit==='contain')?'完整':'填滿';
+  applyPhotoZoom();
 }
 function setPhotoZoom(v){ PF.zoom=Math.min(2.2,Math.max(1,Number(v)||1)); applyPhotoZoom(); }
 async function flipPhotoCamera(){
@@ -2580,24 +2588,26 @@ function ensurePhotoModal(){
      +'<button id="pf_submitBtn" onclick="submitPhotoSurvey()" style="width:100%;font-size:19px;font-weight:900;padding:15px;border:0;border-radius:14px;background:#DDEAD1;cursor:pointer">送出，開始拍照</button>'
    +'</div>'
    +'<div id="pfCam" style="display:none">'
-     +'<div id="pfCamBox" style="position:relative;width:100%;aspect-ratio:9/16;background:#000;border-radius:14px;overflow:hidden">'
-       +'<div id="pfWin" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden"><video id="pfVideo" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video></div>'
+     +'<div id="pfCamBox" style="position:relative;height:min(56vh,calc(92vw*16/9));width:calc(min(56vh,calc(92vw*16/9))*9/16);max-width:100%;margin:0 auto;background:#000;border-radius:14px;overflow:hidden">'
+       +'<div id="pfWin" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;background:#fff"><video id="pfVideo" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video></div>'
        +'<img id="pfFrameImg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none">'
      +'</div>'
-     +'<div id="pfCtrl" style="display:flex;align-items:center;gap:10px;margin-top:10px">'
-       +'<button id="pfFlipBtn" onclick="flipPhotoCamera()" style="font-size:16px;font-weight:800;padding:12px 14px;border:0;border-radius:12px;background:#D9E5EE;cursor:pointer;white-space:nowrap">切換鏡頭</button>'
+     +'<div id="pfCtrl" style="display:flex;align-items:center;gap:10px;margin-top:8px">'
+       +'<button id="pfFlipBtn" onclick="flipPhotoCamera()" style="font-size:15px;font-weight:800;padding:10px 12px;border:0;border-radius:12px;background:#D9E5EE;cursor:pointer;white-space:nowrap">切換鏡頭</button>'
+       +'<button id="pfFitBtn" onclick="togglePhotoFit()" style="font-size:15px;font-weight:800;padding:10px 12px;border:0;border-radius:12px;background:#FAEEC7;cursor:pointer;white-space:nowrap">完整</button>'
        +'<div style="flex:1;display:flex;align-items:center;gap:8px">'
          +'<span style="font-size:15px;color:#666">原始</span>'
          +'<input id="pfZoom" type="range" min="1" max="2.2" step="0.05" value="1" oninput="setPhotoZoom(this.value)" style="flex:1">'
          +'<span style="font-size:15px;color:#666">放大</span>'
        +'</div></div>'
+     +'<div id="pfCamInfo" style="font-size:13px;color:#999;margin-top:4px"></div>'
      +'<div id="pfCamMsg" style="display:none;font-size:16px;background:#FAE1DD;border-radius:12px;padding:12px;margin-top:10px"></div>'
      +'<div id="pfPickWrap" style="display:none;margin-top:10px"><label style="display:block;font-size:17px;font-weight:800;padding:14px;border:2px dashed #bbb;border-radius:14px;text-align:center;cursor:pointer">從相簿選照片套框<input type="file" accept="image/*" style="display:none" onchange="pickPhotoFile(this)"></label></div>'
-     +'<button id="pf_shootBtn" onclick="takePhoto()" style="width:100%;font-size:20px;font-weight:900;padding:16px;border:0;border-radius:14px;background:#DDEAD1;margin-top:12px;cursor:pointer">拍照</button>'
+     +'<div style="position:sticky;bottom:0;background:#fff;padding:10px 0 2px;margin-top:8px"><button id="pf_shootBtn" onclick="takePhoto()" style="width:100%;font-size:20px;font-weight:900;padding:16px;border:0;border-radius:14px;background:#DDEAD1;cursor:pointer">拍照</button></div>'
    +'</div>'
    +'<div id="pfPreview" style="display:none">'
-     +'<img id="pfShot" alt="成品" style="width:100%;border-radius:14px;display:block">'
-     +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'
+     +'<img id="pfShot" alt="成品" style="height:min(56vh,calc(92vw*16/9));width:auto;max-width:100%;margin:0 auto;border-radius:14px;display:block">'
+     +'<div style="position:sticky;bottom:0;background:#fff;display:flex;gap:8px;margin-top:10px;padding:10px 0 2px;flex-wrap:wrap">'
        +'<button onclick="retakePhoto()" style="flex:1;min-width:110px;font-size:18px;font-weight:900;padding:14px;border:0;border-radius:14px;background:#eee;cursor:pointer">重拍</button>'
        +'<button onclick="downloadPhoto()" style="flex:1;min-width:110px;font-size:18px;font-weight:900;padding:14px;border:0;border-radius:14px;background:#D9E5EE;cursor:pointer">下載</button>'
        +'<button onclick="sharePhoto()" style="flex:1;min-width:110px;font-size:18px;font-weight:900;padding:14px;border:0;border-radius:14px;background:#DDEAD1;cursor:pointer">分享</button>'
@@ -2691,7 +2701,9 @@ async function startPhotoCamera(){
     }catch(e){}
   }
   if(!ok){ showPhotoFallback('無法開啟相機（可能未允許權限）。'); return; }
+  const fb=document.getElementById('pfFitBtn'); if(fb) fb.textContent=(PF.fit==='contain')?'完整':'填滿';
   applyPhotoZoom();
+  try{ v.addEventListener('loadedmetadata',applyPhotoZoom,{once:true}); }catch(e){}
 }
 function pickPhotoFile(input){
   const f=input&&input.files&&input.files[0]; if(!f) return;
@@ -2699,12 +2711,14 @@ function pickPhotoFile(input){
   r.onload=function(){ const im=new Image(); im.onload=function(){ PF.pickedImg=im; takePhoto(); }; im.src=r.result; };
   r.readAsDataURL(f);
 }
-function pfDrawCoverRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom){
+function pfDrawFitRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom,fit){
   if(!sw||!sh) return;
   const z=Number(zoom)||1;
-  const scale=Math.max(rw/sw,rh/sh)*z, dw=sw*scale, dh=sh*scale;
+  const base=(fit==='contain')?Math.min(rw/sw,rh/sh):Math.max(rw/sw,rh/sh);
+  const scale=base*z, dw=sw*scale, dh=sh*scale;
   ctx.drawImage(src, rx+(rw-dw)/2, ry+(rh-dh)/2, dw, dh);
 }
+function pfDrawCoverRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom){ pfDrawFitRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom,'cover'); }
 function pfDrawCover(ctx,src,sw,sh,W,H,zoom){ pfDrawCoverRect(ctx,src,sw,sh,0,0,W,H,zoom); }
 async function takePhoto(){
   const W=1080,H=1920;
@@ -2721,10 +2735,11 @@ async function takePhoto(){
   const sh=PF.pickedImg?PF.pickedImg.naturalHeight:v.videoHeight;
   ctx.save();
   ctx.beginPath(); ctx.rect(rx,ry,rw,rh); ctx.clip();
+  if(PF.fit==='contain'){ ctx.fillStyle='#ffffff'; ctx.fillRect(rx,ry,rw,rh); }
   const mirror=(!PF.pickedImg && PF.facing==='user');
   if(mirror){ ctx.translate(W,0); ctx.scale(-1,1); }
   const drawX = mirror ? (W-rx-rw) : rx;
-  pfDrawCoverRect(ctx,src,sw,sh,drawX,ry,rw,rh,PF.pickedImg?1:z);
+  pfDrawFitRect(ctx,src,sw,sh,drawX,ry,rw,rh,(PF.pickedImg?1:z),PF.fit);
   ctx.restore();
   if(PF.frame && PF.frame.frameUrl){
     await new Promise(function(res){

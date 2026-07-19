@@ -2854,26 +2854,22 @@ function renderPhotoFramesPanel(totalLeads){
     +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\'\')">查看全部名單（'+(totalLeads||0)+'）</button></div>';
   const list=(AdminPhotoFrames||[]);
   if(!list.length){ b.innerHTML=head+'<div class="empty">還沒有拍照框。按「＋ 新增拍照框」建立第一張。</div>'; return; }
-  b.innerHTML=head+list.map(function(f){
+  b.innerHTML=head+'<div class="member-list">'+list.map(function(f){
     const st=pfStatus(f);
     const active=!(f.is_active===false||f.is_active==='false');
-    return '<div class="report-card" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-start">'
-      +(f.frame_url
-         ? '<img src="'+attr(f.frame_url)+'" alt="" style="width:54px;height:96px;object-fit:contain;background:#f2f2f2;border-radius:8px;flex:0 0 auto">'
-         : '<div style="width:54px;height:96px;background:#f2f2f2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto">📸</div>')
-      +'<div style="flex:1;min-width:0">'
-        +'<div><b style="font-size:16px">'+safe(f.name)+'</b> <span class="chip" style="background:'+st.color+'">'+st.txt+'</span></div>'
-        +'<div class="sub">'+safe(pfScopeLabel(f))+'｜'+safe(pfTimeLabel(f))+'</div>'
-        +'<div class="sub">收到 '+(f.lead_count||0)+' 筆／願意收訊息 '+(f.consent_count||0)+'</div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
-        +'<button type="button" class="btn secondary small" onclick="togglePhotoFrameActive(\''+attr(f.id)+'\')">'+(active?'停用':'啟用')+'</button>'
-        +'<button type="button" class="btn secondary small" onclick="showPhotoFrameLink(\''+attr(f.id)+'\')">連結／QR</button>'
-        +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\''+attr(f.id)+'\')">名單</button>'
-        +'<button type="button" class="btn secondary small" onclick="openPhotoFrameForm(\''+attr(f.id)+'\')">編輯</button>'
-        +'<button type="button" class="btn secondary small" onclick="deletePhotoFrameNow(\''+attr(f.id)+'\')">刪除</button>'
-        +'</div>'
-      +'</div></div>';
-  }).join('');
+    return '<article class="member-card member-card-lite">'
+      +'<div class="member-title" title="'+attr(f.name)+'">'+safe(f.name)+' <span class="tag '+(st.live?'green':'purple')+'" style="font-size:11px">'+st.txt+'</span></div>'
+      +'<div class="member-sub">'+safe(pfScopeLabel(f))+'｜'+safe(pfTimeLabel(f))+'</div>'
+      +'<div class="member-meta"><span class="tag purple">收到 '+(f.lead_count||0)+' 筆</span><span class="tag green">願意收訊息 '+(f.consent_count||0)+'</span></div>'
+      +(f.frame_url?'<div style="margin-top:6px"><img src="'+attr(f.frame_url)+'" alt="" onclick="previewVenueMapImg(\''+attr(f.frame_url)+'\')" style="width:48px;height:85px;object-fit:contain;background:#f5f5f5;border-radius:8px;cursor:zoom-in"></div>':'')
+      +'<div class="member-actions">'
+        +'<button class="btn secondary small" onclick="togglePhotoFrameActive(\''+attr(f.id)+'\')">'+(active?'停用':'啟用')+'</button>'
+        +'<button class="btn secondary small" onclick="showPhotoFrameLink(\''+attr(f.id)+'\')">連結／QR</button>'
+        +'<button class="btn secondary small" onclick="openPhotoLeads(\''+attr(f.id)+'\')">名單</button>'
+        +'<button class="btn secondary small" onclick="openPhotoFrameForm(\''+attr(f.id)+'\')">編輯</button>'
+        +'<button class="btn secondary small" onclick="deletePhotoFrameNow(\''+attr(f.id)+'\')">刪除</button>'
+      +'</div></article>';
+  }).join('')+'</div>';
 }
 function photoFrameLink(id){ return location.origin.replace(/\/$/,'')+'/?pf='+encodeURIComponent(id); }
 function showPhotoFrameLink(id){
@@ -3069,22 +3065,18 @@ function renderVenueMapsPanel(){
   const maps=AdminVenueMaps||[];
   const head='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button type="button" class="btn small" onclick="openVenueMapForm(\'\')">＋ 新增常用場地圖</button></div>';
   if(!maps.length){ b.innerHTML=head+'<div class="empty">目前沒有常用場地圖。<br>按「＋ 新增常用場地圖」建立第一張，或在場次設定按「存成常用圖」。</div>'; return; }
-  b.innerHTML=head+'<div class="sub" style="margin-bottom:10px">建好後，到場次設定的「選位/攤位」按「套用」即可整份帶入。</div>'+maps.map(function(m){
+  b.innerHTML=head+'<div class="sub" style="margin-bottom:10px">建好後，到場次設定的「選位/攤位」按「套用」即可整份帶入。</div><div class="member-list">'+maps.map(function(m){
     let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
     const url=m.seat_map_url||'';
-    return '<div class="report-card" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-start">'
-      +(url
-         ? '<img src="'+attr(url)+'" alt="" onclick="previewVenueMapImg(\''+attr(url)+'\')" style="width:96px;height:72px;object-fit:cover;background:#f2f2f2;border-radius:8px;flex:0 0 auto;cursor:zoom-in">'
-         : '<div style="width:96px;height:72px;background:#f2f2f2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto">🗺️</div>')
-      +'<div style="flex:1;min-width:0">'
-        +'<div><b style="font-size:16px">'+safe(m.name)+'</b></div>'
-        +'<div class="sub">攤位 '+seats.length+' 個'+(url?'（點縮圖看大圖）':'')+'</div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
-        +'<button type="button" class="btn secondary small" onclick="openVenueMapForm(\''+attr(m.id)+'\')">編輯</button>'
-        +'<button type="button" class="btn secondary small" onclick="deleteVenueMapFromPanel(\''+attr(m.id)+'\')">刪除</button>'
-        +'</div>'
-      +'</div></div>';
-  }).join('');
+    return '<article class="member-card member-card-lite">'
+      +'<div class="member-title" title="'+attr(m.name)+'">'+safe(m.name)+'</div>'
+      +'<div class="member-meta"><span class="tag purple">攤位 '+seats.length+' 個</span></div>'
+      +(url?'<div style="margin-top:6px"><img src="'+attr(url)+'" alt="" onclick="previewVenueMapImg(\''+attr(url)+'\')" style="width:120px;height:78px;object-fit:cover;background:#f5f5f5;border-radius:8px;cursor:zoom-in"></div>':'<div class="member-small-line">（未附場地圖圖片）</div>')
+      +'<div class="member-actions">'
+        +'<button class="btn secondary small" onclick="openVenueMapForm(\''+attr(m.id)+'\')">編輯</button>'
+        +'<button class="btn secondary small" onclick="deleteVenueMapFromPanel(\''+attr(m.id)+'\')">刪除</button>'
+      +'</div></article>';
+  }).join('')+'</div>';
 }
 function previewVenueMapImg(url){
   if(!url) return;
