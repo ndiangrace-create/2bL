@@ -2194,6 +2194,10 @@ function openSupportFaqCard(id){
     if(f) f.style.display='none';
   });
 
+  // 這個彈窗原本放在「客服」分頁裡，分頁未選中時整個是隱藏的(.page{display:none})，
+  // 會導致從其他分頁（例如行前通知）打開時看不見＝按了沒反應。
+  // 開啟前先移到 body 最上層，就不受分頁隱藏影響，也不必切換分頁。
+  if(modal.parentElement!==document.body){ document.body.appendChild(modal); }
   modal.classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -2201,7 +2205,9 @@ function openSupportFaqCard(id){
 function closeSupportFaqCard(){
   const modal=document.getElementById('supportFaqModal');
   if(modal) modal.classList.remove('open');
-  document.body.style.overflow='';
+  // 若底下還有其他彈窗開著（例如行前通知），維持鎖定捲動，避免背景亂跑
+  const stillOpen=document.querySelector('.modal-overlay.open, .modal-overlay.show');
+  document.body.style.overflow = stillOpen ? 'hidden' : '';
 }
 
 // 舊函式保留相容：原本 onclick 不需重寫，點擊後直接開大卡片
