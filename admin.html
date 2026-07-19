@@ -1043,7 +1043,7 @@
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 搜尋攤友 → 一鍵報到。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">工讀生入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
-    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
+    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
 </section>
 
@@ -2729,9 +2729,208 @@ async function savePaymentProfile(btn){
 }
 async function disablePaymentProfile(id){ if(!confirm('停用後新場次不可選用；舊付款快照不會被改動。確定停用？')) return; try{ await apiPost({action:'disablePaymentProfile',id}); toast('已停用'); await openPaymentSettings(); }catch(e){ toast('停用失敗：'+e.message,6000); } }
 
+let AdminPhotoFrames=[]; let AdminPhotoLeads=[];
+function pfScopeLabel(f){
+  const t=String(f.scope_type||'all');
+  if(t==='session'){ const x=(AdminState.sessions||[]).find(v=>String(v.id)===String(f.scope_session_id)); return '場次：'+(x?x.name:f.scope_session_id||'未指定'); }
+  if(t==='event'){ const x=(AdminState.events||[]).find(v=>String(v.id)===String(f.scope_event_id)); return '活動：'+(x?x.name:f.scope_event_id||'未指定'); }
+  return '全站通用';
+}
+function pfTimeLabel(f){
+  if(f.is_unlimited===true||f.is_unlimited==='true') return '無限期';
+  const fmt=v=>{ if(!v) return '不限'; const d=new Date(v); if(isNaN(d)) return String(v); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}/${z(d.getMonth()+1)}/${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; };
+  return fmt(f.start_at)+' ～ '+fmt(f.end_at);
+}
+function pfIsLive(f){
+  if(f.is_active===false||f.is_active==='false') return false;
+  if(f.is_unlimited===true||f.is_unlimited==='true') return true;
+  const now=Date.now();
+  const st=f.start_at?Date.parse(f.start_at):NaN, en=f.end_at?Date.parse(f.end_at):NaN;
+  if(!isNaN(st)&&now<st) return false;
+  if(!isNaN(en)&&now>en) return false;
+  return true;
+}
+async function openPhotoFrames(){
+  openPanel('活動拍照框','民眾填簡短問卷即可用限定框拍照；名單可再行銷','<div class="loading">載入中…</div>');
+  try{
+    const r=await apiPost({action:'listPhotoFrames'});
+    AdminPhotoFrames=(r&&r.frames)||[];
+    renderPhotoFramesPanel(r&&r.total_leads||0);
+  }catch(e){
+    const b=$('panelBody'); if(b) b.innerHTML='<div class="empty">拍照框載入失敗<div class="sub" style="margin-top:8px;color:#b4413c">原因：'+safe(e&&e.message?e.message:String(e))+'</div><div class="sub" style="margin-top:6px">若顯示「未知動作」或「連線失敗」，代表後端 worker.js 尚未更新到最新版。</div></div>';
+  }
+}
+function renderPhotoFramesPanel(totalLeads){
+  const b=$('panelBody'); if(!b) return;
+  const head='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+    +'<button type="button" class="btn small" onclick="openPhotoFrameForm(\'\')">＋ 新增拍照框</button>'
+    +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\'\')">查看全部名單（'+(totalLeads||0)+'）</button></div>';
+  const list=(AdminPhotoFrames||[]);
+  if(!list.length){ b.innerHTML=head+'<div class="empty">還沒有拍照框。按「＋ 新增拍照框」建立第一張。</div>'; return; }
+  b.innerHTML=head+list.map(function(f){
+    const live=pfIsLive(f);
+    return '<div class="report-card" style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:flex-start">'
+      +'<div><b style="font-size:17px">'+safe(f.name)+'</b> '
+      +'<span class="chip" style="background:'+(live?'#DDEAD1':'#eee')+'">'+(live?'進行中':'未啟用/已結束')+'</span>'
+      +'<div class="sub">'+safe(pfScopeLabel(f))+'｜'+safe(pfTimeLabel(f))+'</div>'
+      +'<div class="sub">收到 '+(f.lead_count||0)+' 筆，其中 '+(f.consent_count||0)+' 筆願意收訊息</div></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      +'<button type="button" class="btn secondary small" onclick="openPhotoLeads(\''+attr(f.id)+'\')">名單</button>'
+      +'<button type="button" class="btn secondary small" onclick="openPhotoFrameForm(\''+attr(f.id)+'\')">編輯</button>'
+      +'<button type="button" class="btn secondary small" onclick="deletePhotoFrameNow(\''+attr(f.id)+'\')">刪除</button>'
+      +'</div></div>'
+      +(f.frame_url?'<div style="margin-top:8px;background:#f5f5f5;border-radius:10px;padding:8px;text-align:center"><img src="'+attr(f.frame_url)+'" alt="拍照框" style="max-height:220px;max-width:100%;border-radius:8px"></div>':'<div class="sub" style="margin-top:6px">（尚未上傳 PNG）</div>')
+      +'</div>';
+  }).join('');
+}
+function pfLocalValue(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return ''; const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; }
+function openPhotoFrameForm(id){
+  const f=(AdminPhotoFrames||[]).find(x=>String(x.id)===String(id))||{};
+  const sessions=(AdminState.sessions||[]), events=(AdminState.events||[]);
+  const scope=String(f.scope_type||'all');
+  const html='<input type="hidden" id="pf_id" value="'+attr(f.id||'')+'">'
+    +'<div class="form-field full"><label>框名稱</label><input id="pf_name" value="'+attr(f.name||'')+'" placeholder="例：幻日祭8月限定框"></div>'
+    +'<div class="form-field full"><label>拍照框 PNG（1080×1920 直式、透明底）</label>'
+      +'<input type="file" accept="image/png,image/*" onchange="uploadPhotoFramePng(this)">'
+      +'<input type="hidden" id="pf_url" value="'+attr(f.frame_url||'')+'">'
+      +'<div id="pf_preview" style="margin-top:8px;background:#f5f5f5;border-radius:10px;padding:8px;text-align:center;'+(f.frame_url?'':'display:none')+'"><img id="pf_previewImg" src="'+attr(f.frame_url||'')+'" style="max-height:220px;max-width:100%;border-radius:8px"></div>'
+      +'<div class="sub">中間留透明給人像；四周放視覺。建議 1MB 以內。</div></div>'
+    +'<div class="form-field full"><label>適用範圍</label><select id="pf_scope" onchange="pfScopeChanged()">'
+      +'<option value="all"'+(scope==='all'?' selected':'')+'>全站通用</option>'
+      +'<option value="event"'+(scope==='event'?' selected':'')+'>指定活動</option>'
+      +'<option value="session"'+(scope==='session'?' selected':'')+'>指定場次</option></select></div>'
+    +'<div class="form-field full" id="pf_eventWrap" style="'+(scope==='event'?'':'display:none')+'"><label>選擇活動</label><select id="pf_eventId">'
+      +'<option value="">— 請選擇 —</option>'+events.map(e=>'<option value="'+attr(e.id)+'"'+(String(f.scope_event_id||'')===String(e.id)?' selected':'')+'>'+safe(e.name)+'</option>').join('')+'</select></div>'
+    +'<div class="form-field full" id="pf_sessionWrap" style="'+(scope==='session'?'':'display:none')+'"><label>選擇場次</label><select id="pf_sessionId">'
+      +'<option value="">— 請選擇 —</option>'+sessions.map(x=>'<option value="'+attr(x.id)+'"'+(String(f.scope_session_id||'')===String(x.id)?' selected':'')+'>'+safe(x.name)+'</option>').join('')+'</select></div>'
+    +'<div class="form-field full"><label><input type="checkbox" id="pf_unlimited" '+((f.is_unlimited===true||f.is_unlimited==='true')?'checked':'')+' onchange="pfUnlimitedChanged()"> 無限期（永遠可用）</label></div>'
+    +'<div id="pf_timeWrap" style="'+((f.is_unlimited===true||f.is_unlimited==='true')?'display:none':'')+'">'
+      +'<div class="form-field"><label>開放開始</label><input type="datetime-local" id="pf_start" value="'+attr(pfLocalValue(f.start_at))+'"></div>'
+      +'<div class="form-field"><label>開放結束</label><input type="datetime-local" id="pf_end" value="'+attr(pfLocalValue(f.end_at))+'"></div></div>'
+    +'<div class="form-field full"><label><input type="checkbox" id="pf_active" '+((f.is_active===false||f.is_active==='false')?'':'checked')+'> 啟用（關掉就不顯示）</label></div>'
+    +'<div style="display:flex;gap:8px;margin-top:14px"><button type="button" class="btn" onclick="savePhotoFrameNow()">儲存</button><button type="button" class="btn secondary" onclick="openPhotoFrames()">取消</button></div>';
+  openPanel(id?'編輯拍照框':'新增拍照框','設定圖片、開放時間與適用範圍',html);
+}
+function pfScopeChanged(){
+  const v=String(($('pf_scope')||{}).value||'all');
+  if($('pf_eventWrap')) $('pf_eventWrap').style.display = v==='event'?'':'none';
+  if($('pf_sessionWrap')) $('pf_sessionWrap').style.display = v==='session'?'':'none';
+}
+function pfUnlimitedChanged(){
+  const on=!!($('pf_unlimited')||{}).checked;
+  if($('pf_timeWrap')) $('pf_timeWrap').style.display = on?'none':'';
+}
+async function uploadPhotoFramePng(input){
+  const f=input&&input.files&&input.files[0];
+  if(!f) return;
+  if(!/^image\//.test(f.type||'')){ toast('請選擇圖片檔'); input.value=''; return; }
+  if(f.size>5*1024*1024){ toast('圖片請小於 5MB'); input.value=''; return; }
+  try{
+    toast('上傳中…');
+    const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('讀取失敗')); r.readAsDataURL(f); });
+    const res=await apiPost({action:'uploadCover', image:dataUrl});
+    if(res&&res.url){
+      if($('pf_url')) $('pf_url').value=res.url;
+      if($('pf_previewImg')) $('pf_previewImg').src=res.url;
+      if($('pf_preview')) $('pf_preview').style.display='';
+      toast('已上傳（原圖保留透明）');
+    }else{ toast('上傳失敗'+(res&&res.error?('：'+res.error):''),6000); }
+  }catch(e){ toast('上傳失敗：'+(e&&e.message?e.message:e),6000); }
+}
+async function savePhotoFrameNow(){
+  const unlimited=!!($('pf_unlimited')||{}).checked;
+  const toIso=v=>{ const s=String(v||'').trim(); if(!s) return ''; const d=new Date(s); return isNaN(d)?'':d.toISOString(); };
+  const body={
+    action:'savePhotoFrame',
+    frameId:String(($('pf_id')||{}).value||''),
+    name:String(($('pf_name')||{}).value||'').trim(),
+    frameUrl:String(($('pf_url')||{}).value||''),
+    scopeType:String(($('pf_scope')||{}).value||'all'),
+    scopeEventId:String(($('pf_eventId')||{}).value||''),
+    scopeSessionId:String(($('pf_sessionId')||{}).value||''),
+    isUnlimited:unlimited,
+    startAt:unlimited?'':toIso(($('pf_start')||{}).value),
+    endAt:unlimited?'':toIso(($('pf_end')||{}).value),
+    isActive:!!($('pf_active')||{}).checked
+  };
+  if(!body.name){ toast('請填框名稱'); return; }
+  if(!body.frameUrl){ toast('請先上傳拍照框 PNG'); return; }
+  try{ await apiPost(body); toast('已儲存'); await openPhotoFrames(); }
+  catch(e){ toast('儲存失敗：'+(e&&e.message?e.message:e),7000); }
+}
+async function deletePhotoFrameNow(id){
+  if(!confirm('確定刪除這張拍照框？已收到的名單不會被刪除。')) return;
+  try{ await apiPost({action:'deletePhotoFrame',frameId:id}); toast('已刪除'); await openPhotoFrames(); }
+  catch(e){ toast('刪除失敗：'+(e&&e.message?e.message:e),7000); }
+}
+let AdminPhotoLeadFilter={frameId:'',consentOnly:false,source:''};
+async function openPhotoLeads(frameId){
+  AdminPhotoLeadFilter.frameId=frameId||'';
+  openPanel('拍照框名單','可篩選、匯出，作為再行銷名單','<div class="loading">載入中…</div>');
+  await reloadPhotoLeads();
+}
+async function reloadPhotoLeads(){
+  try{
+    const r=await apiPost(Object.assign({action:'listPhotoLeads'},{
+      frameId:AdminPhotoLeadFilter.frameId||undefined,
+      consentOnly:AdminPhotoLeadFilter.consentOnly||undefined,
+      source:AdminPhotoLeadFilter.source||undefined
+    }));
+    AdminPhotoLeads=(r&&r.leads)||[];
+    renderPhotoLeadsPanel(r||{});
+  }catch(e){
+    const b=$('panelBody'); if(b) b.innerHTML='<div class="empty">名單載入失敗<div class="sub" style="margin-top:8px;color:#b4413c">原因：'+safe(e&&e.message?e.message:String(e))+'</div></div>';
+  }
+}
+function renderPhotoLeadsPanel(r){
+  const b=$('panelBody'); if(!b) return;
+  const frames=(AdminPhotoFrames||[]);
+  const bySource=r.by_source||{};
+  const srcLine=Object.keys(bySource).map(k=>safe(k)+' '+bySource[k]).join('｜')||'—';
+  const filter='<div class="report-card" style="margin-bottom:12px">'
+    +'<div class="form-field full"><label>依拍照框篩選</label><select onchange="AdminPhotoLeadFilter.frameId=this.value;reloadPhotoLeads()">'
+      +'<option value="">全部</option>'+frames.map(f=>'<option value="'+attr(f.id)+'"'+(String(AdminPhotoLeadFilter.frameId)===String(f.id)?' selected':'')+'>'+safe(f.name)+'</option>').join('')+'</select></div>'
+    +'<div class="form-field full"><label><input type="checkbox" '+(AdminPhotoLeadFilter.consentOnly?'checked':'')+' onchange="AdminPhotoLeadFilter.consentOnly=this.checked;reloadPhotoLeads()"> 只看願意收到活動訊息的人</label></div>'
+    +'<div class="sub">共 '+(r.total||0)+' 筆，其中 '+(r.consent_total||0)+' 筆願意收訊息</div>'
+    +'<div class="sub">來源分布：'+srcLine+'</div>'
+    +'<div style="margin-top:8px"><button type="button" class="btn small" onclick="exportPhotoLeadsCsv()">匯出 CSV</button> <button type="button" class="btn secondary small" onclick="openPhotoFrames()">返回拍照框</button></div></div>';
+  const list=(AdminPhotoLeads||[]);
+  if(!list.length){ b.innerHTML=filter+'<div class="empty">目前沒有符合條件的名單。</div>'; return; }
+  b.innerHTML=filter+list.map(function(l){
+    const fr=frames.find(f=>String(f.id)===String(l.frame_id));
+    const t=String(l.created_at||'').replace('T',' ').slice(0,16);
+    return '<div class="report-card" style="margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+      +'<div><b>'+safe(l.name||'（未填）')+'</b>'+(l.marketing_consent===true||l.marketing_consent==='true'?' <span class="chip" style="background:#DDEAD1">願意收訊息</span>':'')+'</div>'
+      +'<div class="sub">'+safe(t)+'</div></div>'
+      +'<div class="sub">'+safe(l.email||'')+(l.phone?'｜'+safe(l.phone):'')+'</div>'
+      +'<div class="sub">來源：'+safe(l.source||'未填')+'｜第一次參加：'+safe(l.first_time||'未填')+'｜框：'+safe(fr?fr.name:(l.frame_id||'—'))+'</div>'
+      +'</div>';
+  }).join('');
+}
+function exportPhotoLeadsCsv(){
+  const list=(AdminPhotoLeads||[]);
+  if(!list.length){ toast('目前沒有可匯出的名單'); return; }
+  const frames=(AdminPhotoFrames||[]);
+  const head=['姓名','Email','手機','是否第一次','來源','願意收訊息','拍照框','建立時間'];
+  const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=list.map(l=>{
+    const fr=frames.find(f=>String(f.id)===String(l.frame_id));
+    return [l.name,l.email,l.phone,l.first_time,l.source,((l.marketing_consent===true||l.marketing_consent==='true')?'是':'否'),(fr?fr.name:(l.frame_id||'')),String(l.created_at||'').replace('T',' ').slice(0,16)].map(esc).join(',');
+  });
+  const csv='\ufeff'+[head.map(esc).join(',')].concat(rows).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='拍照框名單_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('已匯出 '+list.length+' 筆');
+}
 let AdminVenueMaps=[];
 async function openVenueMaps(){
-  openPanel('常用場地圖','存放並重用場地圖；新增請到「場次設定 → 選位/攤位 → 存成常用圖」','<div class="loading">載入常用場地圖…</div>');
+  openPanel('常用場地圖','可直接新增；場次設定裡按「套用」即可帶入該場','<div class="loading">載入常用場地圖…</div>');
   try{
     const r=await apiPost({action:'listVenueMaps'});
     AdminVenueMaps=(r&&r.maps)||[];
@@ -2741,20 +2940,76 @@ async function openVenueMaps(){
 function renderVenueMapsPanel(){
   const b=$('panelBody'); if(!b) return;
   const maps=AdminVenueMaps||[];
-  if(!maps.length){ b.innerHTML='<div class="empty">目前沒有常用場地圖。<br>到「場次設定 → 選位/攤位 → 存成常用圖」即可新增。</div>'; return; }
-  b.innerHTML='<div class="sub" style="margin-bottom:10px">新增請到「場次設定 → 選位/攤位 → 存成常用圖」；此處可預覽、改名、刪除。</div>'+maps.map(function(m){
+  const head='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button type="button" class="btn small" onclick="openVenueMapForm(\'\')">＋ 新增常用場地圖</button></div>';
+  if(!maps.length){ b.innerHTML=head+'<div class="empty">目前沒有常用場地圖。<br>按「＋ 新增常用場地圖」建立第一張，或在場次設定按「存成常用圖」。</div>'; return; }
+  b.innerHTML=head+'<div class="sub" style="margin-bottom:10px">建好後，到場次設定的「選位/攤位」按「套用」即可整份帶入。</div>'+maps.map(function(m){
     let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
     const url=m.seat_map_url||'';
     return '<div class="report-card" style="margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'
       +'<div><b style="font-size:17px">'+safe(m.name)+'</b><div class="sub">攤位 '+seats.length+' 個</div></div>'
       +'<div style="display:flex;gap:6px">'
-      +'<button type="button" class="btn secondary small" onclick="renameVenueMapFromPanel(\''+attr(m.id)+'\')">改名</button>'
+      +'<button type="button" class="btn secondary small" onclick="openVenueMapForm(\''+attr(m.id)+'\')">編輯</button>'
       +'<button type="button" class="btn secondary small" onclick="deleteVenueMapFromPanel(\''+attr(m.id)+'\')">刪除</button>'
       +'</div></div>'
       +(url?'<div style="margin-top:8px"><img src="'+attr(url)+'" alt="場地圖" style="width:100%;border:1px solid #eee;border-radius:10px;display:block"></div>':'<div class="sub" style="margin-top:6px">（未附場地圖圖片）</div>')
       +'</div>';
   }).join('');
+}
+function openVenueMapForm(id){
+  const m=(AdminVenueMaps||[]).find(x=>String(x.id)===String(id))||{};
+  let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(e){}
+  const html='<input type="hidden" id="vm_id" value="'+attr(m.id||'')+'"><input type="hidden" id="vm_oldName" value="'+attr(m.name||'')+'">'
+    +'<div class="form-field full"><label>場地圖名稱</label><input id="vm_name" value="'+attr(m.name||'')+'" placeholder="例：高雄美麗島 A區"></div>'
+    +'<div class="form-field full"><label>場地圖圖片</label>'
+      +'<input type="file" accept="image/*" onchange="uploadVenueMapImg(this)">'
+      +'<input type="hidden" id="vm_url" value="'+attr(m.seat_map_url||'')+'">'
+      +'<div id="vm_preview" style="margin-top:8px;background:#f5f5f5;border-radius:10px;padding:8px;text-align:center;'+(m.seat_map_url?'':'display:none')+'"><img id="vm_previewImg" src="'+attr(m.seat_map_url||'')+'" style="max-height:220px;max-width:100%;border-radius:8px"></div></div>'
+    +'<div class="form-field full"><label>攤位號碼（範圍快速輸入）</label>'
+      +'<input id="vm_range" placeholder="例：A1-A5,B1-B5,C1-C5,D1-D6">'
+      +'<div class="sub">'+(id?('目前已有 '+seats.length+' 個攤位。留空＝不更動；填了＝以新的取代（分類與排序需重設）。'):'一次打完，系統自動展開成全部號碼。服務台與不可用的位置不要打進去。')+'</div></div>'
+    +'<div style="display:flex;gap:8px;margin-top:14px"><button type="button" class="btn" onclick="saveVenueMapForm()">儲存</button><button type="button" class="btn secondary" onclick="openVenueMaps()">取消</button></div>';
+  openPanel(id?'編輯常用場地圖':'新增常用場地圖','圖片與攤位清單存成一組，之後場次直接套用',html);
+}
+async function uploadVenueMapImg(input){
+  const f=input&&input.files&&input.files[0]; if(!f) return;
+  if(!/^image\//.test(f.type||'')){ toast('請選擇圖片檔'); input.value=''; return; }
+  if(f.size>5*1024*1024){ toast('圖片請小於 5MB'); input.value=''; return; }
+  try{
+    toast('上傳中…');
+    const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('讀取失敗')); r.readAsDataURL(f); });
+    const res=await apiPost({action:'uploadCover', image:dataUrl});
+    if(res&&res.url){
+      if($('vm_url')) $('vm_url').value=res.url;
+      if($('vm_previewImg')) $('vm_previewImg').src=res.url;
+      if($('vm_preview')) $('vm_preview').style.display='';
+      toast('圖片已上傳');
+    }else{ toast('上傳失敗'+(res&&res.error?('：'+res.error):''),6000); }
+  }catch(e){ toast('上傳失敗：'+(e&&e.message?e.message:e),6000); }
+}
+async function saveVenueMapForm(){
+  const id=String(($('vm_id')||{}).value||'');
+  const oldName=String(($('vm_oldName')||{}).value||'');
+  const name=String(($('vm_name')||{}).value||'').trim();
+  const mapUrl=String(($('vm_url')||{}).value||'').trim();
+  const range=String(($('vm_range')||{}).value||'').trim();
+  if(!name){ toast('請填場地圖名稱'); return; }
+  let seats=[];
+  if(range){
+    const codes=expandStallCodes(range);
+    if(!codes.length){ toast('攤位範圍無法解析，請檢查格式'); return; }
+    seats=codes.map(function(c,i){ return {code:c,type:'auto',price:0,active:true,note:'',category:'',order:i+1}; });
+  }else if(id){
+    const m=(AdminVenueMaps||[]).find(x=>String(x.id)===String(id))||{};
+    try{ seats=JSON.parse(m.seats_json||'[]'); }catch(e){ seats=[]; }
+  }
+  if(!mapUrl && !seats.length){ toast('請至少上傳圖片或輸入攤位範圍'); return; }
+  try{
+    await apiPost({action:'saveVenueMap',name:name,mapUrl:mapUrl,seats:seats});
+    if(id && oldName && oldName!==name){ try{ await apiPost({action:'deleteVenueMap',mapId:id}); }catch(e){} }
+    toast('已儲存：'+name);
+    await openVenueMaps();
+  }catch(e){ toast('儲存失敗：'+(e&&e.message?e.message:e),7000); }
 }
 async function renameVenueMapFromPanel(id){
   const m=(AdminVenueMaps||[]).find(x=>String(x.id)===String(id));

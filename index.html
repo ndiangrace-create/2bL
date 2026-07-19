@@ -2462,6 +2462,207 @@ let ST = {
 function $(id){return document.getElementById(id);}
 function toast(msg,dur=2500){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v==='0' || String(v||'').toLowerCase()==='no' || String(v||'').toLowerCase()==='off'); }
+// ══════════════════════════════════════════════════════════════
+// 活動限定拍照框（H5：問卷 → 相機 → 套框 → 下載／分享）
+// ══════════════════════════════════════════════════════════════
+const PHOTO_DONE_KEY='2bl_photo_lead_done';
+let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null};
+async function loadPhotoFrames(){
+  try{ const r=await apiPost({action:'listActivePhotoFrames'}); ST.photoFrames=(r&&r.frames)||[]; }
+  catch(e){ ST.photoFrames=[]; }
+}
+function pfLatest(arr){
+  if(!arr||!arr.length) return null;
+  return arr.slice().sort(function(a,b){
+    const sa=Date.parse(a.startAt||a.createdAt||'')||0, sb=Date.parse(b.startAt||b.createdAt||'')||0;
+    return sb-sa;
+  })[0]||null;
+}
+function resolvePhotoFrame(s){
+  const list=(ST&&ST.photoFrames)||[]; if(!list.length) return null;
+  const sid=String((s&&(s.id||s.sessionId))||'');
+  const eid=String((s&&(s.eventId||s.event_id))||'');
+  return pfLatest(list.filter(f=>f.scopeType==='session'&&String(f.scopeSessionId||'')===sid))
+      || pfLatest(list.filter(f=>f.scopeType==='event'&&String(f.scopeEventId||'')===eid))
+      || pfLatest(list.filter(f=>String(f.scopeType||'all')==='all'))
+      || null;
+}
+function photoFrameBtnHtml(s){
+  const f=resolvePhotoFrame(s); if(!f||!f.frameUrl) return '';
+  const sid=String((s&&(s.id||s.sessionId))||'');
+  return '<button class="act-card-detail" style="background:#DCD7ED" onclick="event.stopPropagation();openPhotoFlow(\''+esc(f.id)+'\',\''+esc(sid)+'\')">📸 領取限定拍照框</button>';
+}
+function isInAppBrowser(){ return /Line\/|FBAN|FBAV|Instagram|MicroMessenger|KAKAOTALK/i.test(navigator.userAgent||''); }
+function ensurePhotoModal(){
+  if(document.getElementById('photoModal')) return;
+  const d=document.createElement('div');
+  d.id='photoModal';
+  d.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(20,20,20,.92);display:none;align-items:center;justify-content:center;padding:12px;overflow:auto';
+  d.innerHTML=
+   '<div style="width:min(520px,96vw);background:#fff;border-radius:18px;padding:16px;max-height:96vh;overflow:auto">'
+   +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+     +'<b id="pfTitle" style="font-size:19px">領取限定拍照框</b>'
+     +'<button onclick="closePhotoFlow()" style="border:0;background:#eee;border-radius:50%;width:38px;height:38px;font-size:20px;cursor:pointer">✕</button></div>'
+   +'<div id="pfSurvey">'
+     +'<div style="font-size:16px;color:#666;margin-bottom:10px">填一次基本資料就能開始拍照（下次免填）。</div>'
+     +'<div style="margin-bottom:10px"><label style="font-size:16px;font-weight:700">姓名或暱稱</label><input id="pf_in_name" style="width:100%;font-size:18px;padding:12px;border:1px solid #ddd;border-radius:10px"></div>'
+     +'<div style="margin-bottom:10px"><label style="font-size:16px;font-weight:700">Email</label><input id="pf_in_email" type="email" inputmode="email" style="width:100%;font-size:18px;padding:12px;border:1px solid #ddd;border-radius:10px"></div>'
+     +'<div style="margin-bottom:10px"><label style="font-size:16px;font-weight:700">手機（選填）</label><input id="pf_in_phone" inputmode="tel" style="width:100%;font-size:18px;padding:12px;border:1px solid #ddd;border-radius:10px"></div>'
+     +'<div style="margin-bottom:10px"><label style="font-size:16px;font-weight:700">是否第一次參加</label><div style="display:flex;gap:14px;font-size:17px;margin-top:6px">'
+       +'<label><input type="radio" name="pf_first" value="是" checked> 是</label><label><input type="radio" name="pf_first" value="否"> 否</label></div></div>'
+     +'<div style="margin-bottom:10px"><label style="font-size:16px;font-weight:700">如何得知活動</label><select id="pf_in_source" style="width:100%;font-size:18px;padding:12px;border:1px solid #ddd;border-radius:10px">'
+       +'<option value="">請選擇</option><option>Facebook</option><option>IG</option><option>Threads</option><option>LINE</option><option>親友</option><option>其他</option></select></div>'
+     +'<div style="margin-bottom:12px;background:#FAEEC7;border-radius:12px;padding:12px"><label style="font-size:16px;font-weight:700">想收到最新活動消息嗎？</label>'
+       +'<div style="display:flex;flex-direction:column;gap:8px;font-size:17px;margin-top:8px">'
+       +'<label><input type="radio" name="pf_consent" value="1" checked> 願意收到活動最新消息</label>'
+       +'<label><input type="radio" name="pf_consent" value="0"> 不用，謝謝</label></div></div>'
+     +'<button id="pf_submitBtn" onclick="submitPhotoSurvey()" style="width:100%;font-size:19px;font-weight:900;padding:15px;border:0;border-radius:14px;background:#DDEAD1;cursor:pointer">送出，開始拍照</button>'
+   +'</div>'
+   +'<div id="pfCam" style="display:none">'
+     +'<div id="pfCamBox" style="position:relative;width:100%;aspect-ratio:9/16;background:#000;border-radius:14px;overflow:hidden">'
+       +'<video id="pfVideo" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video>'
+       +'<img id="pfFrameImg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none">'
+     +'</div>'
+     +'<div id="pfCamMsg" style="display:none;font-size:16px;background:#FAE1DD;border-radius:12px;padding:12px;margin-top:10px"></div>'
+     +'<div id="pfPickWrap" style="display:none;margin-top:10px"><label style="display:block;font-size:17px;font-weight:800;padding:14px;border:2px dashed #bbb;border-radius:14px;text-align:center;cursor:pointer">從相簿選照片套框<input type="file" accept="image/*" style="display:none" onchange="pickPhotoFile(this)"></label></div>'
+     +'<button id="pf_shootBtn" onclick="takePhoto()" style="width:100%;font-size:20px;font-weight:900;padding:16px;border:0;border-radius:14px;background:#DDEAD1;margin-top:12px;cursor:pointer">拍照</button>'
+   +'</div>'
+   +'<div id="pfPreview" style="display:none">'
+     +'<img id="pfShot" alt="成品" style="width:100%;border-radius:14px;display:block">'
+     +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'
+       +'<button onclick="retakePhoto()" style="flex:1;min-width:110px;font-size:18px;font-weight:900;padding:14px;border:0;border-radius:14px;background:#eee;cursor:pointer">重拍</button>'
+       +'<button onclick="downloadPhoto()" style="flex:1;min-width:110px;font-size:18px;font-weight:900;padding:14px;border:0;border-radius:14px;background:#D9E5EE;cursor:pointer">下載</button>'
+       +'<button onclick="sharePhoto()" style="flex:1;min-width:110px;font-size:18px;font-weight:900;padding:14px;border:0;border-radius:14px;background:#DDEAD1;cursor:pointer">分享</button>'
+     +'</div></div>'
+   +'</div>';
+  document.body.appendChild(d);
+}
+function showPhotoSection(k){
+  ['pfSurvey','pfCam','pfPreview'].forEach(function(id){ const el=document.getElementById(id); if(el) el.style.display=(id==='pf'+k.charAt(0).toUpperCase()+k.slice(1))?'':'none'; });
+}
+function openPhotoFlow(frameId, sessionId){
+  const f=((ST&&ST.photoFrames)||[]).find(x=>String(x.id)===String(frameId));
+  if(!f){ toast&&toast('這個拍照框已結束'); return; }
+  PF.frame=f; PF.sessionId=sessionId||''; PF.shotDataUrl=''; PF.pickedImg=null;
+  ensurePhotoModal();
+  const m=document.getElementById('photoModal');
+  if(m.parentElement!==document.body) document.body.appendChild(m);
+  m.style.display='flex';
+  document.body.style.overflow='hidden';
+  const t=document.getElementById('pfTitle'); if(t) t.textContent=f.name||'領取限定拍照框';
+  let done=false; try{ done=localStorage.getItem(PHOTO_DONE_KEY)==='1'; }catch(e){}
+  if(done) startPhotoCamera(); else showPhotoSection('survey');
+}
+function closePhotoFlow(){
+  stopPhotoCamera();
+  const m=document.getElementById('photoModal'); if(m) m.style.display='none';
+  document.body.style.overflow='';
+}
+function stopPhotoCamera(){
+  try{ if(PF.stream){ PF.stream.getTracks().forEach(t=>t.stop()); PF.stream=null; } }catch(e){}
+}
+async function submitPhotoSurvey(){
+  const name=String((document.getElementById('pf_in_name')||{}).value||'').trim();
+  const email=String((document.getElementById('pf_in_email')||{}).value||'').trim();
+  if(!name){ toast&&toast('請填姓名或暱稱'); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast&&toast('Email 格式不正確'); return; }
+  const first=(document.querySelector('input[name="pf_first"]:checked')||{}).value||'';
+  const consent=String((document.querySelector('input[name="pf_consent"]:checked')||{}).value||'0')==='1';
+  const source=String((document.getElementById('pf_in_source')||{}).value||'');
+  const btn=document.getElementById('pf_submitBtn');
+  if(btn){ btn.disabled=true; btn.textContent='送出中…'; }
+  try{
+    await apiPost({action:'submitPhotoLead',name:name,email:email,
+      phone:String((document.getElementById('pf_in_phone')||{}).value||'').trim(),
+      firstTime:first,source:source,consent:consent,
+      frameId:PF.frame?PF.frame.id:'',sessionId:PF.sessionId||''});
+    try{ localStorage.setItem(PHOTO_DONE_KEY,'1'); }catch(e){}
+    startPhotoCamera();
+  }catch(e){ toast&&toast('送出失敗：'+(e&&e.message?e.message:e)); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='送出，開始拍照'; } }
+}
+function showPhotoFallback(msg){
+  const box=document.getElementById('pfCamBox'); if(box) box.style.display='none';
+  const m=document.getElementById('pfCamMsg');
+  if(m){ m.style.display=''; m.innerHTML=esc(msg)+'<br>請改用 Safari 或 Chrome 開啟本頁，或直接從相簿選一張照片套框。'; }
+  const w=document.getElementById('pfPickWrap'); if(w) w.style.display='';
+  const b=document.getElementById('pf_shootBtn'); if(b) b.style.display='none';
+}
+async function startPhotoCamera(){
+  showPhotoSection('cam');
+  const img=document.getElementById('pfFrameImg');
+  if(img && PF.frame) img.src=PF.frame.frameUrl;
+  const box=document.getElementById('pfCamBox'); if(box) box.style.display='';
+  const msg=document.getElementById('pfCamMsg'); if(msg) msg.style.display='none';
+  const pick=document.getElementById('pfPickWrap'); if(pick) pick.style.display='none';
+  const shoot=document.getElementById('pf_shootBtn'); if(shoot) shoot.style.display='';
+  if(isInAppBrowser()){ showPhotoFallback('LINE／IG 內建瀏覽器無法開啟相機。'); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showPhotoFallback('這個瀏覽器不支援相機。'); return; }
+  try{
+    PF.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1080},height:{ideal:1920}},audio:false});
+    const v=document.getElementById('pfVideo');
+    v.srcObject=PF.stream; v.muted=true; v.setAttribute('playsinline','');
+    await v.play().catch(()=>{});
+  }catch(e){ showPhotoFallback('無法開啟相機（可能未允許權限）。'); }
+}
+function pickPhotoFile(input){
+  const f=input&&input.files&&input.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=function(){ const im=new Image(); im.onload=function(){ PF.pickedImg=im; takePhoto(); }; im.src=r.result; };
+  r.readAsDataURL(f);
+}
+function pfDrawCover(ctx,src,sw,sh,W,H){
+  if(!sw||!sh) return;
+  const scale=Math.max(W/sw,H/sh), dw=sw*scale, dh=sh*scale;
+  ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh);
+}
+async function takePhoto(){
+  const W=1080,H=1920;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+  const v=document.getElementById('pfVideo');
+  if(PF.pickedImg){ pfDrawCover(ctx,PF.pickedImg,PF.pickedImg.naturalWidth,PF.pickedImg.naturalHeight,W,H); }
+  else if(v && v.videoWidth){ pfDrawCover(ctx,v,v.videoWidth,v.videoHeight,W,H); }
+  else { toast&&toast('尚未取得影像'); return; }
+  if(PF.frame && PF.frame.frameUrl){
+    await new Promise(function(res){
+      const im=new Image(); im.crossOrigin='anonymous';
+      im.onload=function(){ try{ ctx.drawImage(im,0,0,W,H); }catch(e){} res(); };
+      im.onerror=function(){ res(); };
+      im.src=PF.frame.frameUrl;
+    });
+  }
+  try{ PF.shotDataUrl=c.toDataURL('image/png'); }
+  catch(e){ toast&&toast('合成失敗，請改用相簿照片再試一次'); return; }
+  const shot=document.getElementById('pfShot'); if(shot) shot.src=PF.shotDataUrl;
+  stopPhotoCamera();
+  showPhotoSection('preview');
+}
+function retakePhoto(){ PF.pickedImg=null; PF.shotDataUrl=''; startPhotoCamera(); }
+function photoFileName(){
+  const n=(PF.frame&&PF.frame.name?PF.frame.name:'活動拍照').replace(/[\\/:*?"<>|]/g,'');
+  const d=new Date(); const z=x=>String(x).padStart(2,'0');
+  return n+'_'+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'.png';
+}
+function downloadPhoto(){
+  if(!PF.shotDataUrl){ toast&&toast('尚未拍照'); return; }
+  const a=document.createElement('a'); a.href=PF.shotDataUrl; a.download=photoFileName();
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  toast&&toast('已下載');
+}
+async function sharePhoto(){
+  if(!PF.shotDataUrl){ toast&&toast('尚未拍照'); return; }
+  try{
+    const blob=await (await fetch(PF.shotDataUrl)).blob();
+    const file=new File([blob],photoFileName(),{type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      await navigator.share({files:[file],title:(PF.frame&&PF.frame.name)||'活動拍照'});
+      return;
+    }
+  }catch(e){}
+  downloadPhoto();
+}
 async function api(params){
   params = {...(params||{})};
   if (!params.tenant && !params.tenantId) params.tenant = TENANT_ID;
@@ -2634,6 +2835,7 @@ function renderActCard(s, mode){
     <button class="act-card-fav" onclick="toggleFav('${id}',this)" title="收藏">🤍</button>
     <button class="act-card-share" onclick="shareSessionCard('${id}','${name.replace(/'/g,"\'")}',event)" title="分享">🔗</button>
     <button class="act-card-detail" onclick="openSessionById('${id}')">查看詳情</button>
+    ${(typeof photoFrameBtnHtml==='function'?photoFrameBtnHtml(s):'')}
     <button class="${regBtnCls}" ${regAction}>${regBtnTxt}</button>
   </div>
 </div>`;
@@ -5853,6 +6055,7 @@ if(document.readyState==='loading'){
   // 分享連結：先蓋一層載入畫面，避免使用者看到首頁閃一下才跳到場次
   if(deepLink.hasDeepLink) showDeepLinkLoading();
 
+  try{ await loadPhotoFrames(); }catch(e){}
   await loadHome();
 
   if(deepLink.sessionId){ await openSession(deepLink.sessionId); hideDeepLinkLoading(); return; }
