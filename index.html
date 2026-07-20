@@ -1569,7 +1569,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:16px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0720b</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
+        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-seatfix</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
       <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -5248,7 +5248,7 @@ async function submitReg(ev){
     const body={
       action:'register',sessionId:s.id,email,name,phone,stallCount:ST.stallCount||1,invoiceType,
       invoiceCarrier:($('f_invoiceCarrier')?.value||'').trim(),taxId:($('f_taxId')?.value||'').trim(),invoiceTitle:(($('f_invoiceTitle')?.value||'')||($('f_company')?.value||'')).trim(),invoiceEmail:(($('f_invoiceEmail')?.value||'').trim()||($('f_personalInvoiceEmail')?.value||'').trim()||email),selectedDates,
-      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:($('f_fb')?.value||M.fb||M.fb_url||'').trim(),ig:($('f_ig')?.value||M.ig||M.ig_url||'').trim(),remark:(($('f_note')?.value||'')||($('f_remark')?.value||'')).trim(),stallNumber:'',seatChoiceIntent:'auto',participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
+      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:($('f_fb')?.value||M.fb||M.fb_url||'').trim(),ig:($('f_ig')?.value||M.ig||M.ig_url||'').trim(),remark:(($('f_note')?.value||'')||($('f_remark')?.value||'')).trim(),stallNumber:'',seatChoiceIntent:(ST.seatChoiceIntent==='paid'?'paid':'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
       // ── 合約同意（後端必須收到這兩個欄位才建立報名）──
       agreementViewed:   ST._agreementViewed   !== false,
       agreementAccepted: ST._agreementAccepted !== false,
@@ -5403,7 +5403,17 @@ function sameBundleRegs(reg){
 }
 function bundleUnpaidRegs(reg){ return sameBundleRegs(reg).filter(r=>canPayReg(r)); }
 function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus) && !(String(reg.seatChoiceIntent||'')==='paid' && String(reg.seatChoiceStatus||'')!=='reserved'); }
-function canRefundReg(reg){ return reg && !isCancelledReg(reg) && isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費' && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
+function isRefundingReg(reg){
+  return !!reg && ['申請退費','退費中','refund_pending'].includes(String(reg.transferStatus||''));
+}
+function canRefundReg(reg){
+  if(!reg || isCancelledReg(reg)) return false;
+  if(!isPaidText(reg.payStatus) || String(reg.payStatus||'')==='免費') return false;
+  // 原本漏掉「退費中」：按鈕會一直在，再按卻靜默無效，使用者看起來就是卡住
+  if(isRefundingReg(reg)) return false;
+  if(['已退費','refunded'].includes(String(reg.transferStatus||''))) return false;
+  return true;
+}
 function canDirectCancelReg(reg){
   // 只要「還沒真正繳費」且尚未結案，就一定要留一條取消的路，
   // 否則狀態一旦變成清單外的值（例如退款後回到「已報名」）就會卡死、名額也放不回去。
@@ -5420,8 +5430,9 @@ function canSelectStallReg(reg){
   if(!reg || isCancelledReg(reg)) return false;
   if(String(reg.status||'')!=='已錄取') return false;
   if(!(reg.seatPricingEnabled===true || reg.seatPricingEnabled==='true')) return false;
-  // 已繳費的人本來被擋在選位之外，導致「繳完錢反而不能選位」。
-  // 真正該擋的只有「已經有攤位號碼」，那個在 openStallPickerForReg 另外處理。
+  // 正式流程：報名時先勾選加價選位 → 錄取後、進入付款流程前完成選位。
+  if(String(reg.seatChoiceIntent||'auto')!=='paid') return false;
+  if(isPaidText(reg.payStatus) || isPendingPayText(reg.payStatus) || String(reg.payStatus||'')==='免費') return false;
   if(reg.stallNumber) return false;
   if(['申請退費','退費中','已退費'].includes(String(reg.transferStatus||''))) return false;
   if(String(reg.seatChoiceStatus||'')==='released') return false;
@@ -5432,7 +5443,8 @@ function canSelectStallReg(reg){
 function stallSelectionHtml(reg){
   if(isCancelledReg(reg) || String(reg.status||'')!=='已錄取' || !(reg.seatPricingEnabled===true || reg.seatPricingEnabled==='true')) return '';
   const deadline = reg.seatHoldExpiresAt || reg.seatSelectionDeadline || '';
-  const deadlineText = deadline ? new Date(deadline).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '錄取後 24 小時內';
+  const holdHours=Math.max(1,Number(reg.seatHoldHours||24)||24);
+  const deadlineText = deadline ? new Date(deadline).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : `選位完成後 ${holdHours} 小時內`;
   if(reg.stallNumber && String(reg.seatChoiceType||'')==='paid'){
     return `<div style="background:var(--c-green);color:#111;border:2px solid #9fb59c;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:900;line-height:1.6">✅ 已保留加價位置：${escHtml(reg.stallNumber)}<br><small>請於 ${escHtml(deadlineText)} 前完成付款回報，逾期釋出且同場不可再加購。</small></div>`;
   }
@@ -5440,7 +5452,7 @@ function stallSelectionHtml(reg){
     return `<div style="background:var(--c-pink);color:#6b2b2b;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:900;line-height:1.6">加價選位期限已過，系統將依付款確認順序安排位置。</div>`;
   }
   if(canSelectStallReg(reg)){
-    return `<div style="background:var(--c-blue);border-radius:14px;padding:10px 12px;margin-top:10px;line-height:1.6"><div style="font-size:16px;font-weight:900;color:#333">本場可加價選位，請於 ${escHtml(deadlineText)} 前完成選位與付款。</div><button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:11px;margin-top:8px;font-size:17px;font-weight:950">選擇加價位置</button></div>`;
+    return `<div style="background:var(--c-blue);border-radius:14px;padding:10px 12px;margin-top:10px;line-height:1.6"><div style="font-size:16px;font-weight:900;color:#333">本場可加價選位。選位後請於 ${escHtml(deadlineText)} 完成付款。</div><button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:11px;margin-top:8px;font-size:17px;font-weight:950">前往選位</button></div>`;
   }
   return `<div style="background:#fff;border:1px solid #eee;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:800;color:#555;line-height:1.6">不加價選位將依付款確認順序安排位置。</div>`;
 }
@@ -5706,7 +5718,11 @@ function renderMyRegs(regs){
     const totalAll=legs.reduce((s,x)=>s+Number(x.total||0),0);
     const canPay=legs.some(x=>canPayReg(x));
     const canCancel=canDirectCancelReg(r), canRefund=canRefundReg(r), canPreNotice=legs.some(x=>canViewPreNoticeReg(x));
-    const statusMsg = isCancelledReg(r)?`<div class="m-record-alert muted">已取消，報名紀錄保留</div>`:(isPendingPayText(r.payStatus)?`<div class="m-record-alert warn">已回報，等待主辦確認</div>`:'');
+    const statusMsg = isCancelledReg(r)
+      ? `<div class="m-record-alert muted">已取消，報名紀錄保留</div>`
+      : (isRefundingReg(r)
+          ? `<div class="m-record-alert warn">退費處理中，等待主辦確認退款${legs.length>1?'（組合套組整組一起退）':''}。名額已釋出，無需再操作。</div>`
+          : (isPendingPayText(r.payStatus)?`<div class="m-record-alert warn">已回報，等待主辦確認</div>`:''));
 
     let actions='';
     if(canPay){
@@ -5722,7 +5738,7 @@ function renderMyRegs(regs){
         : `<button class="m-action-btn" onclick="openPreEventNotice('${r.id}')" style="background:var(--g);color:#fff;border:none">查看行前通知</button>`;
     }
     if(canCancel) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,false)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">取消報名</button>`;
-    if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:#fff;color:#777;border:1.5px solid #ddd">取消／退費說明</button>`;
+    if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:#fff;color:#777;border:1.5px solid #ddd">${legs.length>1?'取消／退費說明（整組）':'取消／退費說明'}</button>`;
 
     const bodyBlock = u.bundle ? bundleLegsHtml(legs, totalAll) : mRecordFixedBlockHtml(r);
     const seatBlock = u.bundle ? legs.map(x=>stallSelectionHtml(x)).join('') : stallSelectionHtml(r);
