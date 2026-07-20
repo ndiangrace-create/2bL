@@ -1569,7 +1569,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:16px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
+        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0720b</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
       <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -1739,13 +1739,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">取消</button>
     </div>
     <div id="paySuccessArea" style="display:none">
-      <div style="font-size:22px;font-weight:900;color:#b45309;margin-bottom:4px">⚠️ 付款回報已送出，尚未完成付款確認</div>
-      <div style="font-size:17px;color:var(--dk);font-weight:900;margin-bottom:12px;line-height:1.55">請不要直接關閉此畫面。請先複製下方付款卡片，並連同付款截圖一起傳至官方 LINE。主辦確認入帳後，狀態才會更新為「已繳費」。</div>
+      <div style="font-size:22px;font-weight:900;color:#b45309;margin-bottom:4px">⚠️ 還差最後一步！請把付款資料傳給主辦</div>
+      <div style="font-size:17px;color:var(--dk);font-weight:900;margin-bottom:12px;line-height:1.7">系統已記錄您的付款回報（狀態：<b>待確認</b>），但<b>主辦還沒收到您的付款證明</b>。<br>請完成以下兩步，否則無法完成繳費：<br>① 複製下方付款卡片<br>② 傳到官方 LINE，並附上付款截圖<br>主辦確認入帳後，狀態才會變成「已繳費」。</div>
       <pre id="paymentCopyCard" onclick="copyPaymentCard()" style="white-space:pre-wrap;background:#fff;border:1.5px solid #d0e8d8;border-radius:14px;padding:14px;font-size:17px;line-height:1.55;color:#1a1a18;font-family:inherit;cursor:pointer;margin:0 0 10px"></pre>
-      <button type="button" class="payment-copy-btn" onclick="copyPaymentCard()">複製付款卡片內容</button>
+      <button type="button" class="payment-copy-btn" onclick="copyPaymentCard()">① 複製付款卡片內容</button>
       <div style="font-size:16px;color:var(--md);font-weight:900;margin-bottom:12px;line-height:1.55">請複製付款卡片內容，並連同付款截圖一起傳至官方 LINE。</div>
-      <button type="button" onclick="openLine()" style="width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">前往 LINE 客服</button>
-      <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">我已傳 LINE，關閉</button>
+      <button type="button" onclick="openLine()" style="width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">② 前往官方 LINE 傳送</button>
+      <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">我已經傳到 LINE 了，關閉</button>
     </div>
   </div>
 </div>
@@ -2414,7 +2414,21 @@ function closeSharePanel(){ const d=$('sharePanel'); if(d) d.remove(); }
 
 function shareFrontToLine(title, url, copyMsg){
   const cleanTitle = (title || '兔彼樂活動').trim();
-  const lineUrl = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(cleanTitle);
+  const text = cleanTitle + '\n' + url;
+  // 先用手機內建分享（可直接選 LINE、IG、FB，不需要登入任何網頁）
+  try{
+    if(navigator.share){
+      navigator.share({title:cleanTitle, text:cleanTitle, url:url})
+        .then(function(){ toast('已開啟分享'); })
+        .catch(function(){ openLineMsgShare(text, url, copyMsg); });
+      return;
+    }
+  }catch(e){}
+  openLineMsgShare(text, url, copyMsg);
+}
+// 直接喚起 LINE App 的分享（line.me/R/msg/text），避免被導到 access.line.me 要求登入
+function openLineMsgShare(text, url, copyMsg){
+  const lineUrl = 'https://line.me/R/msg/text/?' + encodeURIComponent(text);
   const opened = window.open(lineUrl, '_blank', 'noopener,noreferrer');
   if(opened){
     try{ opened.opener = null; }catch(e){}
@@ -3671,6 +3685,22 @@ function renderAllSessions(){
 }
 
 // ── 會員資料查找步驟（報名前先帶入會員資料）──
+// 已報過同名場次時，在報名表最上方顯示明顯提醒（不阻擋，但一定看得到）
+function showSameNameRegWarning(reg){
+  try{
+    const dynEl=$('dynForm'); if(!dynEl) return;
+    if(document.getElementById('sameNameRegWarn')) return;
+    const d=document.createElement('div');
+    d.id='sameNameRegWarn';
+    d.style.cssText='background:#FAEEC7;border:2px solid #e0c56a;border-radius:14px;padding:14px;margin-bottom:14px;font-size:16px;line-height:1.7;color:#6b4e00';
+    d.innerHTML='⚠️ <b>您已經報名過「'+esc(String(reg.sessionName||reg.sesName||''))+'」</b><br>'
+      +'報名編號：'+esc(String(reg.id||''))+'　狀態：'+esc(String(reg.status||''))
+      +'<br>若只是要查看或繳費，請到「我的紀錄」，<b>不需要再報一次</b>。'
+      +'<div style="margin-top:10px"><button type="button" onclick="goMemberPage();closeRegFormModal({force:true})" style="font-size:16px;font-weight:800;padding:10px 14px;border:0;border-radius:12px;background:#DDEAD1;cursor:pointer">前往我的紀錄</button></div>';
+    dynEl.prepend(d);
+    try{ d.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+  }catch(e){ console.warn('[showSameNameRegWarning]',e); }
+}
 function showEmailStep(s){
   const dynEl=$('dynForm');
   const submitBtn=$('submitBtn');
@@ -4643,10 +4673,18 @@ async function openSession(sessionId){
     if(!modal || !modal.classList.contains('show')) openRegFormModal();
     if(ST.member && ST.memberEmail){
       try{
-        const myRegs=await api({action:'getMyRegs',email:ST.memberEmail,_t:Date.now()});
-        const dup=Array.isArray(myRegs)&&myRegs.find(rg=>rg.sessionId===s.id&&rg.status!=='不錄取'&&rg.status!=='已取消');
-        if(dup) showAlreadyRegistered(s,dup);
-        else renderDynFormFull(s, false);
+        const _ph=String((ST.member&&ST.member.phone)||memberSafePhone()||'').trim();
+        const myRegs=await api({action:'getMyRegs',email:ST.memberEmail,phone:_ph,_t:Date.now()});
+        const list=Array.isArray(myRegs)?myRegs:[];
+        ST.regs=list;
+        const alive=rg=>String(rg.status||'')!=='不錄取'&&String(rg.status||'')!=='已取消'&&String(rg.transferStatus||'')!=='已退費';
+        const dup=list.find(rg=>String(rg.sessionId)===String(s.id)&&alive(rg));
+        if(dup){ showAlreadyRegistered(s,dup); }
+        else {
+          const sameName=list.find(rg=>alive(rg)&&String(rg.sessionName||rg.sesName||'').trim()===String(s.name||'').trim());
+          renderDynFormFull(s, false);
+          if(sameName) showSameNameRegWarning(sameName);
+        }
       }catch(e){
         renderDynFormFull(s, false);
       }
@@ -5132,6 +5170,23 @@ async function submitReg(ev){
       agreementVersion: ST._agreementData?.version || '',
     };
     if(ST.bundleAddon){ body.action='registerBundle'; body.bundleId=ST.bundleAddon; }
+    // 送出前最後防線：同一場次已有有效報名就擋下，避免卡住兩個名額
+    try{
+      const _ph2=String(phone||(ST.member&&ST.member.phone)||memberSafePhone()||'').trim();
+      if(_ph2){
+        const nowRegs=await api({action:'getMyRegs',email,phone:_ph2,_t:Date.now()});
+        if(Array.isArray(nowRegs)){
+          const exist=nowRegs.find(rg=>String(rg.sessionId)===String(s.id)
+            &&String(rg.status||'')!=='不錄取'&&String(rg.status||'')!=='已取消'&&String(rg.transferStatus||'')!=='已退費');
+          if(exist){
+            showFormError('您已經報名過這個場次（報名編號 '+String(exist.id||'')+'），請到「我的紀錄」查看或繳費，不需要重複報名。');
+            toast('您已報名過此場次',6000);
+            restoreBtn();
+            return false;
+          }
+        }
+      }
+    }catch(_dupErr){ console.warn('[dup precheck skipped]', _dupErr); }
     const res=await apiPost(body);
     if(!res){ toast('❌ 後端沒有回傳資料',8000); showFormError('後端沒有回傳資料，請稍後到我的紀錄確認是否已建立報名。'); restoreBtn(); return false; }
     if(res.error){ toast('❌ '+res.error, 8000); showFormError(res.error); restoreBtn(); return false; }
