@@ -1,3 +1,4 @@
+<!-- FULL_FLOW_FIX_20260721：會員查詢、補款選位、整組取消退款、iPhone 拍照儲存閉環修復 -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -1569,7 +1570,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:16px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-seatfix</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
+        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-fullfix</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
       <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -2790,26 +2791,29 @@ function isIOSDevice(){
   const ua=navigator.userAgent||'';
   return /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
 }
-function downloadPhoto(){
+async function downloadPhoto(){
   if(!PF.shotDataUrl){ toast&&toast('尚未拍照'); return; }
-  // iPhone / Safari 不支援用 a[download] 直接存圖，會變成沒反應。
-  // 改用「開新分頁顯示圖片 → 長按儲存」，並優先嘗試系統分享（可直接存到相簿）。
   if(isIOSDevice()){
-    (async function(){
-      try{
-        const blob=await (await fetch(PF.shotDataUrl)).blob();
-        const file=new File([blob],photoFileName(),{type:'image/png'});
-        if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
-          await navigator.share({files:[file],title:(PF.frame&&PF.frame.name)||'活動拍照'});
-          return;
-        }
-        const url=URL.createObjectURL(blob);
-        const w=window.open(url,'_blank');
-        if(!w){ toast&&toast('請允許開啟新分頁，或改按「分享」儲存'); }
-        else { toast&&toast('請長按圖片，選「加入照片」即可存檔',7000); }
-        setTimeout(()=>URL.revokeObjectURL(url),60000);
-      }catch(e){ toast&&toast('請改按「分享」儲存照片'); }
-    })();
+    // iOS Safari 不支援 a[download]；「下載」與「分享」都走系統分享面板，使用者可選「儲存到照片」。
+    try{
+      const blob=await (await fetch(PF.shotDataUrl)).blob();
+      const file=new File([blob],photoFileName(),{type:'image/png'});
+      if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+        await navigator.share({files:[file],title:(PF.frame&&PF.frame.name)||'活動拍照'});
+        toast&&toast('請在分享面板選擇「儲存到照片」',5000);
+        return;
+      }
+    }catch(e){
+      if(e && e.name==='AbortError') return;
+    }
+    // 無檔案分享能力時，先同步開空白頁，避免 Safari 把非同步 window.open 當彈窗擋掉。
+    const w=window.open('','_blank');
+    if(w){
+      const safeSrc=String(PF.shotDataUrl||'').replace(/"/g,'&quot;');
+      w.document.write('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>儲存照片</title><body style="margin:0;background:#111;color:#fff;text-align:center;font-family:sans-serif"><p style="padding:12px">請長按圖片，選擇「加入照片」</p><img src="'+safeSrc+'" style="max-width:100%;height:auto"></body>');
+      w.document.close();
+      toast&&toast('請長按圖片，選「加入照片」即可存檔',7000);
+    }else toast&&toast('請允許開啟新分頁，或改按「分享」儲存',7000);
     return;
   }
   const a=document.createElement('a'); a.href=PF.shotDataUrl; a.download=photoFileName();
@@ -2821,12 +2825,12 @@ async function sharePhoto(){
   try{
     const blob=await (await fetch(PF.shotDataUrl)).blob();
     const file=new File([blob],photoFileName(),{type:'image/png'});
-    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
       await navigator.share({files:[file],title:(PF.frame&&PF.frame.name)||'活動拍照'});
       return;
     }
-  }catch(e){}
-  downloadPhoto();
+  }catch(e){ if(e && e.name==='AbortError') return; }
+  await downloadPhoto();
 }
 async function api(params){
   params = {...(params||{})};
@@ -3358,6 +3362,8 @@ async function safeLoadMemberPage(email, opts={}){
   memberShowArea('regs');
   fillMemberCard(ST.member && (ST.member.email||ST.memberEmail) ? ST.member : {email});
 
+  // 會員資料與報名紀錄並行讀取，避免頁面切回「我的紀錄」時再次串行等待。
+  const regsPromise=safeGetMyRegs(email,lookupPhone);
   try{
     const member=await api({action:'getMember',email,phone:lookupPhone,_t:Date.now()});
     if(member && !member.error){
@@ -3392,7 +3398,7 @@ async function safeLoadMemberPage(email, opts={}){
   }
 
   // 手機為空的情況由 safeGetMyRegs 統一處理（同一提示只留一份）。
-  const list=await safeGetMyRegs(email, lookupPhone);
+  const list=await regsPromise;
   if(opts.forceRegs) switchMemberMode('regs');
   return list;
 }
@@ -3413,8 +3419,12 @@ async function memberEmailPhoneLogin(){
   if(!phone){ if(err){err.style.display='block';err.textContent='請填寫手機號碼';} return; }
   if(btn){btn.disabled=true;btn.textContent='查詢中…';}
   try{
-    const member=await api({action:'getMember',email,phone,_t:Date.now()});
-    const regs=await api({action:'getMyRegs',email,phone,_t:Date.now()});
+    // 會員與報名紀錄並行讀取，避免兩次 20 秒逾時串在一起；新會員無舊紀錄時回空陣列，不再視為錯誤。
+    const [member, regs]=await Promise.all([
+      api({action:'getMember',email,phone,_t:Date.now()}),
+      api({action:'getMyRegs',email,phone,_t:Date.now()})
+    ]);
+    if(member && member.error){ if(err){err.style.display='block';err.textContent=member.error;} return; }
     if(regs && regs.error){ if(err){err.style.display='block';err.textContent=regs.error;} return; }
     ST.memberEmail=email; ST.memberToken=''; memberSaveEmail(email); memberSavePhone(phone);
     ST.member=(member && !member.error && member) ? {...member,email:member.email||email,phone:member.phone||phone} : {email,phone};
@@ -5351,7 +5361,7 @@ function memberLogout(){
 
 function isPaidText(v){ const s=String(v||'').trim(); return ['已繳費','已付款','付款完成','付款成功','paid','confirmed_paid','payment_confirmed'].includes(s) || s.indexOf('已繳費')>=0 || s.indexOf('已付款')>=0 || s==='免費'; }
 function isPendingPayText(v){ const s=String(v||'').trim(); return ['待確認','付款待確認','已回報'].includes(s); }
-function isCancelledReg(reg){ return String(reg?.status||'').trim()==='已取消'; }
+function isCancelledReg(reg){ const st=String(reg?.status||reg?.reviewStatus||'').trim(); const ps=String(reg?.payStatus||'').trim(); return st==='已取消'||ps==='已取消'; }
 // 組合套組（bundle_group_id 相同）為綁定優惠：必須「一起繳費」，不可單獨繳其中一場。
 // 否則等於用組合價只買單場（與退費同進退規則一致）。
 // 組合卡標題：取各場共同的前綴（例如「幻日祭8月美島 特別場」「幻日祭8月高火北」→「幻日祭8月」）
@@ -5402,23 +5412,37 @@ function sameBundleRegs(reg){
   return (ST.regs||[]).filter(r=>bundleGroupOf(r)===g);
 }
 function bundleUnpaidRegs(reg){ return sameBundleRegs(reg).filter(r=>canPayReg(r)); }
-function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus) && !(String(reg.seatChoiceIntent||'')==='paid' && String(reg.seatChoiceStatus||'')!=='reserved'); }
+function regOutstandingAmount(reg){
+  if(!reg) return 0;
+  const total=Number(reg.total||reg.totalAmount||reg.amount||0)||0;
+  const paid=Number(reg.paid||reg.paidAmount||0)||0;
+  return Number.isFinite(Number(reg.due)) ? Math.max(0,Number(reg.due)) : Math.max(0,total-paid);
+}
+function canPayReg(reg){
+  if(!reg || isCancelledReg(reg) || String(reg.status||'')!=='已錄取') return false;
+  if(isPendingPayText(reg.payStatus)) return false;
+  if(['申請退費','退費中','已退費','refund_pending','refunded'].includes(String(reg.transferStatus||''))) return false;
+  const due=regOutstandingAmount(reg);
+  if(due<=0) return false;
+  if(String(reg.seatChoiceIntent||'')==='paid' && !['reserved','locked'].includes(String(reg.seatChoiceStatus||''))) return false;
+  return true;
+}
 function isRefundingReg(reg){
   return !!reg && ['申請退費','退費中','refund_pending'].includes(String(reg.transferStatus||''));
 }
 function canRefundReg(reg){
   if(!reg || isCancelledReg(reg)) return false;
-  if(!isPaidText(reg.payStatus) || String(reg.payStatus||'')==='免費') return false;
-  // 原本漏掉「退費中」：按鈕會一直在，再按卻靜默無效，使用者看起來就是卡住
+  const paidMoney=Number(reg.paid||0)>0 || (isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費');
+  if(!paidMoney) return false;
   if(isRefundingReg(reg)) return false;
   if(['已退費','refunded'].includes(String(reg.transferStatus||''))) return false;
   return true;
 }
 function canDirectCancelReg(reg){
-  // 只要「還沒真正繳費」且尚未結案，就一定要留一條取消的路，
-  // 否則狀態一旦變成清單外的值（例如退款後回到「已報名」）就會卡死、名額也放不回去。
+  // 未曾實收才可直接取消；只要已有實收，就必須走退款流程，避免「補選位後待補款」誤出現取消按鈕。
   if(!reg || isCancelledReg(reg)) return false;
-  if(isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費') return false;
+  const paidMoney=Number(reg.paid||0)>0 || (isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費');
+  if(paidMoney) return false;
   const st=String(reg.status||'');
   if(['不錄取','已取消','已退費'].includes(st)) return false;
   const ts=String(reg.transferStatus||'');
@@ -5430,37 +5454,47 @@ function canSelectStallReg(reg){
   if(!reg || isCancelledReg(reg)) return false;
   if(String(reg.status||'')!=='已錄取') return false;
   if(!(reg.seatPricingEnabled===true || reg.seatPricingEnabled==='true')) return false;
-  // 正式流程：報名時先勾選加價選位 → 錄取後、進入付款流程前完成選位。
   if(String(reg.seatChoiceIntent||'auto')!=='paid') return false;
-  if(isPaidText(reg.payStatus) || isPendingPayText(reg.payStatus) || String(reg.payStatus||'')==='免費') return false;
+  // 付款待確認時禁止變更；已繳費但尚未選位者可選，選位後只補繳加價差額。
+  if(isPendingPayText(reg.payStatus) || String(reg.payStatus||'')==='免費') return false;
   if(reg.stallNumber) return false;
   if(['申請退費','退費中','已退費'].includes(String(reg.transferStatus||''))) return false;
   if(String(reg.seatChoiceStatus||'')==='released') return false;
   if(reg.seatSelectionDeadline && isExpiredIso(reg.seatSelectionDeadline)) return false;
   return true;
 }
-
 function stallSelectionHtml(reg){
   if(isCancelledReg(reg) || String(reg.status||'')!=='已錄取' || !(reg.seatPricingEnabled===true || reg.seatPricingEnabled==='true')) return '';
   const deadline = reg.seatHoldExpiresAt || reg.seatSelectionDeadline || '';
   const holdHours=Math.max(1,Number(reg.seatHoldHours||24)||24);
   const deadlineText = deadline ? new Date(deadline).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : `選位完成後 ${holdHours} 小時內`;
+  const paid=Number(reg.paid||0)||0;
+  const due=Number.isFinite(Number(reg.due))?Math.max(0,Number(reg.due)):Math.max(0,(Number(reg.total||0)||0)-paid);
   if(reg.stallNumber && String(reg.seatChoiceType||'')==='paid'){
-    return `<div style="background:var(--c-green);color:#111;border:2px solid #9fb59c;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:900;line-height:1.6">✅ 已保留加價位置：${escHtml(reg.stallNumber)}<br><small>請於 ${escHtml(deadlineText)} 前完成付款回報，逾期釋出且同場不可再加購。</small></div>`;
+    const locked=String(reg.seatChoiceStatus||'')==='locked';
+    const line=locked ? '付款已完成，位置已正式鎖定。' : (paid>0 ? `請於 ${escHtml(deadlineText)} 前補繳加價差額 NT$ ${due.toLocaleString()}。` : `請於 ${escHtml(deadlineText)} 前完成付款回報。`);
+    return `<div style="background:var(--c-green);color:#111;border:2px solid #9fb59c;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:900;line-height:1.6">✅ 已選加價位置：${escHtml(reg.stallNumber)}<br><small>${line}</small></div>`;
   }
   if(String(reg.seatChoiceStatus||'')==='released' || (reg.seatSelectionDeadline && isExpiredIso(reg.seatSelectionDeadline))){
     return `<div style="background:var(--c-pink);color:#6b2b2b;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:900;line-height:1.6">加價選位期限已過，系統將依付款確認順序安排位置。</div>`;
   }
   if(canSelectStallReg(reg)){
-    return `<div style="background:var(--c-blue);border-radius:14px;padding:10px 12px;margin-top:10px;line-height:1.6"><div style="font-size:16px;font-weight:900;color:#333">本場可加價選位。選位後請於 ${escHtml(deadlineText)} 完成付款。</div><button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:11px;margin-top:8px;font-size:17px;font-weight:950">前往選位</button></div>`;
+    const lead=paid>0 ? '您已完成原費用付款，可再選加價位置；選位後只需補繳差額。' : `本場可加價選位。選位後請於 ${escHtml(deadlineText)} 完成付款。`;
+    return `<div style="background:var(--c-blue);border-radius:14px;padding:10px 12px;margin-top:10px;line-height:1.6"><div style="font-size:16px;font-weight:900;color:#333">${lead}</div><button onclick="event.stopPropagation();openStallPickerForReg('${reg.id}')" style="width:100%;background:var(--c-green);border:2px solid #9fb59c;color:#111;border-radius:14px;padding:11px;margin-top:8px;font-size:17px;font-weight:950">前往選位</button></div>`;
   }
   return `<div style="background:#fff;border:1px solid #eee;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:800;color:#555;line-height:1.6">不加價選位將依付款確認順序安排位置。</div>`;
 }
 function payBadge(reg){
   if(isCancelledReg(reg)) return {t:'已取消',bg:'#eeeeee',c:'#777777'};
+  const ts=String(reg.transferStatus||'');
+  if(['已退費','refunded'].includes(ts)) return {t:'已退費',bg:'#eeeeee',c:'#777777'};
+  if(['申請退費','退費中','refund_pending'].includes(ts)) return {t:'退費中',bg:'#fff0f0',c:'#c0392b'};
   const ps=String(reg.payStatus||'未繳費');
-  if(ps==='免費') return {t:'免費',bg:'#e8f7ee',c:'#9fb59c'};
-  if(isPaidText(ps)) return {t:'已繳費',bg:'#e8f7ee',c:'#9fb59c'};
+  const total=Number(reg.total||0)||0, paid=Number(reg.paid||0)||0;
+  const due=Number.isFinite(Number(reg.due))?Math.max(0,Number(reg.due)):Math.max(0,total-paid);
+  if(ps==='免費') return {t:'免費',bg:'#e8f7ee',c:'#2a6a10'};
+  if(paid>0 && due>0) return {t:'待補款',bg:'#fff8ed',c:'#b45309'};
+  if(isPaidText(ps) && due<=0) return {t:'已繳費',bg:'#e8f7ee',c:'#2a6a10'};
   if(isPendingPayText(ps)) return {t:'待確認',bg:'#fff8ed',c:'#b45309'};
   return {t:'未繳費',bg:'#fdecea',c:'#c0392b'};
 }
@@ -5670,6 +5704,12 @@ function mReviewPill(r){
   if(isCancelledReg(r)) return {text:'已取消', icon:'✕', bg:'#f3f4f6', color:'#777', border:'#e5e7eb', note:'此筆報名已取消'};
   const st=String(r.status||r.reviewStatus||'待審核').trim();
   const ps=String(r.payStatus||'').trim();
+  const ts=String(r.transferStatus||'').trim();
+  if(['已退費','refunded'].includes(ts) || ['已退費','已退款'].includes(ps)) return {text:'已退費',icon:'✓',bg:'#f3f4f6',color:'#777',border:'#e5e7eb',note:'本筆退費已完成'};
+  if(['申請退費','退費中','refund_pending'].includes(ts)) return {text:'退費中',icon:'⏱',bg:'#fdecea',color:'#c0392b',border:'#f3b5b5',note:'主辦正在處理退費'};
+  const total=Number(r.total||0)||0, paid=Number(r.paid||0)||0;
+  const due=Number.isFinite(Number(r.due))?Math.max(0,Number(r.due)):Math.max(0,total-paid);
+  if(paid>0 && due>0) return {text:'待補款',icon:'＄',bg:'#fff8ed',color:'#d97706',border:'#f5d7a1',note:'尚需補繳 NT$ '+due.toLocaleString()};
   if(isPaidText(ps) || ps==='免費') return {text:ps==='免費'?'免費':'已完成', icon:'✓', bg:'#e8f7ee', color:'#2a6a10', border:'#b9d3a5', note:'感謝參與，期待下次見面！'};
   if(isPendingPayText(ps)) return {text:'待確認', icon:'⏱', bg:'#fff8ed', color:'#b45309', border:'#f5d7a1', note:'已回報，等待主辦確認'};
   if(st==='已錄取') return {text:'待付款', icon:'＄', bg:'#fff8ed', color:'#d97706', border:'#f5d7a1', note:r.paymentDeadline?('請於 '+escHtml(r.paymentDeadline)+' 前完成付款'):'請依錄取通知完成付款'};
@@ -5717,7 +5757,9 @@ function renderMyRegs(regs){
     const note=escHtml(pill.note||'');
     const totalAll=legs.reduce((s,x)=>s+Number(x.total||0),0);
     const canPay=legs.some(x=>canPayReg(x));
-    const canCancel=canDirectCancelReg(r), canRefund=canRefundReg(r), canPreNotice=legs.some(x=>canViewPreNoticeReg(x));
+    const canCancel=legs.every(x=>canDirectCancelReg(x));
+    const refundTarget=legs.find(x=>canRefundReg(x))||r;
+    const canRefund=legs.some(x=>canRefundReg(x)), canPreNotice=legs.some(x=>canViewPreNoticeReg(x));
     const statusMsg = isCancelledReg(r)
       ? `<div class="m-record-alert muted">已取消，報名紀錄保留</div>`
       : (isRefundingReg(r)
@@ -5731,14 +5773,14 @@ function renderMyRegs(regs){
         : `<button class="m-action-btn" onclick="showPayPage('${r.id}',this.dataset.ses,'${Number(r.total||0)}')" data-ses="${title}" style="background:var(--g);color:#fff;border:none">前往繳費</button>`;
     }
     // 組合為綁定優惠：整組一起繳、一起退，故不提供單筆勾選
-    const cartBox = (canPay && !u.bundle) ? `<label class="m-cart-pick"><input type="checkbox" class="m-cart-cb" value="${r.id}" onchange="updatePayCart()"> 一起繳費 <b>NT$${Number(r.total||0).toLocaleString()}</b></label>` : '';
+    const cartBox = (canPay && !u.bundle) ? `<label class="m-cart-pick"><input type="checkbox" class="m-cart-cb" value="${r.id}" onchange="updatePayCart()"> 一起繳費 <b>NT$${regOutstandingAmount(r).toLocaleString()}</b></label>` : '';
     if(canPreNotice){
       actions+= u.bundle
         ? legs.filter(x=>canViewPreNoticeReg(x)).map(x=>`<button class="m-action-btn" onclick="openPreEventNotice('${x.id}')" style="background:var(--g);color:#fff;border:none">行前通知：${escHtml(mShortDateRange(mRecordDateText(x))||x.sessionName||'')}</button>`).join('')
         : `<button class="m-action-btn" onclick="openPreEventNotice('${r.id}')" style="background:var(--g);color:#fff;border:none">查看行前通知</button>`;
     }
     if(canCancel) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,false)" data-ses="${title}" style="background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd)">取消報名</button>`;
-    if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${r.id}',this.dataset.ses,true)" data-ses="${title}" style="background:#fff;color:#777;border:1.5px solid #ddd">${legs.length>1?'取消／退費說明（整組）':'取消／退費說明'}</button>`;
+    if(canRefund) actions+=`<button class="m-action-btn" onclick="cancelMyReg('${refundTarget.id}',this.dataset.ses,true)" data-ses="${title}" style="background:#fff;color:#777;border:1.5px solid #ddd">${legs.length>1?'取消／退費說明（整組）':'取消／退費說明'}</button>`;
 
     const bodyBlock = u.bundle ? bundleLegsHtml(legs, totalAll) : mRecordFixedBlockHtml(r);
     const seatBlock = u.bundle ? legs.map(x=>stallSelectionHtml(x)).join('') : stallSelectionHtml(r);
@@ -5781,7 +5823,7 @@ function updatePayCart(){
   const picked=cbs.filter(c=>c.checked).map(c=>c.value);
   let bar=$('payCartBar');
   if(picked.length<2){ if(bar) bar.remove(); return; }
-  const total=picked.reduce((s,id)=>{ const r=(ST.regs||[]).find(x=>String(x.id)===String(id)); return s+Number(r?.total||0); },0);
+  const total=picked.reduce((s,id)=>{ const r=(ST.regs||[]).find(x=>String(x.id)===String(id)); return s+regOutstandingAmount(r); },0);
   if(!bar){
     bar=document.createElement('div');
     bar.id='payCartBar';
@@ -5797,10 +5839,10 @@ function startBundlePay(regId){
   if(!reg){ toast('找不到報名'); return; }
   const group=bundleUnpaidRegs(reg);
   if(group.length<=1){
-    showPayPage(reg.id, reg.sessionName||'', Number(reg.total||0));
+    showPayPage(reg.id, reg.sessionName||'', regOutstandingAmount(reg));
     return;
   }
-  const total=group.reduce((s,r)=>s+Number(r.total||0),0);
+  const total=group.reduce((s,r)=>s+regOutstandingAmount(r),0);
   ST_mergedPayIds=group.map(r=>String(r.id));
   showPayPage(group[0].id, `組合繳費（共 ${group.length} 場）`, total, {merged:true, reg:group[0]});
 }
@@ -5808,7 +5850,7 @@ function getPayCartIds(){ return [...document.querySelectorAll('.m-cart-cb')].fi
 function startMergedPay(){
   const ids=getPayCartIds();
   if(ids.length<2){ toast('請至少勾選兩場'); return; }
-  const total=ids.reduce((s,id)=>{ const r=(ST.regs||[]).find(x=>String(x.id)===String(id)); return s+Number(r?.total||0); },0);
+  const total=ids.reduce((s,id)=>{ const r=(ST.regs||[]).find(x=>String(x.id)===String(id)); return s+regOutstandingAmount(r); },0);
   const first=(ST.regs||[]).find(x=>String(x.id)===String(ids[0]));
   ST_mergedPayIds=ids;
   showPayPage(ids[0], `合併繳費（共 ${ids.length} 場）`, total, {merged:true, reg:first});
@@ -5821,7 +5863,7 @@ function handlePendingPayLink(regs){
   const reg = (Array.isArray(regs)?regs:[]).find(r=>String(r.id)===String(regId));
   if(!reg) return;
   window._pendingPayRegId = '';
-  setTimeout(()=>{ if(canPayReg(reg)) showPayPage(reg.id, reg.sessionName||reg.sesName||'場次', Number(reg.total||0)); else openRegDetail(reg.id); }, 300);
+  setTimeout(()=>{ if(canPayReg(reg)) showPayPage(reg.id, reg.sessionName||reg.sesName||'場次', regOutstandingAmount(reg)); else openRegDetail(reg.id); }, 300);
 }
 
 
@@ -5863,15 +5905,16 @@ async function previewSeatMap(sessionId){
       return `<div style="border:2px solid #d9b96e;background:var(--c-yellow);color:#111;border-radius:16px;padding:10px 12px;margin:4px;font-size:16px;font-weight:950;min-width:108px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.04)"><span style="font-size:22px">${escHtml(code)}</span><br><small style="font-size:16px;font-weight:900;color:#555">錄取後可選</small>${price>0?`<br><small style="font-size:16px;font-weight:900;color:#111">+NT$${price}</small>`:''}</div>`;
     }).join('');
     const occupiedPaid=seats.filter(s=>s.type==='paid'&&s.active&&s.occupied).length;
-    body.innerHTML=map
+    const mapBlock=map
       ? `<div style="border-radius:14px;overflow:hidden;border:1px solid #ddd;background:#fff;margin-bottom:8px"><img src="${escHtml(map)}" style="width:100%;display:block"></div>
-         <button type="button" onclick="openSeatMapZoom('preview')" style="width:100%;background:var(--c-green);color:#111;border:2px solid #9fb59c;border-radius:14px;padding:12px;font-size:16px;font-weight:950;margin:8px 0 10px">🔍 放大查看場地圖</button>
-         <div style="font-size:16px;color:#666;margin:8px 0 8px;font-weight:900;line-height:1.6">號碼狀態：自動 ${stats.auto}｜加價可選 ${paidSeats.length}｜加價已占用 ${occupiedPaid}｜不開放 ${stats.closed}｜服務台 ${stats.service}</div>
-         <div style="background:var(--c-blue);border:1.5px solid #b8c9d4;color:#333;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:16px;font-weight:900;line-height:1.7">本畫面僅供報名前查看位置配置；正式加價選位將於錄取後 24 小時內，在「我的紀錄」完成選位與付款。</div>
-         <div style="font-size:16px;font-weight:950;color:#333;margin:10px 0 6px">錄取後可選的加價位置</div>
+         <button type="button" onclick="openSeatMapZoom('preview')" style="width:100%;background:var(--c-green);color:#111;border:2px solid #9fb59c;border-radius:14px;padding:12px;font-size:16px;font-weight:950;margin:8px 0 10px">🔍 放大查看場地圖</button>`
+      : `<div style="font-size:16px;color:#777;background:#f7f7f7;border-radius:12px;padding:12px;text-align:center;margin-bottom:10px">此場次尚未上傳圖片；下方攤位號碼仍由資料庫載入並正常顯示。</div>`;
+    body.innerHTML=mapBlock
+      +`<div style="font-size:16px;color:#666;margin:8px 0 8px;font-weight:900;line-height:1.6">號碼狀態：自動 ${stats.auto}｜加價可選 ${paidSeats.length}｜加價已占用 ${occupiedPaid}｜不開放 ${stats.closed}｜服務台 ${stats.service}</div>
+         <div style="background:var(--c-blue);border:1.5px solid #b8c9d4;color:#333;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:16px;font-weight:900;line-height:1.7">本畫面僅供報名前查看位置配置；正式加價選位請依「我的紀錄」顯示的狀態操作。</div>
+         <div style="font-size:16px;font-weight:950;color:#333;margin:10px 0 6px">可選的加價位置</div>
          <div style="display:flex;flex-wrap:wrap;gap:4px">${paidList||'<div style="width:100%;color:#777;background:#f7f7f7;border-radius:12px;padding:14px;text-align:center;font-size:16px">此場次目前沒有可選的加價位置。</div>'}</div>
-         <div style="font-size:16px;color:#666;line-height:1.6;margin-top:10px;background:#f7fff9;border-radius:12px;padding:10px">自動排位號碼只供查看，不開放指定；若不加價，系統將依付款確認順序安排位置。</div>`
-      : `<div style="padding:20px;text-align:center;color:#777">此場次尚未上傳已編號場地圖</div>`;
+         <div style="font-size:16px;color:#666;line-height:1.6;margin-top:10px;background:#f7fff9;border-radius:12px;padding:10px">自動排位號碼只供查看，不開放指定；若不加價，系統將依付款確認順序安排位置。</div>`;
   }catch(e){ body.innerHTML='<div style="color:var(--rd);padding:16px">場地圖載入失敗</div>'; }
 }
 
@@ -6081,7 +6124,7 @@ async function doSubmitCancel(){
     const res=await apiPost({action,regId,email:em,phone:getMemberPhone()});
     if(res&&res.error){toast('❌ '+res.error,7000);return;}
     closeModal('cancelModal');
-    const n=Number(res&&res.affectedCount?res.affectedCount:1);
+    const n=Number(res&&(res.affectedCount||res.bundleCount)?(res.affectedCount||res.bundleCount):1);
     const groupMsg=n>1?`（同組 ${n} 筆）`:'';
     toast(ST._pendingCancelIsRefund?'✅ 已送出退款申請'+groupMsg:'✅ 已取消報名'+groupMsg);
     const refreshEmail = getMemberEmail();
@@ -6141,7 +6184,9 @@ function showPayPage(regId, sesName, amount, opts){
   if(!merged) ST_mergedPayIds = [];   // 單筆繳費：清除合併狀態，避免殘留造成誤判
   const reg=findMyRegById(regId) || {};
   ST_currentPayRegId = regId;
-  ST_currentPayAmount = Number(amount)||Number(reg.total||reg.totalAmount||reg.amount||0)||0;
+  // 正式回報金額由 Worker 再從資料庫核算；畫面也顯示同一筆未付差額，避免已繳後加價選位卻提示重繳全額。
+  const outstanding=regOutstandingAmount(reg);
+  ST_currentPayAmount = merged ? (Number(amount)||0) : (outstanding>0?outstanding:(Number(amount)||0));
   ST_currentPaymentInfo = reg.paymentProfile || null;
   $('payModalTitle').textContent = merged ? `合併繳費（共 ${ST_mergedPayIds.length} 場）` : '前往繳費';
   $('payModalInfo').innerHTML = `<div><strong>${escHtml(sesName)}</strong></div><div style="font-size:20px;font-weight:900;color:var(--g);margin-top:2px">應繳金額：NT$ ${ST_currentPayAmount.toLocaleString()}</div>`;

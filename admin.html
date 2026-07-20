@@ -1,3 +1,4 @@
+<!-- FULL_FLOW_FIX_20260721：場地圖、退款篩選、現場撤場與押金操作閉環修復 -->
 <!-- SEAT_FLOW_FIX_20260721：常用場地圖套用參數與選位閉環修復 -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -1055,7 +1056,7 @@
     </nav>
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
-    <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 搜尋攤友 → 一鍵報到。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">工讀生入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
+    <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
     <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
     <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
@@ -1148,9 +1149,9 @@ function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classLi
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function saveAdminPageState(page){ try{ const p=page||AdminState.currentPage||'sessions'; const L=AdminState.currentLayer||'root'; const st={page:p, layer:L, sid:AdminState.currentSessionId||'', filter:AdminState.currentFilter||'', dateKey:(L==='equipment')?(AdminState._navDateKey||''):'', dateLabel:(L==='equipment')?(AdminState._navDateLabel||''):'', updatedAt:Date.now()}; localStorage.setItem(ADMIN_PAGE_STATE_KEY, JSON.stringify(st)); }catch(e){} }
-function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','members','leads','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
+function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','onsite','members','leads','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
-async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜20260701設定修正版'; await refreshSessionsOverview(); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
+async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜20260721全流程修復版'; await refreshSessionsOverview(); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
 function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','leads','settings'].forEach(p=>{ const pg=$('page-'+p), tb=$('tab-'+p); if(pg) pg.classList.toggle('hidden',p!==page); if(tb) tb.classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); if(page==='leads') loadLeads(); }
 
 // ── 現場報到頁（重用後端 checkin 動作） ──
@@ -1175,16 +1176,9 @@ async function loadOnsiteList(sid){
   AdminState.onsite.sid=sid;
   $('onsiteBody').innerHTML='<div class="loading">名單載入中…</div>';
   try{
-    const rows=await api({action:'getSessionRegistrations',sessionId:sid,filter:'all'});
-    // 現場名單：只出現「已錄取＋已繳費（含免費）＋非退費流程中」的攤友（與後端報到規則一致）
-    AdminState.onsite.list=(Array.isArray(rows)?rows:[]).filter(r=>{
-      if(!filterReg(r,'approved')) return false;
-      const ps=String(r.paymentStatus||r.payStatus||'').trim();
-      const paid=['已繳費','已付款','付款完成','付款成功','免費'].includes(ps)||ps.indexOf('已繳費')>=0||ps.indexOf('已付款')>=0;
-      if(!paid) return false;
-      const ts=String(r.transferStatus||'').trim();
-      return ts!=='申請退費' && ts!=='已退費';
-    });
+    // 與獨立 onsite.html 使用同一個 DB API，避免後台出現另一套不完整名單。
+    const rows=await api({action:'onsiteRegs',sessionId:sid});
+    AdminState.onsite.list=Array.isArray(rows)?rows:[];
     renderOnsiteList();
   }catch(e){ $('onsiteBody').innerHTML='<div class="empty">名單載入失敗：'+safe(e.message)+'</div>'; }
 }
@@ -1203,34 +1197,42 @@ function renderOnsiteList(){
   let rows=list.slice();
   if(filter==='unchecked') rows=rows.filter(r=>!_onsiteIsChecked(r));
   else if(filter==='checked') rows=rows.filter(_onsiteIsChecked);
-  if(kw) rows=rows.filter(r=>((r.brand||'')+(r.brandName||'')+(r.name||'')+(r.phone||'')+(r.email||'')).toLowerCase().includes(kw));
+  if(kw) rows=rows.filter(r=>((r.brand||'')+(r.name||'')+(r.phone||'')+(r.email||'')).toLowerCase().includes(kw));
   const counts='<div class="onsite-count">已報到 <b>'+done+'</b>｜未報到 <b>'+notYet+'</b>｜共 '+list.length+'</div>';
   let cards='';
   if(!rows.length){ cards='<div class="empty" style="grid-column:1/-1">沒有符合的攤友</div>'; }
   else for(const r of rows){
     const id=attr(r.id||r.regId); const checked=_onsiteIsChecked(r);
-    const btn=checked
-      ? '<button class="btn secondary" onclick="onsiteCheckin(\''+id+'\',true,this)">取消報到</button>'
-      : '<button class="btn green" onclick="onsiteCheckin(\''+id+'\',false,this)">報到</button>';
-    cards+='<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">'+safe(r.brand||r.brandName||r.name||'未填品牌')+(checked?' <span class="tag ok">已報到</span>':'')+'</div>'
-      +'<div class="onsite-sub">'+safe(r.name||'—')+'</div>'
-      +'<div class="onsite-sub">'+safe(r.phone||'—')+'</div>'
-      +'<div class="onsite-sub">攤位 '+num(r.stallCount||1)+'｜'+safe(r.paymentStatus||r.payStatus||'')+'</div></div>'
-      +'<div class="onsite-card-btn">'+btn+'</div></article>';
+    const teardown=String(r.teardown||r.teardownStatus||'未撤場');
+    const dep=Number(r.deposit||0)||0; const depStatus=String(r.depositRefunded||'未退押金');
+    const tags='<span class="tag '+(checked?'ok':'')+'">'+safe(checked?'已報到':'未報到')+'</span>'
+      +'<span class="tag '+(teardown==='已撤場'?'ok':'')+'">'+safe(teardown)+'</span>'
+      +(dep>0?'<span class="tag '+(depStatus==='已退押金'?'ok':depStatus==='押金沒收'?'bad':'warn')+'">'+safe(depStatus)+'</span>':'');
+    const actions='<button class="btn '+(checked?'secondary':'green')+' small" onclick="onsiteMarkAdmin(\''+id+'\',\''+(checked?'undoCheckin':'checkin')+'\',this)">'+(checked?'取消報到':'報到')+'</button>'
+      +'<button class="btn secondary small" onclick="onsiteMarkAdmin(\''+id+'\',\''+(teardown==='已撤場'?'teardownUndo':'teardownDone')+'\',this)">'+(teardown==='已撤場'?'改為未撤場':'已撤場')+'</button>'
+      +(dep>0?'<button class="btn secondary small" onclick="onsiteMarkAdmin(\''+id+'\',\''+(depStatus==='已退押金'?'depositUnrefund':'depositRefund')+'\',this)">'+(depStatus==='已退押金'?'改為未退':'退押金')+'</button><button class="btn danger small" onclick="onsiteMarkAdmin(\''+id+'\',\'depositForfeited\',this)">沒收押金</button>':'')
+      +'<button class="btn secondary small" onclick="onsiteMarkAdmin(\''+id+'\',\'note\',this)">備註</button>';
+    cards+='<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">'+safe(r.brand||r.name||'未填品牌')+'</div>'
+      +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin:7px 0">'+tags+'</div>'
+      +'<div class="onsite-sub">'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div>'
+      +'<div class="onsite-sub">攤位 '+num(r.stallCount||1)+'｜押金 '+money(dep)+'</div></div>'
+      +'<div class="onsite-card-btn" style="display:flex;gap:6px;flex-wrap:wrap">'+actions+'</div></article>';
   }
   $('onsiteBody').innerHTML=counts+'<div class="onsite-grid" style="margin-top:10px">'+cards+'</div>';
 }
-async function onsiteCheckin(regId,undo,btn){
+async function onsiteMarkAdmin(regId,mode,btn){
   const sid=(AdminState.onsite&&AdminState.onsite.sid)||'';
-  if(!sid){ toast('缺少場次，已阻斷操作'); return; }
-  if(!regId){ toast('找不到報名 ID'); return; }
-  const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
+  if(!sid||!regId){ toast('缺少場次或報名資料，已阻斷操作'); return; }
+  const confirmMap={depositRefund:'確認退還押金？',depositForfeited:'確認沒收押金？',teardownDone:'確認已完成撤場？'};
+  if(confirmMap[mode] && !confirm(confirmMap[mode])) return;
+  const needNote=['note','depositForfeited'];
+  const note=needNote.includes(mode)?(prompt('請輸入備註（可留空）','')||''):'';
+  const old=btn?btn.textContent:''; if(btn){btn.disabled=true;btn.textContent='處理中…';}
   try{
-    await apiPost({action:'checkin',regId,sessionId:sid,undo:!!undo});
-    for(const r of (AdminState.onsite.list||[])){ if(String(r.id||r.regId)===String(regId)){ r.checkinStatus=undo?'未報到':'已報到'; r.checkin=r.checkinStatus; } }
-    toast(undo?'已取消報到':'✅ 已報到');
-    renderOnsiteList();
-  }catch(e){ toast('操作失敗：'+e.message,6000); btn.disabled=false; btn.textContent=old; }
+    await apiPost({action:'onsiteMark',regId,sessionId:sid,mode,note});
+    toast('已更新');
+    await loadOnsiteList(sid);
+  }catch(e){ toast('操作失敗：'+e.message,7000); if(btn){btn.disabled=false;btn.textContent=old;} }
 }
 function restoreDeepNav(st){ try{ if(!st || st.page!=='sessions') return; const sid=st.sid||''; const filter=st.filter||'all'; const L=st.layer||'root'; const labelMap={all:'全部名單',pending:'待審核',approved:'已錄取',paid:'已繳費',free:'免費錄取',paymentPending:'付款待確認',unpaid:'未繳費',checked:'已報到',refund:'退款',receivable:'應收明細',received:'已收明細',unreceived:'未收明細',deposit:'押金明細',equipment:'設備名單'}; if(L==='businessOverview'){ if(typeof openBusinessOverviewPanel==='function') openBusinessOverviewPanel(); return; } if(!sid) return; if(L==='sessionList'){ openSessionList(sid,filter,labelMap[filter]||'名單'); } else if(L==='equipment'){ openEquipmentPanel(sid, st.dateKey||'', st.dateLabel||''); } else if(L==='sessionDetail'){ openSessionDetail(sid); } else if(L==='finance'){ openFinancePanel(sid); } else if(L==='sessionSettings'){ openSessionSettings(sid); } }catch(e){} }
 async function refreshCurrentPage(){ if(AdminState.currentLayer !== 'root' && AdminState.currentSessionId){ await refreshCurrentSessionOnly(); return; } if(AdminState.currentPage==='sessions') await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); if(AdminState.currentPage==='members') await loadMembers(); }
@@ -1657,6 +1659,7 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
     const html='<div class="readable-detail">'
       +'<div class="report-card"><div class="report-title">退費處理</div>'
       +'<div class="kv"><div class="k">已繳金額</div><div id="refundPaidText">'+money(paid)+'</div>'
+      +'<div class="k">處理範圍</div><div>'+(Number(sug.bundleCount||1)>1?'連動場次整組 '+num(sug.bundleCount)+' 場':'單一場次')+'</div>'
       +'<div class="k">活動日期</div><div>'+safe(sug.eventDate||'日期異常')+'</div>'
       +'<div class="k">退費規則</div><div>'+safe(sug.refundRuleLabel||'主辦手動確認')+'</div>'
       +'<div class="k">距活動日</div><div>'+(sug.daysBefore===null||sug.daysBefore===undefined?'無法判斷':safe(sug.daysBefore)+' 天')+'</div></div>'
@@ -2027,8 +2030,6 @@ function updateSessionSeatRow(i,key,val){
 function removeSessionSeatRow(i){ AdminSessionSeatItems.splice(i,1); renderSessionSeatRows(AdminSessionSeatItems); }
 function addSessionSeatRow(){ AdminSessionSeatItems.push({code:'',type:'auto',price:0,active:true,note:'',order:AdminSessionSeatItems.length+1}); renderSessionSeatRows(AdminSessionSeatItems); }
 function batchCreateSessionSeats(){
-  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
-  if(!mapUrl || AdminSessionSeatMapDirty){ toast('請先儲存已編號場地圖後，再建立號碼'); return; }
   const prefix=String($('set_seatPrefix')?.value||'').trim().toUpperCase();
   const start=Math.max(1,Number($('set_seatStart')?.value||1)||1);
   const count=Number($('set_seatCount')?.value||0)||0;
@@ -2039,7 +2040,7 @@ function batchCreateSessionSeats(){
     if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code,type:'auto',price:0,active:true,note:'',order:AdminSessionSeatItems.length+1}); added++; }
   }
   renderSessionSeatRows(AdminSessionSeatItems);
-  toast('已建立 '+added+' 個號碼');
+  toast('已建立 '+added+' 個號碼；場地圖可稍後上傳，號碼仍會獨立存入資料庫');
 }
 function collectSessionSeatItems(){ return AdminSessionSeatItems.map((x,i)=>({...normalizeAdminSeatItem(x,i), order:i+1})).filter(x=>x.code); }
 function toggleSessionFeatureSections(){
@@ -2056,23 +2057,19 @@ function toggleSessionSeatSettings(){
   const on=moduleOn && enabled;
   const box=$('set_seatTools');
   if(box) box.style.display=on?'block':'none';
-  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
-  const canEditSeats=on && mapUrl && !AdminSessionSeatMapDirty;
   const batch=$('set_seatBatchBox');
-  if(batch) batch.classList.toggle('session-seat-disabled', !canEditSeats);
-  const rows=$('set_seatRows');
+  if(batch) batch.classList.remove('session-seat-disabled');
   const note=$('set_seatMapNote');
+  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
   if(note){
     if(!on) note.textContent='選位功能未啟用。';
-    else if(!mapUrl) note.textContent='請先上傳已編號場地圖並儲存，再建立號碼清單。';
-    else if(AdminSessionSeatMapDirty) note.textContent='已載入新地圖，請先按「儲存地圖」保存後，再建立或修改號碼。';
-    else note.textContent='已可依已編號場地圖建立號碼清單。';
+    else if(AdminSessionSeatMapDirty) note.textContent='新地圖尚未儲存；既有攤位號碼仍保留，可一併儲存。';
+    else if(!mapUrl) note.textContent='尚未上傳場地圖；可先建立攤位號碼，號碼會獨立存入資料庫。';
+    else note.textContent='場地圖與攤位號碼均由資料庫載入，可分別編輯後儲存。';
   }
-  if(rows && on && (!mapUrl || AdminSessionSeatMapDirty)){
-    rows.innerHTML='<div class="sub">請先儲存已編號場地圖後，再建立號碼清單。</div>';
-  }
+  // 不再用「沒有地圖」覆蓋號碼清單；stalls 資料即使沒有圖片也必須顯示。
+  if(on) renderSessionSeatRows(AdminSessionSeatItems);
 }
-
 function loadSessionSeatMapFile(input){
   const file=input && input.files && input.files[0];
   if(!file) return;
@@ -2091,19 +2088,17 @@ async function loadSessionSeatSettings(sid,s){
     const data=await api({action:'getSeatMap',sessionId:sid});
     if(data && !data.error){
       const dbMapUrl=String(data.mapUrl||'').trim();
-      if($('set_seatMapUrl') && dbMapUrl) $('set_seatMapUrl').value=dbMapUrl;
+      if($('set_seatMapUrl')) $('set_seatMapUrl').value=dbMapUrl;
       if($('set_seatHoldHours') && data.holdHours) $('set_seatHoldHours').value=data.holdHours;
-      // 選位號碼必須跟已儲存的場地圖一起存在；沒有地圖時不顯示/沿用舊預設號碼。
-      renderSessionSeatRows((dbMapUrl && data.seats && data.seats.length)?data.seats:[]);
+      // 圖片與號碼是兩份正式資料：圖片來自 sessions.seat_map_url，號碼來自 stalls；任一缺少都不能把另一份隱藏。
+      renderSessionSeatRows(Array.isArray(data.seats)?data.seats:[]);
       toggleSessionSeatSettings();
       return;
     }
   }catch(e){ console.warn('getSeatMap skipped',e); }
-  // 不再從 stallList 自動產生錯誤編號；選位號碼只讀 getSeatMap / stalls 資料庫資料，或由主辦手動建立。
   renderSessionSeatRows([]);
   toggleSessionSeatSettings();
 }
-
 async function saveSessionSeatSettings(sid){
   if(!$('set_seatPricingEnabled')) return;
   const moduleOn = $('mod_seats') ? !!$('mod_seats').checked : true;
@@ -3073,13 +3068,19 @@ async function openVenueMaps(){
     renderVenueMapsPanel();
   }catch(e){ const b=$('panelBody'); if(b) b.innerHTML='<div class="empty">常用場地圖載入失敗<div class="sub" style="margin-top:8px;color:#b4413c">原因：'+safe(e&&e.message?e.message:String(e))+'</div><div class="sub" style="margin-top:6px">若顯示「未知動作」或「連線失敗」，代表後端 worker.js 尚未更新到最新版。</div></div>'; }
 }
+function venueMapSeats(m){
+  const raw=m&&m.seats_json;
+  if(Array.isArray(raw)) return raw;
+  if(raw&&typeof raw==='object') return Array.isArray(raw.seats)?raw.seats:[];
+  try{ const v=JSON.parse(String(raw||'[]')); return Array.isArray(v)?v:[]; }catch(_e){ return []; }
+}
 function renderVenueMapsPanel(){
   const b=$('panelBody'); if(!b) return;
   const maps=AdminVenueMaps||[];
   const head='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button type="button" class="btn small" onclick="openVenueMapForm(\'\')">＋ 新增常用場地圖</button></div>';
   if(!maps.length){ b.innerHTML=head+'<div class="empty">目前沒有常用場地圖。<br>按「＋ 新增常用場地圖」建立第一張，或在場次設定按「存成常用圖」。</div>'; return; }
   b.innerHTML=head+'<div class="sub" style="margin-bottom:10px">建好後，到場次設定的「選位/攤位」按「套用」即可整份帶入。</div><div class="member-list mini-card-grid">'+maps.map(function(m){
-    let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
+    const seats=venueMapSeats(m);
     const url=m.seat_map_url||'';
     return '<article class="member-card member-card-lite">'
       +'<div class="member-title" title="'+attr(m.name)+'">'+safe(m.name)+'</div>'
@@ -3107,7 +3108,7 @@ function previewVenueMapImg(url){
 }
 function openVenueMapForm(id){
   const m=(AdminVenueMaps||[]).find(x=>String(x.id)===String(id))||{};
-  let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(e){}
+  const seats=venueMapSeats(m);
   const html='<input type="hidden" id="vm_id" value="'+attr(m.id||'')+'"><input type="hidden" id="vm_oldName" value="'+attr(m.name||'')+'">'
     +'<div class="form-field full"><label>場地圖名稱</label><input id="vm_name" value="'+attr(m.name||'')+'" placeholder="例：高雄美麗島 A區"></div>'
     +'<div class="form-field full"><label>場地圖圖片</label>'
@@ -3154,7 +3155,7 @@ async function saveVenueMapForm(){
     seats=codes.map(function(c,i){ return {code:c,type:'auto',price:0,active:true,note:'',category:'',order:i+1}; });
   }else if(id){
     const m=(AdminVenueMaps||[]).find(x=>String(x.id)===String(id))||{};
-    try{ seats=JSON.parse(m.seats_json||'[]'); }catch(e){ seats=[]; }
+    seats=venueMapSeats(m);
   }
   if(!mapUrl && !seats.length){ toast('請至少上傳圖片或輸入攤位範圍'); return; }
   try{
@@ -3170,7 +3171,7 @@ async function renameVenueMapFromPanel(id){
   const name=(prompt('輸入新名稱：', m.name||'')||'').trim();
   if(!name || name===m.name) return;
   if((AdminVenueMaps||[]).some(x=>String(x.id)!==String(id) && x.name===name)){ if(!confirm('已有同名常用圖，繼續會覆蓋它，確定？')) return; }
-  let seats=[]; try{ seats=JSON.parse(m.seats_json||'[]'); }catch(_e){}
+  const seats=venueMapSeats(m);
   try{
     await apiPost({action:'saveVenueMap',name:name,mapUrl:m.seat_map_url||'',seats:seats});
     await apiPost({action:'deleteVenueMap',mapId:m.id});
@@ -3228,7 +3229,7 @@ async function saveStaffScope(email,btn){ const ses=[]; document.querySelectorAl
 function openCompanySettings(){ openPanel('公司資料','系統提供者與登入頁資訊','<div class="form-grid"><div class="form-field"><label>系統名稱</label><input id="co_system"></div><div class="form-field"><label>公司名稱</label><input id="co_name"></div><div class="form-field"><label>客服 Email</label><input id="co_email"></div><div class="form-field"><label>客服 LINE</label><input id="co_line"></div><div class="form-field"><label>聯絡電話</label><input id="co_phone"></div><div class="form-field"><label>官方網站</label><input id="co_site"></div><div class="form-field full"><label>登入頁顯示文字</label><textarea id="co_login"></textarea></div></div><div class="card-actions"><button class="btn" onclick="saveCompanySettings(this)">儲存公司資料</button></div>'); loadCompanySettings(); }
 async function loadCompanySettings(){ try{ const c=await api({action:'getCompanySettings'}); $('co_system').value=c.systemName||''; $('co_name').value=c.companyName||''; $('co_email').value=c.serviceEmail||''; $('co_line').value=c.serviceLine||''; $('co_phone').value=c.phone||''; $('co_site').value=c.website||''; $('co_login').value=c.loginText||''; }catch(e){ toast('公司資料載入失敗：'+e.message,5000); } }
 async function saveCompanySettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'saveCompanySettings',systemName:$('co_system').value,companyName:$('co_name').value,serviceEmail:$('co_email').value,serviceLine:$('co_line').value,phone:$('co_phone').value,website:$('co_site').value,loginText:$('co_login').value}); toast('公司資料已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
-function openHomepageSettings(){ openPanel('公告 / 首頁顯示','首頁封面、公告與小圖（主題活動圖片已移至「場次」頁上方）','<div class="form-grid"><div class="form-field full"><label>登入頁 / 品牌 Logo 網址</label><input id="home_logo"></div><div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div><div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div><div class="form-field full" style="border-top:1px dashed var(--line);padding-top:12px"><b>前台小圖 / IP 圖片網址</b><div class="sub">這些會存進資料庫 tenant config，不寫死在 register.html；之後換檔小圖不會消失。</div></div><div class="form-field"><label>首頁歡迎小圖 URL</label><input id="home_mascotHome" placeholder="IP歡迎.png 或圖片網址"></div><div class="form-field"><label>市集/指引小圖 URL</label><input id="home_mascotPortal" placeholder="IP指引.png 或圖片網址"></div><div class="form-field"><label>會員資料小圖 URL</label><input id="home_mascotMember" placeholder="IP資料.png 或圖片網址"></div><div class="form-field"><label>客服小圖 URL</label><input id="home_mascotSupport" placeholder="IP客服.png 或圖片網址"></div><div class="form-field"><label>我的紀錄小圖 URL</label><input id="home_mascotProfile" placeholder="IP會員.png 或圖片網址"></div><div class="form-field"><label>報名彈窗小圖 URL</label><input id="home_mascotModal" placeholder="IP報名.png 或圖片網址"></div></div><div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div>'); loadHomepageSettings(); }
+function openHomepageSettings(){ openPanel('公告 / 首頁顯示','首頁封面、公告與小圖（主題活動圖片已移至「場次」頁上方）','<div class="form-grid"><div class="form-field full"><label>登入頁 / 品牌 Logo 網址</label><input id="home_logo"></div><div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div><div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div><div class="form-field full" style="border-top:1px dashed var(--line);padding-top:12px"><b>前台小圖 / IP 圖片網址</b><div class="sub">這些會存進資料庫 tenant config，不寫死在 index.html；之後換檔小圖不會消失。</div></div><div class="form-field"><label>首頁歡迎小圖 URL</label><input id="home_mascotHome" placeholder="IP歡迎.png 或圖片網址"></div><div class="form-field"><label>市集/指引小圖 URL</label><input id="home_mascotPortal" placeholder="IP指引.png 或圖片網址"></div><div class="form-field"><label>會員資料小圖 URL</label><input id="home_mascotMember" placeholder="IP資料.png 或圖片網址"></div><div class="form-field"><label>客服小圖 URL</label><input id="home_mascotSupport" placeholder="IP客服.png 或圖片網址"></div><div class="form-field"><label>我的紀錄小圖 URL</label><input id="home_mascotProfile" placeholder="IP會員.png 或圖片網址"></div><div class="form-field"><label>報名彈窗小圖 URL</label><input id="home_mascotModal" placeholder="IP報名.png 或圖片網址"></div></div><div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div>'); loadHomepageSettings(); }
 async function loadHomepageSettings(){ try{ const c=await api({action:'getSiteConfig'}); $('home_hero').value=c.heroImg||''; $('home_info').value=c.infoText||''; $('home_logo').value=c.logoUrl||''; const set=(id,v)=>{ const el=$(id); if(el) el.value=v||''; }; set('home_mascotHome',c.mascotHome); set('home_mascotPortal',c.mascotPortal); set('home_mascotMember',c.mascotMember); set('home_mascotSupport',c.mascotSupport); set('home_mascotProfile',c.mascotProfile); set('home_mascotModal',c.mascotModal); }catch(e){toast('首頁設定載入失敗：'+e.message,6000)} }
 async function deleteSessionUI(sid){
   // 場次刪除僅限平台超級管理員；後端也會再擋一次（前端隱藏只是輔助）。
