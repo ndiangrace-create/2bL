@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>活動報名系統</title>
 <style>
 :root{
@@ -2466,7 +2466,7 @@ function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v
 // 活動限定拍照框（H5：問卷 → 相機 → 套框 → 下載／分享）
 // ══════════════════════════════════════════════════════════════
 const PHOTO_DONE_KEY='2bl_photo_lead_done';
-let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null,fit:'contain'};
+let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null,fit:'cover'};
 async function loadPhotoFrames(){
   try{ const r=await apiPost({action:'listActivePhotoFrames'}); ST.photoFrames=(r&&r.frames)||[]; }
   catch(e){ ST.photoFrames=[]; }
@@ -2548,7 +2548,13 @@ function applyPhotoZoom(){
   v.style.transform='scale('+(mirror*z)+','+z+')';
   v.style.transformOrigin='center center';
   const info=document.getElementById('pfCamInfo');
-  if(info && v.videoWidth) info.textContent='鏡頭畫面 '+v.videoWidth+'×'+v.videoHeight+'（'+(PF.fit==='contain'?'完整不裁切':'填滿會裁切')+'）';
+  if(info && v.videoWidth){
+    const portrait=v.videoHeight>=v.videoWidth;
+    let tip='';
+    if(PF.fit==='contain') tip=portrait?'完整不裁切':'完整不裁切（上下會留白）';
+    else tip=portrait?'填滿（幾乎不裁切）':'填滿（會裁掉左右）';
+    info.textContent='鏡頭畫面 '+v.videoWidth+'×'+v.videoHeight+'　'+tip+'　[PF4]';
+  }
 }
 function togglePhotoFit(){
   PF.fit=(PF.fit==='contain')?'cover':'contain';
@@ -2685,8 +2691,13 @@ async function startPhotoCamera(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showPhotoFallback('這個瀏覽器不支援相機。'); return; }
   const v=document.getElementById('pfVideo');
   // 要求直式畫面：手機自拍鏡頭預設是橫的，被裁成直式會只剩中間一小塊（臉超大）
+  // 手機瀏覽器常常回傳橫向畫面（例如 1920×1080），塞進直式框就得大量裁切。
+  // 先用「嚴格」條件要求直式，失敗再逐步放寬，盡量拿到 9:16 的原生畫面。
   const tries=[
-    {facingMode:{ideal:PF.facing},width:{ideal:1080},height:{ideal:1920},aspectRatio:{ideal:9/16}},
+    {facingMode:{ideal:PF.facing},aspectRatio:{exact:9/16}},
+    {facingMode:{ideal:PF.facing},width:{exact:1080},height:{exact:1920}},
+    {facingMode:{ideal:PF.facing},width:{exact:720},height:{exact:1280}},
+    {facingMode:{ideal:PF.facing},aspectRatio:{ideal:9/16},width:{ideal:1080},height:{ideal:1920}},
     {facingMode:{ideal:PF.facing},width:{ideal:720},height:{ideal:1280}},
     {facingMode:PF.facing},
     true
@@ -4387,7 +4398,18 @@ async function saveMemberEdit(){
   }
 }
 
-function closeRegFormModal(){
+function regFormHasContent(){
+  try{
+    const ids=['f_name','f_email','f_phone','f_brand','f_brandIntro','f_taxId','f_invoiceTitle'];
+    return ids.some(function(id){ const el=$(id); return el && String(el.value||'').trim().length>0; });
+  }catch(e){ return false; }
+}
+function closeRegFormModal(opts){
+  const force=!!(opts&&opts.force);
+  // 防呆：返回鍵/關閉時，若已填但尚未送出，先確認，避免白填又誤以為已報名
+  if(!force && !ST.__submitting && regFormHasContent()){
+    if(!confirm('報名尚未送出，確定要離開嗎？\n離開後已填寫的資料會清除。')) return false;
+  }
   const page=$('regFormModal');
   if(page) page.classList.remove('active');
   ST.currentSession=null;
@@ -4407,8 +4429,39 @@ function closeRegFormModal(){
     const btn=$('botHome'); if(btn){ ['botHome','botMember','botSupport'].forEach(id=>{const e=$(''+id);if(e)e.classList.remove('active');}); btn.classList.add('active'); }
   }
   window.scrollTo(0,0);
+  return true;
 }
 
+function showRegisterSuccess(res, ses, email){
+  try{
+    const regNo = String((res&&(res.regId||res.registrationId||res.id))||'').trim();
+    const sesName = String((ses&&(ses.name||ses.title))||'').trim();
+    let d=document.getElementById('regSuccessModal');
+    if(d) d.remove();
+    d=document.createElement('div');
+    d.id='regSuccessModal';
+    d.style.cssText='position:fixed;inset:0;z-index:9200;background:rgba(20,20,20,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+    d.innerHTML='<div style="background:#fff;border-radius:20px;padding:22px 18px;width:min(460px,94vw);max-height:92vh;overflow:auto;text-align:center">'
+      +'<div style="font-size:44px;line-height:1">✅</div>'
+      +'<div style="font-size:22px;font-weight:900;margin:8px 0 4px">報名已送出成功</div>'
+      +(sesName?'<div style="font-size:17px;color:#444;margin-bottom:6px">'+esc(sesName)+'</div>':'')
+      +(regNo?'<div style="font-size:16px;color:#666">報名編號：<b>'+esc(regNo)+'</b></div>':'')
+      +'<div style="background:#DDEAD1;border-radius:14px;padding:14px;margin:14px 0;font-size:16px;line-height:1.8;text-align:left">'
+        +'接下來：<br>1. 主辦會進行審核，結果將寄到您的 Email<br>2. 錄取後會收到繳費通知<br>3. 隨時可到「我的紀錄」查看進度'
+      +'</div>'
+      +(email?'<div style="font-size:16px;color:#666;margin-bottom:14px">通知信會寄到：'+esc(email)+'</div>':'')
+      +'<button onclick="closeRegSuccessAndGoRecords()" style="width:100%;font-size:19px;font-weight:900;padding:15px;border:0;border-radius:14px;background:#DDEAD1;cursor:pointer;margin-bottom:8px">查看我的紀錄</button>'
+      +'<button onclick="var m=document.getElementById(\'regSuccessModal\');if(m)m.remove();document.body.style.overflow=\'\';" style="width:100%;font-size:17px;font-weight:800;padding:13px;border:0;border-radius:14px;background:#eee;cursor:pointer">關閉</button>'
+      +'</div>';
+    document.body.appendChild(d);
+    document.body.style.overflow='hidden';
+  }catch(e){ console.warn('[showRegisterSuccess]',e); }
+}
+function closeRegSuccessAndGoRecords(){
+  const m=document.getElementById('regSuccessModal'); if(m) m.remove();
+  document.body.style.overflow='';
+  try{ if(typeof navToTab==='function') navToTab('member'); }catch(e){}
+}
 function closeRegFormToSessionListAfterSubmit(sessionSnapshot, email){
   hideSubmitOverlay();
   const s = sessionSnapshot || ST.currentSession || {};
@@ -4471,7 +4524,7 @@ function closeRegFormToSessionListAfterSubmit(sessionSnapshot, email){
   ['botHome','botMember','botSupport'].forEach(id=>{ const el=$(id); if(el) el.classList.remove('active'); });
   try{ history.replaceState({page:'portal', afterRegister:true}, '', location.href); }catch(e){}
   window.scrollTo(0,0);
-  toast('✅ 報名成功，已回到場次列表');
+  toast('✅ 報名已送出');
 }
 
 // 返回鍵攔截：如果報名 modal 是開著的，關掉它；否則讓瀏覽器正常返回
@@ -4481,8 +4534,9 @@ window.addEventListener('popstate', function(e){
   if(regDM){ regDM.remove(); return; }
   // Layer 2：報名表 Modal 開著 → 關閉 Modal
   const modal=$('regFormModal');
-  if(modal && modal.classList.contains('show')){
-    closeRegFormModal();
+  if(modal && (modal.classList.contains('show')||modal.classList.contains('active'))){
+    const closed=closeRegFormModal();
+    if(closed===false){ try{ history.pushState({page:'regForm'},'',location.href); }catch(e){} }
     return;
   }
   // Layer 1：在非首頁 → 回首頁（不讓 browser 離開 app）
@@ -4597,7 +4651,7 @@ function showAlreadyRegistered(s,reg){
           如需修改品牌介紹等資料，請至「我的紀錄」查看。<br>
           如需取消，請聯繫主辦單位。
         </div>
-        <button class="btn-submit" type="button" onclick="goMemberPage();closeRegFormModal()">
+        <button class="btn-submit" type="button" onclick="goMemberPage();closeRegFormModal({force:true})">
           📋 查看我的報名紀錄
         </button>
       </div>
@@ -5050,6 +5104,7 @@ async function submitReg(ev){
     if(btn){ btn.disabled=true; btn.textContent='報名成功'; btn.style.display='none'; }
     closeRegFormToSessionListAfterSubmit(sessionSnapshot, email);
     try{ if(typeof navToTab==='function') navToTab('member'); }catch(_e){}
+    showRegisterSuccess(res, sessionSnapshot, email);
     ST.__submitting=false;
     scheduleMemberRecordsSync('after-register-success',150);
     return false;
