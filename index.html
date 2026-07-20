@@ -1570,7 +1570,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:16px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-fullfix</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
+        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-fullfix2</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
       <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -5458,13 +5458,21 @@ function canSelectStallReg(reg){
   // 付款待確認時禁止變更；已繳費但尚未選位者可選，選位後只補繳加價差額。
   if(isPendingPayText(reg.payStatus) || String(reg.payStatus||'')==='免費') return false;
   if(reg.stallNumber) return false;
-  if(['申請退費','退費中','已退費'].includes(String(reg.transferStatus||''))) return false;
+  if(['申請退費','退費中','已退費','refund_pending','refunded'].includes(String(reg.transferStatus||''))) return false;
   if(String(reg.seatChoiceStatus||'')==='released') return false;
   if(reg.seatSelectionDeadline && isExpiredIso(reg.seatSelectionDeadline)) return false;
   return true;
 }
 function stallSelectionHtml(reg){
-  if(isCancelledReg(reg) || String(reg.status||'')!=='已錄取' || !(reg.seatPricingEnabled===true || reg.seatPricingEnabled==='true')) return '';
+  if(!reg) return '';
+  const transferStatus=String(reg.transferStatus||'');
+  const reviewStatus=String(reg.status||'');
+  // 已取消／退費流程／未錄取／已結案都不再顯示任何選位或自動排位提示。
+  if(isCancelledReg(reg)
+    || ['申請退費','退費中','已退費','refund_pending','refunded'].includes(transferStatus)
+    || ['不錄取','已取消','已退費'].includes(reviewStatus)
+    || reviewStatus!=='已錄取'
+    || !(reg.seatPricingEnabled===true || reg.seatPricingEnabled==='true')) return '';
   const deadline = reg.seatHoldExpiresAt || reg.seatSelectionDeadline || '';
   const holdHours=Math.max(1,Number(reg.seatHoldHours||24)||24);
   const deadlineText = deadline ? new Date(deadline).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : `選位完成後 ${holdHours} 小時內`;
