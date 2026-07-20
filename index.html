@@ -2786,8 +2786,32 @@ function photoFileName(){
   const d=new Date(); const z=x=>String(x).padStart(2,'0');
   return n+'_'+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'.png';
 }
+function isIOSDevice(){
+  const ua=navigator.userAgent||'';
+  return /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+}
 function downloadPhoto(){
   if(!PF.shotDataUrl){ toast&&toast('尚未拍照'); return; }
+  // iPhone / Safari 不支援用 a[download] 直接存圖，會變成沒反應。
+  // 改用「開新分頁顯示圖片 → 長按儲存」，並優先嘗試系統分享（可直接存到相簿）。
+  if(isIOSDevice()){
+    (async function(){
+      try{
+        const blob=await (await fetch(PF.shotDataUrl)).blob();
+        const file=new File([blob],photoFileName(),{type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+          await navigator.share({files:[file],title:(PF.frame&&PF.frame.name)||'活動拍照'});
+          return;
+        }
+        const url=URL.createObjectURL(blob);
+        const w=window.open(url,'_blank');
+        if(!w){ toast&&toast('請允許開啟新分頁，或改按「分享」儲存'); }
+        else { toast&&toast('請長按圖片，選「加入照片」即可存檔',7000); }
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+      }catch(e){ toast&&toast('請改按「分享」儲存照片'); }
+    })();
+    return;
+  }
   const a=document.createElement('a'); a.href=PF.shotDataUrl; a.download=photoFileName();
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   toast&&toast('已下載');
@@ -2809,8 +2833,20 @@ async function api(params){
   if (!params.tenant && !params.tenantId) params.tenant = TENANT_ID;
   if (!params._t) params._t = Date.now();
   const qs=Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
-  try{ const r=await fetch(API_BASE+'?'+qs,{cache:'no-store'}); if(!r.ok){toast&&toast('⚠️ 連線失敗，請稍後再試');return{error:'fail'};} return await r.json(); }
-  catch(e){ toast&&toast('⚠️ 網路連線失敗'); return {error:'fail'}; }
+  // 逾時保護：沒有這個的話，連線卡住就永遠不回，畫面上的按鈕會一直停用（使用者以為「按不下去」）
+  const ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
+  const timer=setTimeout(()=>{ try{ ctrl&&ctrl.abort(); }catch(e){} }, 20000);
+  try{
+    const r=await fetch(API_BASE+'?'+qs,{cache:'no-store',signal:ctrl?ctrl.signal:undefined});
+    if(!r.ok){toast&&toast('⚠️ 連線失敗，請稍後再試');return{error:'fail'};}
+    return await r.json();
+  }
+  catch(e){
+    const aborted=(e&&(e.name==='AbortError'));
+    toast&&toast(aborted?'⚠️ 連線逾時，請檢查網路後再試一次':'⚠️ 網路連線失敗');
+    return {error: aborted?'timeout':'fail'};
+  }
+  finally{ clearTimeout(timer); }
 }
 async function apiPost(body, timeoutMs=30000){
   if (!body.tenant && !body.tenantId) body.tenant = TENANT_ID;
@@ -3388,7 +3424,7 @@ async function memberEmailPhoneLogin(){
     navTo('member',{noPush:true});
   }catch(e){
     console.warn('[memberEmailPhoneLogin failed]', e);
-    if(err){err.style.display='block';err.textContent='查詢失敗，請稍後再試';}
+    if(err){err.style.display='block';err.textContent='查詢失敗：'+((e&&e.message)?e.message:'請檢查網路後再試一次');}
   }finally{ if(btn){btn.disabled=false;btn.textContent='查詢我的紀錄';} }
 }
 function goMemberPage(){
@@ -3735,6 +3771,47 @@ function showEmailStep(s){
 }
 
 // 新會員專用：先把會員資料填完整，再回到報名表繼續選擇內容
+// Email 已有會員但手機不一致：直接講清楚怎麼處理，並可當場改手機重試
+function showPhoneMismatchStep(email, phone){
+  const dynEl=$('dynForm'); if(!dynEl) return;
+  const submitBtn=$('submitBtn'); if(submitBtn) submitBtn.style.display='none';
+  const feeBox=$('feeBox'); if(feeBox) feeBox.style.display='none';
+  dynEl.innerHTML=`
+    <div class="fcard" style="border:2px solid #e0a06a">
+      <div class="fcard-t" style="background:#FAE1DD;color:#111">手機號碼與資料庫不一致</div>
+      <div class="fcard-body">
+        <div style="font-size:17px;line-height:1.8;color:#333">
+          這個 Email（<b>${esc(email)}</b>）<b>已經有會員資料</b>，<br>
+          但您輸入的手機 <b>${esc(phone)}</b> 與當初留的號碼不同，因此無法直接報名。
+        </div>
+        <div style="background:#FAEEC7;border-radius:14px;padding:14px;margin:14px 0;font-size:16px;line-height:1.8">
+          請擇一處理：<br>
+          1. 改用<b>當初報名時留的手機號碼</b>再試一次<br>
+          2. 手機號碼換了 → 請聯繫主辦協助更新，之後就能正常報名
+        </div>
+        <label>換一個手機號碼再試</label>
+        <input type="tel" id="pm_phone" value="${esc(phone||'')}" inputmode="tel" placeholder="09xxxxxxxx">
+        <div id="pm_err" class="err" style="font-size:16px"></div>
+        <button class="btn-submit" type="button" onclick="retryPhoneMismatch()" style="margin-top:12px">用這個手機再試一次</button>
+        <button type="button" onclick="goSupportFromForm()" style="width:100%;margin-top:10px;font-size:16px;font-weight:800;padding:13px;border:0;border-radius:14px;background:#DCD7ED;cursor:pointer">聯繫主辦協助更新手機</button>
+      </div>
+    </div>`;
+  try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
+}
+function retryPhoneMismatch(){
+  const v=String(($('pm_phone')||{}).value||'').trim();
+  const err=$('pm_err');
+  if(!v){ if(err) err.textContent='請輸入手機號碼'; return; }
+  const pIn=$('step1Phone'), eIn=$('step1Email');
+  if(pIn){ pIn.disabled=false; pIn.value=v; }
+  if(eIn){ eIn.disabled=false; if(!String(eIn.value||'').trim()) eIn.value=ST.memberEmail||''; }
+  memberSavePhone(v);
+  checkMemberStep();
+}
+function goSupportFromForm(){
+  try{ closeRegFormModal({force:true}); }catch(e){}
+  try{ if(typeof navToTab==='function') navToTab('support'); }catch(e){}
+}
 function showNewMemberProfileStep(s){
   const dynEl=$('dynForm');
   const submitBtn=$('submitBtn'); if(submitBtn) submitBtn.style.display='none';
@@ -3851,6 +3928,15 @@ async function checkMemberStep(){
         statusEl.style.color='#4a3c75';
         statusEl.textContent='👋 查無既有資料，請先建立會員資料，再填本次報名內容';
       }
+      // 提前檢查：這個 Email 是不是已有會員、手機對不對得上。
+      // 對不上就直接說明，不要讓人填完整張表才在送出時被擋（這是最常見的卡關原因）。
+      try{
+        const chk=await api({action:'checkMemberEmailPhone',email,phone,_t:Date.now()});
+        if(chk && chk.exists && !chk.match){
+          showPhoneMismatchStep(email, phone);
+          return;
+        }
+      }catch(e){}
       setTimeout(()=>{ showNewMemberProfileStep(ST.currentSession); },500);
     }
   }catch(e){
@@ -5318,13 +5404,25 @@ function sameBundleRegs(reg){
 function bundleUnpaidRegs(reg){ return sameBundleRegs(reg).filter(r=>canPayReg(r)); }
 function canPayReg(reg){ return reg && !isCancelledReg(reg) && reg.status==='已錄取' && Number(reg.total||0)>0 && !isPaidText(reg.payStatus) && !isPendingPayText(reg.payStatus) && !(String(reg.seatChoiceIntent||'')==='paid' && String(reg.seatChoiceStatus||'')!=='reserved'); }
 function canRefundReg(reg){ return reg && !isCancelledReg(reg) && isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費' && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
-function canDirectCancelReg(reg){ return reg && !isCancelledReg(reg) && ['待審核','已錄取'].includes(String(reg.status||'')) && !isPaidText(reg.payStatus) && String(reg.transferStatus||'')!=='申請退費' && String(reg.transferStatus||'')!=='已退費'; }
+function canDirectCancelReg(reg){
+  // 只要「還沒真正繳費」且尚未結案，就一定要留一條取消的路，
+  // 否則狀態一旦變成清單外的值（例如退款後回到「已報名」）就會卡死、名額也放不回去。
+  if(!reg || isCancelledReg(reg)) return false;
+  if(isPaidText(reg.payStatus) && String(reg.payStatus||'')!=='免費') return false;
+  const st=String(reg.status||'');
+  if(['不錄取','已取消','已退費'].includes(st)) return false;
+  const ts=String(reg.transferStatus||'');
+  if(['申請退費','退費中','已退費'].includes(ts)) return false;
+  return true;
+}
 function isExpiredIso(v){ return !!v && Date.parse(v) <= Date.now(); }
 function canSelectStallReg(reg){
   if(!reg || isCancelledReg(reg)) return false;
   if(String(reg.status||'')!=='已錄取') return false;
   if(!(reg.seatPricingEnabled===true || reg.seatPricingEnabled==='true')) return false;
-  if(isPaidText(reg.payStatus) || String(reg.payStatus||'')==='免費' || isPendingPayText(reg.payStatus)) return false;
+  // 已繳費的人本來被擋在選位之外，導致「繳完錢反而不能選位」。
+  // 真正該擋的只有「已經有攤位號碼」，那個在 openStallPickerForReg 另外處理。
+  if(reg.stallNumber) return false;
   if(['申請退費','退費中','已退費'].includes(String(reg.transferStatus||''))) return false;
   if(String(reg.seatChoiceStatus||'')==='released') return false;
   if(reg.seatSelectionDeadline && isExpiredIso(reg.seatSelectionDeadline)) return false;

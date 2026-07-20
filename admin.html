@@ -3113,9 +3113,13 @@ function openVenueMapForm(id){
       +'<input type="file" accept="image/*" onchange="uploadVenueMapImg(this)">'
       +'<input type="hidden" id="vm_url" value="'+attr(m.seat_map_url||'')+'">'
       +'<div id="vm_preview" style="margin-top:8px;background:#f5f5f5;border-radius:10px;padding:8px;text-align:center;'+(m.seat_map_url?'':'display:none')+'"><img id="vm_previewImg" src="'+attr(m.seat_map_url||'')+'" style="max-height:220px;max-width:100%;border-radius:8px"></div></div>'
+    +(id&&seats.length?('<div class="form-field full"><label>目前的攤位號碼（共 '+seats.length+' 個，來自資料庫）</label>'
+      +'<div style="background:#f7f7f7;border:1px solid #e2e2e2;border-radius:12px;padding:12px;font-size:15px;line-height:1.9;word-break:break-all">'
+      +seats.map(function(x){ return safe(String(x.code||x.seat_code||'')); }).filter(Boolean).join('、')
+      +'</div><div class="sub">分類與排序請到「場次設定 → 選位/攤位」調整。</div></div>'):'')
     +'<div class="form-field full"><label>攤位號碼（範圍快速輸入）</label>'
       +'<input id="vm_range" placeholder="例：A1-A5,B1-B5,C1-C5,D1-D6">'
-      +'<div class="sub">'+(id?('目前已有 '+seats.length+' 個攤位。留空＝不更動；填了＝以新的取代（分類與排序需重設）。'):'一次打完，系統自動展開成全部號碼。服務台與不可用的位置不要打進去。')+'</div></div>'
+      +'<div class="sub">'+(id?('留空＝維持上面現有的 '+seats.length+' 個攤位不變；填了＝整份以新的取代（分類與排序會重設）。'):'一次打完，系統自動展開成全部號碼。服務台與不可用的位置不要打進去。')+'</div></div>'
     +'<div style="display:flex;gap:8px;margin-top:14px"><button type="button" class="btn" onclick="saveVenueMapForm()">儲存</button><button type="button" class="btn secondary" onclick="openVenueMaps()">取消</button></div>';
   openPanel(id?'編輯常用場地圖':'新增常用場地圖','圖片與攤位清單存成一組，之後場次直接套用',html);
 }
