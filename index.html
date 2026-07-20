@@ -3685,7 +3685,7 @@ function showEmailStep(s){
         <div style="font-size:16px;color:#555;margin-bottom:12px;line-height:1.7">
           輸入 <b>Email＋手機</b> 查找既有會員資料。<br>
           ・找到資料 → 自動帶入，不用每次重填<br>
-          ・找不到資料 → 先建立會員資料，再填本次報名內容
+          ・找不到資料 → 先完整建立會員資料，再回到報名表選擇內容
         </div>
         <label>Email</label>
         <input type="email" id="step1Email" placeholder="your@email.com" inputmode="email"
@@ -3704,6 +3704,67 @@ function showEmailStep(s){
     </div>`;
 }
 
+// 新會員專用：先把會員資料填完整，再回到報名表繼續選擇內容
+function showNewMemberProfileStep(s){
+  const dynEl=$('dynForm');
+  const submitBtn=$('submitBtn'); if(submitBtn) submitBtn.style.display='none';
+  const feeBox=$('feeBox'); if(feeBox) feeBox.style.display='none';
+  if(!dynEl) return;
+  const V=ST.member||{};
+  const email=ST.memberEmail||V.email||'';
+  dynEl.innerHTML=`
+    <div class="fcard" style="border:2px solid #9fb59c">
+      <div class="fcard-t" style="background:#DDEAD1;color:#111">步驟 1／2　建立會員資料</div>
+      <div class="fcard-body">
+        <div style="font-size:16px;color:#555;margin-bottom:12px;line-height:1.7">
+          第一次報名，請先完整填寫您的基本資料。<br>
+          填完按「儲存並繼續」，就會回到<b>${esc(s&&s.name?s.name:'報名表')}</b>接著選擇報名內容。<br>
+          <span style="color:#8b6b00">資料只需填一次，之後報名都會自動帶入。</span>
+        </div>
+        <label>Email *</label>
+        <input type="email" id="np_email" value="${esc(email)}" inputmode="email" placeholder="your@email.com">
+        <label style="margin-top:10px">手機 *</label>
+        <input type="tel" id="np_phone" value="${esc(V.phone||'')}" inputmode="tel" placeholder="09xxxxxxxx">
+        <label style="margin-top:10px">攤位／品牌名稱 *</label>
+        <input type="text" id="np_brand" value="${esc(V.brand||V.brand_name||'')}" placeholder="品牌名稱">
+        <label style="margin-top:10px">聯絡人姓名 *</label>
+        <input type="text" id="np_name" value="${esc(V.name||'')}" placeholder="聯絡人姓名">
+        <label style="margin-top:10px">販售商品／內容</label>
+        <input type="text" id="np_sellItem" value="${esc(V.sellItem||V.sell_items||V.sellCat||V.sell_category||'')}" placeholder="例如：手作飾品、甜點、選品…">
+        <label style="margin-top:10px">品牌介紹</label>
+        <textarea id="np_brandIntro" style="min-height:72px" placeholder="簡短介紹您的品牌…">${esc(V.brandIntro||V.brand_intro||'')}</textarea>
+        <label style="margin-top:10px">FB</label>
+        <input type="url" id="np_fb" value="${esc(V.fb||V.fb_url||'')}" placeholder="https://facebook.com/...">
+        <label style="margin-top:10px">IG</label>
+        <input type="url" id="np_ig" value="${esc(V.ig||V.ig_url||'')}" placeholder="https://instagram.com/...">
+        <div id="np_err" class="err" style="font-size:16px"></div>
+        <button class="btn-submit" type="button" onclick="saveNewMemberAndContinue()" style="margin-top:14px">
+          儲存並繼續，選擇報名內容 →
+        </button>
+      </div>
+    </div>`;
+  try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
+}
+function saveNewMemberAndContinue(){
+  const g=id=>String(($(id)||{}).value||'').trim();
+  const err=$('np_err');
+  const email=g('np_email'), phone=g('np_phone'), brand=g('np_brand'), name=g('np_name');
+  const fail=(msg,focusId)=>{ if(err){ err.textContent=msg; } const el=$(focusId); if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); }catch(e){} } };
+  if(!email || !/\S+@\S+\.\S+/.test(email)) return fail('請填寫正確 Email','np_email');
+  if(!phone) return fail('請填寫手機號碼','np_phone');
+  if(!brand) return fail('請填寫攤位／品牌名稱','np_brand');
+  if(!name)  return fail('請填寫聯絡人姓名','np_name');
+  if(err) err.textContent='';
+  ST.member={...(ST.member||{}), email, phone, brand, brand_name:brand, name,
+    sellItem:g('np_sellItem'), sell_category:g('np_sellItem'),
+    brandIntro:g('np_brandIntro'), brand_intro:g('np_brandIntro'),
+    fb:g('np_fb'), fb_url:g('np_fb'), ig:g('np_ig'), ig_url:g('np_ig')};
+  ST.memberEmail=email;
+  memberSaveEmail(email); memberSavePhone(phone);
+  toast('會員資料已填好，請接著選擇報名內容');
+  renderDynFormFull(ST.currentSession, false);
+  setTimeout(()=>{ const d=$('dynForm'); if(d){ try{ d.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} } },120);
+}
 async function checkMemberStep(){
   const emailEl=$('step1Email');
   const phoneEl=$('step1Phone');
@@ -3760,7 +3821,7 @@ async function checkMemberStep(){
         statusEl.style.color='#4a3c75';
         statusEl.textContent='👋 查無既有資料，請先建立會員資料，再填本次報名內容';
       }
-      setTimeout(()=>{ renderDynFormFull(ST.currentSession,true); },500);
+      setTimeout(()=>{ showNewMemberProfileStep(ST.currentSession); },500);
     }
   }catch(e){
     console.warn('[checkMemberStep failed]', e);
