@@ -1,3 +1,4 @@
+<!-- SEAT_EMERGENCY_SINGLE_SOURCE_FIX_20260722：修正地圖獨立儲存、位置載入阻斷與單一分類來源 -->
 <!-- SEAT_SINGLE_SOURCE_UNIFY_20260721：選位分類／加價／禁用單一來源，地圖與位置清單分開儲存 -->
 <!-- VENUE_MAP_COMPAT_FIX_20260721：常用場地圖相容寫入與套用後資料庫重載提示 -->
 <!-- FULL_FLOW_FIX_20260721：場地圖、退款篩選、現場撤場與押金操作閉環修復 -->
@@ -1981,14 +1982,16 @@ function collectSessionDates(){
 }
 
 let AdminSessionSeatItems=[];
+let AdminSessionSeatLoaded=false;
+let AdminSessionSeatListDirty=false;
 function normalizeAdminSeatItem(x={},i=0){
-  const rawType=String(x.type||x.seatType||'auto').trim();
-  const legacyInactive=(x.active===false||x.active==='false');
+  const rawType=String(x.type||x.seatType||x.seat_type||'auto').trim();
+  const legacyInactive=(x.active===false||x.active==='false'||x.is_active===false||x.is_active==='false');
   let kind=(rawType==='service')?'service':(rawType==='closed'||legacyInactive)?'closed':'fixed';
-  let price=Math.max(0,Number(x.price||x.priceDelta||0)||0);
+  let price=Math.max(0,Number(x.price||x.priceDelta||x.price_delta||0)||0);
   const type=kind==='service'?'service':kind==='closed'?'closed':(price>0?'paid':'auto');
   if(type==='service'||type==='closed') price=0;
-  return {code:String(x.code||x.seatCode||x.stallNo||'').trim(),type,price,note:String(x.note||''),order:Number(x.order||x.mapOrder||i+1)||i+1};
+  return {code:String(x.code||x.seatCode||x.seat_code||x.stallNo||x.stall_no||x.number||'').trim(),type,price,note:String(x.note||''),order:Number(x.order||x.mapOrder||x.map_order||i+1)||i+1};
 }
 function adminSeatKind(type){ return type==='service'?'service':type==='closed'?'closed':'fixed'; }
 function seatTypeSelectHtml(type,idx){
@@ -1996,13 +1999,13 @@ function seatTypeSelectHtml(type,idx){
   const opts=[['fixed','攤位（固定）'],['service','服務台'],['closed','禁用']];
   return '<select onchange="updateSessionSeatRow('+idx+',\'kind\',this.value)" title="分類">'+opts.map(o=>'<option value="'+o[0]+'" '+(o[0]===kind?'selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
 }
-function moveSessionSeatRow(i,dir){ const a=AdminSessionSeatItems; const j=i+dir; if(j<0||j>=a.length) return; const t=a[i]; a[i]=a[j]; a[j]=t; renderSessionSeatRows(a); }
+function moveSessionSeatRow(i,dir){ const a=AdminSessionSeatItems; const j=i+dir; if(j<0||j>=a.length) return; const t=a[i]; a[i]=a[j]; a[j]=t; AdminSessionSeatListDirty=true; renderSessionSeatRows(a); }
 function expandStallCodes(input){ const out=[]; const seen=new Set(); String(input||'').split(/[,\s，、]+/).forEach(function(raw){ const tok=raw.trim(); if(!tok) return; const m=tok.match(/^([^\d]*?)(\d+)\s*[-~～]\s*([^\d]*?)(\d+)$/); if(m && (m[1]===m[3]||m[3]==='')){ const pf=m[1]; const a=parseInt(m[2],10),b=parseInt(m[4],10); const lo=Math.min(a,b),hi=Math.max(a,b); if(hi-lo>500){ if(!seen.has(tok)){seen.add(tok);out.push(tok);} return; } for(let k=lo;k<=hi;k++){ const c=pf+k; if(!seen.has(c)){seen.add(c);out.push(c);} } } else { if(!seen.has(tok)){seen.add(tok);out.push(tok);} } }); return out; }
-function addSeatsByRange(){ const raw=String(($('set_seatRange')||{}).value||'').trim(); if(!raw){ toast('請輸入範圍，例如 A1-A5,B1-B5,D1-D6'); return; } const codes=expandStallCodes(raw); if(!codes.length){ toast('無法解析範圍'); return; } let added=0; codes.forEach(function(code){ if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code:code,type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); added++; } }); renderSessionSeatRows(AdminSessionSeatItems); if($('set_seatRange')) $('set_seatRange').value=''; toast('已建立 '+added+' 個號碼'); }
+function addSeatsByRange(){ const raw=String(($('set_seatRange')||{}).value||'').trim(); if(!raw){ toast('請輸入範圍，例如 A1-A5,B1-B5,D1-D6'); return; } const codes=expandStallCodes(raw); if(!codes.length){ toast('無法解析範圍'); return; } let added=0; codes.forEach(function(code){ if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code:code,type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); added++; } }); if(added) AdminSessionSeatListDirty=true; renderSessionSeatRows(AdminSessionSeatItems); if($('set_seatRange')) $('set_seatRange').value=''; toast('已建立 '+added+' 個號碼'); }
 function currentSeatSid(){ return String(($('set_sessionId')||{}).value||'').trim(); }
 async function loadVenueMapList(){ try{ const r=await apiPost({action:'listVenueMaps'}); const maps=(r&&r.maps)||[]; const sel=$('set_venueMapSel'); if(sel){ sel.innerHTML='<option value="">— 選擇常用圖 —</option>'+maps.map(m=>`<option value="${attr(m.id)}">${safe(m.name)}</option>`).join(''); } }catch(e){} }
 async function applyVenueMapNow(){ const sid=currentSeatSid(); const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇常用圖'); return; } if(!confirm('套用後會以常用圖的圖片與位置設定覆蓋本場目前設定，確定？')) return; try{ const res=await apiPost({action:'applyVenueMap',sessionId:sid,mapId,enabled:!!$('set_seatPricingEnabled')?.checked,holdHours:Number(($('set_seatHoldHours')||{}).value||24)||24,assignDaysBefore:Number(($('set_seatAssignDays')||{}).value||7)||7}); await loadSessionSeatSettings(sid, (typeof sessionById==='function'?sessionById(sid):null)||{}); toast(res&&res.warning?('已套用常用圖；'+res.warning):'已套用常用圖',9000); }catch(e){ toast('套用失敗：'+e.message,9000); } }
-async function saveVenueMapNow(){ const name=prompt('把目前的場地圖與位置設定存成常用圖，請命名（例如：高雄美麗島 A區）'); if(!name) return; const mapUrl=String(($('set_seatMapUrl')||{}).value||'').trim(); const seats=collectSessionSeatItems(); if(!mapUrl && !seats.length){ toast('目前沒有地圖或位置可存'); return; } try{ await apiPost({action:'saveVenueMap',name:name,mapUrl:mapUrl,seats:seats}); toast('已存成常用圖：'+name); await loadVenueMapList(); }catch(e){ toast('儲存失敗：'+e.message,7000); } }
+async function saveVenueMapNow(){ if(!AdminSessionSeatLoaded){ toast('位置清單尚未成功載入，已阻止存成常用圖，避免把空資料覆蓋範本',8000); return; } const name=prompt('把目前的場地圖與位置設定存成常用圖，請命名（例如：高雄美麗島 A區）'); if(!name) return; const mapUrl=String(($('set_seatMapUrl')||{}).value||'').trim(); const seats=collectSessionSeatItems(); if(!mapUrl && !seats.length){ toast('目前沒有地圖或位置可存'); return; } try{ await apiPost({action:'saveVenueMap',name:name,mapUrl:mapUrl,seats:seats}); toast('已存成常用圖：'+name); await loadVenueMapList(); }catch(e){ toast('儲存失敗：'+e.message,7000); } }
 async function deleteVenueMapNow(){ const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇要刪除的常用圖'); return; } if(!confirm('確定刪除這張常用圖？（不影響已套用的場次）')) return; try{ await apiPost({action:'deleteVenueMap',mapId:mapId}); toast('已刪除'); await loadVenueMapList(); }catch(e){ toast('刪除失敗：'+e.message,7000); } }
 function renderSessionSeatRows(items){
   AdminSessionSeatItems=(Array.isArray(items)?items:[]).map((x,i)=>normalizeAdminSeatItem(x,i)).filter(x=>x.code);
@@ -2016,6 +2019,19 @@ function renderSessionSeatRows(items){
     +'<span class="seat-row-actions"><button type="button" class="btn secondary small" onclick="moveSessionSeatRow('+i+',-1)" title="上移">▲</button><button type="button" class="btn secondary small" onclick="moveSessionSeatRow('+i+',1)" title="下移">▼</button><button type="button" class="btn secondary small" onclick="removeSessionSeatRow('+i+')">刪</button></span>'
     +'</div>'; }).join('');
   updateSeatMiniSummary();
+}
+// 批次設定加價金額：0＝系統自動排位（攤友不能選）；>0＝開放攤友加價自選
+function bulkSetSeatPrice(){
+  const list=AdminSessionSeatItems||[];
+  if(!list.length){ toast('尚未建立攤位號碼'); return; }
+  const v=prompt('批次設定「加價金額」\n\n0＝系統依繳費順序自動排位（攤友不能自己選）\n大於 0＝開放攤友加價自選這些位置\n\n請輸入金額：','100');
+  if(v===null) return;
+  const n=Math.max(0, Number(String(v).trim())||0);
+  let cnt=0;
+  list.forEach(function(x){ if(adminSeatKind(x.type)==='fixed'){ x.price=n; x.type=(n>0?'paid':'auto'); cnt++; } });
+  renderSessionSeatRows(list);
+  AdminSessionSeatMapDirty=true;
+  toast(n>0?('已將 '+cnt+' 個攤位設為可自選（加價 '+n+' 元），記得按儲存'):('已將 '+cnt+' 個攤位設為系統自動排位，記得按儲存'));
 }
 function updateSeatMiniSummary(){
   const el=$('set_seatSummary'); if(!el) return;
@@ -2036,10 +2052,11 @@ function updateSessionSeatRow(i,key,val){
     row.price=Math.max(0,Number(val||0)||0);
     if(adminSeatKind(row.type)==='fixed') row.type=row.price>0?'paid':'auto';
   }else row[key]=String(val||'').trim();
+  AdminSessionSeatListDirty=true;
   renderSessionSeatRows(AdminSessionSeatItems);
 }
-function removeSessionSeatRow(i){ AdminSessionSeatItems.splice(i,1); renderSessionSeatRows(AdminSessionSeatItems); }
-function addSessionSeatRow(){ AdminSessionSeatItems.push({code:'',type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); renderSessionSeatRows(AdminSessionSeatItems); }
+function removeSessionSeatRow(i){ AdminSessionSeatItems.splice(i,1); AdminSessionSeatListDirty=true; renderSessionSeatRows(AdminSessionSeatItems); }
+function addSessionSeatRow(){ AdminSessionSeatItems.push({code:'',type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); AdminSessionSeatListDirty=true; renderSessionSeatRows(AdminSessionSeatItems); }
 function batchCreateSessionSeats(){
   const prefix=String($('set_seatPrefix')?.value||'').trim().toUpperCase();
   const start=Math.max(1,Number($('set_seatStart')?.value||1)||1);
@@ -2050,6 +2067,7 @@ function batchCreateSessionSeats(){
     const code=prefix+String(start+i);
     if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code,type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); added++; }
   }
+  if(added) AdminSessionSeatListDirty=true;
   renderSessionSeatRows(AdminSessionSeatItems);
   toast('已建立 '+added+' 個號碼；場地圖可稍後上傳，號碼仍會獨立存入資料庫');
 }
@@ -2088,19 +2106,32 @@ function toggleSessionSeatSettings(){
   // 不再用「沒有地圖」覆蓋號碼清單；stalls 資料即使沒有圖片也必須顯示。
   if(on) renderSessionSeatRows(AdminSessionSeatItems);
 }
-function loadSessionSeatMapFile(input){
+async function loadSessionSeatMapFile(input){
   const file=input && input.files && input.files[0];
   if(!file) return;
   if(!/^image\//.test(file.type||'')){ toast('請選擇圖片檔'); input.value=''; return; }
-  const reader=new FileReader();
-  reader.onload=()=>{ const url=reader.result||''; if($('set_seatMapUrl')) $('set_seatMapUrl').value=url; AdminSessionSeatMapDirty=true; toggleSessionSeatSettings(); toast('已載入場地圖，請先按「儲存地圖」保存'); };
-  reader.onerror=()=>toast('場地圖讀取失敗');
-  reader.readAsDataURL(file);
+  if(file.size>5*1024*1024){ toast('圖片請小於 5MB'); input.value=''; return; }
+  // 統一走「上傳到儲存空間、資料庫只存網址」這一套。
+  // 舊做法是把整張圖轉成 base64 塞進資料庫欄位，圖一大就會存不進去（存檔失敗的主因）。
+  try{
+    toast('場地圖上傳中…');
+    const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('讀取失敗')); r.readAsDataURL(file); });
+    const up=await apiPost({action:'uploadCover', image:dataUrl});
+    if(!up || !up.url) throw new Error((up&&up.error)||'上傳失敗');
+    if($('set_seatMapUrl')) $('set_seatMapUrl').value=up.url;
+    AdminSessionSeatMapDirty=true;
+    toggleSessionSeatSettings();
+    toast('場地圖已上傳，請按「儲存地圖」套用到本場次');
+  }catch(e){
+    toast('場地圖上傳失敗：'+((e&&e.message)?e.message:e),8000);
+  }finally{ input.value=''; }
 }
 
 
 async function loadSessionSeatSettings(sid,s){
   AdminSessionSeatMapDirty=false;
+  AdminSessionSeatLoaded=false;
+  AdminSessionSeatListDirty=false;
   try{ loadVenueMapList(); }catch(e){}
   try{
     const data=await api({action:'getSeatMap',sessionId:sid});
@@ -2108,30 +2139,39 @@ async function loadSessionSeatSettings(sid,s){
       const dbMapUrl=String(data.mapUrl||'').trim();
       if($('set_seatMapUrl')) $('set_seatMapUrl').value=dbMapUrl;
       if($('set_seatHoldHours') && data.holdHours) $('set_seatHoldHours').value=data.holdHours;
-      // 圖片與號碼是兩份正式資料：圖片來自 sessions.seat_map_url，號碼來自 stalls；任一缺少都不能把另一份隱藏。
       renderSessionSeatRows(Array.isArray(data.seats)?data.seats:[]);
+      AdminSessionSeatLoaded=true;
+      AdminSessionSeatListDirty=false;
       toggleSessionSeatSettings();
       return;
     }
-  }catch(e){ console.warn('getSeatMap skipped',e); }
-  renderSessionSeatRows([]);
-  toggleSessionSeatSettings();
+    throw new Error((data&&data.error)||'位置清單載入失敗');
+  }catch(e){
+    AdminSessionSeatItems=[];
+    const box=$('set_seatRows');
+    if(box) box.innerHTML='<div class="empty" style="color:#8b1c1c">位置清單載入失敗，系統已阻止儲存，避免把原資料覆蓋成空白。<div class="sub" style="margin-top:6px">原因：'+safe(e&&e.message?e.message:String(e))+'</div></div>';
+    const note=$('set_seatMapNote'); if(note) note.textContent='位置資料尚未載入成功，請重新開啟場次設定後再儲存。';
+  }
 }
 async function saveSessionSeatSettings(sid){
   if(!$('set_seatPricingEnabled')) return;
+  if(!AdminSessionSeatLoaded) throw new Error('選位位置清單尚未成功載入，已阻止儲存，避免覆蓋原有位置');
   const moduleOn = $('mod_seats') ? !!$('mod_seats').checked : true;
   const enabled=moduleOn && !!$('set_seatPricingEnabled').checked;
   const seats=collectSessionSeatItems();
   const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
   const holdHours=Number($('set_seatHoldHours')?.value||24)||24;
-  if(enabled || seats.length || mapUrl){
-    await apiPost({action:'saveSeatMap',sessionId:sid,enabled,mapUrl,holdHours,seats,assignDaysBefore:Number(($('set_seatAssignDays')||{}).value||7)||7});
-  }
+  await apiPost({action:'saveSeatMap',sessionId:sid,enabled,mapUrl,holdHours,seats,assignDaysBefore:Number(($('set_seatAssignDays')||{}).value||7)||7});
+  AdminSessionSeatLoaded=true;
+  AdminSessionSeatListDirty=false;
 }
 
 async function saveSessionSeatMapOnly(sid,btn){
   const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
   if(!mapUrl){ toast('請先上傳或貼上已編號場地圖'); return; }
+  if(/^data:/i.test(mapUrl) && mapUrl.length>200000){
+    toast('這張圖是內嵌資料且過大，請改用上方「選擇檔案」重新上傳，系統會自動轉成網址',9000); return;
+  }
   const old=btn?btn.textContent:'';
   if(btn){ btn.disabled=true; btn.textContent='儲存地圖中…'; }
   try{
@@ -2381,7 +2421,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   const addonsBody = sessionAddonsFormHtml(addons);
   const invoiceBody = sessionInvoiceFormHtml(tax);
   const agreementBody = '<div class="form-grid"><div class="form-field"><label>選擇合約</label><select id="set_agreementTemplate" onchange="syncAgreementTemplateSelection()">'+agreementTemplateOptionsHtml(agreementTemplates,s)+'</select><div class="sub">目前版本：<span id="agreementVersionPreview">'+safe(currentAgreementVersion || '請選擇版本')+'</span></div></div><div class="form-field"><label>合約同意</label><label class="tight-check"><input type="checkbox" id="set_agreementRequired" '+(sessionBool(agreementRequired,true)?'checked':'')+'> 報名時要求同意合約</label></div><input type="hidden" id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"><input type="hidden" id="set_agreementVersion" value="'+attr(currentAgreementVersion)+'"></div><div class="compact-actions"><button type="button" class="btn secondary small" onclick="openInlineAgreementCreate()">＋ 新增本場次合約</button></div><div class="notice">合約正文在「後台設定 → 合約管理」新增或修改；場次設定只選套用版本。</div>';
-  const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field"><label>活動前幾天自動排位</label><input id="set_seatAssignDays" type="number" min="3" value="'+attr(s.seatAssignDaysBefore||s.seat_assign_days_before||7)+'"><div class="sub">依繳費順序批次排位，預設 7 天（不小於 3）。</div></div><div class="form-field full"><label>已編號場地圖</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="請上傳或貼上已編號場地圖 URL"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div><div class="seat-map-save-inline"><button type="button" class="btn secondary small" onclick="saveSessionSeatMapOnly(\''+attr(sid)+'\',this)">儲存地圖</button><span class="sub">地圖儲存後，才建立或修改號碼清單。</span></div></div></div><div class="form-field full"><label>常用場地圖</label><div class="session-upload-line"><select id="set_venueMapSel"><option value="">— 選擇常用圖 —</option></select><button type="button" class="btn secondary small" onclick="applyVenueMapNow()">套用</button><button type="button" class="btn secondary small" onclick="saveVenueMapNow()">存成常用圖</button><button type="button" class="btn secondary small" onclick="deleteVenueMapNow()">刪除</button></div><div class="sub">挑一次把「圖＋整份位置設定（分類、加價、備註、排序）」一起帶入；套用會覆蓋本場目前設定。</div></div><div id="set_seatTools" style="display:none"><div class="seat-map-save-note" id="set_seatMapNote"></div><div class="seat-batch-inline" id="set_seatBatchBox"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1" placeholder="起始"><input id="set_seatCount" type="number" value="" placeholder="數量"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button></div><div class="seat-batch-inline"><input id="set_seatRange" placeholder="範圍快速輸入 例：A1-A5,B1-B5,D1-D6"><button type="button" class="btn small" onclick="addSeatsByRange()">依範圍建立</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>分類</span><span>加價金額</span><span>備註</span><span>排序</span></div><div id="set_seatRows"><div class="sub">尚未讀取號碼清單。</div></div></div><div class="sub">選位使用「已編號場地圖＋位置設定清單」，分類只有攤位（固定）、服務台、禁用。</div>';
+  const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field"><label>活動前幾天自動排位</label><input id="set_seatAssignDays" type="number" min="3" value="'+attr(s.seatAssignDaysBefore||s.seat_assign_days_before||7)+'"><div class="sub">依繳費順序批次排位，預設 7 天（不小於 3）。</div></div><div class="form-field full"><label>已編號場地圖</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="請上傳或貼上已編號場地圖 URL"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div><div class="seat-map-save-inline"><button type="button" class="btn secondary small" onclick="saveSessionSeatMapOnly(\''+attr(sid)+'\',this)">儲存地圖</button><span class="sub">地圖儲存後，才建立或修改號碼清單。</span></div></div></div><div class="form-field full"><label>常用場地圖</label><div class="session-upload-line"><select id="set_venueMapSel"><option value="">— 選擇常用圖 —</option></select><button type="button" class="btn secondary small" onclick="applyVenueMapNow()">套用</button><button type="button" class="btn secondary small" onclick="saveVenueMapNow()">存成常用圖</button><button type="button" class="btn secondary small" onclick="deleteVenueMapNow()">刪除</button></div><div class="sub">挑一次把「圖＋整份位置設定（分類、加價、備註、排序）」一起帶入；套用會覆蓋本場目前設定。</div></div><div id="set_seatTools" style="display:none"><div class="seat-map-save-note" id="set_seatMapNote"></div><div class="seat-batch-inline" id="set_seatBatchBox"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1" placeholder="起始"><input id="set_seatCount" type="number" value="" placeholder="數量"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button><button type="button" class="btn secondary small" onclick="bulkSetSeatPrice()">批次設定加價金額</button></div><div class="sub" style="margin-top:6px;line-height:1.7"><b>加價金額怎麼填？</b><br>・填 <b>0</b>＝系統依<b>繳費順序自動排位</b>，攤友<b>不能</b>自己選位置。<br>・填 <b>大於 0</b>＝<b>開放攤友加價自選</b>這個位置，前台才會出現可選的位置。</div><div class="seat-batch-inline"><input id="set_seatRange" placeholder="範圍快速輸入 例：A1-A5,B1-B5,D1-D6"><button type="button" class="btn small" onclick="addSeatsByRange()">依範圍建立</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>分類</span><span>加價金額</span><span>備註</span><span>排序</span></div><div id="set_seatRows"><div class="sub">尚未讀取號碼清單。</div></div></div><div class="sub">選位使用「已編號場地圖＋位置設定清單」，分類只有攤位（固定）、服務台、禁用。</div>';
   return '<div class="readable-detail tight-session-settings">'
   +'<div class="report-card"><div class="report-title">基本資料</div><div class="session-basic-grid">'
   +'<div class="form-field manual-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div>'
@@ -2427,7 +2467,7 @@ async function saveSessionSettings(sid,btn){
     const mappedType=entryTypeMap(entry);
     const agreementVersion = $('set_agreementVersion')?.value.trim() || '';
     if(modules.agreement && $('set_agreementRequired')?.checked && !agreementVersion) throw new Error('請先選擇合約版本，或按「＋ 新增本場次合約」建立後再選用');
-    const body={action:'updateSession',id:sid,sessionId:sid,eventId:($('set_eventId')?.value||'').trim(),name,type:mappedType,region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:[entry],dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,seatPricingEnabled:modules.seats ? !!$('set_seatPricingEnabled')?.checked : false,seatHoldHours:$('set_seatHoldHours')?.value,seatMapUrl:$('set_seatMapUrl')?.value.trim()||'',paymentProfileId:($('set_paymentProfileId')?.value||'').trim(),stallList:collectSessionSeatItems().map(x=>x.code)};
+    const body={action:'updateSession',id:sid,sessionId:sid,eventId:($('set_eventId')?.value||'').trim(),name,type:mappedType,region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:[entry],dates,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,paymentProfileId:($('set_paymentProfileId')?.value||'').trim()};
     if(modules.equipment) body.equip=collectSessionEquip();
     if(modules.addons) body.addons=collectSessionAddons();
     if(modules.invoice) body.invoiceTax=collectSessionInvoiceTax();

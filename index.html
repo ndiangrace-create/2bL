@@ -2862,8 +2862,6 @@ function pfDrawFitRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom,fit){
   const scale=base*z, dw=sw*scale, dh=sh*scale;
   ctx.drawImage(src, rx+(rw-dw)/2, ry+(rh-dh)/2, dw, dh);
 }
-function pfDrawCoverRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom){ pfDrawFitRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom,'cover'); }
-function pfDrawCover(ctx,src,sw,sh,W,H,zoom){ pfDrawCoverRect(ctx,src,sw,sh,0,0,W,H,zoom); }
 async function takePhoto(){
   const W=1080,H=1920;
   const c=document.createElement('canvas'); c.width=W; c.height=H;
@@ -3986,7 +3984,7 @@ function showNewMemberProfileStep(s){
         <div id="np_err" class="err" style="font-size:16px;margin-top:8px"></div>
         <div id="np_save_status" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:16px;font-weight:700;line-height:1.6"></div>
         <button id="saveMemberProfileBtn" class="btn-submit" type="button" style="margin-top:14px">儲存</button>
-        <div class="member-entry-note" style="font-size:14px;color:#777;line-height:1.6;margin-top:8px">資料未完成也可以先存進資料庫，必填資料完整後，才可以進入正式報名表。</div>
+        <div class="member-entry-note" style="font-size:16px;color:#777;line-height:1.6;margin-top:8px">資料未完成也可以先存進資料庫，必填資料完整後，才可以進入正式報名表。</div>
       </div>
     </div>`;
   const btn=$('saveMemberProfileBtn');
