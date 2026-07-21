@@ -1570,7 +1570,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:16px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-resume-fix</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
+        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-fullfix2</div><div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
       <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -2839,7 +2839,9 @@ async function api(params){
   const qs=Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
   // 逾時保護：沒有這個的話，連線卡住就永遠不回，畫面上的按鈕會一直停用（使用者以為「按不下去」）
   const ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
-  const timer=setTimeout(()=>{ try{ ctrl&&ctrl.abort(); }catch(e){} }, 20000);
+  const _to=Number(params.__timeout)||20000;
+  if(params.__timeout) delete params.__timeout;
+  const timer=setTimeout(()=>{ try{ ctrl&&ctrl.abort(); }catch(e){} }, _to);
   try{
     const r=await fetch(API_BASE+'?'+qs,{cache:'no-store',signal:ctrl?ctrl.signal:undefined});
     if(!r.ok){toast&&toast('⚠️ 連線失敗，請稍後再試');return{error:'fail'};}
@@ -3430,12 +3432,24 @@ async function memberEmailPhoneLogin(){
     ST.member=(member && !member.error && member) ? {...member,email:member.email||email,phone:member.phone||phone} : {email,phone};
     memberShowArea('regs');
     fillMemberCard(ST.member);
-    renderMyRegs(Array.isArray(regs)?regs:[]);
+    const _list=Array.isArray(regs)?regs:[];
+    renderMyRegs(_list);
     navTo('member',{noPush:true});
+    // 查無紀錄時給明確指引，避免使用者以為要在這裡重新填一次報名資料
+    if(!_list.length) showNoRecordHelp(email, phone);
   }catch(e){
     console.warn('[memberEmailPhoneLogin failed]', e);
     if(err){err.style.display='block';err.textContent='查詢失敗：'+((e&&e.message)?e.message:'請檢查網路後再試一次');}
   }finally{ if(btn){btn.disabled=false;btn.textContent='查詢我的紀錄';} }
+}
+// 查無報名紀錄時的說明：避免使用者以為要重填一次資料而卡在原地
+function showNoRecordHelp(email, phone){
+  const err=$('memberLoginErr');
+  if(!err) return;
+  err.style.display='block';
+  err.innerHTML='查無符合的報名紀錄。<br>'
+    +'請確認 Email 與手機和<b>報名當時填寫的一樣</b>（'+esc(String(email||''))+'／'+esc(String(phone||''))+'）。<br>'
+    +'如果您<b>還沒有報名過</b>，請回到「報名」分頁選擇場次報名；這裡只查詢已完成的報名。';
 }
 function goMemberPage(){
   return safeLoadMemberPage(ST.memberEmail||memberSafeEmail(), {phone: memberSafePhone()});
@@ -3459,14 +3473,9 @@ function scheduleMemberRecordsSync(reason, delay=120){
   ST.__memberSyncTimer=setTimeout(()=>syncMemberRecordsFromDb(reason).catch(e=>console.warn('[member sync failed]',e)), delay);
 }
 window.syncMemberRecordsFromDb=syncMemberRecordsFromDb;
-document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){ saveRegFormDraft('visibility-hidden'); return; }
-  repairFrontAfterResume('visibility');
-  scheduleMemberRecordsSync('visibility');
-});
-window.addEventListener('pagehide',()=>saveRegFormDraft('pagehide'));
-window.addEventListener('focus',()=>{ repairFrontAfterResume('focus'); scheduleMemberRecordsSync('focus',250); });
-window.addEventListener('pageshow',()=>{ repairFrontAfterResume('pageshow'); scheduleMemberRecordsSync('pageshow',250); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) scheduleMemberRecordsSync('visibility'); });
+window.addEventListener('focus',()=>scheduleMemberRecordsSync('focus',250));
+window.addEventListener('pageshow',()=>scheduleMemberRecordsSync('pageshow',250));
 
 // ── 首頁載入 ──
 
@@ -3783,9 +3792,6 @@ function showEmailStep(s){
         </button>
       </div>
     </div>`;
-  bindRegDraftPersistence();
-  scheduleRegDraftRestore();
-  setTimeout(()=>saveRegFormDraft('stage-email'),120);
 }
 
 // 新會員專用：先把會員資料填完整，再回到報名表繼續選擇內容
@@ -3814,9 +3820,6 @@ function showPhoneMismatchStep(email, phone){
         <button type="button" onclick="goSupportFromForm()" style="width:100%;margin-top:10px;font-size:16px;font-weight:800;padding:13px;border:0;border-radius:14px;background:#DCD7ED;cursor:pointer">聯繫主辦協助更新手機</button>
       </div>
     </div>`;
-  bindRegDraftPersistence();
-  scheduleRegDraftRestore();
-  setTimeout(()=>saveRegFormDraft('stage-phone-mismatch'),120);
   try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
 }
 function retryPhoneMismatch(){
@@ -3871,9 +3874,6 @@ function showNewMemberProfileStep(s){
         </button>
       </div>
     </div>`;
-  bindRegDraftPersistence();
-  scheduleRegDraftRestore();
-  setTimeout(()=>saveRegFormDraft('stage-new-member'),120);
   try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
 }
 function saveNewMemberAndContinue(){
@@ -3893,11 +3893,26 @@ function saveNewMemberAndContinue(){
   ST.memberEmail=email;
   memberSaveEmail(email); memberSavePhone(phone);
   toast('會員資料已填好，請接著選擇報名內容');
-  ST.__regDraftDirty=true;
-  saveRegFormDraft('new-member-complete');
   renderDynFormFull(ST.currentSession, false);
-  setTimeout(()=>{ saveRegFormDraft('new-member-to-full'); },160);
   setTimeout(()=>{ const d=$('dynForm'); if(d){ try{ d.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} } },120);
+}
+// 統一處理「下一步」的畫面切換：任何錯誤都要看得到，不能靜靜停在原地
+function goRegStep(fn){
+  try{
+    if(!ST.currentSession || !ST.currentSession.id){
+      const st=$('step1Status');
+      if(st){ st.style.display='block'; st.style.background='#FAE1DD'; st.style.color='#8b1c1c';
+        st.textContent='場次資料已失效，請關閉本頁後重新點選場次報名。'; }
+      return;
+    }
+    fn();
+  }catch(e){
+    console.warn('[goRegStep failed]', e);
+    const st=$('step1Status');
+    if(st){ st.style.display='block'; st.style.background='#FAE1DD'; st.style.color='#8b1c1c';
+      st.textContent='畫面載入失敗：'+((e&&e.message)?e.message:'請重新整理後再試一次'); }
+    toast&&toast('畫面載入失敗，請重新整理再試');
+  }
 }
 async function checkMemberStep(){
   const emailEl=$('step1Email');
@@ -3922,7 +3937,12 @@ async function checkMemberStep(){
   const checkBtn=document.querySelector('#dynForm .btn-submit');
   if(checkBtn){ checkBtn.disabled=true; checkBtn.textContent='查詢中…'; }
   try{
-    const member=await api({action:'getMember',email,phone,_t:Date.now()});
+    // 兩個查詢「同時」進行。原本是一個等完再等下一個，網路慢時會連等兩次逾時（看起來就是卡住不動）。
+    const [member, chk] = await Promise.all([
+      api({action:'getMember',email,phone,_t:Date.now(),__timeout:12000}),
+      api({action:'checkMemberEmailPhone',email,phone,_t:Date.now(),__timeout:12000}).catch(()=>null)
+    ]);
+    ST._lastEmailPhoneCheck = chk || null;
     if(member && !member.error && (member.email || member.phone || member.name || member.brand || member.brand_name)){
       ST.member={...member};
       ST.memberEmail=String(member.email||email||'').trim();
@@ -3934,7 +3954,7 @@ async function checkMemberStep(){
         statusEl.style.color='#2a4d18';
         statusEl.textContent='✅ 已找到會員資料，請確認資料後繼續報名';
       }
-      setTimeout(()=>{ renderDynFormFull(ST.currentSession, false); },500);
+      goRegStep(function(){ renderDynFormFull(ST.currentSession, false); });
     } else {
       if(!hasEmail){
         if(statusEl){
@@ -3955,16 +3975,10 @@ async function checkMemberStep(){
         statusEl.style.color='#4a3c75';
         statusEl.textContent='👋 查無既有資料，請先建立會員資料，再填本次報名內容';
       }
-      // 提前檢查：這個 Email 是不是已有會員、手機對不對得上。
-      // 對不上就直接說明，不要讓人填完整張表才在送出時被擋（這是最常見的卡關原因）。
-      try{
-        const chk=await api({action:'checkMemberEmailPhone',email,phone,_t:Date.now()});
-        if(chk && chk.exists && !chk.match){
-          showPhoneMismatchStep(email, phone);
-          return;
-        }
-      }catch(e){}
-      setTimeout(()=>{ showNewMemberProfileStep(ST.currentSession); },500);
+      // 手機對不上就直接說明，不要讓人填完整張表才在送出時被擋（前面已同時查好，不用再等一次）
+      const chk2=ST._lastEmailPhoneCheck;
+      if(chk2 && chk2.exists && !chk2.match){ showPhoneMismatchStep(email, phone); return; }
+      goRegStep(function(){ showNewMemberProfileStep(ST.currentSession); });
     }
   }catch(e){
     console.warn('[checkMemberStep failed]', e);
@@ -4295,10 +4309,25 @@ function renderDynFormFull(s, isNew=false){
   if(dynEl) dynEl.innerHTML=html;
   syncMemberIntoCurrentRegForm(ST.member||{});
 
-  // 所有動態欄位統一由草稿保護器保存；手機切換 App／網頁後可完整還原。
-  bindRegDraftPersistence();
-  scheduleRegDraftRestore();
-  setTimeout(()=>saveRegFormDraft('stage-full'),140);
+  // 表單欄位變動時自動儲存（刷新還原用）
+  setTimeout(()=>{
+    const saveFields = ['f_brand','f_name','f_phone','f_sellItem','f_brandIntro','f_note',
+                        'f_fb','f_ig','f_web','f_taxId','f_company','f_invoiceCarrier','f_invoiceEmail'];
+    saveFields.forEach(id=>{
+      const el=$(id);
+      if(!el) return;
+      el.addEventListener('input', ()=>{
+        try{
+          const existing = JSON.parse(localStorage.getItem('2bl_page_state')||'{}');
+          if(existing.tab==='regForm'){
+            if(!existing.formFields) existing.formFields={};
+            existing.formFields[id] = el.value;
+            localStorage.setItem('2bl_page_state', JSON.stringify(existing));
+          }
+        }catch(e){}
+      });
+    });
+  }, 200);
 
   // 合約只保留 dynForm 內的 contractCard，不再顯示第二個合約按鈕。
 
@@ -4421,9 +4450,6 @@ function resetRegFormState(options={}){
 }
 
 function openRegFormModal(){
-  const previousState=readRegPageState();
-  const sameDraft=previousState.tab==='regForm' && ST.currentSession && String(previousState.sessionId||'')===String(ST.currentSession.id||'');
-  ST.__regDraftDirty=!!(sameDraft && previousState.draftDirty!==false);
   resetRegFormState({keepContent:false});
   if(ST.currentSession){
     if(ST.member && ST.memberEmail){
@@ -4448,21 +4474,12 @@ function openRegFormModal(){
   history.pushState({regFormOpen:true}, '', location.href);
   // 儲存報名表狀態（刷新還原用）
   try{
-    const state = sameDraft ? {
-      ...previousState,
-      tab:'regForm',
-      sessionId:ST.currentSession ? ST.currentSession.id : null
-    } : {
+    const state = {
       tab: 'regForm',
       sessionId: ST.currentSession ? ST.currentSession.id : null,
       stallCount: ST.stallCount || 1,
       equipQty: ST.equipQty || {},
       addonQty: ST.addonQty || {},
-      formStage: currentRegFormStage(),
-      formControls: {},
-      memberDraft: collectRegMemberDraft(),
-      draftDirty:false,
-      draftUpdatedAt:Date.now()
     };
     localStorage.setItem('2bl_current_tab', 'regForm');
     localStorage.setItem('2bl_page_state', JSON.stringify(state));
@@ -4472,158 +4489,8 @@ function openRegFormModal(){
     const el=document.getElementById(id);
     if(el) el.classList.remove('active');
   });
-  bindRegDraftPersistence();
-  if(sameDraft) scheduleRegDraftRestore();
 }
 
-
-// ── 手機切換頁面／App 後的報名草稿保護 ──
-// 這裡只保存「尚未送出」的暫存輸入；正式會員／報名資料仍以 Worker＋資料庫為準。
-function readRegPageState(){
-  try{return JSON.parse(localStorage.getItem('2bl_page_state')||'{}')||{};}catch(e){return {};}
-}
-function currentRegFormStage(){
-  if($('np_email')) return 'newMember';
-  if($('pm_phone')) return 'phoneMismatch';
-  if($('f_email')) return 'full';
-  return 'email';
-}
-function collectRegControls(){
-  const root=$('regFormModal');
-  const out={};
-  if(!root) return out;
-  root.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{
-    if(!el.id) return;
-    const type=String(el.type||'').toLowerCase();
-    if(type==='checkbox'||type==='radio') out[el.id]={checked:!!el.checked,value:String(el.value||'')};
-    else out[el.id]={value:String(el.value==null?'':el.value)};
-  });
-  return out;
-}
-function collectRegMemberDraft(){
-  const val=(...ids)=>{
-    for(const id of ids){ const el=$(id); if(el && String(el.value||'').trim()) return String(el.value||'').trim(); }
-    return '';
-  };
-  const m=ST.member||{};
-  return {
-    email:val('f_email','np_email','step1Email')||String(ST.memberEmail||m.email||memberSafeEmail()||'').trim(),
-    phone:val('f_phone','np_phone','step1Phone','pm_phone')||String(m.phone||memberSafePhone()||'').trim(),
-    name:val('f_name','np_name')||String(m.name||'').trim(),
-    brand:val('f_brand','np_brand')||String(m.brand||m.brand_name||'').trim(),
-    brand_name:val('f_brand','np_brand')||String(m.brand||m.brand_name||'').trim(),
-    fb:val('f_fb','np_fb')||String(m.fb||m.fb_url||'').trim(),
-    fb_url:val('f_fb','np_fb')||String(m.fb||m.fb_url||'').trim(),
-    ig:val('f_ig','np_ig')||String(m.ig||m.ig_url||'').trim(),
-    ig_url:val('f_ig','np_ig')||String(m.ig||m.ig_url||'').trim(),
-    brandIntro:val('f_brandIntro','np_brandIntro')||String(m.brandIntro||m.brand_intro||'').trim(),
-    brand_intro:val('f_brandIntro','np_brandIntro')||String(m.brandIntro||m.brand_intro||'').trim(),
-    sellItem:val('f_sellItem','np_sellItem')||String(m.sellItem||m.sell_items||m.sell_category||'').trim()
-  };
-}
-function saveRegFormDraft(reason='auto'){
-  const page=$('regFormModal');
-  const sid=String((ST.currentSession&&ST.currentSession.id)||'').trim();
-  if(!page || !page.classList.contains('active') || !sid) return;
-  try{
-    const old=readRegPageState();
-    const state={
-      ...old,
-      tab:'regForm',
-      sessionId:sid,
-      formStage:currentRegFormStage(),
-      formControls:collectRegControls(),
-      memberDraft:collectRegMemberDraft(),
-      stallCount:Number(ST.stallCount||1),
-      equipQty:{...(ST.equipQty||{})},
-      addonQty:{...(ST.addonQty||{})},
-      seatChoiceIntent:ST.seatChoiceIntent==='paid'?'paid':'auto',
-      bundleAddon:ST.bundleAddon||'',
-      scrollY:Math.max(0,Number(window.scrollY||0)),
-      draftDirty:!!ST.__regDraftDirty,
-      draftUpdatedAt:Date.now(),
-      draftReason:String(reason||'auto')
-    };
-    localStorage.setItem('2bl_current_tab','regForm');
-    localStorage.setItem('2bl_page_state',JSON.stringify(state));
-  }catch(e){ console.warn('[saveRegFormDraft]',e); }
-}
-function hasSavedRegDraft(sessionId){
-  const st=readRegPageState();
-  const legacyDirty=st.formFields && Object.values(st.formFields).some(v=>String(v||'').trim());
-  return st.tab==='regForm' && !!st.sessionId && (!sessionId || String(st.sessionId)===String(sessionId)) && (st.draftDirty===true || !!legacyDirty);
-}
-function clearRegFormDraft(){
-  try{
-    const st=readRegPageState();
-    if(st.tab==='regForm') localStorage.removeItem('2bl_page_state');
-    if(localStorage.getItem('2bl_current_tab')==='regForm') localStorage.setItem('2bl_current_tab','home');
-  }catch(e){}
-  ST.__regDraftDirty=false;
-}
-function restoreRegFormDraft(sessionId, opts={}){
-  const st=readRegPageState();
-  if(st.tab!=='regForm' || !st.sessionId || String(st.sessionId)!==String(sessionId||((ST.currentSession||{}).id)||'')) return false;
-  const controls=st.formControls||Object.fromEntries(Object.entries(st.formFields||{}).map(([id,value])=>[id,{value}]));
-  ST.stallCount=Math.max(1,Number(st.stallCount||ST.stallCount||1));
-  ST.equipQty={...(st.equipQty||ST.equipQty||{})};
-  ST.addonQty={...(st.addonQty||ST.addonQty||{})};
-  ST.seatChoiceIntent=st.seatChoiceIntent==='paid'?'paid':'auto';
-  ST.bundleAddon=st.bundleAddon||'';
-  Object.entries(controls).forEach(([id,data])=>{
-    const el=$(id); if(!el||!data) return;
-    const type=String(el.type||'').toLowerCase();
-    if(type==='checkbox'||type==='radio') el.checked=!!data.checked;
-    else if(Object.prototype.hasOwnProperty.call(data,'value')) el.value=data.value==null?'':String(data.value);
-  });
-  const stallDisplay=$('stallDisplay'); if(stallDisplay) stallDisplay.textContent=String(ST.stallCount);
-  Object.entries(ST.equipQty||{}).forEach(([k,v])=>{
-    const a=$('eq_num_'+k); if(a) a.textContent=String(v);
-    const b=$('eq_'+k); if(b) b.value=String(v);
-  });
-  Object.entries(ST.addonQty||{}).forEach(([k,v])=>{ const a=$('addon_num_'+k); if(a) a.textContent=String(v); });
-  const seat=$('seatIntentChk'); if(seat) seat.checked=ST.seatChoiceIntent==='paid';
-  document.querySelectorAll('.bundleAddonChk').forEach(cb=>{ cb.checked=String(cb.value)===String(ST.bundleAddon||''); });
-  const note=$('f_note'), noteCount=$('noteCount'); if(note&&noteCount) noteCount.textContent=String(note.value||'').length+' / 200';
-  ST.__regDraftDirty=st.draftDirty!==false;
-  try{ if(typeof updateFee==='function') updateFee(); }catch(e){}
-  if(opts.restoreScroll!==false){ setTimeout(()=>window.scrollTo(0,Math.max(0,Number(st.scrollY||0))),80); }
-  return true;
-}
-function scheduleRegDraftRestore(delay=80){
-  clearTimeout(ST.__regDraftRestoreTimer);
-  ST.__regDraftRestoreTimer=setTimeout(()=>restoreRegFormDraft((ST.currentSession||{}).id),delay);
-}
-function bindRegDraftPersistence(){
-  const root=$('regFormModal');
-  if(!root || root.dataset.draftBound==='1') return;
-  root.dataset.draftBound='1';
-  const onEdit=()=>{
-    ST.__regDraftDirty=true;
-    clearTimeout(ST.__regDraftSaveTimer);
-    ST.__regDraftSaveTimer=setTimeout(()=>saveRegFormDraft('input'),100);
-  };
-  root.addEventListener('input',onEdit,true);
-  root.addEventListener('change',onEdit,true);
-}
-function repairFrontAfterResume(reason){
-  if(document.hidden) return;
-  const reg=$('regFormModal');
-  if(reg && reg.classList.contains('active')){
-    reg.style.display='';
-    if(!ST.__submitting){
-      try{ hideSubmitOverlay(); }catch(e){}
-      const btn=$('submitBtn');
-      if(btn && btn.textContent==='送出中…'){ btn.textContent='送出報名'; btn.style.opacity='1'; }
-    }
-    scheduleRegDraftRestore(40);
-    // 強制瀏覽器重繪，修正部分手機從外部頁面返回後整頁反白。
-    void reg.offsetHeight;
-  }
-  const lookup=$('memberLookupBtn');
-  if(lookup && lookup.disabled && lookup.textContent==='查詢中…'){ lookup.disabled=false; lookup.textContent='查詢我的紀錄'; }
-  if(!document.querySelector('#regSuccessModal,.modal-overlay.show')) document.body.style.overflow='';
-}
 
 function setEditValue(id, value){
   const el=$(id);
@@ -4763,7 +4630,6 @@ function closeRegFormModal(opts){
   }
   const page=$('regFormModal');
   if(page) page.classList.remove('active');
-  clearRegFormDraft();
   ST.currentSession=null;
   resetRegFormState({keepContent:false});
   // 回到上一頁（首頁或場次列表）
@@ -4824,7 +4690,6 @@ function closeRegFormToSessionListAfterSubmit(sessionSnapshot, email){
     page.classList.remove('show');
   }
 
-  clearRegFormDraft();
   resetRegFormState({keepContent:false});
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const portal = $('pagePortal');
@@ -4966,14 +4831,11 @@ async function openSession(sessionId){
         ST.currentSession=fresh;
         // 只在表單還沒進入填寫成功畫面時刷新內容。
         const success=document.querySelector('#regFormModal .success-screen');
-        if(!success && !ST.__regDraftDirty && !hasSavedRegDraft(sessionId)){
+        if(!success){
           buildFormHero(fresh, fresh.cover||((ST.events||[]).find(e=>String(e.id)===String(fresh.eventId))||{}).cover||'');
           if(ST.member && ST.memberEmail) renderDynFormFull(fresh, false);
           else showEmailStep(fresh);
           updateFee();
-        } else if(!success) {
-          // 使用者已輸入或是從手機背景恢復：只更新 session，不重畫表單，避免連結與其他欄位被洗掉。
-          scheduleRegDraftRestore(20);
         }
       }
     }).catch(()=>{});
@@ -6660,7 +6522,6 @@ if(document.readyState==='loading'){
   const _oldCheckMemberStep=window.checkMemberStep; window.checkMemberStep=async function(){ const email=(($('step1Email')&&$('step1Email').value)||'').trim(); if(email) saveEmail(email); return _oldCheckMemberStep?_oldCheckMemberStep():undefined; };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
-  bindRegDraftPersistence();
   // 前台已改為 Email＋手機會員查詢；不再恢復第三方登入 token
   const savedEmail = readEmail();
   if (savedEmail) ST.memberEmail = savedEmail;
@@ -6688,34 +6549,7 @@ if(document.readyState==='loading'){
   if(deepLink.isMember){ navTo('member'); hideDeepLinkLoading(); return; }
   hideDeepLinkLoading();
 
-  // 手機切到其他 App／網頁後，瀏覽器可能重載程序；若有尚未送出的報名草稿，回到原場次與原欄位。
-  const savedDraftAge=savedState&&savedState.draftUpdatedAt ? (Date.now()-Number(savedState.draftUpdatedAt)) : Number.POSITIVE_INFINITY;
-  if(lastTab==='regForm' && savedState && savedState.sessionId && savedDraftAge>=0 && savedDraftAge<24*60*60*1000){
-    const draft=savedState;
-    const md=draft.memberDraft||{};
-    const draftEmail=String(md.email||savedEmail||'').trim();
-    const draftPhone=String(md.phone||memberSafePhone()||'').trim();
-    ST.__regDraftDirty=true;
-    if(draftEmail){
-      ST.memberEmail=draftEmail;
-      memberSaveEmail(draftEmail);
-      if(draftPhone) memberSavePhone(draftPhone);
-      let freshMember=null;
-      if(draftPhone){
-        try{ freshMember=await api({action:'getMember',email:draftEmail,phone:draftPhone,_t:Date.now()}); }catch(e){}
-      }
-      if(freshMember && !freshMember.error) ST.member={...freshMember,email:freshMember.email||draftEmail,phone:freshMember.phone||draftPhone};
-      else if(draft.formStage==='full' || draft.formStage==='newMember') ST.member={...md,email:draftEmail,phone:draftPhone};
-    }
-    await openSession(draft.sessionId);
-    if(draft.formStage==='email') showEmailStep(ST.currentSession);
-    else if(draft.formStage==='newMember') showNewMemberProfileStep(ST.currentSession);
-    else if(draft.formStage==='phoneMismatch') showPhoneMismatchStep(draftEmail,draftPhone);
-    scheduleRegDraftRestore(30);
-    return;
-  }
-
-  // 還原一般頁面。
+  // 還原頁面：非分享連結一律回到單一首頁；避免上次停留的報名表或舊場次列表蓋回首頁。
   if(lastTab === 'member' && savedEmail){
     setTimeout(()=>{ navToTab('member'); }, 200);
   } else if(lastTab === 'support'){
