@@ -1,4 +1,5 @@
 <!-- FULL_FLOW_FIX_20260721：會員查詢、補款選位、整組取消退款、iPhone 拍照儲存閉環修復 -->
+<!-- MEMBER_ENTRY_FIX_20260721：新會員查詢按鈕、首次建檔與殘留覆寫修復 -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -1570,7 +1571,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:16px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-fullfix2</div><div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
+        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-memberfix</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
       <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -3457,6 +3458,7 @@ function goMemberPage(){
 window.safeLoadMemberPage=safeLoadMemberPage;
 window.memberLogin=memberLogin;
 window.goMemberPage=goMemberPage;
+window.memberEmailPhoneLogin=memberEmailPhoneLogin;
 
 function isMemberPageActive(){
   const p=$('pageMember');
@@ -3775,62 +3777,72 @@ function showEmailStep(s){
         <div style="font-size:16px;color:#555;margin-bottom:12px;line-height:1.7">
           輸入 <b>Email＋手機</b> 查找既有會員資料。<br>
           ・找到資料 → 自動帶入，不用每次重填<br>
-          ・找不到資料 → 先完整建立會員資料，再回到報名表選擇內容
+          ・找不到資料 → 先建立會員資料，再回到報名表
         </div>
         <label>Email</label>
         <input type="email" id="step1Email" placeholder="your@email.com" inputmode="email"
-          value="${esc(getMemberEmail())}"
-          onkeydown="if(event.key==='Enter')checkMemberStep()">
+          value="${esc(getMemberEmail())}">
         <label style="margin-top:10px">手機</label>
         <input type="tel" id="step1Phone" placeholder="09xxxxxxxx" inputmode="tel"
-          value="${esc(ST.member?.phone||memberSafePhone()||'')}"
-          onkeydown="if(event.key==='Enter')checkMemberStep()">
+          value="${esc(ST.member?.phone||memberSafePhone()||'')}">
         <div id="step1Err" class="err"></div>
         <div id="step1Status" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:16px;font-weight:700;line-height:1.6"></div>
-        <button class="btn-submit" type="button" onclick="checkMemberStep()" style="margin-top:14px">
+        <button id="memberCheckContinueBtn" class="btn-submit" type="button" style="margin-top:14px">
           查詢 / 繼續 →
         </button>
       </div>
     </div>`;
-}
 
+  // 動態表單不再依賴 inline onclick／全域名稱解析；LINE 內建瀏覽器也能穩定觸發。
+  const emailEl=$('step1Email');
+  const phoneEl=$('step1Phone');
+  const btn=$('memberCheckContinueBtn');
+  const run=(ev)=>{ if(ev){ ev.preventDefault(); ev.stopPropagation(); } checkMemberStep(); };
+  if(btn) btn.onclick=run;
+  [emailEl,phoneEl].forEach(el=>{ if(el) el.onkeydown=(ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); checkMemberStep(); } }; });
+}
 // 新會員專用：先把會員資料填完整，再回到報名表繼續選擇內容
 // Email 已有會員但手機不一致：直接講清楚怎麼處理，並可當場改手機重試
 function showPhoneMismatchStep(email, phone){
   const dynEl=$('dynForm'); if(!dynEl) return;
   const submitBtn=$('submitBtn'); if(submitBtn) submitBtn.style.display='none';
   const feeBox=$('feeBox'); if(feeBox) feeBox.style.display='none';
+  ST._pendingMemberEmail=String(email||'').trim();
   dynEl.innerHTML=`
     <div class="fcard" style="border:2px solid #e0a06a">
       <div class="fcard-t" style="background:#FAE1DD;color:#111">手機號碼與資料庫不一致</div>
       <div class="fcard-body">
         <div style="font-size:17px;line-height:1.8;color:#333">
-          這個 Email（<b>${esc(email)}</b>）<b>已經有會員資料</b>，<br>
-          但您輸入的手機 <b>${esc(phone)}</b> 與當初留的號碼不同，因此無法直接報名。
+          這個 Email（<b>${esc(email)}</b>）<b>已經有會員或報名資料</b>，<br>
+          但您輸入的手機 <b>${esc(phone)}</b> 與原資料不同，因此無法直接帶入。
         </div>
         <div style="background:#FAEEC7;border-radius:14px;padding:14px;margin:14px 0;font-size:16px;line-height:1.8">
-          請擇一處理：<br>
-          1. 改用<b>當初報名時留的手機號碼</b>再試一次<br>
-          2. 手機號碼換了 → 請聯繫主辦協助更新，之後就能正常報名
+          請改用<b>當初留下的手機號碼</b>再試；若已更換手機，請聯繫主辦協助更新。
         </div>
         <label>換一個手機號碼再試</label>
         <input type="tel" id="pm_phone" value="${esc(phone||'')}" inputmode="tel" placeholder="09xxxxxxxx">
         <div id="pm_err" class="err" style="font-size:16px"></div>
-        <button class="btn-submit" type="button" onclick="retryPhoneMismatch()" style="margin-top:12px">用這個手機再試一次</button>
-        <button type="button" onclick="goSupportFromForm()" style="width:100%;margin-top:10px;font-size:16px;font-weight:800;padding:13px;border:0;border-radius:14px;background:#DCD7ED;cursor:pointer">聯繫主辦協助更新手機</button>
+        <button id="retryMemberPhoneBtn" class="btn-submit" type="button" style="margin-top:12px">用這個手機再試一次</button>
+        <button id="memberSupportBtn" type="button" style="width:100%;margin-top:10px;font-size:16px;font-weight:800;padding:13px;border:0;border-radius:14px;background:#DCD7ED;cursor:pointer">聯繫主辦協助更新手機</button>
       </div>
     </div>`;
+  const retryBtn=$('retryMemberPhoneBtn'); if(retryBtn) retryBtn.onclick=(ev)=>{ ev.preventDefault(); retryPhoneMismatch(); };
+  const supportBtn=$('memberSupportBtn'); if(supportBtn) supportBtn.onclick=(ev)=>{ ev.preventDefault(); goSupportFromForm(); };
+  const phoneEl=$('pm_phone'); if(phoneEl) phoneEl.onkeydown=(ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); retryPhoneMismatch(); } };
   try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
 }
 function retryPhoneMismatch(){
   const v=String(($('pm_phone')||{}).value||'').trim();
   const err=$('pm_err');
   if(!v){ if(err) err.textContent='請輸入手機號碼'; return; }
-  const pIn=$('step1Phone'), eIn=$('step1Email');
-  if(pIn){ pIn.disabled=false; pIn.value=v; }
-  if(eIn){ eIn.disabled=false; if(!String(eIn.value||'').trim()) eIn.value=ST.memberEmail||''; }
+  const email=String(ST._pendingMemberEmail||ST.memberEmail||'').trim();
+  if(!email){ if(err) err.textContent='Email 已遺失，請返回場次重新開啟報名表'; return; }
   memberSavePhone(v);
-  checkMemberStep();
+  showEmailStep(ST.currentSession);
+  const pIn=$('step1Phone'), eIn=$('step1Email');
+  if(eIn) eIn.value=email;
+  if(pIn) pIn.value=v;
+  setTimeout(()=>checkMemberStep(),0);
 }
 function goSupportFromForm(){
   try{ closeRegFormModal({force:true}); }catch(e){}
@@ -3869,32 +3881,54 @@ function showNewMemberProfileStep(s){
         <label style="margin-top:10px">IG</label>
         <input type="url" id="np_ig" value="${esc(V.ig||V.ig_url||'')}" placeholder="https://instagram.com/...">
         <div id="np_err" class="err" style="font-size:16px"></div>
-        <button class="btn-submit" type="button" onclick="saveNewMemberAndContinue()" style="margin-top:14px">
+        <button id="saveNewMemberContinueBtn" class="btn-submit" type="button" style="margin-top:14px">
           儲存並繼續，選擇報名內容 →
         </button>
       </div>
     </div>`;
+  const saveBtn=$('saveNewMemberContinueBtn'); if(saveBtn) saveBtn.onclick=(ev)=>{ ev.preventDefault(); saveNewMemberAndContinue(); };
   try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
 }
-function saveNewMemberAndContinue(){
+async function saveNewMemberAndContinue(){
   const g=id=>String(($(id)||{}).value||'').trim();
   const err=$('np_err');
-  const email=g('np_email'), phone=g('np_phone'), brand=g('np_brand'), name=g('np_name');
+  const btn=$('saveNewMemberContinueBtn');
+  const email=g('np_email').toLowerCase(), phone=g('np_phone'), brand=g('np_brand'), name=g('np_name');
   const fail=(msg,focusId)=>{ if(err){ err.textContent=msg; } const el=$(focusId); if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); }catch(e){} } };
   if(!email || !/\S+@\S+\.\S+/.test(email)) return fail('請填寫正確 Email','np_email');
   if(!phone) return fail('請填寫手機號碼','np_phone');
   if(!brand) return fail('請填寫攤位／品牌名稱','np_brand');
   if(!name)  return fail('請填寫聯絡人姓名','np_name');
   if(err) err.textContent='';
-  ST.member={...(ST.member||{}), email, phone, brand, brand_name:brand, name,
-    sellItem:g('np_sellItem'), sell_category:g('np_sellItem'),
-    brandIntro:g('np_brandIntro'), brand_intro:g('np_brandIntro'),
-    fb:g('np_fb'), fb_url:g('np_fb'), ig:g('np_ig'), ig_url:g('np_ig')};
-  ST.memberEmail=email;
-  memberSaveEmail(email); memberSavePhone(phone);
-  toast('會員資料已填好，請接著選擇報名內容');
-  renderDynFormFull(ST.currentSession, false);
-  setTimeout(()=>{ const d=$('dynForm'); if(d){ try{ d.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} } },120);
+  if(btn){ btn.disabled=true; btn.textContent='會員資料儲存中…'; }
+  const profile={
+    email, phone, authPhone:phone, brand, name,
+    sellCat:g('np_sellItem'), brandIntro:g('np_brandIntro'),
+    fb:g('np_fb'), ig:g('np_ig')
+  };
+  try{
+    // 會員資料先正式寫入資料庫；成功後才進報名內容，避免新會員只存在前端記憶體而卡住。
+    const saved=await apiPost({action:'saveMember',...profile},20000);
+    if(!saved || saved.error) return fail((saved&&saved.error)||'會員資料儲存失敗，請稍後再試','np_name');
+    let fresh=null;
+    try{ fresh=await api({action:'getMember',email,phone,_t:Date.now(),__timeout:12000}); }catch(e){}
+    ST.member=(fresh && !fresh.error && fresh) ? fresh : {
+      ...(ST.member||{}), email, phone, brand, brand_name:brand, name,
+      sellItem:profile.sellCat, sell_category:profile.sellCat,
+      brandIntro:profile.brandIntro, brand_intro:profile.brandIntro,
+      fb:profile.fb, fb_url:profile.fb, ig:profile.ig, ig_url:profile.ig
+    };
+    ST.memberEmail=email;
+    memberSaveEmail(email); memberSavePhone(phone);
+    toast('會員資料已儲存，請接著選擇報名內容');
+    renderDynFormFull(ST.currentSession, false);
+    setTimeout(()=>{ const d=$('dynForm'); if(d){ try{ d.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} } },120);
+  }catch(e){
+    console.warn('[saveNewMemberAndContinue failed]',e);
+    fail('會員資料儲存失敗，請檢查網路後再試一次','np_name');
+  }finally{
+    if(btn && document.body.contains(btn)){ btn.disabled=false; btn.textContent='儲存並繼續，選擇報名內容 →'; }
+  }
 }
 // 統一處理「下一步」的畫面切換：任何錯誤都要看得到，不能靜靜停在原地
 function goRegStep(fn){
@@ -3914,79 +3948,79 @@ function goRegStep(fn){
     toast&&toast('畫面載入失敗，請重新整理再試');
   }
 }
+function memberProfileIsComplete(member){
+  const m=member||{};
+  return !!String(m.email||'').trim()
+    && !!String(m.phone||'').trim()
+    && !!String(m.name||m.displayName||'').trim()
+    && !!String(m.brand||m.brand_name||'').trim();
+}
 async function checkMemberStep(){
+  if(ST._memberCheckBusy) return;
   const emailEl=$('step1Email');
   const phoneEl=$('step1Phone');
   const errEl=$('step1Err');
   const statusEl=$('step1Status');
-  const email=(emailEl?.value||'').trim();
-  const phone=(phoneEl?.value||'').trim();
-  // B-01：只憑 Email 就能撈出別人的姓名／手機／統編＝個資外洩。Email＋手機兩者都必填。
-  const hasEmail = !!email && /\S+@\S+\.\S+/.test(email);
-  if(!hasEmail){
-    if(errEl) errEl.textContent='請填寫正確 Email';
-    return;
-  }
-  if(!phone){
-    if(errEl) errEl.textContent='請填寫手機號碼';
-    return;
-  }
+  const checkBtn=$('memberCheckContinueBtn') || document.querySelector('#dynForm .btn-submit');
+  const email=String(emailEl?.value||'').trim().toLowerCase();
+  const phone=String(phoneEl?.value||'').trim();
+  const hasEmail=!!email && /\S+@\S+\.\S+/.test(email);
+  if(!hasEmail){ if(errEl) errEl.textContent='請填寫正確 Email'; emailEl&&emailEl.focus(); return; }
+  if(!phone){ if(errEl) errEl.textContent='請填寫手機號碼'; phoneEl&&phoneEl.focus(); return; }
+
+  ST._memberCheckBusy=true;
   if(errEl) errEl.textContent='';
+  if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#D9E5EE'; statusEl.style.color='#24445c'; statusEl.textContent='正在查詢會員資料…'; }
   if(emailEl) emailEl.disabled=true;
   if(phoneEl) phoneEl.disabled=true;
-  const checkBtn=document.querySelector('#dynForm .btn-submit');
   if(checkBtn){ checkBtn.disabled=true; checkBtn.textContent='查詢中…'; }
   try{
-    // 兩個查詢「同時」進行。原本是一個等完再等下一個，網路慢時會連等兩次逾時（看起來就是卡住不動）。
+    // 身分存在檢查必須走 POST；舊版誤用 GET，Worker 只回 unknown action，造成判斷落入錯誤分支。
     const [member, chk] = await Promise.all([
-      api({action:'getMember',email,phone,_t:Date.now(),__timeout:12000}),
-      api({action:'checkMemberEmailPhone',email,phone,_t:Date.now(),__timeout:12000}).catch(()=>null)
+      api({action:'getMember',email,phone,_t:Date.now(),__timeout:15000}),
+      apiPost({action:'checkMemberEmailPhone',email,phone},15000)
     ]);
-    ST._lastEmailPhoneCheck = chk || null;
-    if(member && !member.error && (member.email || member.phone || member.name || member.brand || member.brand_name)){
-      ST.member={...member};
-      ST.memberEmail=String(member.email||email||'').trim();
-      if(ST.memberEmail) memberSaveEmail(ST.memberEmail);
-      if(member.phone||phone) memberSavePhone(member.phone||phone);
-      if(statusEl){
-        statusEl.style.display='block';
-        statusEl.style.background='#DDEAD1';
-        statusEl.style.color='#2a4d18';
-        statusEl.textContent='✅ 已找到會員資料，請確認資料後繼續報名';
-      }
-      goRegStep(function(){ renderDynFormFull(ST.currentSession, false); });
-    } else {
-      if(!hasEmail){
-        if(statusEl){
-          statusEl.style.display='block';
-          statusEl.style.background='#FAE1DD';
-          statusEl.style.color='#8b1c1c';
-          statusEl.textContent='查無資料。建立新會員仍需要 Email 作為會員 ID，請補 Email 後繼續。';
-        }
-        if(emailEl) emailEl.focus();
-        return;
-      }
-      ST.member={email, phone};
-      ST.memberEmail=email;
-      memberSaveEmail(email); if(phone) memberSavePhone(phone);
-      if(statusEl){
-        statusEl.style.display='block';
-        statusEl.style.background='#DCD7ED';
-        statusEl.style.color='#4a3c75';
-        statusEl.textContent='👋 查無既有資料，請先建立會員資料，再填本次報名內容';
-      }
-      // 手機對不上就直接說明，不要讓人填完整張表才在送出時被擋（前面已同時查好，不用再等一次）
-      const chk2=ST._lastEmailPhoneCheck;
-      if(chk2 && chk2.exists && !chk2.match){ showPhoneMismatchStep(email, phone); return; }
-      goRegStep(function(){ showNewMemberProfileStep(ST.currentSession); });
+    if(!chk || chk.error || typeof chk.exists!=='boolean' || typeof chk.match!=='boolean'){
+      throw new Error((chk&&chk.error)||'會員身分檢查沒有正確回應');
     }
+    ST._lastEmailPhoneCheck=chk;
+    ST.memberEmail=email;
+    memberSaveEmail(email); memberSavePhone(phone);
+
+    if(chk.exists && !chk.match){
+      if(statusEl) statusEl.style.display='none';
+      showPhoneMismatchStep(email,phone);
+      return;
+    }
+
+    if(chk.exists && chk.match){
+      if(!member || member.error){
+        throw new Error((member&&member.error)||'會員資料讀取失敗');
+      }
+      ST.member={...member,email:member.email||email,phone:member.phone||phone};
+      if(memberProfileIsComplete(ST.member)){
+        if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#DDEAD1'; statusEl.style.color='#2a4d18'; statusEl.textContent='✅ 已找到會員資料，正在開啟報名表'; }
+        goRegStep(()=>renderDynFormFull(ST.currentSession,false));
+      }else{
+        // 修復過去「查我的紀錄」留下的空白會員：Email＋手機雖存在，但姓名／品牌未完成時必須補資料。
+        if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#DCD7ED'; statusEl.style.color='#4a3c75'; statusEl.textContent='會員資料尚未完成，請先補齊姓名與品牌資料'; }
+        goRegStep(()=>showNewMemberProfileStep(ST.currentSession));
+      }
+      return;
+    }
+
+    // 全新會員：不再停留在查詢畫面，直接進入正式建檔步驟。
+    ST.member={email,phone};
+    if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#DCD7ED'; statusEl.style.color='#4a3c75'; statusEl.textContent='👋 第一次使用，請先建立會員資料'; }
+    goRegStep(()=>showNewMemberProfileStep(ST.currentSession));
   }catch(e){
-    console.warn('[checkMemberStep failed]', e);
-    if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#FAE1DD'; statusEl.style.color='#8b1c1c'; statusEl.textContent='查詢失敗，請稍後再試。'; }
+    console.warn('[checkMemberStep failed]',e);
+    if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#FAE1DD'; statusEl.style.color='#8b1c1c'; statusEl.textContent='查詢失敗：'+((e&&e.message)?e.message:'請檢查網路後再試一次'); }
   }finally{
-    if(emailEl) emailEl.disabled=false;
-    if(phoneEl) phoneEl.disabled=false;
-    if(checkBtn){ checkBtn.disabled=false; checkBtn.textContent='查詢 / 繼續 →'; }
+    ST._memberCheckBusy=false;
+    if(emailEl && document.body.contains(emailEl)) emailEl.disabled=false;
+    if(phoneEl && document.body.contains(phoneEl)) phoneEl.disabled=false;
+    if(checkBtn && document.body.contains(checkBtn)){ checkBtn.disabled=false; checkBtn.textContent='查詢 / 繼續 →'; }
   }
 }
 function onBundleAddonChange(cb){ document.querySelectorAll('.bundleAddonChk').forEach(x=>{ if(x!==cb) x.checked=false; }); ST.bundleAddon = cb.checked ? cb.value : ''; if(typeof updateFee==='function') updateFee(); }
@@ -6519,7 +6553,10 @@ if(document.readyState==='loading'){
   window.openSessionFromCard=function(ev,sessionId){ if(ev){ev.preventDefault();ev.stopPropagation();} openSession(sessionId); }; window.handleSessionTap=window.openSessionFromCard;
   window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
   window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
-  const _oldCheckMemberStep=window.checkMemberStep; window.checkMemberStep=async function(){ const email=(($('step1Email')&&$('step1Email').value)||'').trim(); if(email) saveEmail(email); return _oldCheckMemberStep?_oldCheckMemberStep():undefined; };
+  // MEMBER_ENTRY_FIX：移除舊版二次覆寫。動態按鈕直接綁定函式，並保留全域相容入口。
+  window.checkMemberStep=checkMemberStep;
+  window.saveNewMemberAndContinue=saveNewMemberAndContinue;
+  window.retryPhoneMismatch=retryPhoneMismatch;
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
   // 前台已改為 Email＋手機會員查詢；不再恢復第三方登入 token
