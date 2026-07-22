@@ -965,6 +965,33 @@
 .mini-card-grid .member-card{padding:12px!important}
 .mini-card-grid .member-title{font-size:17px!important}
 .mini-card-grid .member-sub{font-size:13px!important;margin-top:4px!important}
+.todo-filter-bar{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:8px;
+  margin:0 0 12px;
+  position:sticky; top:0; z-index:20;
+  background:var(--bg,#FFFDF8);
+  padding:8px 0;
+}
+.todo-filter-bar .todo-filter-chip{
+  width:100%; min-width:0; min-height:44px;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  white-space:nowrap; font-size:15px; font-weight:800; padding:8px 6px;
+}
+.todo-filter-bar .todo-filter-chip .t{overflow:hidden;text-overflow:ellipsis}
+.todo-filter-bar .todo-filter-chip .n{
+  font-size:13px; font-weight:900; background:rgba(0,0,0,.08);
+  border-radius:999px; padding:1px 8px; flex:0 0 auto;
+}
+.todo-filter-bar .todo-filter-chip.on .n{background:rgba(255,255,255,.35)}
+@media(max-width:520px){
+  .todo-filter-bar{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:6px 0}
+  .todo-filter-bar .todo-filter-chip{font-size:15px;min-height:46px}
+}
+@media(max-width:360px){
+  .todo-filter-bar .todo-filter-chip{font-size:14px;padding:8px 4px}
+}
 .mini-card-grid .member-card{overflow:hidden!important}
 .mini-card-grid .member-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin-top:10px!important;width:100%!important;justify-content:stretch!important}
 .mini-card-grid .member-actions .btn{white-space:nowrap!important;font-size:13px!important;padding:8px 4px!important;min-width:0!important;width:100%!important;min-height:38px!important}
@@ -2537,6 +2564,11 @@ function todoKindFromRow(r){
   const dates=regDateText(r);
   const hasDataIssue = (dates.includes('未設定') || !r.email || !r.phone || !(r.brandName||r.brand||r.brand_name||r.name) || String(r.dataQualityIssues||'').length>0);
   if(isRefundCompletedRow(r)) return 'done';
+  // 已結案的一律不進待辦：不錄取、已取消、已退費（含連動場次的其中一場）
+  if(review.includes('不錄取')||review.includes('未錄取')||review.includes('婉拒')) return 'done';
+  if(review.includes('已取消')||review.includes('取消')) return 'done';
+  if(pay.includes('已退費')||pay.includes('已退款')) return 'done';
+  if(transfer.includes('已退費')||transfer.includes('已退款')) return 'done';
   if(transfer.includes('退費')||transfer.includes('退款')||transfer.includes('refund')) return 'refund';
   if(hasDataIssue) return 'dataIssue';
   if(review.includes('待審核') || review==='待審' || review==='報名成功' || review==='') return 'pending';
@@ -2623,10 +2655,28 @@ function regAddonText(r){
   }
   return parts.length ? parts.join('、') : '無';
 }
+let AdminTodoFilter='all';
+function setTodoFilter(k){ AdminTodoFilter=k||'all'; renderTodoRows(AdminTodoAllRows||[]); }
+let AdminTodoAllRows=null;
+function todoFilterBarHtml(list){
+  const order=[['all','全部'],['pending','待審核'],['unpaid','待付款'],['paymentPending','付款待確認'],['checkin','待報到'],['refund','退費待處理'],['dataIssue','資料異常'],['equipment','設備待確認']];
+  const cnt={};
+  list.forEach(function(r){ const k=todoKindFromRow(r); cnt[k]=(cnt[k]||0)+1; });
+  return '<div class="todo-filter-bar">'
+    +order.map(function(o){
+      const k=o[0]; const n=(k==='all')?list.length:(cnt[k]||0);
+      if(k!=='all' && !n) return '';
+      const on=(AdminTodoFilter===k);
+      return '<button type="button" class="btn '+(on?'':'secondary')+' small todo-filter-chip'+(on?' on':'')+'" onclick="setTodoFilter(\''+k+'\')"><span class="t">'+o[1]+'</span><span class="n">'+n+'</span></button>';
+    }).join('')+'</div>';
+}
 function renderTodoRows(rows){
   let out='';
-  const list=sortNearestFirst((Array.isArray(rows)?rows:[]).map(normalizeTodoRow).filter(r=>hasTodoRegId(r) && todoKindFromRow(r)!=='done'), regSortTs);
+  AdminTodoAllRows=Array.isArray(rows)?rows:[];
+  const all=sortNearestFirst(AdminTodoAllRows.map(normalizeTodoRow).filter(r=>hasTodoRegId(r) && todoKindFromRow(r)!=='done'), regSortTs);
+  const list=(AdminTodoFilter==='all')?all:all.filter(r=>todoKindFromRow(r)===AdminTodoFilter);
   AdminState.currentList=list;
+  out+=todoFilterBarHtml(all);
   for(const r of list){
     const sid=r.sessionId||'';
     const title=r.sessionName||sessionName(sessionById(sid))||'場次';
@@ -2644,6 +2694,11 @@ function renderTodoRows(rows){
       +'<div class="todo-contact-line" title="'+attr(contactText)+'">'+safe(contactText)+'</div>'
       +adminRegFixedBlockHtml(r)
     +'</article>';
+  }
+  if(!list.length){
+    out += (AdminTodoFilter==='all')
+      ? '<div class="empty">目前沒有待辦</div>'
+      : '<div class="empty">這個分類目前沒有待辦。<div class="sub" style="margin-top:6px">點上方「全部」可看所有項目。</div></div>';
   }
   $('todoList').innerHTML=out||'<div class="empty">目前沒有待辦</div>';
 }
