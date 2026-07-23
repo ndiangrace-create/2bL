@@ -2778,6 +2778,19 @@ function closePhotoFlow(){
 function stopPhotoCamera(){
   try{ if(PF.stream){ PF.stream.getTracks().forEach(t=>t.stop()); PF.stream=null; } }catch(e){}
 }
+// 付款中斷／失敗時，攤友自己撤回回報，不需要主辦手動退回
+async function undoPaymentReport(regId){
+  if(!confirm('要撤回這次的付款回報嗎？\n撤回後狀態會回到「未繳費」，可以重新前往繳費。\n（若主辦已確認入帳則無法撤回）')) return;
+  try{
+    const email=ST.memberEmail||memberSafeEmail()||'';
+    const phone=(ST.member&&ST.member.phone)||memberSafePhone()||'';
+    if(!email||!phone){ toast('請先於「我的紀錄」以 Email 與手機登入'); return; }
+    const r=await apiPost({action:'undoPaymentReport',regId:regId,email:email,phone:phone});
+    if(r&&r.error){ toast(r.error,7000); return; }
+    toast('已撤回，請重新前往繳費');
+    await safeGetMyRegs(email);
+  }catch(e){ toast('撤回失敗：'+((e&&e.message)?e.message:e),7000); }
+}
 async function submitPhotoSurvey(){
   const name=String((document.getElementById('pf_in_name')||{}).value||'').trim();
   const email=String((document.getElementById('pf_in_email')||{}).value||'').trim();
@@ -5947,7 +5960,9 @@ function renderMyRegs(regs){
       ? `<div class="m-record-alert muted">已取消，報名紀錄保留</div>`
       : (isRefundingReg(r)
           ? `<div class="m-record-alert warn">退費處理中，等待主辦確認退款${legs.length>1?'（組合套組整組一起退）':''}。名額已釋出，無需再操作。</div>`
-          : (isPendingPayText(r.payStatus)?`<div class="m-record-alert warn">已回報，等待主辦確認</div>`:''));
+          : (isPendingPayText(r.payStatus)
+              ? `<div class="m-record-alert warn">已回報，等待主辦確認<div style="margin-top:8px"><button type="button" onclick="undoPaymentReport('${r.id}')" style="font-size:16px;font-weight:800;padding:10px 14px;border:0;border-radius:12px;background:#FAE1DD;cursor:pointer">付款失敗？撤回重新付款</button></div></div>`
+              : ''));
 
     let actions='';
     if(canPay){
