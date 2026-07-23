@@ -2854,6 +2854,45 @@ async function toggleFastPass(email, enable, btn){
     await loadMembers();
   }catch(err){ toast('設定失敗：'+err.message,6000); btn.disabled=false; btn.textContent=old; }
 }
+function openMemberDetail(email){
+  const m=(AdminState.members||[]).find(x=>String(x.email||'').toLowerCase()===String(email||'').toLowerCase());
+  if(!m){ toast('找不到這位會員'); return; }
+  const note=String(m.adminNote||m.admin_note||'');
+  const noteAt=String(m.adminNoteAt||m.admin_note_updated_at||'');
+  const row=(k,v)=> v ? ('<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed #eee"><div style="min-width:92px;color:#777">'+k+'</div><div style="flex:1;word-break:break-all">'+safe(String(v))+'</div></div>') : '';
+  const html=''
+    +'<div class="report-card">'
+      +row('品牌', memberBrand(m))
+      +row('聯絡人', memberName(m))
+      +row('電話', m.phone||m.mobile)
+      +row('Email', m.email)
+      +row('販售類別', m.category||m.sellCategory||m.sell_category)
+      +row('品牌介紹', m.intro||m.brandIntro||m.brand_intro)
+      +row('最後更新', m.updatedAt||m.updated_at)
+    +'</div>'
+    +'<div class="report-card" style="margin-top:12px;background:#FAEEC7">'
+      +'<b style="font-size:16px">管理者備註</b>'
+      +'<div class="sub" style="margin:4px 0 8px">只有主辦與工作人員看得到，攤商在前台<b>完全看不到</b>。</div>'
+      +'<textarea id="mn_note" style="width:100%;min-height:120px;font-size:16px;padding:10px;border:1px solid #ddd;border-radius:12px" placeholder="例：很配合、需要靠電源、上次遲到、押金爭議…">'+safe(note)+'</textarea>'
+      +(noteAt?'<div class="sub" style="margin-top:6px">最後編輯：'+safe(String(noteAt).replace("T"," ").slice(0,16))+'</div>':'')
+      +'<div style="display:flex;gap:8px;margin-top:12px">'
+        +'<button class="btn" onclick="saveMemberNote(\''+attr(m.email||'')+'\')">儲存備註</button>'
+        +'<button class="btn secondary" onclick="openMemberHistory(\''+attr(memberKey(m))+'\')">歷史報名</button>'
+      +'</div>'
+    +'</div>';
+  openPanel(memberBrand(m)||'會員詳情','資料與管理者備註',html);
+}
+async function saveMemberNote(email){
+  const note=String(($('mn_note')||{}).value||'');
+  try{
+    const r=await apiPost({action:'saveMemberNote',memberEmail:email,note:note});
+    if(r&&r.error){ toast('儲存失敗：'+r.error,7000); return; }
+    const m=(AdminState.members||[]).find(x=>String(x.email||'').toLowerCase()===String(email||'').toLowerCase());
+    if(m){ m.adminNote=note; m.admin_note=note; }
+    toast('備註已儲存');
+    renderMembers();
+  }catch(e){ toast('儲存失敗：'+((e&&e.message)?e.message:e),7000); }
+}
 function renderMembers(){
   const box=$('memberList');
   if(!box) return;
@@ -2877,13 +2916,14 @@ function renderMembers(){
     const updated=m.updatedAt||m.updated_at||m.joinedAt||m.joined_at||m.createdAt||m.created_at||'—';
     const fp=(m.fastPass===true||m.fast_pass===true||m.fastPass==='true'||m.fast_pass==='true');
     html+='<article class="member-card member-card-lite">'
-      +'<div class="member-title" title="'+attr(brand)+'">'+safe(brand)+(fp?' <span class="tag green" style="font-size:11px">免審核</span>':'')+'</div>'
+      +'<div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green" style="font-size:11px">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple" style="font-size:11px">備註</span>':'')+'</div>'
       +'<div class="member-icons">'+memberIconLinks(m)+'</div>'
       +'<div class="member-sub">'+safe(name)+'｜'+safe(phone)+'</div>'
       +'<div class="member-small-line" title="'+attr(email)+'">Email：'+safe(email)+'</div>'
       +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span></div>'
       +'<div class="member-note">'+safe(intro)+'</div>'
       +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
+      +'<button class="btn secondary small" style="white-space:nowrap;min-width:0" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
       +'<button class="btn small '+(fp?'':'secondary')+'" style="white-space:nowrap;min-width:0" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
     +'</article>';
   }
