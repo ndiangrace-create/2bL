@@ -6459,6 +6459,11 @@ async function submitPaymentForm(){
     showPaymentSuccess(cardText);
     const refreshEmail2 = getMemberEmail();
     if(refreshEmail2){ ST.memberEmail = refreshEmail2; await safeGetMyRegs(refreshEmail2); }
+  }catch(e){
+    // 原本沒有 catch：一旦發生非預期錯誤，畫面會完全沒反應，
+    // 攤友以為已經回報成功，主辦端卻仍是「未繳費」。
+    console.error('[submitPaymentForm]', e);
+    showPayFormError('回報失敗：'+((e&&e.message)?e.message:'請重新整理後再試一次，或截圖此畫面聯繫官方 LINE')+'（狀態仍為未繳費，請務必重新回報）');
   }finally{
     if(btn){ btn.disabled=false; btn.textContent='我已完成付款，回報付款'; }
   }
