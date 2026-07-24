@@ -1454,10 +1454,18 @@ async function previewForceCancel(sid){
   const box=$('fc_preview'); if(box) box.textContent='試算中…';
   try{
     const r=await api({action:'previewForceCancelSession',sessionId:sid,forceMode:mode});
-    if(r&&r.error){ if(box) box.textContent='試算失敗：'+r.error; return; }
-    const t1=(r&&(r.tier1Count!=null?r.tier1Count:((r.tier1||[]).length)))||0;
-    const t2=(r&&(r.tier2Count!=null?r.tier2Count:((r.tier2||[]).length)))||0;
-    if(box) box.innerHTML='影響人數：<b>已付款需選擇 '+t1+' 人</b>、僅通知 '+t2+' 人。';
+    // 後端回傳欄位為 eligible_count / notice_only_count / skip_count / total
+    const t1=Number(r&&r.eligible_count)||0;
+    const t2=Number(r&&r.notice_only_count)||0;
+    const t3=Number(r&&r.skip_count)||0;
+    const tot=Number(r&&r.total)||0;
+    if(box){
+      if(!tot){ box.innerHTML='<span style="color:#8b1c1c">這個場次目前沒有任何報名資料，不需要啟動不可抗力處理。</span>'; return; }
+      box.innerHTML='本場共 <b>'+tot+'</b> 筆報名：'
+        +'<br>・<b>'+t1+' 人</b>已付款 → 會收到通知，自行選擇延期或退費'
+        +'<br>・'+t2+' 人未付款／待審核 → 只寄取消通知'
+        +(t3?('<br>・'+t3+' 人已取消或已退費 → 不進入流程'):'');
+    }
   }catch(e){ if(box) box.textContent='試算失敗：'+((e&&e.message)?e.message:e); }
 }
 async function submitForceCancel(sid){
