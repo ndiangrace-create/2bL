@@ -1862,7 +1862,7 @@ async function runRegAction(regId,regAction,btn,sidOverride=''){
   if(regAction==='refund' || regAction==='markRefunded') { await openRefundPanel(regId,btn,sid); return; }
   if(regAction==='note') { const note=(prompt('輸入備註內容（會存到這筆報名）：')||'').trim(); if(!note){ return; } try{ await apiPost({action:'saveRegNote',regId,sessionId:sid,note}); toast('備註已儲存'); await refreshCurrentPage(); }catch(e){ toast('備註儲存失敗：'+(e.message||e),5000); } return; }
   if(regAction==='remindPayment') { await sendPaymentReminder(regId,btn,sid); return; }
-  const question={reject:'確定標記為不錄取？\n（若原本已錄取，改判後名額會自動釋出，系統會寄出通知信）',waitlist:'確定標記為備取？\n（若原本已錄取，改判後名額會自動釋出）',confirmPayment:'確定確認付款？',cancelUnpaid:'確定取消未繳費報名？'}[regAction];
+  const question={reject:'確定標記為不錄取？\n（若原本已錄取，改判後名額會自動釋出，系統會寄出通知信）',waitlist:'確定標記為備取？\n（若原本已錄取，改判後名額會自動釋出）',confirmPayment:'確定確認此筆已繳費？\n系統會記為應收全額、付款方式標「手動確認」，並寄出繳費確認信。',cancelUnpaid:'確定取消未繳費報名？'}[regAction];
   if(question && !confirm(question)) return;
   const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
   try{
@@ -2273,6 +2273,8 @@ async function loadSessionSeatSettings(sid,s){
       AdminSessionSeatLoaded=true;
       AdminSessionSeatListDirty=false;
       toggleSessionSeatSettings();
+      // ADMIN_SEAT_OPS_20260725：掛上「選位營運」入口（一鍵配位／換位／名單）
+      try{ const _h=$('set_seatSummary'); if(_h){ let _w=document.getElementById('seatOpsBtnWrap'); if(!_w){ _h.insertAdjacentHTML('afterend','<div id="seatOpsBtnWrap" style="margin:10px 0"></div>'); _w=document.getElementById('seatOpsBtnWrap'); } _w.innerHTML='<button type="button" class="btn small" onclick="openSeatOps(\''+sid+'\')">🪑 選位營運（一鍵配位／換位／名單）</button>'; } }catch(e){}
       return;
     }
     throw new Error((data&&data.error)||'位置清單載入失敗');
@@ -2311,6 +2313,88 @@ async function saveSessionSeatMapOnly(sid,btn){
     await loadSessionSeatSettings(sid, sessionById(sid)||{});
   }catch(e){ toast('儲存地圖失敗：'+e.message,8000); }
   finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
+}
+
+// ── 選位營運（ADMIN_SEAT_OPS_20260725）：看板／一鍵配位／換位指定／三名單 ──
+let SeatOps={sid:'',seats:[],regs:[]};
+async function openSeatOps(sid){
+  const s=sessionById(sid)||{};
+  openPanel('選位營運', safe((s.name||s.title||'場次'))+'｜配位／換位／名單', '<div id="seatOpsBox" class="sub">載入中…</div>');
+  await loadSeatOps(sid);
+}
+async function loadSeatOps(sid){
+  const box=$('seatOpsBox'); if(!box) return;
+  box.innerHTML='<div class="sub">載入中…</div>';
+  try{
+    const d=await api({action:'adminSeatBoard',sessionId:sid});
+    if(!d || d.error) throw new Error((d&&d.error)||'載入失敗');
+    SeatOps={sid:sid, seats:Array.isArray(d.seats)?d.seats:[], regs:Array.isArray(d.regs)?d.regs:[]};
+    renderSeatOps();
+  }catch(e){ box.innerHTML='<div class="empty" style="color:#8b1c1c">載入失敗：'+safe(e&&e.message?e.message:String(e))+'</div>'; }
+}
+function seatOpsEmptyCodes(){ return (SeatOps.seats||[]).filter(x=>(x.type==='auto'||x.type==='paid')&&x.active&&!x.occupied).map(x=>x.code); }
+function renderSeatOps(){
+  const box=$('seatOpsBox'); if(!box) return;
+  const esc=safe, seats=SeatOps.seats||[], regs=SeatOps.regs||[];
+  const isPaid=v=>/已繳費|已付款/.test(String(v||''));
+  const paidSeats=seats.filter(x=>x.type==='paid');
+  const paidFree=paidSeats.filter(x=>x.active&&!x.occupied).length;
+  const autoFree=seats.filter(x=>x.type==='auto'&&x.active&&!x.occupied).length;
+  const paidFull=paidSeats.length>0&&paidFree===0;
+  const emptyCodes=seatOpsEmptyCodes();
+  const paidRegs=regs.filter(r=>r.intent==='paid');
+  const unpicked=paidRegs.filter(r=>!r.stallNumber&&isPaid(r.payStatus));
+  const noSeat=regs.filter(r=>!r.stallNumber);
+  const chip=(t,n,c)=>'<span style="display:inline-block;background:'+c+';border-radius:10px;padding:4px 10px;margin:0 6px 6px 0;font-size:16px;font-weight:900">'+t+'：'+n+'</span>';
+  let h='';
+  h+='<div style="margin-bottom:6px">'+chip('加價位',paidSeats.length,'#eef')+chip('加價可選',paidFree,paidFull?'#fdecea':'#e8f5ec')+chip('自動位可選',autoFree,'#eef')+(paidFull?'<span style="color:#c0392b;font-weight:900">（加價位已額滿）</span>':'')+'</div>';
+  h+='<div style="margin:8px 0 14px"><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">🔄 一鍵自動配位（未排位者依繳費順序補位）</button><div class="sub" style="margin-top:4px">只填「沒加價的自動位」；加價自選與已鎖位置不受影響。</div></div>';
+  h+='<div style="font-weight:900;margin:12px 0 6px">換位／指定位置</div>';
+  if(!regs.length){ h+='<div class="sub">此場次尚無已錄取報名。</div>'; }
+  else{
+    h+=regs.map(function(r){
+      const cur=r.stallNumber||'（未排）', need=r.stallCount||1;
+      const tag=r.intent==='paid'?'<span style="color:#b45309;font-weight:900">加價自選</span>':'<span class="sub">自動配位</span>';
+      let ctrl='';
+      if(need===1){
+        const opts=['<option value="">— 選空位 —</option>'].concat(emptyCodes.map(function(c){return '<option value="'+esc(c)+'">'+esc(c)+'</option>';})).join('');
+        ctrl='<select id="so_'+esc(r.regId)+'" style="min-width:120px;font-size:16px">'+opts+'</select> <button type="button" class="btn secondary small" onclick="seatOpsAssign(\''+SeatOps.sid+'\',\''+esc(r.regId)+'\')">換位</button>';
+      }else{
+        ctrl='<input id="so_'+esc(r.regId)+'" placeholder="輸入 '+need+' 個號碼，逗號分隔" style="min-width:180px;font-size:16px"> <button type="button" class="btn secondary small" onclick="seatOpsAssign(\''+SeatOps.sid+'\',\''+esc(r.regId)+'\')">指定</button>';
+      }
+      return '<div style="border:1px solid #eee;border-radius:12px;padding:10px;margin-bottom:8px"><div style="font-weight:900">'+esc(r.brand||r.name||'—')+' <span class="sub">'+esc(r.name||'')+'</span> ｜ '+tag+'</div><div class="sub" style="margin:4px 0">目前位置：<b>'+esc(cur)+'</b>（'+need+' 攤）</div>'+ctrl+'</div>';
+    }).join('');
+  }
+  const listBlock=function(title,arr,fmt){return '<details style="margin:8px 0"><summary style="font-weight:900;cursor:pointer;font-size:16px">'+title+'（'+arr.length+'）</summary>'+(arr.length?'<div style="margin-top:6px">'+arr.map(fmt).join('')+'</div>':'<div class="sub" style="margin-top:6px">無</div>')+'</details>';};
+  const line=function(r){return '<div class="sub" style="padding:3px 0">・'+esc(r.brand||r.name||'—')+(r.stallNumber?('　位置 '+esc(r.stallNumber)):'　未排')+'</div>';};
+  h+='<div style="margin-top:12px">';
+  h+=listBlock('未選位名單（加價自選、已付款、還沒挑位）', unpicked, line);
+  h+=listBlock('自由選位名單（所有加價自選）', paidRegs, line);
+  h+=listBlock('未排位名單（含自動位尚未配到）', noSeat, line);
+  h+='<div class="sub" style="margin-top:6px">加價位狀態：'+(paidFull?'<b style="color:#c0392b">已額滿</b>':(paidSeats.length?('尚餘 '+paidFree+' 個'):'此場未設加價位'))+'</div>';
+  h+='</div>';
+  box.innerHTML=h;
+}
+async function seatOpsAssign(sid, regId){
+  const el=$('so_'+regId); if(!el){ toast('找不到輸入欄'); return; }
+  const raw=String(el.value||'').trim();
+  if(!raw){ toast('請先選擇或輸入位置'); return; }
+  const codes=raw.split(/[,，\s]+/).map(function(x){return x.trim();}).filter(Boolean);
+  try{
+    const r=await apiPost({action:'adminAssignSeat',regId:regId,seats:codes});
+    if(r&&r.error){ toast(r.error,7000); return; }
+    toast('已安排位置：'+codes.join('、'));
+    await loadSeatOps(sid);
+  }catch(e){ toast('安排失敗：'+(e&&e.message?e.message:e),7000); }
+}
+async function seatOpsBatch(sid){
+  if(!confirm('一鍵自動配位？\n\n把「還沒排位、且不是加價自選」的已付款攤友，依繳費順序補上自動位。\n已鎖位與加價自選不受影響。')) return;
+  try{
+    const r=await apiPost({action:'runBatchAssign',sessionId:sid});
+    if(r&&r.error){ toast(r.error,7000); return; }
+    toast('已配位 '+((r&&r.assigned)||0)+' 筆（可配 '+((r&&r.total)||0)+' 筆）',6000);
+    await loadSeatOps(sid);
+  }catch(e){ toast('配位失敗：'+(e&&e.message?e.message:e),7000); }
 }
 
 async function openSessionSettings(sid){

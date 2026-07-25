@@ -1688,7 +1688,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <input type="email" id="memberLookupEmail" inputmode="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
         <label style="font-size:16px;font-weight:900;color:#333">手機</label>
         <input type="tel" id="memberLookupPhone" inputmode="tel" placeholder="09xxxxxxxx" style="width:100%;box-sizing:border-box;margin:6px 0 12px;padding:12px;border:1.5px solid #ddd;border-radius:12px;font-size:16px">
-        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0721-member-db</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
+        <div style="font-size:16px;color:#999;text-align:right;margin-bottom:6px">版本 v0725-seat1</div><button type="button" onclick="memberEmailPhoneLogin()" id="memberLookupBtn" style="width:100%;background:#DDEAD1;border:2px solid #9fb59c;color:#111;border-radius:14px;padding:13px;font-size:17px;font-weight:950;font-family:inherit;cursor:pointer">查詢我的紀錄</button>
       </div>
       <div id="memberLoginErr" style="font-size:16px;color:#c0392b;margin-top:10px;text-align:center;display:none"></div>
     </div>
@@ -1860,10 +1860,11 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <div id="paySuccessArea" style="display:none">
       <div style="font-size:22px;font-weight:900;color:#b45309;margin-bottom:4px">⚠️ 還差最後一步！請把付款資料傳給主辦</div>
       <div style="font-size:17px;color:var(--dk);font-weight:900;margin-bottom:12px;line-height:1.7">系統已記錄您的付款回報（狀態：<b>待確認</b>），但<b>主辦還沒收到您的付款證明</b>。<br>請完成以下兩步，否則無法完成繳費：<br>① 複製下方付款卡片<br>② 傳到官方 LINE，並附上付款截圖<br>主辦確認入帳後，狀態才會變成「已繳費」。</div>
+      <div style="font-size:17px;color:#b91c1c;background:#fff1f0;border:1.5px solid #f3b5ad;border-radius:12px;padding:11px 13px;margin-bottom:12px;line-height:1.65;font-weight:900">⚠️ 只截圖這個畫面「不算」完成！一定要按下面①複製、再按②傳到官方 LINE，主辦收到才會確認。</div>
       <pre id="paymentCopyCard" onclick="copyPaymentCard()" style="white-space:pre-wrap;background:#fff;border:1.5px solid #d0e8d8;border-radius:14px;padding:14px;font-size:17px;line-height:1.55;color:#1a1a18;font-family:inherit;cursor:pointer;margin:0 0 10px"></pre>
-      <button type="button" class="payment-copy-btn" onclick="copyPaymentCard()">① 複製付款卡片內容</button>
+      <button type="button" class="payment-copy-btn" style="background:#c0392b" onclick="copyPaymentCard()">① 複製卡片回報（必按！才會更新進度）</button>
       <div style="font-size:16px;color:var(--md);font-weight:900;margin-bottom:12px;line-height:1.55">請複製付款卡片內容，並連同付款截圖一起傳至官方 LINE。</div>
-      <button type="button" onclick="openLine()" style="width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">② 前往官方 LINE 傳送</button>
+      <button type="button" onclick="openLine()" style="width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:13px;font-size:18px;font-weight:900;cursor:pointer">② 傳到官方 LINE（沒傳＝未完成）</button>
       <button class="btn-s2" onclick="closeModal('payModal')" style="width:100%;font-size:17px;padding:12px;margin-top:8px">我已經傳到 LINE 了，關閉</button>
     </div>
   </div>
@@ -6145,6 +6146,12 @@ async function openStallPickerForReg(regId){
     ST._stallPickerMapUrl=res.mapUrl||'';
     if($('stallPickerMap')) $('stallPickerMap').innerHTML=res.mapUrl?`<div style="border:1px solid #ddd;border-radius:12px;overflow:hidden;background:#fff"><img src="${escHtml(res.mapUrl)}" style="width:100%;display:block"></div><button type="button" onclick="openSeatMapZoom('picker')" style="width:100%;background:var(--c-green);color:#111;border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:950;margin-top:8px">🔍 放大查看場地圖</button>`:`<div style="font-size:16px;color:#777;background:#f7f7f7;border-radius:10px;padding:10px;text-align:center">此場次尚未上傳已編號場地圖，請依號碼清單選擇。</div>`;
     if(!list.length){ $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--md);font-size:16px;text-align:center;padding:16px">此場次尚未建立可選攤位</div>'; return; }
+    // SEATFULL_20260725：有加價位、但全部已被占用（不是自己的）→ 依規則顯示額滿，不給選。
+    if(!paidSeats.some(s=>!s.occupied || s.mine)){
+      $('stallGrid').innerHTML='<div style="grid-column:1/-1;color:var(--rd);font-size:18px;font-weight:900;text-align:center;padding:20px;line-height:1.6">本場自由選位已額滿。</div>';
+      $('stallConfirmBtn').disabled=true; $('stallConfirmBtn').style.opacity='.5';
+      return;
+    }
     ST._stallPick.stallList=list;
     ST._stallPick.taken=taken;
     renderStallPickerGrid();
