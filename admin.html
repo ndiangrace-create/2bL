@@ -2894,12 +2894,14 @@ function todoStageButtons(r,kind){
   const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||'';
   if(!id) return '<span class="tag">缺少報名 ID</span>';
   const btn=(act,label,cls='secondary')=>'<button class="btn small '+cls+'" onclick="runRegAction(\''+attr(id)+'\',\''+attr(act)+'\',this,\''+attr(sid)+'\')">'+safe(label)+'</button>';
-  if(kind==='pending') return btn('approve','錄取')+btn('reject','不錄取')+btn('waitlist','備取');
-  if(kind==='paymentPending') return btn('confirmPayment','確認付款')+btn('markUnpaid','退回未繳費')+btn('note','備註','secondary');
-  if(kind==='unpaid') return btn('remindPayment','提醒')+btn('note','備註','secondary');
-  if(kind==='checkin') return btn('checkin','報到')+btn('note','備註','secondary');
+  const _paidR=/已繳費|已付款/.test(String(r.paymentStatus||r.payStatus||r.payment_status||''));
+  const cancelBtn=_paidR?btn('refund','取消／退費'):btn('cancelUnpaid','取消');
+  if(kind==='pending') return btn('approve','錄取')+btn('reject','不錄取')+btn('waitlist','備取')+cancelBtn;
+  if(kind==='paymentPending') return btn('confirmPayment','確認付款')+btn('markUnpaid','退回未繳費')+cancelBtn+btn('note','備註','secondary');
+  if(kind==='unpaid') return btn('remindPayment','提醒')+cancelBtn+btn('note','備註','secondary');
+  if(kind==='checkin') return btn('checkin','報到')+cancelBtn+btn('note','備註','secondary');
   if(kind==='refund') return btn('refund','處理退費')+btn('markRefunded','標記已退費')+btn('note','備註','secondary');
-  if(kind==='dataIssue') return '<button class="btn small secondary" onclick="openRegDetail(\''+attr(id)+'\')">完整資料</button>'+btn('note','備註','secondary');
+  if(kind==='dataIssue') return '<button class="btn small secondary" onclick="openRegDetail(\''+attr(id)+'\')">完整資料</button>'+cancelBtn+btn('note','備註','secondary');
   if(kind==='equipment') return '<button class="btn small secondary" onclick="openEquipmentPanel(\''+attr(sid)+'\')">設備總表</button>'+btn('note','備註','secondary');
   return actionButtons(r);
 }
