@@ -1109,7 +1109,7 @@
       <button id="tab-leads" class="tab" onclick="switchPage('leads')">活動</button>
       <button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
     </nav>
-    <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
+    <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoFilterBar"></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
@@ -2707,6 +2707,67 @@ async function downloadSessionExcel(sid){ try{ const data=await api({action:'dow
 function overviewMetricCards(title,d){
   d=d||{}; const tip='onclick="toast(\'跨場次數字請看下方各場次摘要；單場數字可點進明細\',4200)"';
   return '<div class="report-card"><div class="report-title">'+safe(title)+'</div><div class="mini-stat-row"><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.sessions||0)+'</b><span>場次</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.registrations||0)+'</b><span>報名</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.approved||0)+'</b><span>已錄取</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.paid||0)+'</b><span>已繳費</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.grossRevenue||0)+'</b><span>收入</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.depositTotal||0)+'</b><span>押金</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.equipmentTotal||0)+'</b><span>設備件數</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.checkinDone||0)+'</b><span>已報到</span></button></div></div>';
+}
+let FinOvData=null;
+async function openFinanceOverview(){
+  AdminState.currentLayer='financeOverview';
+  openPanel('金流總覽','依你的管理權限彙總；只顯示你能管理的場次／主題','<div id="finOvBox" class="sub">載入中…</div>');
+  try{
+    const d=await api({action:'financeOverview'});
+    if(!d || d.error) throw new Error((d&&d.error)||'載入失敗');
+    FinOvData=d; renderFinanceOverview(d);
+  }catch(e){ const b=$('finOvBox'); if(b) b.innerHTML='<div class="empty" style="color:#8b1c1c">載入失敗：'+safe(e&&e.message?e.message:String(e))+'</div>'; }
+}
+function renderFinanceOverview(d){
+  const box=$('finOvBox'); if(!box) return;
+  const t=d.totals||{}, c=d.counts||{};
+  const card=(label,val,strong)=>'<div class="mini-stat"'+(strong?' style="background:#eef7ee"':'')+'><b>'+money(val||0)+'</b><span>'+safe(label)+'</span></div>';
+  const cnt=(label,val)=>'<div class="mini-stat"><b>'+num(val||0)+'</b><span>'+safe(label)+'</span></div>';
+  let h='<div style="margin-bottom:10px"><button type="button" class="btn secondary" onclick="exportFinanceOverviewCsv()">⬇ 匯出 Excel</button></div>';
+  if(d.scoped) h+='<div class="sub" style="margin-bottom:8px">🔒 僅顯示你有管理權限的場次／主題（不含跨主題或未授權場次）。</div>';
+  h+='<div class="report-card"><div class="report-title">金流總計</div><div class="mini-stat-row">'+card('已收',t.received)+card('應收',t.receivable)+card('未收',t.unreceived)+card('押金',t.deposit)+card('已退',t.refund)+card('淨收（已收－已退）',t.net,true)+'</div></div>';
+  h+='<div style="height:12px"></div>';
+  h+='<div class="report-card"><div class="report-title">名單概況</div><div class="mini-stat-row">'+cnt('場次',c.sessions)+cnt('報名',c.registrations)+cnt('已繳費',c.paid)+cnt('未繳費',c.unpaid)+cnt('待確認',c.paymentPending)+cnt('免費',c.free)+'</div></div>';
+  h+='<div style="height:12px"></div>';
+  const themes=Array.isArray(d.byTheme)?d.byTheme:[];
+  h+='<div class="report-card"><div class="report-title">依主題</div>';
+  h+= themes.length ? themes.map(x=>'<div class="info-line"><span class="metric-click">'+safe(x.eventName)+'（'+num(x.sessions)+' 場）</span><span>已收 '+money(x.received)+'｜淨收 '+money(x.net)+'</span></div><div class="sub" style="padding:0 0 8px">應收 '+money(x.receivable)+'｜未收 '+money(x.unreceived)+'｜押金 '+money(x.deposit)+'｜已退 '+money(x.refund)+'</div>').join('') : '<div class="sub">無資料</div>';
+  h+='</div>';
+  h+='<div style="height:12px"></div>';
+  const ss=Array.isArray(d.bySession)?d.bySession:[];
+  h+='<div class="report-card"><div class="report-title">依場次（點進該場財報）</div>';
+  h+= ss.length ? ss.map(s=>'<button type="button" class="info-line click" onclick="openFinancePanel(\''+attr(s.id)+'\')"><span class="metric-click">'+safe(s.name)+'<span class="sub"> ｜'+safe(s.eventName)+'｜'+safe(s.date||'')+'</span></span><span>已收 '+money(s.received)+'｜淨 '+money(s.net)+'</span></button>').join('') : '<div class="sub">無資料</div>';
+  h+='</div>';
+  box.innerHTML=h;
+}
+function exportFinanceOverviewCsv(){
+  const d=FinOvData; if(!d){ toast('尚未載入資料'); return; }
+  const t=d.totals||{}, c=d.counts||{};
+  const q=v=>{ v=(v==null?'':String(v)); return /[",\n]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v; };
+  const L=[];
+  L.push('金流總覽,匯出時間,'+q(new Date().toLocaleString('zh-TW')));
+  if(d.scoped) L.push('(僅含你有管理權限的場次／主題)');
+  L.push('');
+  L.push('總計'); L.push('項目,金額');
+  L.push('已收,'+(t.received||0)); L.push('應收,'+(t.receivable||0)); L.push('未收,'+(t.unreceived||0));
+  L.push('押金,'+(t.deposit||0)); L.push('已退,'+(t.refund||0)); L.push('淨收(已收-已退),'+(t.net||0));
+  L.push('');
+  L.push('名單概況'); L.push('項目,數量');
+  L.push('場次,'+(c.sessions||0)); L.push('報名,'+(c.registrations||0)); L.push('已繳費,'+(c.paid||0));
+  L.push('未繳費,'+(c.unpaid||0)); L.push('待確認,'+(c.paymentPending||0)); L.push('免費,'+(c.free||0));
+  L.push('');
+  L.push('依主題'); L.push('主題,場次數,已收,應收,未收,押金,已退,淨收');
+  (d.byTheme||[]).forEach(x=>L.push([q(x.eventName),x.sessions||0,x.received||0,x.receivable||0,x.unreceived||0,x.deposit||0,x.refund||0,x.net||0].join(',')));
+  L.push('');
+  L.push('依場次'); L.push('場次,主題,日期,已收,應收,未收,押金,已退,淨收');
+  (d.bySession||[]).forEach(s=>L.push([q(s.name),q(s.eventName),q(s.date||''),s.received||0,s.receivable||0,s.unreceived||0,s.deposit||0,s.refund||0,s.net||0].join(',')));
+  const csv='\ufeff'+L.join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='金流總覽_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  toast('已匯出金流總覽（CSV，可用 Excel 開啟）');
 }
 async function openBusinessOverviewPanel(){
   AdminState.currentLayer='businessOverview';
