@@ -1828,7 +1828,8 @@ async function confirmAdminRefund(regId,sid){
   if(refundAdminFee<0||refundTransferFee<0){ toast('扣項不可小於 0',5000); return; }
   if(refundAdminFee+refundTransferFee>paid){ toast('扣項不可大於已繳金額',5000); return; }
   const refundNote=$('refundNoteInput')?.value||'';
-  if(!confirm('確定標記為已退費？此動作會釋出名額與攤位。')) return;
+  // 移除原生 confirm()：LINE 內建瀏覽器會吞掉原生彈窗導致按鈕無反應；
+  // 紅色「確認完成退費」按鈕本身即為確認步驟（面板已顯示實退金額與後果）。
   try{
     const res=await apiPost({action:'confirmRefund',regId,sessionId:sid,refundAdminFee,refundTransferFee,refundNote});
     toast('退費已完成，實退 '+money(res.refundAmount||0),5000);
