@@ -1279,7 +1279,7 @@ async function onsiteMarkAdmin(regId,mode,btn){
   const sid=(AdminState.onsite&&AdminState.onsite.sid)||'';
   if(!sid||!regId){ toast('缺少場次或報名資料，已阻斷操作'); return; }
   const confirmMap={depositRefund:'確認退還押金？',depositForfeited:'確認沒收押金？',teardownDone:'確認已完成撤場？'};
-  if(confirmMap[mode] && !confirm(confirmMap[mode])) return;
+  if(confirmMap[mode] && !await uiConfirm(confirmMap[mode])) return;
   const needNote=['note','depositForfeited'];
   const note=needNote.includes(mode)?(prompt('請輸入備註（可留空）','')||''):'';
   const old=btn?btn.textContent:''; if(btn){btn.disabled=true;btn.textContent='處理中…';}
@@ -1473,7 +1473,7 @@ async function submitForceCancel(sid){
   const target=String(($('fc_target')||{}).value||'');
   const hours=Number(($('fc_hours')||{}).value||48)||48;
   if(mode==='transfer_or_refund' && !target){ toast('請選擇延期到哪一場'); return; }
-  if(!confirm('確定啟動不可抗力處理？\n啟動後會立即通知攤商，且無法復原。')) return;
+  if(!await uiConfirm('確定啟動不可抗力處理？\n啟動後會立即通知攤商，且無法復原。')) return;
   try{
     const body={action:'forceCancelSession',sessionId:sid,
       reasonCode:String(($('fc_reason')||{}).value||'typhoon'),
@@ -1567,7 +1567,7 @@ async function loadErrorLogs(){
   }
 }
 async function purgeErrorLogs(days){
-  if(!confirm('確定清除 '+days+' 天前的異常紀錄？這個動作無法復原。')) return;
+  if(!await uiConfirm('確定清除 '+days+' 天前的異常紀錄？這個動作無法復原。')) return;
   try{
     const r=await apiPost({action:'purgeErrorLogs',days});
     toast('已清除 '+((r&&r.deleted)||0)+' 筆');
@@ -1630,8 +1630,8 @@ function renderSessionCard(s){
   +'</article>';
 }
 
-async function copySessionAction(sid){ if(!confirm('要複製這個場次嗎？會建立一個「（複製）」的新場次，內容全帶、名額歸零，之後改日期名稱即可。')) return; try{ await apiPost({action:'copySession', id:sid}); toast('已複製，請在列表編輯新場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('複製失敗：'+e.message,6000); } }
-async function setSessionStatus(sid, status){ const label={'報名中':'開放報名','關閉':'關閉報名','封存':'封存（移到過往場次）'}[status]||status; if(!confirm('確定「'+label+'」？')) return; try{ await apiPost({action:'toggleSessionStatus', sessionId:sid, status}); toast('已'+label); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('失敗：'+e.message,6000); } }
+async function copySessionAction(sid){ if(!await uiConfirm('要複製這個場次嗎？會建立一個「（複製）」的新場次，內容全帶、名額歸零，之後改日期名稱即可。')) return; try{ await apiPost({action:'copySession', id:sid}); toast('已複製，請在列表編輯新場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('複製失敗：'+e.message,6000); } }
+async function setSessionStatus(sid, status){ const label={'報名中':'開放報名','關閉':'關閉報名','封存':'封存（移到過往場次）'}[status]||status; if(!await uiConfirm('確定「'+label+'」？')) return; try{ await apiPost({action:'toggleSessionStatus', sessionId:sid, status}); toast('已'+label); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('失敗：'+e.message,6000); } }
 function openPanel(title,sub,html,opts={}){ const p=$('panel'); if(p.classList.contains('show')&&!opts.replace){ AdminState.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,layer:AdminState.currentLayer,sessionId:AdminState.currentSessionId,filter:AdminState.currentFilter}); } $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; $('panelRootBtn').classList.toggle('hidden',AdminState.currentLayer==='root'); p.classList.add('show'); document.body.style.overflow='hidden'; history.pushState({panel:true},''); saveAdminPageState(); }
 function panelBack(){ const prev=AdminState.panelStack.pop(); if(prev){ $('panelTitle').textContent=prev.title; $('panelSub').textContent=prev.sub; $('panelBody').innerHTML=prev.html; AdminState.currentLayer=prev.layer; AdminState.currentSessionId=prev.sessionId; AdminState.currentFilter=prev.filter; saveAdminPageState(); return; } closeAllPanels(); }
 function closeAllPanels(){ $('panel').classList.remove('show'); $('panelBody').innerHTML=''; document.body.style.overflow=''; AdminState.panelStack=[]; AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; saveAdminPageState(); }
@@ -1777,6 +1777,38 @@ function renderRegCard(r){
 }
 
 
+// LINE_SAFE_CONFIRM_20260726：LINE 內建瀏覽器會吞掉原生 confirm()/alert()，
+// 改用自製非同步確認框（純 DOM+Promise，回傳 true/false）。取代全站 await uiConfirm()。
+function uiConfirm(message, opts){
+  opts=opts||{};
+  return new Promise(function(resolve){
+    var old=document.getElementById('uiConfirmOverlay'); if(old){ try{old.remove();}catch(e){} }
+    var ov=document.createElement('div');
+    ov.id='uiConfirmOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+    var box=document.createElement('div');
+    box.style.cssText='background:#fff;border-radius:16px;max-width:420px;width:100%;padding:20px;box-shadow:0 18px 48px rgba(0,0,0,.25);font-size:17px;line-height:1.6;color:#1f1f1f';
+    var msg=document.createElement('div');
+    msg.style.cssText='white-space:pre-wrap;margin-bottom:18px;font-weight:700';
+    msg.textContent=String(message==null?'確定執行？':message);
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:10px';
+    var cancel=document.createElement('button');
+    cancel.type='button'; cancel.textContent=opts.cancelText||'取消';
+    cancel.style.cssText='flex:1;padding:13px;border-radius:12px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit';
+    var ok=document.createElement('button');
+    ok.type='button'; ok.textContent=opts.okText||'確定';
+    ok.style.cssText='flex:1;padding:13px;border-radius:12px;border:none;background:'+(opts.danger?'#C8645D':'#628E87')+';color:#fff;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit';
+    var done=function(v){ try{ov.remove();}catch(e){} resolve(v); };
+    cancel.onclick=function(){ done(false); };
+    ok.onclick=function(){ done(true); };
+    ov.onclick=function(e){ if(e.target===ov) done(false); };
+    row.appendChild(cancel); row.appendChild(ok);
+    box.appendChild(msg); box.appendChild(row);
+    ov.appendChild(box); document.body.appendChild(ov);
+    setTimeout(function(){ try{ok.focus();}catch(e){} },30);
+  });
+}
 async function openRefundPanel(regId, btn=null, sidOverride=''){
   const sid=sidOverride||AdminState.currentSessionId||'';
   if(!sid){ toast('缺少場次鎖定，無法處理退費',5000); return; }
@@ -1842,7 +1874,7 @@ async function confirmAdminRefund(regId,sid){
 
 async function sendPaymentReminder(regId,btn,sid){
   if(!regId || !sid){ toast('缺少報名或場次資料，無法寄提醒',5000); return; }
-  if(!confirm('確定要寄出待付款提醒信？')) return;
+  if(!await uiConfirm('確定要寄出待付款提醒信？')) return;
   const old=btn ? btn.textContent : '';
   if(btn){ btn.disabled=true; btn.textContent='寄信中…'; }
   try{
@@ -1864,7 +1896,7 @@ async function runRegAction(regId,regAction,btn,sidOverride=''){
   if(regAction==='note') { const note=(prompt('輸入備註內容（會存到這筆報名）：')||'').trim(); if(!note){ return; } try{ await apiPost({action:'saveRegNote',regId,sessionId:sid,note}); toast('備註已儲存'); await refreshCurrentPage(); }catch(e){ toast('備註儲存失敗：'+(e.message||e),5000); } return; }
   if(regAction==='remindPayment') { await sendPaymentReminder(regId,btn,sid); return; }
   const question={reject:'確定標記為不錄取？\n（若原本已錄取，改判後名額會自動釋出，系統會寄出通知信）',waitlist:'確定標記為備取？\n（若原本已錄取，改判後名額會自動釋出）',confirmPayment:'確定確認此筆已繳費？\n系統會記為應收全額、付款方式標「手動確認」，並寄出繳費確認信。',cancelUnpaid:'確定取消未繳費報名？'}[regAction];
-  if(question && !confirm(question)) return;
+  if(question && !await uiConfirm(question)) return;
   const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
   try{
     if(regAction==='approve') await apiPost({action:'approveReg',regId,approved:true,sessionId:sid});
@@ -2135,9 +2167,9 @@ function expandStallCodes(input){ const out=[]; const seen=new Set(); String(inp
 function addSeatsByRange(){ const raw=String(($('set_seatRange')||{}).value||'').trim(); if(!raw){ toast('請輸入範圍，例如 A1-A5,B1-B5,D1-D6'); return; } const codes=expandStallCodes(raw); if(!codes.length){ toast('無法解析範圍'); return; } let added=0; codes.forEach(function(code){ if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code:code,type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); added++; } }); if(added) AdminSessionSeatListDirty=true; renderSessionSeatRows(AdminSessionSeatItems); if($('set_seatRange')) $('set_seatRange').value=''; toast('已建立 '+added+' 個號碼'); }
 function currentSeatSid(){ return String(($('set_sessionId')||{}).value||'').trim(); }
 async function loadVenueMapList(){ try{ const r=await apiPost({action:'listVenueMaps'}); const maps=(r&&r.maps)||[]; const sel=$('set_venueMapSel'); if(sel){ sel.innerHTML='<option value="">— 選擇常用圖 —</option>'+maps.map(m=>`<option value="${attr(m.id)}">${safe(m.name)}</option>`).join(''); } }catch(e){} }
-async function applyVenueMapNow(){ const sid=currentSeatSid(); const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇常用圖'); return; } if(!confirm('套用後會以常用圖的圖片與位置設定覆蓋本場目前設定，確定？')) return; try{ const res=await apiPost({action:'applyVenueMap',sessionId:sid,mapId,enabled:!!$('set_seatPricingEnabled')?.checked,holdHours:Number(($('set_seatHoldHours')||{}).value||24)||24,assignDaysBefore:Number(($('set_seatAssignDays')||{}).value||7)||7}); await loadSessionSeatSettings(sid, (typeof sessionById==='function'?sessionById(sid):null)||{}); toast(res&&res.warning?('已套用常用圖；'+res.warning):'已套用常用圖',9000); }catch(e){ toast('套用失敗：'+e.message,9000); } }
+async function applyVenueMapNow(){ const sid=currentSeatSid(); const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇常用圖'); return; } if(!await uiConfirm('套用後會以常用圖的圖片與位置設定覆蓋本場目前設定，確定？')) return; try{ const res=await apiPost({action:'applyVenueMap',sessionId:sid,mapId,enabled:!!$('set_seatPricingEnabled')?.checked,holdHours:Number(($('set_seatHoldHours')||{}).value||24)||24,assignDaysBefore:Number(($('set_seatAssignDays')||{}).value||7)||7}); await loadSessionSeatSettings(sid, (typeof sessionById==='function'?sessionById(sid):null)||{}); toast(res&&res.warning?('已套用常用圖；'+res.warning):'已套用常用圖',9000); }catch(e){ toast('套用失敗：'+e.message,9000); } }
 async function saveVenueMapNow(){ if(!AdminSessionSeatLoaded){ toast('位置清單尚未成功載入，已阻止存成常用圖，避免把空資料覆蓋範本',8000); return; } const name=prompt('把目前的場地圖與位置設定存成常用圖，請命名（例如：高雄美麗島 A區）'); if(!name) return; const mapUrl=String(($('set_seatMapUrl')||{}).value||'').trim(); const seats=collectSessionSeatItems(); if(!mapUrl && !seats.length){ toast('目前沒有地圖或位置可存'); return; } try{ await apiPost({action:'saveVenueMap',name:name,mapUrl:mapUrl,seats:seats}); toast('已存成常用圖：'+name); await loadVenueMapList(); }catch(e){ toast('儲存失敗：'+e.message,7000); } }
-async function deleteVenueMapNow(){ const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇要刪除的常用圖'); return; } if(!confirm('確定刪除這張常用圖？（不影響已套用的場次）')) return; try{ await apiPost({action:'deleteVenueMap',mapId:mapId}); toast('已刪除'); await loadVenueMapList(); }catch(e){ toast('刪除失敗：'+e.message,7000); } }
+async function deleteVenueMapNow(){ const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇要刪除的常用圖'); return; } if(!await uiConfirm('確定刪除這張常用圖？（不影響已套用的場次）')) return; try{ await apiPost({action:'deleteVenueMap',mapId:mapId}); toast('已刪除'); await loadVenueMapList(); }catch(e){ toast('刪除失敗：'+e.message,7000); } }
 function renderSessionSeatRows(items){
   AdminSessionSeatItems=(Array.isArray(items)?items:[]).map((x,i)=>normalizeAdminSeatItem(x,i)).filter(x=>x.code);
   const box=$('set_seatRows'); if(!box) return;
@@ -2389,7 +2421,7 @@ async function seatOpsAssign(sid, regId){
   }catch(e){ toast('安排失敗：'+(e&&e.message?e.message:e),7000); }
 }
 async function seatOpsBatch(sid){
-  if(!confirm('一鍵自動配位？\n\n把「還沒排位、且不是加價自選」的已付款攤友，依繳費順序補上自動位。\n已鎖位與加價自選不受影響。')) return;
+  if(!await uiConfirm('一鍵自動配位？\n\n把「還沒排位、且不是加價自選」的已付款攤友，依繳費順序補上自動位。\n已鎖位與加價自選不受影響。')) return;
   try{
     const r=await apiPost({action:'runBatchAssign',sessionId:sid});
     if(r&&r.error){ toast(r.error,7000); return; }
@@ -2616,7 +2648,7 @@ async function selectSessionMainVisual(sid,assetId,btn){ if(!isPlatformSuperAdmi
   finally{btn.disabled=false;btn.textContent=old;}
 }
 async function deleteSessionVisualAsset(sid,assetId,btn){ if(!isPlatformSuperAdmin()){ toast('此功能僅限超級管理員使用',5000); return; }
-  if(!confirm('刪除這張未選用的 AI 主視覺？')) return;
+  if(!await uiConfirm('刪除這張未選用的 AI 主視覺？')) return;
   const old=btn.textContent; btn.disabled=true; btn.textContent='刪除中…';
   try{ await apiPost({action:'deleteSessionVisualAsset',sessionId:sid,assetId}); toast('圖片已刪除'); await loadSessionVisualAssets(sid); }
   catch(e){toast('刪除失敗：'+e.message,7000);}
@@ -2960,7 +2992,7 @@ function todoStageButtons(r,kind){
   const cancelBtn=_paidR?btn('refund','取消／退費'):btn('cancelUnpaid','取消');
   if(kind==='pending') return btn('approve','錄取')+btn('reject','不錄取')+btn('waitlist','備取')+cancelBtn;
   if(kind==='paymentPending') return btn('confirmPayment','確認付款')+btn('markUnpaid','退回未繳費')+cancelBtn+btn('note','備註','secondary');
-  if(kind==='unpaid') return btn('remindPayment','提醒')+cancelBtn+btn('note','備註','secondary');
+  if(kind==='unpaid') return btn('confirmPayment','確認付款')+btn('remindPayment','提醒')+cancelBtn+btn('note','備註','secondary');
   if(kind==='checkin') return btn('checkin','報到')+cancelBtn+btn('note','備註','secondary');
   if(kind==='refund') return btn('refund','處理退費')+btn('markRefunded','標記已退費')+btn('note','備註','secondary');
   if(kind==='dataIssue') return '<button class="btn small secondary" onclick="openRegDetail(\''+attr(id)+'\')">完整資料</button>'+cancelBtn+btn('note','備註','secondary');
@@ -3002,7 +3034,7 @@ async function toggleFastPass(email, enable, btn){
   const e=String(email||'').trim();
   if(!e || e==='—'){ toast('此會員沒有 Email，無法設定'); return; }
   const on=(enable===true||enable==='true');
-  if(!confirm(on?('要將 '+e+' 設為「免審核會員」嗎？\n之後他報名需審核的場次會直接錄取。'):('要取消 '+e+' 的免審核嗎？'))) return;
+  if(!await uiConfirm(on?('要將 '+e+' 設為「免審核會員」嗎？\n之後他報名需審核的場次會直接錄取。'):('要取消 '+e+' 的免審核嗎？'))) return;
   const old=btn.textContent; btn.disabled=true; btn.textContent='處理中…';
   try{
     await apiPost({action:'setFastPass', targetEmail:e, enable:on});
@@ -3137,7 +3169,7 @@ async function savePaymentProfile(btn){
   }catch(e){ toast('儲存失敗：'+e.message,8000); }
   finally{ btn.disabled=false; btn.textContent=old; }
 }
-async function disablePaymentProfile(id){ if(!confirm('停用後新場次不可選用；舊付款快照不會被改動。確定停用？')) return; try{ await apiPost({action:'disablePaymentProfile',id}); toast('已停用'); await openPaymentSettings(); }catch(e){ toast('停用失敗：'+e.message,6000); } }
+async function disablePaymentProfile(id){ if(!await uiConfirm('停用後新場次不可選用；舊付款快照不會被改動。確定停用？')) return; try{ await apiPost({action:'disablePaymentProfile',id}); toast('已停用'); await openPaymentSettings(); }catch(e){ toast('停用失敗：'+e.message,6000); } }
 
 let AdminLeads=[]; let AdminLeadStats={}; let AdminLeadFilter='all';
 async function loadLeads(){
@@ -3391,7 +3423,7 @@ async function savePhotoFrameNow(){
   catch(e){ toast('儲存失敗：'+(e&&e.message?e.message:e),7000); }
 }
 async function deletePhotoFrameNow(id){
-  if(!confirm('確定刪除這張拍照框？已收到的名單不會被刪除。')) return;
+  if(!await uiConfirm('確定刪除這張拍照框？已收到的名單不會被刪除。')) return;
   try{ await apiPost({action:'deletePhotoFrame',frameId:id}); toast('已刪除'); await openPhotoFrames(); }
   catch(e){ toast('刪除失敗：'+(e&&e.message?e.message:e),7000); }
 }
@@ -3570,7 +3602,7 @@ async function renameVenueMapFromPanel(id){
   if(!m){ toast('找不到該常用圖'); return; }
   const name=(prompt('輸入新名稱：', m.name||'')||'').trim();
   if(!name || name===m.name) return;
-  if((AdminVenueMaps||[]).some(x=>String(x.id)!==String(id) && x.name===name)){ if(!confirm('已有同名常用圖，繼續會覆蓋它，確定？')) return; }
+  if((AdminVenueMaps||[]).some(x=>String(x.id)!==String(id) && x.name===name)){ if(!await uiConfirm('已有同名常用圖，繼續會覆蓋它，確定？')) return; }
   const seats=venueMapSeats(m);
   try{
     await apiPost({action:'saveVenueMap',name:name,mapUrl:m.seat_map_url||'',seats:seats});
@@ -3580,7 +3612,7 @@ async function renameVenueMapFromPanel(id){
   }catch(e){ toast('改名失敗：'+e.message,7000); }
 }
 async function deleteVenueMapFromPanel(id){
-  if(!confirm('確定刪除這張常用場地圖？（不影響已套用的場次）')) return;
+  if(!await uiConfirm('確定刪除這張常用場地圖？（不影響已套用的場次）')) return;
   try{ await apiPost({action:'deleteVenueMap',mapId:id}); toast('已刪除'); await openVenueMaps(); }catch(e){ toast('刪除失敗：'+e.message,7000); }
 }
 async function openEmailTemplates(){ openPanel('信件模板','正式模板管理，不是測試信','<div class="loading">載入信件模板…</div>'); try{ const rows=await api({action:'getEmailTemplates'}); renderEmailTemplates(rows); }catch(e){$('panelBody').innerHTML='<div class="empty">信件模板載入失敗，請稍後再試。</div>'; } }
@@ -3636,7 +3668,7 @@ async function deleteSessionUI(sid){
   if(!isPlatformSuperAdmin()){ toast('場次刪除僅限平台超級管理員，請改用「封存」',5000); return; }
   const ses=(AdminState.sessions||[]).find(x=>String(sessionId(x))===String(sid));
   const nm=ses?sessionName(ses):'這個場次';
-  if(!confirm('確定刪除場次「'+nm+'」嗎？\n\n此動作無法復原，報名資料會一併消失。\n若只是不再開放，請改用「封存」。')) return;
+  if(!await uiConfirm('確定刪除場次「'+nm+'」嗎？\n\n此動作無法復原，報名資料會一併消失。\n若只是不再開放，請改用「封存」。')) return;
   // 打字二次確認：避免誤按 confirm 就刪掉整場資料。
   const typed=prompt('刪除後無法復原。若確定刪除，請輸入「刪除」二字：');
   if(String(typed||'').trim()!=='刪除'){ toast('已取消，未刪除'); return; }
@@ -3775,7 +3807,7 @@ async function saveSessionBundle(sid, btn){
 async function removeSessionBundle(sid, btn){
   const existing=AdminState._bundleForSession;
   if(!existing||!existing.id){ toast('本場目前沒有組合'); return; }
-  if(!confirm('確定移除本場的組合？（不影響已報名的攤商）')) return;
+  if(!await uiConfirm('確定移除本場的組合？（不影響已報名的攤商）')) return;
   const old=btn.textContent; btn.disabled=true; btn.textContent='移除中…';
   try{ await apiPost({action:'deleteBundle', id:existing.id}); toast('已移除組合'); await loadSessionBundleInfo(sid); }
   catch(e){ toast('移除失敗：'+e.message,6000); }
@@ -3895,7 +3927,7 @@ async function deleteFeatEvent(id, btn){
   const cnt=(AdminState.sessions||[]).filter(s=>String(s.eventId||s.event_id||'')===String(id)).length;
   // 二次確認：第一關一律 confirm；若底下還有場次，追加「打字確認」第二關，避免誤按就刪掉整個主題。
   const msg='確定刪除主題「'+(ev.title||id)+'」嗎？\n\n只會刪這個主題，底下的場次不會被刪'+(cnt?('（目前有 '+cnt+' 個場次會保留）'):'')+'。\n此動作無法復原。';
-  if(!confirm(msg)) return;
+  if(!await uiConfirm(msg)) return;
   if(cnt>0){
     const typed=prompt('這個主題底下還有 '+cnt+' 個場次（場次會保留、不會被刪）。\n若確定要刪除主題，請輸入「刪除」二字：');
     if(String(typed||'').trim()!=='刪除'){ toast('已取消，未刪除'); return; }

@@ -1624,7 +1624,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
   <div style="width:100%">
     <!-- 頂部標題列 -->
     <div style="display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fff;border-radius:22px 22px 0 0;position:sticky;top:0;z-index:10">
-      <button onclick="closeRegFormModal()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;color:var(--md)">←</button>
+      <button onclick="attemptCloseRegForm()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;color:var(--md)">←</button>
       <span id="formBackTitle" style="font-size:16px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dk)">報名表</span>
       <button onclick="shareCurrentSession()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;color:var(--md)" title="分享">🔗</button>
     </div>
@@ -2351,9 +2351,48 @@ function buildAdminUrl(extra=''){
   const query = qs.toString();
   return base + (query ? '?' + query : '');
 }
+// LINE_SAFE_CONFIRM_20260726：LINE 內建瀏覽器會吞掉原生 confirm()/alert()，
+// 改用自製非同步確認框（純 DOM+Promise，回傳 true/false）。
+function uiConfirm(message, opts){
+  opts=opts||{};
+  return new Promise(function(resolve){
+    var old=document.getElementById('uiConfirmOverlay'); if(old){ try{old.remove();}catch(e){} }
+    var ov=document.createElement('div');
+    ov.id='uiConfirmOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+    var box=document.createElement('div');
+    box.style.cssText='background:#fff;border-radius:16px;max-width:420px;width:100%;padding:20px;box-shadow:0 18px 48px rgba(0,0,0,.25);font-size:17px;line-height:1.6;color:#1f1f1f';
+    var msg=document.createElement('div');
+    msg.style.cssText='white-space:pre-wrap;margin-bottom:18px;font-weight:700';
+    msg.textContent=String(message==null?'確定執行？':message);
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:10px';
+    var cancel=document.createElement('button');
+    cancel.type='button'; cancel.textContent=opts.cancelText||'取消';
+    cancel.style.cssText='flex:1;padding:13px;border-radius:12px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit';
+    var ok=document.createElement('button');
+    ok.type='button'; ok.textContent=opts.okText||'確定';
+    ok.style.cssText='flex:1;padding:13px;border-radius:12px;border:none;background:'+(opts.danger?'#C8645D':'#628E87')+';color:#fff;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit';
+    var done=function(v){ try{ov.remove();}catch(e){} resolve(v); };
+    cancel.onclick=function(){ done(false); };
+    ok.onclick=function(){ done(true); };
+    ov.onclick=function(e){ if(e.target===ov) done(false); };
+    row.appendChild(cancel); row.appendChild(ok);
+    box.appendChild(msg); box.appendChild(row);
+    ov.appendChild(box); document.body.appendChild(ov);
+    setTimeout(function(){ try{ok.focus();}catch(e){} },30);
+  });
+}
+// 報名表：從 ← 按鈕關閉時，用自製確認框問（LINE 可用）
+async function attemptCloseRegForm(){
+  if(!ST.__submitting && regFormHasContent()){
+    if(!await uiConfirm('報名尚未送出，確定要離開嗎？\n離開後已填寫的資料會清除。')) return;
+  }
+  closeRegFormModal({force:true});
+}
 function startLogoHold(e){
-  _logoHoldTimer = setTimeout(()=>{
-    if(confirm('進入管理後台？')) location.href = buildAdminUrl();
+  _logoHoldTimer = setTimeout(async ()=>{
+    if(await uiConfirm('進入管理後台？')) location.href = buildAdminUrl();
   }, 3000);
 }
 function stopLogoHold(){
@@ -2363,8 +2402,8 @@ function stopLogoHold(){
 // ── 客服區隱藏入口：長按3秒進入現場工作人員入口 ──
 let _staffHoldTimer = null;
 function startStaffHold(e){
-  _staffHoldTimer = setTimeout(()=>{
-    if(confirm('進入現場工作人員入口？')){
+  _staffHoldTimer = setTimeout(async ()=>{
+    if(await uiConfirm('進入現場工作人員入口？')){
       const base = location.origin + '/onsite.html';
       const qs = new URLSearchParams(location.search); const query = qs.toString();
       location.href = base + (query ? '?' + query : '');
@@ -2781,7 +2820,7 @@ function stopPhotoCamera(){
 }
 // 付款中斷／失敗時，攤友自己撤回回報，不需要主辦手動退回
 async function undoPaymentReport(regId){
-  if(!confirm('要撤回這次的付款回報嗎？\n撤回後狀態會回到「未繳費」，可以重新前往繳費。\n（若主辦已確認入帳則無法撤回）')) return;
+  if(!await uiConfirm('要撤回這次的付款回報嗎？\n撤回後狀態會回到「未繳費」，可以重新前往繳費。\n（若主辦已確認入帳則無法撤回）')) return;
   try{
     const email=ST.memberEmail||memberSafeEmail()||'';
     const phone=(ST.member&&ST.member.phone)||memberSafePhone()||'';
@@ -4784,7 +4823,7 @@ function closeRegFormModal(opts){
   const force=!!(opts&&opts.force);
   // 防呆：返回鍵/關閉時，若已填但尚未送出，先確認，避免白填又誤以為已報名
   if(!force && !ST.__submitting && regFormHasContent()){
-    if(!confirm('報名尚未送出，確定要離開嗎？\n離開後已填寫的資料會清除。')) return false;
+    return false;   // 交由呼叫端(attemptCloseRegForm / popstate)用自製確認框詢問
   }
   const page=$('regFormModal');
   if(page) page.classList.remove('active');
@@ -4912,7 +4951,10 @@ window.addEventListener('popstate', function(e){
   const modal=$('regFormModal');
   if(modal && (modal.classList.contains('show')||modal.classList.contains('active'))){
     const closed=closeRegFormModal();
-    if(closed===false){ try{ history.pushState({page:'regForm'},'',location.href); }catch(e){} }
+    if(closed===false){
+      try{ history.pushState({page:'regForm'},'',location.href); }catch(e){}
+      uiConfirm('報名尚未送出，確定要離開嗎？\n離開後已填寫的資料會清除。').then(function(ok){ if(ok) closeRegFormModal({force:true}); });
+    }
     return;
   }
   // Layer 1：在非首頁 → 回首頁（不讓 browser 離開 app）
@@ -6431,10 +6473,8 @@ function openExternalPay(){
   if(isBank){ toast('請依上方 ATM 資訊完成轉帳，付款後回來按「我已完成付款，回報付款」',5000); return; }
   const url = getPayLink(method);
   if(!url){ toast('此報名的收款設定尚未提供此付款方式連結，請改用已開放方式或聯繫主辦'); return; }
-  const ok = confirm('付款前請先注意：完成付款後，請務必截圖保留付款證明。付款完成後請回到「我的紀錄」按「我已完成付款，回報付款」，並將付款卡片與付款截圖一起傳至官方 LINE。');
-  if(!ok) return;
+  toast('付款前提醒：完成後請務必截圖付款證明，再回「我的紀錄」按「我已完成付款，回報付款」，並連同截圖傳到官方 LINE。',7000);
   window.open(url,'_blank');
-  toast('付款完成後請截圖，並回來完成付款回報',5000);
 }
 function showPayFormError(msg){
   const el=$('payFormError');
