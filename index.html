@@ -5770,8 +5770,8 @@ function mRecordDateText(r){
   const dates=Array.isArray(s.dates)&&s.dates.length?s.dates:(Array.isArray(r.sessionDates)?r.sessionDates:[]);
   const selected=Array.isArray(r.selectedDates)?r.selectedDates.map(String).filter(Boolean):[];
   if(dates.length){
-    const chosen=selected.length ? dates.filter(d=>selected.includes(String(d.date||d.day||''))) : dates.slice(0,1);
-    const lines=(chosen.length?chosen:dates.slice(0,1)).map(mSessionDateLine).filter(Boolean);
+    const chosen=selected.length ? dates.filter(d=>selected.includes(String(d.date||d.day||''))) : dates;
+    const lines=(chosen.length?chosen:dates).map(mSessionDateLine).filter(Boolean);
     if(lines.length) return lines.join('、');
   }
   const sessionRaw=s.date||s.startDate||s.eventDate||s.sessionDate||'';
