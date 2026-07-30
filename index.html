@@ -2876,16 +2876,14 @@ async function startPhotoCamera(){
   if(isInAppBrowser()){ showPhotoFallback('LINE／IG 內建瀏覽器無法開啟相機。'); return; }
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showPhotoFallback('這個瀏覽器不支援相機。'); return; }
   const v=document.getElementById('pfVideo');
-  // 要求直式畫面：手機自拍鏡頭預設是橫的，被裁成直式會只剩中間一小塊（臉超大）
-  // 手機瀏覽器常常回傳橫向畫面（例如 1920×1080），塞進直式框就得大量裁切。
-  // 先用「嚴格」條件要求直式，失敗再逐步放寬，盡量拿到 9:16 的原生畫面。
+  // 解析度＋直式：用「高解析度 ideal」讓裝置盡量給高畫質、接近直式的畫面。
+  // 之前用 exact 太嚴格，拿不到就一路掉到裝置預設(前鏡頭常 640×480)→又糊又像被裁很近。
+  // ideal 不會失敗，裝置會回傳它能給的最高解析度，畫質與視野都會明顯變好。
   const tries=[
-    {facingMode:{ideal:PF.facing},aspectRatio:{exact:9/16}},
-    {facingMode:{ideal:PF.facing},width:{exact:1080},height:{exact:1920}},
-    {facingMode:{ideal:PF.facing},width:{exact:720},height:{exact:1280}},
-    {facingMode:{ideal:PF.facing},aspectRatio:{ideal:9/16},width:{ideal:1080},height:{ideal:1920}},
-    {facingMode:{ideal:PF.facing},width:{ideal:720},height:{ideal:1280}},
-    {facingMode:PF.facing},
+    {facingMode:{ideal:PF.facing},width:{ideal:1080},height:{ideal:1920},aspectRatio:{ideal:9/16}},
+    {facingMode:{ideal:PF.facing},width:{ideal:1920},height:{ideal:1920}},
+    {facingMode:{ideal:PF.facing},width:{ideal:1280},height:{ideal:1280}},
+    {facingMode:{ideal:PF.facing}},
     true
   ];
   let ok=false;

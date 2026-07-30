@@ -3746,6 +3746,7 @@ async function uploadCoverFile(input){
 async function newSessionFull(){
   try{
     const res=await apiPost({action:'createSession', name:'未命名場次', type:entryTypeMap('市集報名'), portals:['市集報名'], fee:0, deposit:0});
+    if(res && res.error){ toast('建立失敗：'+res.error, 8000); return; }
     const id=res&&res.id;
     if(!id){ toast('建立失敗，請重試',6000); return; }
     try{ await apiPost({action:'toggleSessionStatus', sessionId:id, status:'關閉'}); }catch(_e){}
