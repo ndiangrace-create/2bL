@@ -1950,6 +1950,13 @@ function sessionEquip(s){ return safeJson(sessionField(s,'equip','equipJson','eq
 function sessionAddons(s){ return safeJson(sessionField(s,'addons','addonsJson','addons_json'), []); }
 function sessionInvoiceTax(s){ return safeJson(sessionField(s,'invoiceTax','invoiceTaxJson','invoice_tax_json'), {enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false}); }
 const ADMIN_EQUIP_NAMES=['桌','椅','帳篷','電力','衣桿','網架'];
+// 新場次的標準設備預設（EQUIP_DEFAULT_20260727）：帶出名稱與預設單價，
+// 用火／用電單價預設空白；內含每場自填；每項預設不開放，由主辦勾選要提供的項目。
+const DEFAULT_SESSION_EQUIP={
+  '桌':{price:350,open:false}, '椅':{price:20,open:false}, '帳篷':{price:900,open:false},
+  '傘':{price:700,open:false}, '地墊':{price:50,open:false},
+  '用火':{price:'',open:false}, '用電':{price:'',open:false}
+};
 function sessionPortalList(s){
   const raw = sessionField(s,'portals','portalList') || s.portals || '';
   if(Array.isArray(raw)) return raw.map(x=>String(x).trim()).filter(Boolean);
@@ -2013,9 +2020,10 @@ function collectCoorgValues(){
 }
 
 function sessionEquipFormHtml(equip){
-  const entries = Object.entries(equip||{}).filter(([name,def])=>String(name||'').trim() && def && typeof def==='object');
+  let entries = Object.entries(equip||{}).filter(([name,def])=>String(name||'').trim() && def && typeof def==='object');
   if(!entries.length){
-    return '<div class="empty">目前沒有設備設定。</div>';
+    // 新場次（尚無設備）→ 帶出標準設備預設，主辦可勾選/調整；現有場次不受影響。
+    entries = Object.entries(DEFAULT_SESSION_EQUIP);
   }
   const rows=entries.map(([name,x])=>{
     const incl = x.incl ?? x.included ?? x.includedPerStall ?? x.included_per_stall ?? 0;
