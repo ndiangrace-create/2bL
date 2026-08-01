@@ -120,12 +120,8 @@ function filteredRegs(){const kw=$('kw').value.trim().toLowerCase(); const f=$('
 function renderRegs(){
   const box=$('regsList');
   const list=filteredRegs();
-  // 退費總計（整場待退：未退押金 + 退部分天待退）——資料全部來自資料庫的 regs
-  let totDeposit=0, totPartial=0;
-  regs.forEach(r=>{ const dr=String(r.depositRefunded||''); if(Number(r.deposit||0)>0 && dr!=='已退押金' && dr!=='押金沒收') totDeposit+=Number(r.deposit||0); if(dr!=='已退押金') totPartial+=Number(r.pendingPartialRefund||0); });
-  const totalHtml=`<div class="card" style="background:#fff8ed;border:1.5px solid #f5d7a1"><b style="font-size:18px">💰 退費總計：${money(totDeposit+totPartial)}</b><div class="sub" style="font-size:14px">要帶的現金＝待退押金 ${money(totDeposit)}＋退部分天 ${money(totPartial)}</div></div>`;
-  if(!list.length){box.innerHTML=totalHtml+'<div class="card empty">沒有符合條件的名單</div>';return}
-  box.innerHTML=totalHtml+list.map(r=>{
+  if(!list.length){box.innerHTML='<div class="card empty">沒有符合條件的名單</div>';return}
+  box.innerHTML=list.map(r=>{
     const hasDeposit = Number(r.deposit||0) > 0;
     const depositDone = r.depositRefunded==='已退押金'||r.depositRefunded==='押金沒收';
     const depositTag = hasDeposit
@@ -150,7 +146,6 @@ function renderRegs(){
           <div class="k">攤位數</div><div>${r.stallCount||1}</div>
           <div class="k">加租設備</div><div>${esc(equipText(r.equip))}</div>
           <div class="k">押金</div><div>${money(r.deposit||0)}　${esc(r.depositRefunded||'未退押金')}</div>
-          ${Number(r.pendingPartialRefund||0)>0?`<div class="k">退部分天（待退）</div><div>${money(r.pendingPartialRefund)}${r.pendingPartialNote?`　<span style="font-size:13px;color:#8a6d3b">${esc(r.pendingPartialNote)}</span>`:''}</div><div class="k">現場共退</div><div><b>${money((String(r.depositRefunded||'')!=='已退押金'&&String(r.depositRefunded||'')!=='押金沒收'?Number(r.deposit||0):0)+(String(r.depositRefunded||'')!=='已退押金'?Number(r.pendingPartialRefund||0):0))}</b></div>`:''}
           <div class="k">備註</div><div>${esc(r.adminNote||'—')}</div>
         </div>
       </div>

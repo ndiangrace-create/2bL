@@ -2639,7 +2639,7 @@ function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v
 // 活動限定拍照框（H5：問卷 → 相機 → 套框 → 下載／分享）
 // ══════════════════════════════════════════════════════════════
 const PHOTO_DONE_KEY='2bl_photo_lead_done';
-let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null,fit:'contain'};
+let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null,fit:'cover'};
 async function loadPhotoFrames(){
   try{ const r=await apiPost({action:'listActivePhotoFrames'}); ST.photoFrames=(r&&r.frames)||[]; }
   catch(e){ ST.photoFrames=[]; }
@@ -2734,7 +2734,7 @@ function togglePhotoFit(){
   const b=document.getElementById('pfFitBtn'); if(b) b.textContent=(PF.fit==='contain')?'完整':'填滿';
   applyPhotoZoom();
 }
-function setPhotoZoom(v){ PF.zoom=1; applyPhotoZoom(); } /* PHOTO_NO_ZOOM_20260727：禁用數位放大，永遠 1 倍原始廣角視野 */
+function setPhotoZoom(v){ PF.zoom=Math.min(2.2,Math.max(1,Number(v)||1)); applyPhotoZoom(); }
 async function flipPhotoCamera(){
   PF.facing=(PF.facing==='user')?'environment':'user';
   stopPhotoCamera();
@@ -2774,7 +2774,11 @@ function ensurePhotoModal(){
      +'<div id="pfCtrl" style="display:flex;align-items:center;gap:10px;margin-top:8px">'
        +'<button id="pfFlipBtn" onclick="flipPhotoCamera()" style="font-size:16px;font-weight:800;padding:11px 13px;border:0;border-radius:12px;background:#D9E5EE;cursor:pointer;white-space:nowrap">切換鏡頭</button>'
        +'<button id="pfFitBtn" onclick="togglePhotoFit()" style="font-size:16px;font-weight:800;padding:11px 13px;border:0;border-radius:12px;background:#FAEEC7;cursor:pointer;white-space:nowrap">完整</button>'
-       +'</div>'
+       +'<div style="flex:1;display:flex;align-items:center;gap:8px">'
+         +'<span style="font-size:16px;color:#555">原始</span>'
+         +'<input id="pfZoom" type="range" min="1" max="2.2" step="0.05" value="1" oninput="setPhotoZoom(this.value)" style="flex:1">'
+         +'<span style="font-size:16px;color:#555">放大</span>'
+       +'</div></div>'
      +'<div id="pfCamInfo" style="font-size:16px;color:#777;margin-top:6px"></div>'
      +'<div id="pfCamMsg" style="display:none;font-size:16px;background:#FAE1DD;border-radius:12px;padding:12px;margin-top:10px"></div>'
      +'<div id="pfPickWrap" style="display:none;margin-top:10px"><label style="display:block;font-size:17px;font-weight:800;padding:14px;border:2px dashed #bbb;border-radius:14px;text-align:center;cursor:pointer">從相簿選照片套框<input type="file" accept="image/*" style="display:none" onchange="pickPhotoFile(this)"></label></div>'
@@ -2910,7 +2914,7 @@ function pfDrawFitRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom,fit){
   ctx.drawImage(src, rx+(rw-dw)/2, ry+(rh-dh)/2, dw, dh);
 }
 async function takePhoto(){
-  const W=1440,H=2560;  // 高解析直式輸出（≥1080×1920）
+  const W=1080,H=1920;
   const c=document.createElement('canvas'); c.width=W; c.height=H;
   const ctx=c.getContext('2d');
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
