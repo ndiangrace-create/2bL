@@ -1757,7 +1757,7 @@ function renderRegistrationCards(){
 function statusTags(r){ const review=r.reviewStatus||r.status||'待審核'; const pay=r.paymentStatus||r.payStatus||'未繳費'; const check=r.checkinStatus||r.checkin||'未報到'; return '<span class="tag '+(String(review).includes('錄取')?'ok':String(review).includes('待')?'warn':'info')+'">審核：'+safe(review)+'</span><span class="tag '+(String(pay).includes('已繳')||String(pay).includes('免費')?'ok':String(pay).includes('回報')||String(pay).includes('待確認')?'warn':'bad')+'">付款：'+safe(pay)+'</span><span class="tag '+(String(check).includes('已報到')?'ok':'purple')+'">報到：'+safe(check)+'</span>'; }
 function socialLinks(r){ let out=''; if(r.fb) out+='<a class="tag info" href="'+attr(r.fb)+'" target="_blank">FB</a>'; if(r.ig) out+='<a class="tag bad" href="'+attr(r.ig)+'" target="_blank">IG</a>'; return out || '<span class="tag">未填社群</span>'; }
 function actionButtons(r){ const id=r.id||r.regId||r.registrationId||r.registration_id||''; const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||''; if(Array.isArray(r.availableActions)){ let out=''; for(const a of r.availableActions) out += actionButton(id,a,sid); return out || '<span class="tag">目前無可操作動作</span>'; } return '<span class="tag">目前無可操作動作</span>'; }
-function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'取消／退費'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>'; }
+function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'取消／退費',partialDayRefund:'退部分天'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>'; }
 function renderRegCard(r){
   const brand=r.brand||r.brandName||r.brand_name||'未填品牌';
   const sid=regSessionId(r)||AdminState.currentSessionId;
@@ -1809,6 +1809,44 @@ function uiConfirm(message, opts){
     setTimeout(function(){ try{ok.focus();}catch(e){} },30);
   });
 }
+// ── 退部分天（PARTIAL_DAY_REFUND_20260727）：勾要退的日期→自動算攤位費(可微調)→記為待退，現場退 ──
+function openPartialDayPanel(regId, sid){
+  let r=null; for(const x of AdminState.currentList){ if(String(x.id||x.regId)===String(regId)) r=x; }
+  if(!r){ toast('找不到報名資料，請重新整理名單'); return; }
+  const s=sessionById(sid)||{};
+  const dateDefs = Array.isArray(s.dates)?s.dates : (Array.isArray(s.dates_json)?s.dates_json : []);
+  const _dk=x=>(x&&typeof x==='object')?String(x.date||x.day||x.key||x.value||''):String(x||'');
+  const sel = (Array.isArray(r.selectedDates)?r.selectedDates:[]).map(_dk).filter(Boolean);
+  const stalls = Math.max(1, Number(r.stallCount||r.stall_count||1)||1);
+  if(sel.length<2){ toast('此報名只有一天，請用「取消／退費」整筆退費'); return; }
+  const feeOf=d=>{ const def=dateDefs.find(x=>String(x.date||x.day)===d); return def?(Number(def.fee)||0):0; };
+  const rowsHtml=sel.map(d=>{ const dayFee=feeOf(d)*stalls; return '<label class="tight-check" style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #eee;border-radius:10px;margin-bottom:6px;font-size:16px"><input type="checkbox" class="pdrDay" value="'+attr(d)+'" data-fee="'+dayFee+'" onchange="calcPartialRefund()"> <b>'+safe(d)+'</b> <span class="sub">攤位費 '+money(dayFee)+'（×'+stalls+'攤）</span></label>'; }).join('');
+  const html='<div class="readable-detail"><div class="report-card"><div class="report-title">退部分天</div>'
+    +'<div class="sub" style="margin-bottom:10px">勾選「要退費」的日期，其餘日期保留出攤。<b>押金不退、設備不減</b>；退款會等現場出席後、連同押金一起退。</div>'
+    +rowsHtml
+    +'<div class="kv" style="margin-top:10px"><div class="k">退款金額<br><span class="sub">自動＝被退那天攤位費×攤數，可微調</span></div><div><input id="pdrAmount" type="number" min="0" value="0" style="font-size:19px;font-weight:900;padding:10px;width:170px;border:1.5px solid #C8645D;border-radius:10px"></div></div>'
+    +'<div class="card-actions" style="margin-top:12px"><button class="btn danger" onclick="confirmPartialDayRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認退部分天</button><button class="btn secondary" onclick="panelBack()">取消</button></div>'
+    +'</div></div>';
+  openPanel('退部分天｜'+safe(r.brand||r.brandName||r.brand_name||'報名'),'保留其他天出攤；退款記為待退，現場連押金一起退',html);
+}
+function calcPartialRefund(){
+  let sum=0; document.querySelectorAll('.pdrDay:checked').forEach(x=>{ sum+=Number(x.getAttribute('data-fee'))||0; });
+  const inp=$('pdrAmount'); if(inp) inp.value=sum;
+}
+async function confirmPartialDayRefund(regId, sid){
+  const removeDates=[]; document.querySelectorAll('.pdrDay:checked').forEach(x=>removeDates.push(x.value));
+  if(!removeDates.length){ toast('請勾選要退費的日期'); return; }
+  const refundAmount=Number($('pdrAmount')?.value||0)||0;
+  if(!await uiConfirm('確認退部分天？\n退掉：'+removeDates.join('、')+'\n退款 '+money(refundAmount)+'（現場出席後連同押金一起退）\n保留其他天照常出攤。')) return;
+  try{
+    const res=await apiPost({action:'partialDayRefund',regId,sessionId:sid,removeDates,refundAmount});
+    if(res&&res.error){ toast(res.error,7000); return; }
+    toast('已設定退部分天，待現場退款 '+money((res&&res.refundAmount)||refundAmount),6000);
+    closeAllPanels();
+    if(AdminState.currentPage==='todos'){ if(typeof loadTodos==='function') await loadTodos(); }
+    else if(AdminState.currentSessionId && typeof openSessionList==='function'){ await openSessionList(AdminState.currentSessionId, AdminState.currentFilter||'all', '名單'); }
+  }catch(e){ toast('退部分天失敗：'+(e&&e.message?e.message:e),7000); }
+}
 async function openRefundPanel(regId, btn=null, sidOverride=''){
   const sid=sidOverride||AdminState.currentSessionId||'';
   if(!sid){ toast('缺少場次鎖定，無法處理退費',5000); return; }
@@ -1835,7 +1873,7 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
       +'<div class="form-field"><label>轉帳手續費</label><input id="refundTransferFeeInput" type="number" min="0" value="'+attr(transferFee)+'" oninput="calcRefundAmount()"></div>'
       +'<div class="form-field full"><label>退費備註</label><textarea id="refundNoteInput" placeholder="可填寫匯款帳號、處理備註或內部紀錄"></textarea></div>'
       +'</div>'
-      +'<div class="notice" style="margin-top:12px"><b>實退金額：</b><span id="refundAmountText">'+money(refund)+'</span><br><span class="sub">公式：已繳金額－行政費－轉帳手續費。確認後會改為已退費、釋出名額與攤位。</span></div>'
+      +'<div class="notice" style="margin-top:12px"><b>實退金額（可直接修改）</b><br><input id="refundAmountInput" type="number" min="0" value="'+attr(refund)+'" oninput="onRefundAmountEdit()" style="font-size:19px;font-weight:900;padding:10px;width:100%;max-width:240px;border:1.5px solid #C8645D;border-radius:10px;margin:6px 0"><br><span class="sub">要退一天就直接輸入一天的金額；全退＝維持預設；不退＝填 0。未退的部分會自動記為扣項。確認後會改為已退費、釋出名額與攤位。</span></div>'
       +'<div class="card-actions"><button class="btn danger" onclick="confirmAdminRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認完成退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div>'
       +'</div></div>';
     openPanel('取消／退費','下方金額可自行修改；要全退、部分退或不退（填 0）都由你決定',html);
@@ -1849,8 +1887,17 @@ function calcRefundAmount(){
   const admin=Number($('refundAdminFeeInput')?.value||0)||0;
   const transfer=Number($('refundTransferFeeInput')?.value||0)||0;
   const refund=Math.max(0, paid-admin-transfer);
-  const out=$('refundAmountText');
-  if(out) out.textContent=money(refund);
+  const out=$('refundAmountInput');
+  if(out) out.value=refund;
+}
+// 直接輸入實退金額時：把「未退的部分」回填為扣項，讓後端退出正好這個金額（退一天/部分退）
+function onRefundAmountEdit(){
+  const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
+  const paid=Number(paidTxt)||0;
+  let amt=Number($('refundAmountInput')?.value||0)||0;
+  if(amt<0) amt=0; if(amt>paid) amt=paid;
+  const af=$('refundAdminFeeInput'); if(af) af.value=Math.max(0, paid-amt);
+  const tf=$('refundTransferFeeInput'); if(tf) tf.value=0;
 }
 async function confirmAdminRefund(regId,sid){
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
@@ -1893,6 +1940,7 @@ async function runRegAction(regId,regAction,btn,sidOverride=''){
   if(!sid){ toast('缺少場次鎖定，已阻斷操作',5000); return; }
   if(!regId){toast('找不到報名 ID');return;}
   if(regAction==='refund' || regAction==='markRefunded') { await openRefundPanel(regId,btn,sid); return; }
+  if(regAction==='partialDayRefund') { openPartialDayPanel(regId,sid); return; }
   if(regAction==='note') { const note=(prompt('輸入備註內容（會存到這筆報名）：')||'').trim(); if(!note){ return; } try{ await apiPost({action:'saveRegNote',regId,sessionId:sid,note}); toast('備註已儲存'); await refreshCurrentPage(); }catch(e){ toast('備註儲存失敗：'+(e.message||e),5000); } return; }
   if(regAction==='remindPayment') { await sendPaymentReminder(regId,btn,sid); return; }
   const question={reject:'確定標記為不錄取？\n（若原本已錄取，改判後名額會自動釋出，系統會寄出通知信）',waitlist:'確定標記為備取？\n（若原本已錄取，改判後名額會自動釋出）',confirmPayment:'確定確認此筆已繳費？\n系統會記為應收全額、付款方式標「手動確認」，並寄出繳費確認信。',cancelUnpaid:'確定取消未繳費報名？'}[regAction];
@@ -3002,7 +3050,7 @@ function todoStageButtons(r,kind){
   if(kind==='paymentPending') return btn('confirmPayment','確認付款')+btn('markUnpaid','退回未繳費')+cancelBtn+btn('note','備註','secondary');
   if(kind==='unpaid') return btn('confirmPayment','確認付款')+btn('remindPayment','提醒')+cancelBtn+btn('note','備註','secondary');
   if(kind==='checkin') return btn('checkin','報到')+cancelBtn+btn('note','備註','secondary');
-  if(kind==='refund') return btn('refund','處理退費')+btn('markRefunded','標記已退費')+btn('note','備註','secondary');
+  if(kind==='refund') return btn('refund','處理退費')+btn('note','備註','secondary');
   if(kind==='dataIssue') return '<button class="btn small secondary" onclick="openRegDetail(\''+attr(id)+'\')">完整資料</button>'+cancelBtn+btn('note','備註','secondary');
   if(kind==='equipment') return '<button class="btn small secondary" onclick="openEquipmentPanel(\''+attr(sid)+'\')">設備總表</button>'+btn('note','備註','secondary');
   return actionButtons(r);
