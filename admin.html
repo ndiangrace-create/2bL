@@ -1160,6 +1160,51 @@
 
 
 
+
+/* TODO_CARD_DESKTOP_RESPONSIVE_20260801：待辦卡片桌機稍放大、手機不破版、字級老花友善 */
+#page-todos #todoList.cards{
+  grid-template-columns:repeat(auto-fill,minmax(292px,1fr))!important;
+  gap:14px!important;
+  align-items:stretch!important;
+}
+#page-todos .todo-card-lite{
+  padding:14px!important;
+  gap:9px!important;
+  min-height:260px!important;
+}
+#page-todos .todo-card-lite .todo-stage-badge{font-size:16px!important;padding:6px 11px!important}
+#page-todos .todo-next-mini{font-size:14px!important;line-height:1.35!important}
+#page-todos .todo-session-title{font-size:18px!important;line-height:1.4!important}
+#page-todos .todo-brand-name{font-size:16px!important;line-height:1.4!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+#page-todos .todo-contact-line{font-size:16px!important;line-height:1.45!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+#page-todos .todo-submit-time{font-size:14px!important;line-height:1.45!important;color:#555!important;font-weight:900!important;background:#F7F4EE;border:1px solid #E8DFD4;border-radius:11px;padding:7px 9px}
+#page-todos .todo-social{font-size:14px!important;min-width:34px!important;height:30px!important;padding:0 9px!important}
+#page-todos .todo-action-row{gap:7px!important;flex-wrap:wrap!important}
+#page-todos .todo-action-row .btn{font-size:14px!important;min-height:40px!important;padding:8px 7px!important;flex:1 1 110px!important}
+#page-todos .card-fixed-block .fixed-row span,
+#page-todos .card-fixed-block .fixed-pay{font-size:14px!important;line-height:1.45!important;padding:8px 9px!important}
+@media(min-width:1500px){#page-todos #todoList.cards{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))!important}}
+@media(max-width:900px){#page-todos #todoList.cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:620px){
+  #page-todos #todoList.cards{grid-template-columns:1fr!important;gap:12px!important}
+  #page-todos .todo-card-lite{min-height:0!important;padding:13px!important}
+  #page-todos .todo-action-row .btn{flex:1 1 calc(50% - 7px)!important;min-width:0!important}
+}
+
+/* REFUND_FLOW_UNIFIED_20260801：退費處理單一入口，部分日期保留其他天 */
+.refund-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.refund-mode-card{display:block;border:2px solid var(--line);border-radius:18px;padding:14px;background:#fff;cursor:pointer;min-height:108px}
+.refund-mode-card:has(input:checked){border-color:var(--main2);background:#F0F7F4;box-shadow:0 0 0 3px rgba(98,142,135,.12)}
+.refund-mode-card input{width:20px;height:20px;margin-right:8px;vertical-align:middle}
+.refund-mode-card b{font-size:18px}.refund-mode-card span{display:block;font-size:14px;line-height:1.55;color:#555;margin-top:6px}
+.refund-day-list{display:grid;gap:8px;margin:10px 0}
+.refund-day-option{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:14px;padding:11px;background:#fff;font-size:16px;line-height:1.5}
+.refund-day-option input{width:21px;height:21px;flex:0 0 auto;margin-top:2px}
+.refund-day-option .refund-day-meta{font-size:14px;color:#555;font-weight:800}
+.refund-kept-preview{font-size:16px;font-weight:900;line-height:1.55;background:var(--green);border:1px solid #bfd7b2;border-radius:14px;padding:10px 12px;margin-top:10px}
+.refund-warning{font-size:14px;line-height:1.55;color:#7a2d28;background:#fff5f4;border:1px solid #efc3bf;border-radius:14px;padding:10px 12px;margin-top:10px}
+@media(max-width:680px){.refund-mode-grid{grid-template-columns:1fr}.refund-mode-card{min-height:0}.refund-day-option{font-size:16px}}
+
 /* ── AI 主視覺生成模組 022：全部固定 1:1 ── */
 .ai-visual-box{border:1px solid var(--line);background:linear-gradient(135deg,#fff,#F7FAF4);border-radius:20px;padding:14px;margin-top:10px}
 .ai-visual-toolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin:10px 0}
@@ -1178,6 +1223,48 @@
 .ai-visual-actions .btn{flex:1 1 120px}
 .ai-visual-selected-badge{display:inline-flex;padding:4px 9px;border-radius:999px;background:var(--green);color:#2b5f24;font-size:12px;font-weight:950}
 @media(max-width:700px){.ai-visual-grid{grid-template-columns:1fr}.ai-visual-overlay b{font-size:19px}}
+
+
+/* MEMBER_PROFILE_COMPLETION_CLOSED_LOOP_20260801 */
+#page-members .member-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 190px auto;gap:10px;align-items:center;margin:10px 0 16px}
+#page-members .member-toolbar input,#page-members .member-toolbar select{min-height:46px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:10px 14px;font-size:16px}
+#page-members .member-toolbar .btn{min-height:46px;font-size:16px}
+#memberList.member-list{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))!important;gap:16px!important}
+.member-card-lite{padding:16px!important;min-height:340px!important;grid-template-columns:1fr!important;gap:9px!important}
+.member-card-lite .member-title{font-size:19px!important;line-height:1.4!important}
+.member-card-lite .member-sub,.member-card-lite .member-small-line{font-size:16px!important;line-height:1.45!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+.member-card-lite .member-meta{gap:6px!important;margin-top:3px!important}
+.member-card-lite .member-meta .tag,.member-card-lite .member-title .tag{font-size:14px!important;padding:5px 9px!important}
+.member-card-lite .member-note{font-size:15px!important;line-height:1.5!important;-webkit-line-clamp:3!important;min-height:70px!important}
+.member-profile-status{border-radius:14px;padding:10px 12px;font-size:16px;font-weight:950;line-height:1.5}
+.member-profile-status.complete{background:var(--green);border:1px solid #b9d2a8;color:#315226}
+.member-profile-status.incomplete{background:var(--yellow);border:1px solid #e0cb83;color:#6b4e00}
+.member-missing-list{font-size:14px;line-height:1.55;color:#5d4a18;margin-top:5px;font-weight:800}
+.member-select-row{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:850;color:#555}
+.member-select-row input{width:20px;height:20px;flex:0 0 auto}
+.member-card-lite .member-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:auto!important}
+.member-card-lite .member-actions .btn{width:100%!important;min-height:42px!important;font-size:14px!important;padding:8px 7px!important}
+.member-reminder-editor textarea{width:100%;min-height:240px;font-size:16px;line-height:1.65;padding:12px;border:1px solid var(--line);border-radius:14px;resize:vertical}
+.member-reminder-editor input{width:100%;min-height:46px;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:14px}
+.member-reminder-editor label{display:block;font-size:16px;font-weight:950;margin:12px 0 6px}
+.member-reminder-editor .help{font-size:14px;line-height:1.55;color:#666;margin-top:7px}
+/* 場次日期欄位：日期縮窄、顯示名與時間加寬；手機自動分行 */
+.date-head-row,.date-row{grid-template-columns:minmax(128px,.8fr) minmax(220px,1.55fr) minmax(180px,1.35fr) minmax(180px,1.35fr) minmax(105px,.7fr) minmax(105px,.7fr) 48px!important;gap:9px!important;align-items:center!important}
+.date-row input,.date-row select{min-height:46px!important;font-size:16px!important;padding:9px 10px!important;min-width:0!important}
+.date-head-row span{font-size:14px!important;font-weight:950!important}
+@media(min-width:1500px){#memberList.member-list{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))!important}}
+@media(max-width:900px){
+ #page-members .member-toolbar{grid-template-columns:1fr 1fr}.member-toolbar .member-search{grid-column:1/-1}
+ #memberList.member-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .date-head-row{display:none!important}.date-row{grid-template-columns:1fr 1fr!important;padding:12px!important;border:1px solid var(--line)!important;border-radius:16px!important;margin-bottom:10px!important;background:#fff!important}
+ .date-row > *{width:100%!important}.date-row .date-del-btn{grid-column:1/-1!important}
+}
+@media(max-width:620px){
+ #page-members .member-toolbar{grid-template-columns:1fr}.member-toolbar .member-search{grid-column:auto}
+ #memberList.member-list{grid-template-columns:1fr!important}
+ .member-card-lite{min-height:0!important}
+ .date-row{grid-template-columns:1fr!important}.date-row .date-del-btn{grid-column:auto!important}
+}
 
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
@@ -1210,7 +1297,7 @@
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoFilterBar"></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
-    <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
+    <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；資料完整後才能進入正式報名。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="member-toolbar"><input class="member-search" id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"><select id="memberProfileFilter" onchange="renderMembers()"><option value="all">全部會員</option><option value="incomplete">資料未完整</option><option value="complete">資料完整</option></select><button class="btn" onclick="openBatchMemberReminder()">寄信提醒已勾選會員</button></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
     <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
     <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
@@ -1818,7 +1905,14 @@ function regDateText(r){
 }
 function regDatesText(r){ return regDateText(r); }
 try{ window.regDatesText = regDatesText; }catch(e){}
-function regCreatedText(r){ return r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '—'; }
+function regCreatedText(r){
+  const raw=r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '';
+  if(!raw) return '—';
+  if(r.createdText) return String(raw);
+  const d=new Date(raw);
+  if(Number.isNaN(d.getTime())) return String(raw);
+  return d.toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+}
 function invoiceBrief(r){ const parts=[]; if(r.taxId) parts.push('統編 '+r.taxId); if(r.invoiceTitle) parts.push(r.invoiceTitle); if(r.invoiceEmail) parts.push(r.invoiceEmail); return parts.join('｜') || '—'; }
 
 function adminShortDateRange(v){
@@ -1889,8 +1983,24 @@ function renderRegistrationCards(){
 }
 function statusTags(r){ const review=r.reviewStatus||r.status||'待審核'; const pay=r.paymentStatus||r.payStatus||'未繳費'; const check=r.checkinStatus||r.checkin||'未報到'; return '<span class="tag '+(String(review).includes('錄取')?'ok':String(review).includes('待')?'warn':'info')+'">審核：'+safe(review)+'</span><span class="tag '+(String(pay).includes('已繳')||String(pay).includes('免費')?'ok':String(pay).includes('回報')||String(pay).includes('待確認')?'warn':'bad')+'">付款：'+safe(pay)+'</span><span class="tag '+(String(check).includes('已報到')?'ok':'purple')+'">報到：'+safe(check)+'</span>'; }
 function socialLinks(r){ let out=''; if(r.fb) out+='<a class="tag info" href="'+attr(r.fb)+'" target="_blank">FB</a>'; if(r.ig) out+='<a class="tag bad" href="'+attr(r.ig)+'" target="_blank">IG</a>'; return out || '<span class="tag">未填社群</span>'; }
-function actionButtons(r){ const id=r.id||r.regId||r.registrationId||r.registration_id||''; const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||''; if(Array.isArray(r.availableActions)){ let out=''; for(const a of r.availableActions) out += actionButton(id,a,sid); return out || '<span class="tag">目前無可操作動作</span>'; } return '<span class="tag">目前無可操作動作</span>'; }
-function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'取消／退費',partialDayRefund:'退部分天'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>'; }
+function actionButtons(r){
+  const id=r.id||r.regId||r.registrationId||r.registration_id||'';
+  const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||'';
+  if(Array.isArray(r.availableActions)){
+    let out=''; const seen=new Set();
+    for(let a of r.availableActions){
+      if(a==='partialDayRefund') a='refund';
+      if(seen.has(a)) continue; seen.add(a);
+      out += actionButton(id,a,sid);
+    }
+    return out || '<span class="tag">目前無可操作動作</span>';
+  }
+  return '<span class="tag">目前無可操作動作</span>';
+}
+function actionButton(id,a,sid=''){
+  const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'退費處理',partialDayRefund:'退費處理'};
+  return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>';
+}
 function renderRegCard(r){
   const brand=r.brand||r.brandName||r.brand_name||'未填品牌';
   const sid=regSessionId(r)||AdminState.currentSessionId;
@@ -1942,43 +2052,25 @@ function uiConfirm(message, opts){
     setTimeout(function(){ try{ok.focus();}catch(e){} },30);
   });
 }
-// ── 退部分天（PARTIAL_DAY_REFUND_20260727）：勾要退的日期→自動算攤位費(可微調)→記為待退，現場退 ──
-function openPartialDayPanel(regId, sid){
-  let r=null; for(const x of AdminState.currentList){ if(String(x.id||x.regId)===String(regId)) r=x; }
-  if(!r){ toast('找不到報名資料，請重新整理名單'); return; }
-  const s=sessionById(sid)||{};
-  const dateDefs = Array.isArray(s.dates)?s.dates : (Array.isArray(s.dates_json)?s.dates_json : []);
-  const _dk=x=>(x&&typeof x==='object')?String(x.date||x.day||x.key||x.value||''):String(x||'');
-  const sel = (Array.isArray(r.selectedDates)?r.selectedDates:[]).map(_dk).filter(Boolean);
-  const stalls = Math.max(1, Number(r.stallCount||r.stall_count||1)||1);
-  if(sel.length<2){ toast('此報名只有一天，請用「取消／退費」整筆退費'); return; }
-  const feeOf=d=>{ const def=dateDefs.find(x=>String(x.date||x.day)===d); return def?(Number(def.fee)||0):0; };
-  const rowsHtml=sel.map(d=>{ const dayFee=feeOf(d)*stalls; return '<label class="tight-check" style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #eee;border-radius:10px;margin-bottom:6px;font-size:16px"><input type="checkbox" class="pdrDay" value="'+attr(d)+'" data-fee="'+dayFee+'" onchange="calcPartialRefund()"> <b>'+safe(d)+'</b> <span class="sub">攤位費 '+money(dayFee)+'（×'+stalls+'攤）</span></label>'; }).join('');
-  const html='<div class="readable-detail"><div class="report-card"><div class="report-title">退部分天</div>'
-    +'<div class="sub" style="margin-bottom:10px">勾選「要退費」的日期，其餘日期保留出攤。<b>押金不退、設備不減</b>；退款會等現場出席後、連同押金一起退。</div>'
-    +rowsHtml
-    +'<div class="kv" style="margin-top:10px"><div class="k">退款金額<br><span class="sub">自動＝被退那天攤位費×攤數，可微調</span></div><div><input id="pdrAmount" type="number" min="0" value="0" style="font-size:19px;font-weight:900;padding:10px;width:170px;border:1.5px solid #C8645D;border-radius:10px"></div></div>'
-    +'<div class="card-actions" style="margin-top:12px"><button class="btn danger" onclick="confirmPartialDayRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認退部分天</button><button class="btn secondary" onclick="panelBack()">取消</button></div>'
-    +'</div></div>';
-  openPanel('退部分天｜'+safe(r.brand||r.brandName||r.brand_name||'報名'),'保留其他天出攤；退款記為待退，現場連押金一起退',html);
+// ── 退費處理（REFUND_FLOW_UNIFIED_20260801）：同一入口選擇「退部分日期」或「整筆取消／退費」 ──
+let ActiveRefundContext=null;
+function refundDateKey(x){ return (x&&typeof x==='object')?String(x.date||x.day||x.key||x.value||''):String(x||''); }
+function refundModeChanged(){
+  const mode=document.querySelector('input[name="refundMode"]:checked')?.value||'full';
+  const partial=$('refundPartialSection'), full=$('refundFullSection');
+  if(partial) partial.classList.toggle('hidden',mode!=='partial');
+  if(full) full.classList.toggle('hidden',mode!=='full');
+  updatePartialRefundPreview();
 }
-function calcPartialRefund(){
-  let sum=0; document.querySelectorAll('.pdrDay:checked').forEach(x=>{ sum+=Number(x.getAttribute('data-fee'))||0; });
-  const inp=$('pdrAmount'); if(inp) inp.value=sum;
-}
-async function confirmPartialDayRefund(regId, sid){
-  const removeDates=[]; document.querySelectorAll('.pdrDay:checked').forEach(x=>removeDates.push(x.value));
-  if(!removeDates.length){ toast('請勾選要退費的日期'); return; }
-  const refundAmount=Number($('pdrAmount')?.value||0)||0;
-  if(!await uiConfirm('確認退部分天？\n退掉：'+removeDates.join('、')+'\n退款 '+money(refundAmount)+'（現場出席後連同押金一起退）\n保留其他天照常出攤。')) return;
-  try{
-    const res=await apiPost({action:'partialDayRefund',regId,sessionId:sid,removeDates,refundAmount});
-    if(res&&res.error){ toast(res.error,7000); return; }
-    toast('已設定退部分天，待現場退款 '+money((res&&res.refundAmount)||refundAmount),6000);
-    closeAllPanels();
-    if(AdminState.currentPage==='todos'){ if(typeof loadTodos==='function') await loadTodos(); }
-    else if(AdminState.currentSessionId && typeof openSessionList==='function'){ await openSessionList(AdminState.currentSessionId, AdminState.currentFilter||'all', '名單'); }
-  }catch(e){ toast('退部分天失敗：'+(e&&e.message?e.message:e),7000); }
+function updatePartialRefundPreview(){
+  const ctx=ActiveRefundContext||{};
+  const chosen=[...document.querySelectorAll('.refundDayCheck:checked')].map(x=>x.value);
+  let sum=0; document.querySelectorAll('.refundDayCheck:checked').forEach(x=>{sum+=Number(x.dataset.fee)||0;});
+  const amount=$('partialRefundAmount'); if(amount && document.activeElement!==amount) amount.value=String(sum);
+  const selected=Array.isArray(ctx.selectedDates)?ctx.selectedDates:[];
+  const kept=selected.filter(d=>!chosen.includes(d));
+  const prev=$('refundKeptPreview');
+  if(prev) prev.textContent=chosen.length ? ('保留出席：'+(kept.join('、')||'無')) : '尚未選擇要退的日期';
 }
 async function openRefundPanel(regId, btn=null, sidOverride=''){
   const sid=sidOverride||AdminState.currentSessionId||'';
@@ -1988,67 +2080,101 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
   if(btn){ btn.disabled=true; btn.textContent='讀取退費…'; }
   try{
     const sug=await apiPost({action:'getRefundSuggestion',regId,sessionId:sid});
+    if(sug&&sug.error) throw new Error(sug.error);
     const paid=Number(sug.paidAmount||0)||0;
     const adminFee=Number(sug.refundAdminFee||0)||0;
     const transferFee=Number(sug.refundTransferFee||0)||0;
-    const refund=Math.max(0, paid-adminFee-transferFee);
-    const html='<div class="readable-detail">'
-      +'<div class="report-card"><div class="report-title">退費處理</div>'
+    const refund=Math.max(0,paid-adminFee-transferFee);
+    const selectedDates=(Array.isArray(sug.selectedDates)?sug.selectedDates:[]).map(refundDateKey).filter(Boolean);
+    const partialOptions=Array.isArray(sug.partialDateOptions)?sug.partialDateOptions:[];
+    const partialEligible=!!sug.partialEligible && selectedDates.length>1 && Number(sug.bundleCount||1)===1;
+    ActiveRefundContext={regId,sid,selectedDates,partialEligible,bundleCount:Number(sug.bundleCount||1),suggestion:sug};
+    const partialRows=partialOptions.map(o=>{
+      const d=refundDateKey(o.date||o); const fee=Number(o.refundAmount||o.fee||0)||0;
+      return '<label class="refund-day-option"><input type="checkbox" class="refundDayCheck" value="'+attr(d)+'" data-fee="'+attr(fee)+'" onchange="updatePartialRefundPreview()"><span><b>'+safe(d)+'</b><span class="refund-day-meta">此日期攤位費 '+money(fee)+'（不含押金與設備）</span></span></label>';
+    }).join('');
+    const modeHtml=partialEligible
+      ? '<div class="refund-mode-grid">'
+        +'<label class="refund-mode-card"><input type="radio" name="refundMode" value="partial" checked onchange="refundModeChanged()"><b>退部分日期</b><span>勾選要取消與退費的日期；未勾選日期維持錄取、付款與出席資格。</span></label>'
+        +'<label class="refund-mode-card"><input type="radio" name="refundMode" value="full" onchange="refundModeChanged()"><b>整筆取消／退費</b><span>整筆報名結束，釋出名額與已占用位置；組合報名依後端規則連動。</span></label>'
+       +'</div>'
+      : '<div class="notice"><b>本筆僅能整筆取消／退費</b><br><span class="sub">'+safe(Number(sug.bundleCount||1)>1?'此為組合報名，整組依規則處理。':'此筆目前沒有兩個以上可保留的報名日期。')+'</span></div>';
+    const partialSection=partialEligible
+      ? '<div id="refundPartialSection" class="report-card"><div class="report-title">選擇要退的日期</div>'
+        +'<div class="sub" style="font-size:14px;line-height:1.6;margin-bottom:10px">只會移除勾選日期，其他日期仍保留出席。退款記為待退，依原流程於現場出席後連同押金處理；設備與押金不在本次部分日期金額內。</div>'
+        +'<div class="refund-day-list">'+partialRows+'</div>'
+        +'<div id="refundKeptPreview" class="refund-kept-preview">尚未選擇要退的日期</div>'
+        +'<div class="form-field" style="margin-top:10px"><label>部分日期退款金額（可確認調整）</label><input id="partialRefundAmount" type="number" min="0" value="0" style="font-size:19px;font-weight:900"></div>'
+        +'<div class="refund-warning">至少保留一天；若要取消全部日期，請切換為「整筆取消／退費」。</div>'
+        +'<div class="card-actions"><button class="btn danger" onclick="confirmUnifiedRefund()">確認部分日期退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div></div>'
+      : '';
+    const fullHidden=partialEligible?' hidden':'';
+    const fullSection='<div id="refundFullSection" class="report-card'+fullHidden+'"><div class="report-title">整筆取消／退費</div>'
       +'<div class="kv"><div class="k">已繳金額</div><div id="refundPaidText">'+money(paid)+'</div>'
-      +'<div class="k">處理範圍</div><div>'+(Number(sug.bundleCount||1)>1?'連動場次整組 '+num(sug.bundleCount)+' 場':'單一場次')+'</div>'
-      +'<div class="k">活動日期</div><div>'+safe(sug.eventDate||'日期異常')+'</div>'
+      +'<div class="k">處理範圍</div><div>'+(Number(sug.bundleCount||1)>1?'連動場次整組 '+num(sug.bundleCount)+' 場':'單一報名整筆')+'</div>'
+      +'<div class="k">目前出席日期</div><div>'+safe(selectedDates.join('、')||sug.eventDate||'日期異常')+'</div>'
       +'<div class="k">退費規則</div><div>'+safe(sug.refundRuleLabel||'主辦手動確認')+'</div>'
       +'<div class="k">距活動日</div><div>'+(sug.daysBefore===null||sug.daysBefore===undefined?'無法判斷':safe(sug.daysBefore)+' 天')+'</div></div>'
-      +'</div>'
-      +'<div class="report-card"><div class="report-title">退費扣項</div>'
-      +'<div class="form-grid">'
+      +'<div class="form-grid" style="margin-top:12px">'
       +'<div class="form-field"><label>行政費</label><input id="refundAdminFeeInput" type="number" min="0" value="'+attr(adminFee)+'" oninput="calcRefundAmount()"></div>'
       +'<div class="form-field"><label>轉帳手續費</label><input id="refundTransferFeeInput" type="number" min="0" value="'+attr(transferFee)+'" oninput="calcRefundAmount()"></div>'
-      +'<div class="form-field full"><label>退費備註</label><textarea id="refundNoteInput" placeholder="可填寫匯款帳號、處理備註或內部紀錄"></textarea></div>'
-      +'</div>'
-      +'<div class="notice" style="margin-top:12px"><b>實退金額（可直接修改）</b><br><input id="refundAmountInput" type="number" min="0" value="'+attr(refund)+'" oninput="onRefundAmountEdit()" style="font-size:19px;font-weight:900;padding:10px;width:100%;max-width:240px;border:1.5px solid #C8645D;border-radius:10px;margin:6px 0"><br><span class="sub">要退一天就直接輸入一天的金額；全退＝維持預設；不退＝填 0。未退的部分會自動記為扣項。確認後會改為已退費、釋出名額與攤位。</span></div>'
-      +'<div class="card-actions"><button class="btn danger" onclick="confirmAdminRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認完成退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div>'
-      +'</div></div>';
-    openPanel('取消／退費','下方金額可自行修改；要全退、部分退或不退（填 0）都由你決定',html);
-    calcRefundAmount();
-  }catch(e){ const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
-  finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
+      +'<div class="form-field full"><label>退費備註</label><textarea id="refundNoteInput" placeholder="可填寫匯款帳號、處理備註或內部紀錄"></textarea></div></div>'
+      +'<div class="notice" style="margin-top:12px"><b>整筆實退金額</b><br><input id="refundAmountInput" type="number" min="0" value="'+attr(refund)+'" oninput="onRefundAmountEdit()" style="font-size:19px;font-weight:900;padding:10px;width:100%;max-width:240px;border:1.5px solid #C8645D;border-radius:10px;margin:6px 0"><br><span class="sub" style="font-size:14px">確認後整筆報名會改為已退費，並釋出名額與位置。此處不是部分日期退費。</span></div>'
+      +'<div class="card-actions"><button class="btn danger" onclick="confirmUnifiedRefund()">確認整筆退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div></div>';
+    const html='<div class="readable-detail">'+modeHtml+partialSection+fullSection+'</div>';
+    openPanel('退費處理','請先確認要退部分日期，或整筆取消／退費',html);
+    calcRefundAmount(); refundModeChanged();
+  }catch(e){
+    const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000);
+    if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} }
+  }finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
 }
 function calcRefundAmount(){
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
-  const paid=Number(paidTxt)||0;
-  const admin=Number($('refundAdminFeeInput')?.value||0)||0;
-  const transfer=Number($('refundTransferFeeInput')?.value||0)||0;
-  const refund=Math.max(0, paid-admin-transfer);
-  const out=$('refundAmountInput');
-  if(out) out.value=refund;
+  const paid=Number(paidTxt)||0, admin=Number($('refundAdminFeeInput')?.value||0)||0, transfer=Number($('refundTransferFeeInput')?.value||0)||0;
+  const out=$('refundAmountInput'); if(out) out.value=Math.max(0,paid-admin-transfer);
 }
-// 直接輸入實退金額時：把「未退的部分」回填為扣項，讓後端退出正好這個金額（退一天/部分退）
 function onRefundAmountEdit(){
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
-  const paid=Number(paidTxt)||0;
-  let amt=Number($('refundAmountInput')?.value||0)||0;
+  const paid=Number(paidTxt)||0; let amt=Number($('refundAmountInput')?.value||0)||0;
   if(amt<0) amt=0; if(amt>paid) amt=paid;
-  const af=$('refundAdminFeeInput'); if(af) af.value=Math.max(0, paid-amt);
+  const af=$('refundAdminFeeInput'); if(af) af.value=Math.max(0,paid-amt);
   const tf=$('refundTransferFeeInput'); if(tf) tf.value=0;
 }
-async function confirmAdminRefund(regId,sid){
+async function confirmUnifiedRefund(){
+  const ctx=ActiveRefundContext;
+  if(!ctx){toast('退費資料已失效，請重新開啟',5000);return;}
+  const mode=document.querySelector('input[name="refundMode"]:checked')?.value||'full';
+  if(mode==='partial'){
+    const removeDates=[...document.querySelectorAll('.refundDayCheck:checked')].map(x=>x.value);
+    if(!removeDates.length){toast('請勾選要退費的日期');return;}
+    const kept=ctx.selectedDates.filter(d=>!removeDates.includes(d));
+    if(!kept.length){toast('至少要保留一天；全部取消請選整筆退費',6000);return;}
+    const refundAmount=Math.max(0,Number($('partialRefundAmount')?.value||0)||0);
+    if(!await uiConfirm('確認部分日期退費？\n退掉：'+removeDates.join('、')+'\n保留：'+kept.join('、')+'\n待退金額：'+money(refundAmount),{danger:true,okText:'確認部分退費'})) return;
+    try{
+      const res=await apiPost({action:'partialDayRefund',regId:ctx.regId,sessionId:ctx.sid,removeDates,refundAmount});
+      toast('已保留其他日期；部分退款待處理 '+money((res&&res.refundAmount)||refundAmount),6000);
+      closeAllPanels(); ActiveRefundContext=null;
+      await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos();
+      else if(AdminState.currentSessionId) await openSessionList(AdminState.currentSessionId,AdminState.currentFilter||'all','名單');
+    }catch(e){toast('部分日期退費失敗：'+String(e.message||e),8000);}
+    return;
+  }
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
-  const paid=Number(paidTxt)||0;
-  const refundAdminFee=Number($('refundAdminFeeInput')?.value||0)||0;
-  const refundTransferFee=Number($('refundTransferFeeInput')?.value||0)||0;
-  if(refundAdminFee<0||refundTransferFee<0){ toast('扣項不可小於 0',5000); return; }
-  if(refundAdminFee+refundTransferFee>paid){ toast('扣項不可大於已繳金額',5000); return; }
-  const refundNote=$('refundNoteInput')?.value||'';
-  // 移除原生 confirm()：LINE 內建瀏覽器會吞掉原生彈窗導致按鈕無反應；
-  // 紅色「確認完成退費」按鈕本身即為確認步驟（面板已顯示實退金額與後果）。
+  const paid=Number(paidTxt)||0, refundAdminFee=Number($('refundAdminFeeInput')?.value||0)||0, refundTransferFee=Number($('refundTransferFeeInput')?.value||0)||0;
+  if(refundAdminFee<0||refundTransferFee<0){toast('扣項不可小於 0',5000);return;}
+  if(refundAdminFee+refundTransferFee>paid){toast('扣項不可大於已繳金額',5000);return;}
+  const refundNote=$('refundNoteInput')?.value||'', refundAmount=Math.max(0,paid-refundAdminFee-refundTransferFee);
+  if(!await uiConfirm('確認整筆取消／退費？\n實退：'+money(refundAmount)+'\n確認後會釋出名額與位置，且無法用部分日期方式保留出席。',{danger:true,okText:'確認整筆退費'})) return;
   try{
-    const res=await apiPost({action:'confirmRefund',regId,sessionId:sid,refundAdminFee,refundTransferFee,refundNote});
-    toast('退費已完成，實退 '+money(res.refundAmount||0),5000);
-    closeAllPanels();
-    await refreshSessionsOverview();
-    if(AdminState.currentPage==='todos') await loadTodos();
-  }catch(e){ const msg=String(e.message||e); toast('退費處理失敗：'+msg,8000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ closeAllPanels(); await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
+    const res=await apiPost({action:'confirmRefund',regId:ctx.regId,sessionId:ctx.sid,refundAdminFee,refundTransferFee,refundNote});
+    toast('整筆退費已完成，實退 '+money(res.refundAmount||0),5000);
+    closeAllPanels(); ActiveRefundContext=null; await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos();
+  }catch(e){
+    const msg=String(e.message||e); toast('退費處理失敗：'+msg,8000);
+    if(msg.includes('已完成退費')||msg.includes('已退費')){try{closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(_e){}}
+  }
 }
 
 
@@ -2073,7 +2199,7 @@ async function runRegAction(regId,regAction,btn,sidOverride=''){
   if(!sid){ toast('缺少場次鎖定，已阻斷操作',5000); return; }
   if(!regId){toast('找不到報名 ID');return;}
   if(regAction==='refund' || regAction==='markRefunded') { await openRefundPanel(regId,btn,sid); return; }
-  if(regAction==='partialDayRefund') { openPartialDayPanel(regId,sid); return; }
+  if(regAction==='partialDayRefund') { await openRefundPanel(regId,btn,sid); return; }
   if(regAction==='note') { const note=(prompt('輸入備註內容（會存到這筆報名）：')||'').trim(); if(!note){ return; } try{ await apiPost({action:'saveRegNote',regId,sessionId:sid,note}); toast('備註已儲存'); await refreshCurrentPage(); }catch(e){ toast('備註儲存失敗：'+(e.message||e),5000); } return; }
   if(regAction==='remindPayment') { await sendPaymentReminder(regId,btn,sid); return; }
   const question={reject:'確定標記為不錄取？\n（若原本已錄取，改判後名額會自動釋出，系統會寄出通知信）',waitlist:'確定標記為備取？\n（若原本已錄取，改判後名額會自動釋出）',confirmPayment:'確定確認此筆已繳費？\n系統會記為應收全額、付款方式標「手動確認」，並寄出繳費確認信。',cancelUnpaid:'確定取消未繳費報名？'}[regAction];
@@ -3163,6 +3289,7 @@ function renderTodoRows(rows){
       +'<div class="todo-action-row">'+todoStageButtons(r,kind)+'</div>'
       +'<div class="todo-brand-row"><span class="todo-brand-name" title="'+attr(who)+'">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
       +'<div class="todo-contact-line" title="'+attr(contactText)+'">'+safe(contactText)+'</div>'
+      +'<div class="todo-submit-time">送出時間：'+safe(regCreatedText(r))+'</div>'
       +adminRegFixedBlockHtml(r)
     +'</article>';
   }
@@ -3205,6 +3332,41 @@ function memberIconLinks(m){
   if(web) out+='<a class="member-icon web" href="'+attr(web)+'" target="_blank" rel="noopener" title="開啟官網">官網</a>';
   return out || '<span class="tag">未填社群</span>';
 }
+
+function memberMissingFields(m){
+  const arr=Array.isArray(m.missingFields)?m.missingFields:(Array.isArray(m.missing_fields)?m.missing_fields:[]);
+  return arr.map(x=>String(x||'').trim()).filter(Boolean);
+}
+function memberProfileComplete(m){ return m.profileComplete===true||m.profile_complete===true||memberMissingFields(m).length===0; }
+function selectedIncompleteMemberEmails(){
+  return Array.from(document.querySelectorAll('.member-reminder-check:checked')).map(x=>x.value).filter(Boolean);
+}
+function defaultMemberReminderSubject(){ return '請補齊會員資料，以完成活動報名'; }
+function defaultMemberReminderBody(){ return `您好，{{會員名稱}}：\n\n我們發現您的會員資料尚未完整，目前還缺少：\n{{缺漏欄位清單}}\n\n您仍可瀏覽目前開放的活動與場次；為了順利送出正式報名，請先補齊會員資料。已儲存的內容不需要重填；資料完整後，就可以繼續完成報名。\n\n請點擊下方按鈕回到活動報名頁，選擇欲報名場次後，系統會先帶您完成會員資料：\n{{補資料連結}}\n\n若您已完成更新，請忽略此信。\n\n如有操作問題，請聯繫主辦單位。\n\n{{主辦名稱}}`; }
+function openMemberReminderEditor(emails){
+  const targets=(emails||[]).filter(Boolean);
+  if(!targets.length){ toast('請先勾選至少一位資料未完整的會員'); return; }
+  const html='<div class="notice">本次將寄給 <b>'+targets.length+'</b> 位資料未完整會員。每封信會自動替換會員名稱、實際缺漏欄位、主辦名稱與補資料連結。</div>'
+   +'<div class="member-reminder-editor"><label>信件主旨</label><input id="mpr_subject" value="'+attr(defaultMemberReminderSubject())+'"><label>信件內容</label><textarea id="mpr_body">'+safe(defaultMemberReminderBody())+'</textarea><div class="help">可用變數：{{會員名稱}}、{{缺漏欄位清單}}、{{補資料連結}}、{{主辦名稱}}。補資料連結會由 Worker 依租戶正式網址產生。</div><div class="card-actions"><button class="btn" onclick="sendMemberProfileReminders(this)">確認寄出</button><button class="btn secondary" onclick="closePanel()">取消</button></div></div>';
+  AdminState.memberReminderTargets=targets;
+  openPanel('會員補資料提醒','寄送前可編輯信件內容',html);
+}
+function openSingleMemberReminder(email){ openMemberReminderEditor([email]); }
+function openBatchMemberReminder(){ openMemberReminderEditor(selectedIncompleteMemberEmails()); }
+async function sendMemberProfileReminders(btn){
+  const targets=AdminState.memberReminderTargets||[];
+  if(!targets.length){ toast('沒有可寄送的會員'); return; }
+  if(!await uiConfirm('確定寄出 '+targets.length+' 封會員補資料提醒信？')) return;
+  const old=btn.textContent; btn.disabled=true; btn.textContent='寄送中…';
+  try{
+    const res=await apiPost({action:'sendMemberProfileReminder',targetEmails:targets,subject:String(($('mpr_subject')||{}).value||''),body:String(($('mpr_body')||{}).value||'')});
+    const sent=Number(res.sent||0), failed=Number(res.failed||0), skipped=Number(res.skipped||0);
+    toast('寄送完成：成功 '+sent+'、失敗 '+failed+'、略過 '+skipped,8000);
+    if(failed===0){ closePanel(); await loadMembers(); }
+    else { btn.disabled=false; btn.textContent=old; }
+  }catch(e){ toast('寄送失敗：'+e.message,8000); btn.disabled=false; btn.textContent=old; }
+}
+
 async function loadMembers(){
   const box=$('memberList');
   if(!box) return;
@@ -3277,6 +3439,9 @@ function renderMembers(){
   const kw=($('memberSearch')?.value||'').trim().toLowerCase();
   let list=Array.isArray(AdminState.members)?AdminState.members.slice():[];
   if(kw) list=list.filter(m=>memberSearchText(m).includes(kw));
+  const pf=String(($('memberProfileFilter')||{}).value||'all');
+  if(pf==='complete') list=list.filter(memberProfileComplete);
+  if(pf==='incomplete') list=list.filter(m=>!memberProfileComplete(m));
   list.sort((a,b)=>String(memberBrand(a)).localeCompare(String(memberBrand(b)),'zh-Hant'));
   if(!list.length){
     box.innerHTML='<div class="empty">目前沒有符合條件的會員 / 品牌</div>';
@@ -3293,16 +3458,21 @@ function renderMembers(){
     const intro=m.intro||m.brandIntro||m.description||m.brand_intro||'—';
     const updated=m.updatedAt||m.updated_at||m.joinedAt||m.joined_at||m.createdAt||m.created_at||'—';
     const fp=(m.fastPass===true||m.fast_pass===true||m.fastPass==='true'||m.fast_pass==='true');
+    const missing=memberMissingFields(m);
+    const complete=memberProfileComplete(m);
     html+='<article class="member-card member-card-lite">'
-      +'<div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green" style="font-size:11px">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple" style="font-size:11px">備註</span>':'')+'</div>'
+      +(!complete?'<label class="member-select-row"><input class="member-reminder-check" type="checkbox" value="'+attr(email)+'"> 勾選寄送補資料提醒</label>':'')
+      +'<div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple">備註</span>':'')+'</div>'
       +'<div class="member-icons">'+memberIconLinks(m)+'</div>'
       +'<div class="member-sub">'+safe(name)+'｜'+safe(phone)+'</div>'
       +'<div class="member-small-line" title="'+attr(email)+'">Email：'+safe(email)+'</div>'
       +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span></div>'
+      +(complete?'<div class="member-profile-status complete">✅ 會員資料完整，可直接進入報名</div>':'<div class="member-profile-status incomplete">⚠ 尚缺 '+missing.length+' 項<div class="member-missing-list">'+safe(missing.join('、'))+'</div></div>')
       +'<div class="member-note">'+safe(intro)+'</div>'
       +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
-      +'<button class="btn secondary small" style="white-space:nowrap;min-width:0" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
-      +'<button class="btn small '+(fp?'':'secondary')+'" style="white-space:nowrap;min-width:0" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
+      +'<button class="btn secondary small" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
+      +(!complete?'<button class="btn small" onclick="openSingleMemberReminder(\''+attr(email)+'\')">寄信提醒補資料</button>':'')
+      +'<button class="btn small '+(fp?'':'secondary')+'" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
     +'</article>';
   }
   box.innerHTML=html;
@@ -3501,7 +3671,7 @@ function renderPhotoFramesPanel(totalLeads){
       +'</div></article>';
   }).join('')+'</div>';
 }
-function photoFrameLink(id){ return location.origin.replace(/\/$/,'')+'/?pf='+encodeURIComponent(id); }
+function photoFrameLink(id){ const tenant=encodeURIComponent((AdminState&&AdminState.tenantId)||''); return location.origin.replace(/\/$/,'')+'/?tenant='+tenant+'&pf='+encodeURIComponent(id); }
 function showPhotoFrameLink(id){
   const f=(AdminPhotoFrames||[]).find(x=>String(x.id)===String(id)); if(!f) return;
   const url=photoFrameLink(id);
