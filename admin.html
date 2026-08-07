@@ -1092,7 +1092,7 @@
 
 /* FREE_SEAT_CANVAS_20260807 */
 .panel-body:has(#seatOpsBox){max-width:none!important;width:calc(100vw - 24px)!important;padding-left:8px!important;padding-right:8px!important}
-.seatcanvas-wrap{background:#fff;border:1px solid #e6e1d8;border-radius:16px;padding:10px;margin:10px 0}.seatcanvas-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}.seatcanvas-stage{position:relative;width:100%;height:min(68vh,760px);min-height:520px;background-color:#fbfbf8;background-image:linear-gradient(#ece9e2 1px,transparent 1px),linear-gradient(90deg,#ece9e2 1px,transparent 1px);background-size:24px 24px;border:1px solid #ddd8cf;border-radius:14px;overflow:hidden;touch-action:none}.seatcanvas-marker{position:absolute;transform:translate(-50%,-50%);width:112px;min-height:72px;border:2px solid #fff;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;cursor:grab;user-select:none;z-index:2;line-height:1.15}.seatcanvas-marker:active{cursor:grabbing}.seatcanvas-marker.used{background:#26312f;color:#fff}.seatcanvas-marker.free{background:#eef7ef;color:#26312f;border-color:#c7deca}.seatcanvas-marker.paid{background:#fff0c2;color:#684d00}.seatcanvas-marker.special{background:#e9eef7;color:#26324a;border-color:#b9c9e6}.seatcanvas-marker .code{font-size:18px;font-weight:950}.seatcanvas-marker .who{font-size:12px;font-weight:900;margin-top:3px;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker .equip{font-size:10px;margin-top:3px;opacity:.9;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker.match{outline:4px solid rgba(255,134,0,.5)}.seatcanvas-note{padding:8px 10px;border:1px solid #e6dfd4;border-radius:10px;background:#fff9e9;font-weight:800;margin:6px 0}@media(max-width:720px){.panel-body:has(#seatOpsBox){width:100%!important;padding-left:8px!important;padding-right:8px!important}.seatcanvas-stage{height:62vh;min-height:420px;overflow:auto}.seatcanvas-marker{width:92px;min-height:64px}.seatcanvas-marker .code{font-size:16px}}
+.seatcanvas-wrap{background:#fff;border:1px solid #e6e1d8;border-radius:16px;padding:10px;margin:10px 0}.seatcanvas-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}.seatcanvas-stage{position:relative;width:100%;height:min(68vh,760px);min-height:520px;background-color:#fbfbf8;background-image:linear-gradient(#ece9e2 1px,transparent 1px),linear-gradient(90deg,#ece9e2 1px,transparent 1px);background-size:24px 24px;border:1px solid #ddd8cf;border-radius:14px;overflow:hidden;touch-action:none}.seatcanvas-marker{position:absolute;transform:translate(-50%,-50%);width:112px;min-height:72px;border:2px solid #fff;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;cursor:grab;user-select:none;touch-action:none;z-index:2;line-height:1.15}.seatcanvas-marker:active{cursor:grabbing}.seatcanvas-marker.used{background:#26312f;color:#fff}.seatcanvas-marker.free{background:#eef7ef;color:#26312f;border-color:#c7deca}.seatcanvas-marker.paid{background:#fff0c2;color:#684d00}.seatcanvas-marker.special{background:#e9eef7;color:#26324a;border-color:#b9c9e6}.seatcanvas-marker .code{font-size:18px;font-weight:950}.seatcanvas-marker .who{font-size:12px;font-weight:900;margin-top:3px;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker .equip{font-size:10px;margin-top:3px;opacity:.9;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker.match{outline:4px solid rgba(255,134,0,.5)}.seatcanvas-note{padding:8px 10px;border:1px solid #e6dfd4;border-radius:10px;background:#fff9e9;font-weight:800;margin:6px 0}@media(max-width:720px){.panel-body:has(#seatOpsBox){width:100%!important;padding-left:8px!important;padding-right:8px!important}.seatcanvas-stage{height:62vh;min-height:420px;overflow:auto}.seatcanvas-marker{width:92px;min-height:64px}.seatcanvas-marker .code{font-size:16px}}
 
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
@@ -2475,7 +2475,7 @@ function seatOpsBlankBoardHtml(){
   if(!seats.length)return '<div class="seatcanvas-wrap"><div class="seatops-map-empty"><b>還沒有位置。</b><br>先按「依付款順序重建位置編號」。位置編號會依付款確認順序產生，再由你自由拖成任何場地形狀。</div></div>';
   const markers=seats.map(seat=>{const p=seatOpsCanvasXY(seat),isSpecial=seat.type==='service'||seat.type==='closed',cls=isSpecial?'special':seat.occupied?'used':seat.type==='paid'?'paid':'free';const label=isSpecial?(seat.specialLabel||'自訂區塊'):(seat.occupantName||'空位');const eq=seat.occupantName?(seat.occupantEquipmentText||'設備自備'):'';return '<button type="button" class="seatcanvas-marker '+cls+'" data-seat="'+esc(seat.code)+'" style="left:'+p.x+'%;top:'+p.y+'%" title="'+esc(seat.code+'｜'+label+(eq?'｜'+eq:''))+'" onclick="seatOpsMarkerClick(event,\''+esc(seat.code)+'\')" onpointerdown="seatOpsMarkerPointerDown(event,\''+esc(seat.code)+'\')" ondragover="event.preventDefault()" ondrop="seatOpsMarkerDrop(event,\''+esc(seat.code)+'\')"><span class="code">'+esc(seat.code)+'</span><span class="who">'+esc(label)+'</span>'+(eq?'<span class="equip">'+esc(eq)+'</span>':'')+'</button>';}).join('');
   const specials=[...new Set(['服務台','禁用',...(SeatOps.customSpecials||[]),(SeatOps.seats||[]).filter(x=>x.specialLabel).map(x=>x.specialLabel)].filter(Boolean))];
-  let h='<div class="seatcanvas-wrap"><div class="seatcanvas-head"><div><b>自由排位畫布</b><div class="seatops-help">A1、A2…只是位置編號，不代表固定列。直接拖曳每個位置方塊，就能排成 L 型、ㄇ字型、島型、走道或任何現場形狀；拖曳只改畫布座標，不會改攤商綁定。</div></div><div class="seatblank-tools"><button type="button" class="btn secondary small" onclick="seatOpsToggleBoardEdit()">'+(SeatOps.boardEdit?'完成文字設定':'✎ 編輯方向文字')+'</button></div></div>';
+  let h='<div class="seatcanvas-wrap"><div class="seatcanvas-head"><div><b>自由排位畫布</b><div class="seatops-help">A1、A2…只是位置編號，不代表固定列。直接拖曳每個位置方塊，就能排成 L 型、ㄇ字型、島型、走道或任何現場形狀；拖曳只改畫布座標，不會改攤商綁定。<b>直接按住任一方塊拖動即可。</b></div></div><div class="seatblank-tools"><button type="button" class="btn secondary small" onclick="seatOpsToggleBoardEdit()">'+(SeatOps.boardEdit?'完成文字設定':'✎ 編輯方向文字')+'</button></div></div>';
   h+='<div class="seat-special-toolbox"><b>自訂占位：</b>'+specials.map(v=>'<span class="seat-special-chip" draggable="true" ondragstart="seatOpsSpecialDragStart(event,\''+attr(v)+'\')">'+esc(v)+'</span>').join('')+'<input id="seatSpecialCustomName" placeholder="自訂名稱，例如：幻日祭舞台、報到處、攝影區"><button type="button" class="btn secondary small" onclick="seatOpsAddCustomSpecial()">加入工具箱</button></div>';
   if(SeatOps.boardEdit)h+='<textarea id="seatBoardTopNote" class="seatblank-note" placeholder="方向／說明，例如：↑ 舞台｜入口在右側｜中間主要走道">'+esc(cfg.topNote)+'</textarea><div><button type="button" class="btn small" onclick="seatOpsSaveBoardLabels()">儲存方向文字</button></div>';
   else if(cfg.topNote)h+='<div class="seatcanvas-note">'+esc(cfg.topNote).replace(/\n/g,'<br>')+'</div>';
@@ -2551,6 +2551,8 @@ async function seatOpsClearSpecial(code){if(!await uiConfirm('將 '+code+' 的�
 function seatOpsMarkerDrop(ev,code){if(ev){ev.preventDefault();ev.stopPropagation();}let raw='';try{raw=ev.dataTransfer.getData('text/plain')||'';}catch(e){}if(raw.startsWith('SPECIAL:')){try{const x=JSON.parse(raw.slice(8));return seatOpsSetSpecial(code,x.label||'',x.sourceCode||'');}catch(e){return toast('自訂區塊資料錯誤');}}const rid=raw.startsWith('REG:')?raw.slice(4):raw;if(rid)SeatOps.moveRegId=rid;seatOpsMarkerClick(ev,code);}
 async function seatOpsMarkerClick(ev,code){
   if(ev){ev.preventDefault();ev.stopPropagation();}
+  // 自由畫布拖曳放開時會產生 click；短時間內抑制，避免拖完又誤觸換位/定位。
+  if(Number(SeatOps.suppressMarkerClickUntil||0) > Date.now()) return;
   if(SeatOps.markerMode) return;
   const seat=seatOpsSeatByCode(code); if(!seat) return;
   if(SeatOps.moveRegId){
@@ -2597,12 +2599,42 @@ async function seatOpsMapClick(ev){
 }
 let SeatMarkerDrag=null;
 function seatOpsMarkerPointerDown(ev,code){
-  if(!SeatOps.markerMode) return;
-  ev.preventDefault();ev.stopPropagation(); const el=ev.currentTarget; if(!el)return;
-  SeatMarkerDrag={code,el}; el.setPointerCapture&&el.setPointerCapture(ev.pointerId);el.classList.add('dragging');
-  const move=(e)=>{const stage=$('seatOpsMapStage');if(!stage)return;const r=stage.getBoundingClientRect();const x=Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100));const y=Math.max(0,Math.min(100,(e.clientY-r.top)/r.height*100));el.style.left=x+'%';el.style.top=y+'%';SeatMarkerDrag.x=x;SeatMarkerDrag.y=y;};
-  const up=async(e)=>{el.classList.remove('dragging');el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);if(SeatMarkerDrag&&SeatMarkerDrag.x!=null)await seatOpsSaveMarker(code,SeatMarkerDrag.x,SeatMarkerDrag.y);SeatMarkerDrag=null;};
-  el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  const cfg=seatOpsBoardCfg();
+  const freeCanvas=String(cfg.mode||'blank')==='blank';
+  // 圖片場地圖仍需進入「標點模式」才可移動標記；自由畫布則永遠可直接拖曳。
+  if(!freeCanvas && !SeatOps.markerMode) return;
+  if(ev.button!=null && ev.button!==0) return;
+  ev.preventDefault();ev.stopPropagation();
+  const el=ev.currentTarget; if(!el)return;
+  const stage=$('seatOpsMapStage'); if(!stage)return;
+  const sr=stage.getBoundingClientRect();
+  const startX=ev.clientX,startY=ev.clientY;
+  SeatMarkerDrag={code,el,x:null,y:null,moved:false,startX,startY};
+  try{ el.setPointerCapture&&el.setPointerCapture(ev.pointerId); }catch(_e){}
+  el.classList.add('dragging');
+  const move=(e)=>{
+    const dx=e.clientX-startX,dy=e.clientY-startY;
+    if(Math.hypot(dx,dy)<3 && !SeatMarkerDrag.moved) return;
+    SeatMarkerDrag.moved=true;
+    // 留出卡片半寬/半高，避免拖到畫布邊緣後看不到。
+    const x=Math.max(4,Math.min(96,(e.clientX-sr.left)/sr.width*100));
+    const y=Math.max(6,Math.min(94,(e.clientY-sr.top)/sr.height*100));
+    el.style.left=x+'%';el.style.top=y+'%';
+    SeatMarkerDrag.x=x;SeatMarkerDrag.y=y;
+  };
+  const finish=async()=>{
+    const drag=SeatMarkerDrag;
+    el.classList.remove('dragging');
+    el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',cancel);
+    SeatMarkerDrag=null;
+    if(drag&&drag.moved&&drag.x!=null&&drag.y!=null){
+      SeatOps.suppressMarkerClickUntil=Date.now()+500;
+      await seatOpsSaveMarker(code,drag.x,drag.y);
+    }
+  };
+  const up=async()=>{await finish();};
+  const cancel=async()=>{await finish();};
+  el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',cancel);
 }
 async function seatOpsSaveMarker(code,x,y){
   try{const r=await apiPost({action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:code,x:Number(x.toFixed(3)),y:Number(y.toFixed(3))});if(r&&r.error)throw new Error(r.error);const st=seatOpsSeatByCode(code);if(st){st.x=Number(x.toFixed(3));st.y=Number(y.toFixed(3));}toast(code+' 位置已儲存');renderSeatOps();}catch(e){toast('標點儲存失敗：'+e.message,8000);}
