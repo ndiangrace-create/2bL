@@ -1100,7 +1100,7 @@
 .seatcanvas-instruction{margin:7px 0 10px;padding:8px 10px;border:1px solid #d9e8e4;border-radius:10px;background:#f2faf8;font-size:14px;font-weight:900;color:#315c54}
 .seatcanvas-multi-tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:8px;border:1px dashed #c8d9d5;border-radius:11px;background:#fbfefd}
 .seatcanvas-multi-count{font-weight:950;color:#315c54;padding:0 4px}
-.seatcanvas-marker.multi-selected,.seatcanvas-object.multi-selected{outline:4px solid #f0a22e!important;outline-offset:3px;z-index:25!important}
+.seatcanvas-marker.multi-selected,.seatcanvas-object.multi-selected{outline:4px solid #f0a22e!important;outline-offset:3px;z-index:25!important;cursor:move!important}.seatcanvas-marker.group-dragging,.seatcanvas-object.group-dragging{opacity:.82;z-index:40!important;box-shadow:0 10px 24px rgba(0,0,0,.22)!important}.seatcanvas-multi-hint{font-size:13px;font-weight:850;color:#805500;background:#fff6da;border:1px solid #efd38d;border-radius:10px;padding:7px 10px}
 .seatcanvas-object-menu{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);display:flex;gap:5px;align-items:center;padding:6px;background:#fff;border:1px solid #d7d2ca;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.18);z-index:60;white-space:nowrap}
 .seatcanvas-object-menu button{border:1px solid #d8d3cc;background:#fff;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:900;cursor:pointer;color:#333}
 .seatcanvas-object-menu button.danger{color:#9a2b2b;background:#fff5f5;border-color:#ecc}
@@ -2508,8 +2508,8 @@ function seatOpsBlankBoardHtml(){
   const specials=['服務台','禁用'];
   const freeObjects=(cfg.freeObjects||[]).map(o=>{const sel=seatOpsCanvasIsSelected('object',o.id)?' multi-selected':'';return '<div class="seatcanvas-object '+(String(o.kind||'')==='blocked'?'blocked':'')+sel+'" data-obj="'+esc(o.id||'')+'" style="left:'+Math.max(2,Math.min(98,Number(o.x)||50))+'%;top:'+Math.max(3,Math.min(97,Number(o.y)||50))+'%" onpointerdown="seatOpsObjectPointerDown(event,\''+esc(o.id||'')+'\')" onclick="seatOpsObjectClick(event,\''+esc(o.id||'')+'\')" ondblclick="seatOpsOpenObjectActionMenu(event,\''+esc(o.id||'')+'\')" title="單擊／拖曳＝移動｜雙擊＝開啟操作選單"><span>'+esc(o.label||'自訂區塊')+'</span></div>';}).join('');
   let h='<div class="seatcanvas-wrap"><div class="seatcanvas-head"><div><b>自由排位畫布</b><div class="seatops-help">A1、A2…只是位置編號，不代表固定列。位置與自訂區塊都能自由拖曳，畫布可以排成 L 型、ㄇ字型、島型或任何現場形狀。</div></div><div class="seatblank-tools"><button type="button" class="btn secondary small" onclick="seatOpsToggleBoardEdit()">'+(SeatOps.boardEdit?'完成文字設定':'✎ 編輯方向文字')+'</button><button type="button" class="btn '+(SeatOps.multiSelect?'':'secondary')+' small" onclick="seatOpsToggleMultiSelect()">'+(SeatOps.multiSelect?'✓ 多選中':'☑ 多選排列')+'</button></div></div>';
-  h+='<div class="seatcanvas-instruction">操作方式：單擊／拖曳＝移動｜雙擊自訂物件＝開啟「複製／重新命名／刪除」選單｜多選後可一鍵排成橫列／直列</div>';
-  if(SeatOps.multiSelect){const n=(SeatOps.selectedCanvasItems||[]).length;h+='<div class="seatcanvas-multi-tools"><span class="seatcanvas-multi-count">已選 '+n+' 個</span><button type="button" class="btn secondary small" onclick="seatOpsSelectAllVendors()">全選已排位攤商</button><button type="button" class="btn small" '+(n<2?'disabled':'')+' onclick="seatOpsArrangeSelected(\'row\')">↔ 排成橫列</button><button type="button" class="btn small" '+(n<2?'disabled':'')+' onclick="seatOpsArrangeSelected(\'column\')">↕ 排成直列</button><button type="button" class="btn secondary small" onclick="seatOpsClearMultiSelection()">清除選取</button></div>';}
+  h+='<div class="seatcanvas-instruction">操作方式：單擊／拖曳＝移動｜雙擊自訂物件＝開啟「複製／重新命名／刪除」選單｜多選後：拖任一已選方塊＝整組移動，或一鍵緊密排列</div>';
+  if(SeatOps.multiSelect){const n=(SeatOps.selectedCanvasItems||[]).length;h+='<div class="seatcanvas-multi-tools"><span class="seatcanvas-multi-count">已選 '+n+' 個</span><span class="seatcanvas-multi-hint">選好後，直接拖任一已選方塊＝整組一起移動</span><button type="button" class="btn secondary small" onclick="seatOpsSelectAllVendors()">全選已排位攤商</button><button type="button" class="btn small" '+(n<2?'disabled':'')+' onclick="seatOpsArrangeSelected(\'row\')">↔ 緊密排成橫列</button><button type="button" class="btn small" '+(n<2?'disabled':'')+' onclick="seatOpsArrangeSelected(\'column\')">↕ 緊密排成直列</button><button type="button" class="btn secondary small" onclick="seatOpsClearMultiSelection()">清除選取</button></div>';}
   h+='<div class="seat-special-toolbox"><b>自訂區塊：</b>'+specials.map(v=>'<span class="seat-special-chip" role="button" tabindex="0" draggable="true" onclick="seatOpsAddFreeObject(\''+attr(v)+'\')" ondragstart="seatOpsSpecialDragStart(event,\''+attr(v)+'\')">＋ '+esc(v)+'</span>').join('')+'<input id="seatSpecialCustomName" placeholder="自訂名稱，例如：幻日祭舞台、報到處、攝影區"><button type="button" class="btn secondary small" onclick="seatOpsAddCustomSpecial()">＋ 加入畫布</button><span class="sub">新增後只存在畫布；雙擊該物件可複製、重新命名或刪除。</span></div>';
   if(SeatOps.boardEdit)h+='<textarea id="seatBoardTopNote" class="seatblank-note" placeholder="方向／說明，例如：↑ 舞台｜入口在右側｜中間主要走道">'+esc(cfg.topNote)+'</textarea><div><button type="button" class="btn small" onclick="seatOpsSaveBoardLabels()">儲存方向文字</button></div>';
   else if(cfg.topNote)h+='<div class="seatcanvas-note">'+esc(cfg.topNote).replace(/\n/g,'<br>')+'</div>';
@@ -2584,9 +2584,72 @@ async function seatOpsSaveFreeObjects(objects){const cfg=seatOpsBoardCfg();try{c
 async function seatOpsAddFreeObject(label,x=50,y=50,kind='label'){label=String(label||'').trim();if(!label)return;const cfg=seatOpsBoardCfg(),list=(cfg.freeObjects||[]).map(o=>({...o}));const off=(list.length%7)*2.2;list.push({id:'OBJ_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),label:label.slice(0,80),kind:(label==='禁用'?'blocked':kind),x:Math.max(2,Math.min(98,(Number(x)||50)+off)),y:Math.max(3,Math.min(97,(Number(y)||50)+off))});if(await seatOpsSaveFreeObjects(list)){toast('已加入「'+label+'」');renderSeatOps();}}
 async function seatOpsCanvasDrop(ev){if(!ev)return;ev.preventDefault();let raw='';try{raw=ev.dataTransfer.getData('text/plain')||'';}catch(e){}if(!raw.startsWith('SPECIAL:'))return;let d;try{d=JSON.parse(raw.slice(8));}catch(e){return;}const stage=$('seatOpsMapStage');if(!stage)return;const r=stage.getBoundingClientRect();const x=(ev.clientX-r.left)/r.width*100,y=(ev.clientY-r.top)/r.height*100;await seatOpsAddFreeObject(d.label||'自訂區塊',x,y,d.label==='禁用'?'blocked':'label');}
 let SeatObjectDrag=null;
+
+let SeatCanvasGroupDrag=null;
+function seatOpsSelectedCanvasPositions(){
+  return (SeatOps.selectedCanvasItems||[]).map(seatOpsCanvasItemPosition).filter(Boolean);
+}
+function seatOpsCanvasElementForItem(it){
+  if(!it)return null;
+  if(it.type==='seat')return document.querySelector('.seatcanvas-marker[data-seat="'+CSS.escape(String(it.id))+'"]');
+  return document.querySelector('.seatcanvas-object[data-obj="'+CSS.escape(String(it.id))+'"]');
+}
+async function seatOpsPersistCanvasPositions(items){
+  const seats=(items||[]).filter(x=>x.type==='seat');
+  const objects=(items||[]).filter(x=>x.type==='object');
+  for(const u of seats){
+    const r=await apiPost({action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:u.id,x:Number(u.x.toFixed(3)),y:Number(u.y.toFixed(3))});
+    if(r&&r.error)throw new Error(r.error);
+    const st=seatOpsSeatByCode(u.id);if(st){st.x=Number(u.x.toFixed(3));st.y=Number(u.y.toFixed(3));}
+  }
+  if(objects.length){
+    const map=new Map(objects.map(x=>[String(x.id),x]));
+    const list=(seatOpsBoardCfg().freeObjects||[]).map(o=>{const u=map.get(String(o.id));return u?{...o,x:Number(u.x.toFixed(3)),y:Number(u.y.toFixed(3))}:o;});
+    if(!await seatOpsSaveFreeObjects(list))throw new Error('自訂區塊位置儲存失敗');
+  }
+}
+function seatOpsStartGroupDrag(ev,type,id){
+  if(!SeatOps.multiSelect||!seatOpsCanvasIsSelected(type,id))return false;
+  if(ev.button!=null&&ev.button!==0)return true;
+  ev.stopPropagation();
+  const stage=$('seatOpsMapStage');if(!stage)return true;
+  const sr=stage.getBoundingClientRect(),startX=ev.clientX,startY=ev.clientY;
+  const items=seatOpsSelectedCanvasPositions();
+  if(items.length<2)return true;
+  SeatCanvasGroupDrag={items:items.map(x=>({...x})),startX,startY,moved:false,stageRect:sr};
+  const source=ev.currentTarget;
+  try{source.setPointerCapture&&source.setPointerCapture(ev.pointerId);}catch(_e){}
+  const move=e=>{
+    const d=SeatCanvasGroupDrag;if(!d)return;
+    const dxPx=e.clientX-d.startX,dyPx=e.clientY-d.startY;
+    if(!d.moved&&Math.hypot(dxPx,dyPx)<4)return;
+    d.moved=true;e.preventDefault();
+    let dx=dxPx/d.stageRect.width*100,dy=dyPx/d.stageRect.height*100;
+    let minDx=-999,maxDx=999,minDy=-999,maxDy=999;
+    d.items.forEach(it=>{minDx=Math.max(minDx,4-it.x);maxDx=Math.min(maxDx,96-it.x);minDy=Math.max(minDy,6-it.y);maxDy=Math.min(maxDy,94-it.y);});
+    dx=Math.max(minDx,Math.min(maxDx,dx));dy=Math.max(minDy,Math.min(maxDy,dy));d.dx=dx;d.dy=dy;
+    d.items.forEach(it=>{const el=seatOpsCanvasElementForItem(it);if(!el)return;el.classList.add('group-dragging');el.style.left=(it.x+dx)+'%';el.style.top=(it.y+dy)+'%';});
+  };
+  const finish=async()=>{
+    const d=SeatCanvasGroupDrag;SeatCanvasGroupDrag=null;
+    source.removeEventListener('pointermove',move);source.removeEventListener('pointerup',up);source.removeEventListener('pointercancel',cancel);
+    (d?.items||[]).forEach(it=>{const el=seatOpsCanvasElementForItem(it);if(el)el.classList.remove('group-dragging');});
+    if(!d||!d.moved)return;
+    SeatOps.suppressMarkerClickUntil=Date.now()+550;SeatOps.suppressObjectClickUntil=Date.now()+550;
+    const updates=d.items.map(it=>({...it,x:Math.max(4,Math.min(96,it.x+(d.dx||0))),y:Math.max(6,Math.min(94,it.y+(d.dy||0)))}));
+    try{await seatOpsPersistCanvasPositions(updates);toast('已一起移動 '+updates.length+' 個方塊');await loadSeatOps(SeatOps.sid);}
+    catch(e){toast('群組移動失敗：'+e.message,9000);await loadSeatOps(SeatOps.sid);}
+  };
+  const up=async()=>{await finish();},cancel=async()=>{await finish();};
+  source.addEventListener('pointermove',move);source.addEventListener('pointerup',up);source.addEventListener('pointercancel',cancel);
+  return true;
+}
 function seatOpsObjectPointerDown(ev,id){
+  if(SeatOps.multiSelect){
+    if(seatOpsCanvasIsSelected('object',id))seatOpsStartGroupDrag(ev,'object',id);
+    return;
+  }
   if(ev.button!=null&&ev.button!==0)return;
-  if(SeatOps.multiSelect)return;
   ev.stopPropagation();
   SeatOps.objectMenuId='';
   const el=ev.currentTarget,stage=$('seatOpsMapStage'); if(!el||!stage)return;
@@ -2630,7 +2693,36 @@ async function seatOpsDuplicateFreeObject(id){const cfg=seatOpsBoardCfg(),obj=(c
 async function seatOpsRenameFreeObject(id){const cfg=seatOpsBoardCfg(),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===String(id));if(!obj)return;const v=prompt('重新命名',String(obj.label||''));if(v===null)return;const label=String(v||'').trim().slice(0,80);if(!label)return toast('名稱不可空白');SeatOps.objectMenuId='';const list=(cfg.freeObjects||[]).map(o=>String(o.id)===String(id)?{...o,label,kind:label==='禁用'?'blocked':(o.kind||'label')}:o);if(await seatOpsSaveFreeObjects(list)){toast('名稱已更新');renderSeatOps();}}
 async function seatOpsDeleteFreeObject(id){const cfg=seatOpsBoardCfg(),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===String(id));if(!obj)return;if(!await uiConfirm('刪除自訂區塊「'+String(obj.label||'')+'」？'))return;SeatOps.objectMenuId='';SeatOps.selectedCanvasItems=(SeatOps.selectedCanvasItems||[]).filter(k=>k!==seatOpsCanvasKey('object',id));const list=(cfg.freeObjects||[]).filter(o=>String(o.id)!==String(id));if(await seatOpsSaveFreeObjects(list)){toast('已刪除自訂區塊');renderSeatOps();}}
 function seatOpsCanvasItemPosition(key){if(String(key).startsWith('S:')){const st=seatOpsSeatByCode(String(key).slice(2));if(!st)return null;const p=seatOpsCanvasXY(st);return {key,type:'seat',id:st.code,x:p.x,y:p.y};}if(String(key).startsWith('O:')){const id=String(key).slice(2),o=(seatOpsBoardCfg().freeObjects||[]).find(x=>String(x.id)===id);if(!o)return null;return {key,type:'object',id:o.id,x:Number(o.x)||50,y:Number(o.y)||50};}return null;}
-async function seatOpsArrangeSelected(axis){const keys=(SeatOps.selectedCanvasItems||[]).slice(),items=keys.map(seatOpsCanvasItemPosition).filter(Boolean);if(items.length<2)return toast('請至少選2個方塊');const horizontal=axis!=='column';const avg=items.reduce((s,it)=>s+(horizontal?it.y:it.x),0)/items.length;const coords=items.map(it=>horizontal?it.x:it.y);let lo=Math.min(...coords),hi=Math.max(...coords);if(hi-lo<30){lo=8;hi=92;}else{lo=Math.max(5,lo);hi=Math.min(95,hi);}const sorted=items.slice().sort((a,b)=>{if(a.type==='seat'&&b.type==='seat'){const sa=(SeatOps.seats||[]).find(x=>x.code===a.id),sb=(SeatOps.seats||[]).find(x=>x.code===b.id);return Number(sa?.order||0)-Number(sb?.order||0)||String(a.id).localeCompare(String(b.id),undefined,{numeric:true});}return keys.indexOf(a.key)-keys.indexOf(b.key);});const updates=sorted.map((it,i)=>{const p=sorted.length===1?(lo+hi)/2:lo+(hi-lo)*i/(sorted.length-1);return {...it,x:horizontal?p:avg,y:horizontal?avg:p};});try{for(const u of updates.filter(x=>x.type==='seat')){const r=await apiPost({action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:u.id,x:Number(u.x.toFixed(3)),y:Number(u.y.toFixed(3))});if(r&&r.error)throw new Error(r.error);}const objUpdates=updates.filter(x=>x.type==='object');if(objUpdates.length){const map=new Map(objUpdates.map(x=>[String(x.id),x]));const list=(seatOpsBoardCfg().freeObjects||[]).map(o=>{const u=map.get(String(o.id));return u?{...o,x:Number(u.x.toFixed(3)),y:Number(u.y.toFixed(3))}:o;});if(!await seatOpsSaveFreeObjects(list))throw new Error('自訂區塊位置儲存失敗');}SeatOps.selectedCanvasItems=[];toast('已將 '+updates.length+' 個方塊'+(horizontal?'排成橫列':'排成直列'));await loadSeatOps(SeatOps.sid);}catch(e){toast('批次排列失敗：'+e.message,9000);await loadSeatOps(SeatOps.sid);}}
+async function seatOpsArrangeSelected(axis){
+  const keys=(SeatOps.selectedCanvasItems||[]).slice(),items=keys.map(seatOpsCanvasItemPosition).filter(Boolean);
+  if(items.length<2)return toast('請至少選2個方塊');
+  const horizontal=axis!=='column';
+  const sorted=items.slice().sort((a,b)=>{
+    const primary=horizontal?(a.x-b.x):(a.y-b.y);
+    if(Math.abs(primary)>.5)return primary;
+    const secondary=horizontal?(a.y-b.y):(a.x-b.x);
+    if(Math.abs(secondary)>.5)return secondary;
+    if(a.type==='seat'&&b.type==='seat'){
+      const sa=(SeatOps.seats||[]).find(x=>x.code===a.id),sb=(SeatOps.seats||[]).find(x=>x.code===b.id);
+      return Number(sa?.order||0)-Number(sb?.order||0)||String(a.id).localeCompare(String(b.id),undefined,{numeric:true});
+    }
+    return keys.indexOf(a.key)-keys.indexOf(b.key);
+  });
+  const stage=$('seatOpsMapStage'),sr=stage?stage.getBoundingClientRect():{width:1400,height:700};
+  const sample=sorted.map(seatOpsCanvasElementForItem).find(Boolean);
+  const er=sample?sample.getBoundingClientRect():{width:92,height:64};
+  const stepX=Math.max(4.2,Math.min(12,(er.width+10)/Math.max(1,sr.width)*100));
+  const stepY=Math.max(5.5,Math.min(16,(er.height+10)/Math.max(1,sr.height)*100));
+  let startX=Math.max(5,Math.min(...sorted.map(x=>x.x))),startY=Math.max(7,Math.min(...sorted.map(x=>x.y)));
+  if(horizontal){const total=(sorted.length-1)*stepX;if(startX+total>95)startX=Math.max(5,95-total);}
+  else{const total=(sorted.length-1)*stepY;if(startY+total>93)startY=Math.max(7,93-total);}
+  const updates=sorted.map((it,i)=>({...it,x:horizontal?startX+i*stepX:startX,y:horizontal?startY:startY+i*stepY}));
+  try{
+    await seatOpsPersistCanvasPositions(updates);
+    toast('已將 '+updates.length+' 個方塊緊密'+(horizontal?'排成橫列':'排成直列'));
+    await loadSeatOps(SeatOps.sid);
+  }catch(e){toast('批次排列失敗：'+e.message,9000);await loadSeatOps(SeatOps.sid);}
+}
 
 async function seatOpsSetSpecial(code,label,sourceCode=''){try{const r=await apiPost({action:'setSeatSpecial',sessionId:SeatOps.sid,seatCode:code,label,sourceCode});if(r&&r.error)throw new Error(r.error);toast('已放置「'+label+'」到 '+code);await loadSeatOps(SeatOps.sid);}catch(e){toast('放置失敗：'+e.message,8000);}}
 async function seatOpsClearSpecial(code){if(!await uiConfirm('將 '+code+' 的自訂區塊恢復為一般空位？'))return;try{const r=await apiPost({action:'setSeatSpecial',sessionId:SeatOps.sid,seatCode:code,clear:true});if(r&&r.error)throw new Error(r.error);toast(code+' 已恢復空位');await loadSeatOps(SeatOps.sid);}catch(e){toast('恢復失敗：'+e.message,8000);}}
@@ -2686,7 +2778,10 @@ async function seatOpsMapClick(ev){
 }
 let SeatMarkerDrag=null;
 function seatOpsMarkerPointerDown(ev,code){
-  if(SeatOps.multiSelect) return;
+  if(SeatOps.multiSelect){
+    if(seatOpsCanvasIsSelected('seat',code))seatOpsStartGroupDrag(ev,'seat',code);
+    return;
+  }
   const cfg=seatOpsBoardCfg();
   const freeCanvas=String(cfg.mode||'blank')==='blank';
   // 圖片場地圖仍需進入「標點模式」才可移動標記；自由畫布則永遠可直接拖曳。
