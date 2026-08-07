@@ -1089,6 +1089,11 @@
 
 @media(max-width:720px){.seatops-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.seatops-card{padding:9px}.seatops-card .seat-no{font-size:20px}.seatops-card .brand{font-size:15px}.seatops-meta{font-size:13px}.seatops-map-stage{min-height:180px}.seatops-marker{min-width:30px;height:30px;font-size:11px}.seatops-toolbar input{min-width:100%;}.seatops-mobile-move{display:inline-flex}}
 
+
+/* FREE_SEAT_CANVAS_20260807 */
+.panel-body:has(#seatOpsBox){max-width:none!important;width:calc(100vw - 24px)!important;padding-left:8px!important;padding-right:8px!important}
+.seatcanvas-wrap{background:#fff;border:1px solid #e6e1d8;border-radius:16px;padding:10px;margin:10px 0}.seatcanvas-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}.seatcanvas-stage{position:relative;width:100%;height:min(68vh,760px);min-height:520px;background-color:#fbfbf8;background-image:linear-gradient(#ece9e2 1px,transparent 1px),linear-gradient(90deg,#ece9e2 1px,transparent 1px);background-size:24px 24px;border:1px solid #ddd8cf;border-radius:14px;overflow:hidden;touch-action:none}.seatcanvas-marker{position:absolute;transform:translate(-50%,-50%);width:112px;min-height:72px;border:2px solid #fff;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;cursor:grab;user-select:none;z-index:2;line-height:1.15}.seatcanvas-marker:active{cursor:grabbing}.seatcanvas-marker.used{background:#26312f;color:#fff}.seatcanvas-marker.free{background:#eef7ef;color:#26312f;border-color:#c7deca}.seatcanvas-marker.paid{background:#fff0c2;color:#684d00}.seatcanvas-marker.special{background:#e9eef7;color:#26324a;border-color:#b9c9e6}.seatcanvas-marker .code{font-size:18px;font-weight:950}.seatcanvas-marker .who{font-size:12px;font-weight:900;margin-top:3px;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker .equip{font-size:10px;margin-top:3px;opacity:.9;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker.match{outline:4px solid rgba(255,134,0,.5)}.seatcanvas-note{padding:8px 10px;border:1px solid #e6dfd4;border-radius:10px;background:#fff9e9;font-weight:800;margin:6px 0}@media(max-width:720px){.panel-body:has(#seatOpsBox){width:100%!important;padding-left:8px!important;padding-right:8px!important}.seatcanvas-stage{height:62vh;min-height:420px;overflow:auto}.seatcanvas-marker{width:92px;min-height:64px}.seatcanvas-marker .code{font-size:16px}}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -2456,30 +2461,25 @@ function seatOpsRowLetters(){
   (SeatOps.seats||[]).filter(x=>x.active).forEach(x=>{const m=String(x.code||'').toUpperCase().match(/^([A-Z])(\d+)$/);if(m)letters.add(m[1]);});
   return [...letters].sort();
 }
+function seatOpsCanvasXY(seat){
+  const cfg=seatOpsBoardCfg(), cols=cfg.columnsPerRow||9;
+  const x=Number(seat&&seat.x)||0,y=Number(seat&&seat.y)||0;
+  if(x>0||y>0)return {x:Math.max(2,Math.min(98,x)),y:Math.max(3,Math.min(97,y))};
+  const m=String((seat&&seat.code)||'').toUpperCase().match(/^([A-Z])(\d+)$/);
+  if(!m)return {x:8,y:10};
+  const row=Math.max(0,m[1].charCodeAt(0)-65), col=Math.max(0,Number(m[2])-1);
+  return {x:7.5+(col%cols)*(85/Math.max(1,cols-1)),y:14+row*18};
+}
 function seatOpsBlankBoardHtml(){
-  const esc=safe,cfg=seatOpsBoardCfg(),cols=cfg.columnsPerRow;
-  const letters=seatOpsRowLetters();
-  if(!letters.length) return '<div class="seatblank-wrap"><div class="seatops-map-empty"><b>還沒有空白排位板。</b><br>按上方「依已繳費名單建立空白排位板」，系統會依攤位總數自動產生 A1～A9、B1～B9…。</div></div>';
-  let h='<div class="seatblank-wrap"><div class="seatblank-head"><div><b>空白智慧排位板</b><div class="seatops-help">已繳費出席名單依付款確認時間排序。攤商可拖拉換位；服務台、禁用、活動名稱等自訂區塊也可以直接拖到任一空位。</div></div><div class="seatblank-tools"><button type="button" class="btn secondary small" onclick="seatOpsToggleBoardEdit()">'+(SeatOps.boardEdit?'完成方向標示':'✎ 編輯方向標示')+'</button></div></div>';
-  const existingSpecial=[...(SeatOps.seats||[]).filter(x=>(x.type==='service'||x.type==='closed')&&x.specialLabel).map(x=>x.specialLabel),...(SeatOps.customSpecials||[])];
-  const specials=[...new Set(['服務台','禁用',...existingSpecial].filter(Boolean))];
-  h+='<div class="seat-special-toolbox"><b>可拖曳區塊：</b>'+specials.map(v=>'<span class="seat-special-chip" draggable="true" ondragstart="seatOpsSpecialDragStart(event,\''+attr(v)+'\')">'+esc(v)+'</span>').join('')+'<input id="seatSpecialCustomName" placeholder="自訂名稱，例如：幻日祭舞台、報到處、攝影區"><button type="button" class="btn secondary small" onclick="seatOpsAddCustomSpecial()">加入工具箱</button></div>';
-  if(SeatOps.boardEdit){h+='<textarea id="seatBoardTopNote" class="seatblank-note" placeholder="整體方向說明，例如：↑ 舞台方向｜入口在右側｜中間保留主要走道">'+esc(cfg.topNote)+'</textarea>';}else if(cfg.topNote){h+='<div class="notice" style="margin:8px 0"><b>方向：</b>'+esc(cfg.topNote).replace(/\n/g,'<br>')+'</div>';}
-  letters.forEach(letter=>{
-    const label=String(cfg.rowLabels[letter]||'');
-    h+='<div class="seatblank-row"><div class="seatblank-row-head"><b>'+esc(letter)+'列</b>'+(SeatOps.boardEdit?'<input class="seat-row-label" data-row="'+esc(letter)+'" value="'+esc(label)+'" placeholder="例如：← 入口方向／靠舞台 →">':(label?'<span class="sub"><b>'+esc(label)+'</b></span>':''))+'</div><div class="seatblank-grid" style="grid-template-columns:repeat('+cols+',minmax(86px,1fr))">';
-    for(let n=1;n<=cols;n++){
-      const code=letter+n,seat=seatOpsSeatByCode(code);
-      if(!seat||!seat.active){h+='<div></div>';continue;}
-      const isSpecial=seat.type==='service'||seat.type==='closed', specialLabel=String(seat.specialLabel||'');
-      const cls=isSpecial?'special':seat.occupied?'used':seat.type==='paid'?'paid':'free';
-      const match=String(SeatOps.query||'').trim()&&[code,seat.occupantName,seat.occupantPhone,seat.occupantEquipmentText].join(' ').toLowerCase().includes(String(SeatOps.query||'').trim().toLowerCase());
-      h+='<button type="button" class="seatblank-cell '+cls+(match?' match':'')+'" data-seat="'+esc(code)+'" '+(isSpecial?'draggable="true" ondragstart="seatOpsSpecialCellDragStart(event,\''+esc(code)+'\',\''+attr(specialLabel)+'\')" ondblclick="seatOpsClearSpecial(\''+esc(code)+'\')"':'onclick="seatOpsMarkerClick(event,\''+esc(code)+'\')"')+' ondragover="event.preventDefault();this.classList.add(\'drop-target\')" ondragleave="this.classList.remove(\'drop-target\')" ondrop="this.classList.remove(\'drop-target\');seatOpsMarkerDrop(event,\''+esc(code)+'\')"><span class="code">'+esc(code)+'</span><span class="who">'+esc(isSpecial?(specialLabel||'自訂區塊'):(seat.occupantName||'空位'))+'</span>'+(!isSpecial&&seat.occupantName?'<span class="equip">'+esc(seat.occupantEquipmentText||'設備自備')+'</span>':'')+(isSpecial?'<span class="special-x">拖曳移動｜雙擊恢復空位</span>':'')+'</button>';
-    }
-    h+='</div></div>';
-  });
-  if(SeatOps.boardEdit)h+='<div class="seatblank-tools"><button type="button" class="btn small" onclick="seatOpsSaveBoardLabels()">儲存方向標示</button><span class="seatblank-help">可以寫「入口 ↑」「舞台 →」「靠牆」「主要走道」等；只改顯示說明，不會改任何攤商位置。</span></div>';
-  return h+'</div>';
+  const esc=safe,cfg=seatOpsBoardCfg(),seats=(SeatOps.seats||[]).filter(x=>x.active);
+  if(!seats.length)return '<div class="seatcanvas-wrap"><div class="seatops-map-empty"><b>還沒有位置。</b><br>先按「依付款順序重建位置編號」。位置編號會依付款確認順序產生，再由你自由拖成任何場地形狀。</div></div>';
+  const markers=seats.map(seat=>{const p=seatOpsCanvasXY(seat),isSpecial=seat.type==='service'||seat.type==='closed',cls=isSpecial?'special':seat.occupied?'used':seat.type==='paid'?'paid':'free';const label=isSpecial?(seat.specialLabel||'自訂區塊'):(seat.occupantName||'空位');const eq=seat.occupantName?(seat.occupantEquipmentText||'設備自備'):'';return '<button type="button" class="seatcanvas-marker '+cls+'" data-seat="'+esc(seat.code)+'" style="left:'+p.x+'%;top:'+p.y+'%" title="'+esc(seat.code+'｜'+label+(eq?'｜'+eq:''))+'" onclick="seatOpsMarkerClick(event,\''+esc(seat.code)+'\')" onpointerdown="seatOpsMarkerPointerDown(event,\''+esc(seat.code)+'\')" ondragover="event.preventDefault()" ondrop="seatOpsMarkerDrop(event,\''+esc(seat.code)+'\')"><span class="code">'+esc(seat.code)+'</span><span class="who">'+esc(label)+'</span>'+(eq?'<span class="equip">'+esc(eq)+'</span>':'')+'</button>';}).join('');
+  const specials=[...new Set(['服務台','禁用',...(SeatOps.customSpecials||[]),(SeatOps.seats||[]).filter(x=>x.specialLabel).map(x=>x.specialLabel)].filter(Boolean))];
+  let h='<div class="seatcanvas-wrap"><div class="seatcanvas-head"><div><b>自由排位畫布</b><div class="seatops-help">A1、A2…只是位置編號，不代表固定列。直接拖曳每個位置方塊，就能排成 L 型、ㄇ字型、島型、走道或任何現場形狀；拖曳只改畫布座標，不會改攤商綁定。</div></div><div class="seatblank-tools"><button type="button" class="btn secondary small" onclick="seatOpsToggleBoardEdit()">'+(SeatOps.boardEdit?'完成文字設定':'✎ 編輯方向文字')+'</button></div></div>';
+  h+='<div class="seat-special-toolbox"><b>自訂占位：</b>'+specials.map(v=>'<span class="seat-special-chip" draggable="true" ondragstart="seatOpsSpecialDragStart(event,\''+attr(v)+'\')">'+esc(v)+'</span>').join('')+'<input id="seatSpecialCustomName" placeholder="自訂名稱，例如：幻日祭舞台、報到處、攝影區"><button type="button" class="btn secondary small" onclick="seatOpsAddCustomSpecial()">加入工具箱</button></div>';
+  if(SeatOps.boardEdit)h+='<textarea id="seatBoardTopNote" class="seatblank-note" placeholder="方向／說明，例如：↑ 舞台｜入口在右側｜中間主要走道">'+esc(cfg.topNote)+'</textarea><div><button type="button" class="btn small" onclick="seatOpsSaveBoardLabels()">儲存方向文字</button></div>';
+  else if(cfg.topNote)h+='<div class="seatcanvas-note">'+esc(cfg.topNote).replace(/\n/g,'<br>')+'</div>';
+  h+='<div id="seatOpsMapStage" class="seatcanvas-stage">'+markers+'</div></div>';return h;
 }
 function seatOpsBoardHtml(){const cfg=seatOpsBoardCfg();return cfg.mode==='map'?seatOpsMapHtml():seatOpsBlankBoardHtml();}
 function seatOpsToggleBoardEdit(){SeatOps.boardEdit=!SeatOps.boardEdit;renderSeatOps();}
@@ -2513,13 +2513,13 @@ function renderSeatOps(){
   const paidSeats=seats.filter(x=>x.type==='paid');
   const paidFree=paidSeats.filter(x=>x.active&&!x.occupied).length;
   const autoFree=seats.filter(x=>x.type==='auto'&&x.active&&!x.occupied).length;
-  const list=regs.filter(seatOpsCardMatches);
+  const paidSeq={}; regs.forEach((r,i)=>paidSeq[String(r.regId)]=i+1); const list=regs.filter(seatOpsCardMatches);
   let h='';
   const chip=(t,n,c)=>'<span class="seatops-chip" style="background:'+c+'">'+t+'：'+Number(n||0)+'</span>';
   h+='<div class="seatops-counts">'+chip('已排位',sum.assignedRegs,'#e8f5ec')+chip('已繳費待補位',sum.waitingPaid,Number(sum.waitingPaid)>0?'#fff4dd':'#eef')+chip('剩餘自動位',sum.autoFree!=null?sum.autoFree:autoFree,'#eef')+chip('加價可選',paidFree,'#fff4dd')+'</div>';
   const eqText=String(sum.equipmentTotalText||'').trim();if(eqText&&eqText!=='無')h+='<div class="notice" style="margin:7px 0"><b>本場設備總計：</b>'+esc(eqText)+'</div>';
   if(sum.firstAssignedAt||sum.runCount) h+='<div class="sub" style="margin:4px 0 8px">第一次正式排位：'+esc(sum.firstAssignedAt||'—')+'｜最近補排：'+esc(sum.lastAssignedAt||sum.firstAssignedAt||'—')+'｜補排執行次數：'+Number(sum.runCount||0)+'</div>';
-  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋品牌、姓名、電話、位置號碼" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已排位</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待補位</option><option value="auto" '+(SeatOps.filter==='auto'?'selected':'')+'>自動位</option><option value="paid" '+(SeatOps.filter==='paid'?'selected':'')+'>加價自選</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">＋ 補排已繳費未排位</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 發布版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatRoster()">⬇ 排位名單</button><button type="button" class="btn secondary" onclick="seatOpsRebuildBlankBoard()">▦ 依已繳費名單建立空白排位板</button><button type="button" class="btn secondary" onclick="seatOpsExpandBlankBoard()">＋ 擴充一列</button></div>';
+  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋品牌、姓名、電話、位置號碼" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已排位</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待補位</option><option value="auto" '+(SeatOps.filter==='auto'?'selected':'')+'>自動位</option><option value="paid" '+(SeatOps.filter==='paid'?'selected':'')+'>加價自選</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">＋ 補排已繳費未排位</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 發布版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatRoster()">⬇ 排位名單</button><button type="button" class="btn secondary" onclick="seatOpsRebuildBlankBoard()">▦ 依付款順序重建位置編號</button><button type="button" class="btn secondary" onclick="seatOpsExpandBlankBoard()">＋ 擴充一列</button></div>';
   if(SeatOps.moveRegId){const mr=seatOpsRegById(SeatOps.moveRegId);h+='<div class="notice warn"><b>換位模式：</b> '+esc(mr?(mr.brand||mr.name):SeatOps.moveRegId)+'。請直接點排位板／位置圖上的<b>空位</b>；若點到另一位單攤攤商，可確認交換位置。 <button type="button" class="btn secondary small" onclick="seatOpsCancelMove()">取消</button></div>';}
   h+=seatOpsBoardHtml();
   h+='<div style="font-weight:900;margin:12px 0 6px">排位名單（'+list.length+'）</div>';
@@ -2608,17 +2608,11 @@ async function seatOpsSaveMarker(code,x,y){
   try{const r=await apiPost({action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:code,x:Number(x.toFixed(3)),y:Number(y.toFixed(3))});if(r&&r.error)throw new Error(r.error);const st=seatOpsSeatByCode(code);if(st){st.x=Number(x.toFixed(3));st.y=Number(y.toFixed(3));}toast(code+' 位置已儲存');renderSeatOps();}catch(e){toast('標點儲存失敗：'+e.message,8000);}
 }
 function downloadSeatBoardPng(mode='public'){
-  const cfg=seatOpsBoardCfg(),letters=seatOpsRowLetters(),cols=cfg.columnsPerRow,s=SeatOps.session||{};
-  if(!letters.length){toast('目前沒有可輸出的排位板');return;}
-  const cellW=160,cellH=128,gap=12,left=110,right=50,top=205,rowHead=42;
-  const width=Math.max(1400,left+cols*(cellW+gap)+right),height=top+letters.length*(rowHead+cellH+gap)+110;
-  const cv=document.createElement('canvas');cv.width=width;cv.height=height;const ctx=cv.getContext('2d');
-  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#1f2928';ctx.font='bold 34px sans-serif';ctx.fillText(String(s.name||'本場排位圖'),left,55);
-  ctx.font='20px sans-serif';ctx.fillStyle='#52605e';const note=String(cfg.topNote||'').replace(/\n/g,' ｜ ');if(note)ctx.fillText(note.slice(0,100),left,95);
-  ctx.font='16px sans-serif';ctx.fillText('產生時間：'+new Date().toLocaleString('zh-TW',{hour12:false})+(mode==='staff'?'｜工作人員版':'｜發布版'),left,128);
-  const roundRect=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
-  letters.forEach((letter,ri)=>{const y=top+ri*(rowHead+cellH+gap);ctx.fillStyle='#263130';ctx.font='bold 25px sans-serif';ctx.fillText(letter+'列',24,y+30);const rl=String(cfg.rowLabels[letter]||'');if(rl){ctx.font='16px sans-serif';ctx.fillStyle='#596563';ctx.fillText(rl.slice(0,28),left,y+28);}for(let n=1;n<=cols;n++){const code=letter+n,seat=seatOpsSeatByCode(code);if(!seat||!seat.active)continue;const x=left+(n-1)*(cellW+gap),cy=y+rowHead;const special=String(seat.specialLabel||''),who=String(seat.occupantName||''),isSpecial=!!special;ctx.fillStyle=isSpecial?'#e9eef7':who?'#263130':'#eef7ef';roundRect(x,cy,cellW,cellH,12);ctx.fill();ctx.strokeStyle=isSpecial?'#aebfdc':who?'#263130':'#c7deca';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=who&&!isSpecial?'#ffffff':'#22302f';ctx.font='bold 23px sans-serif';ctx.fillText(code,x+10,cy+28);ctx.font='bold 16px sans-serif';const label=(special||who||'空位');const lines=[];let rem=label;while(rem.length>0&&lines.length<2){lines.push(rem.slice(0,11));rem=rem.slice(11);}lines.forEach((ln,i)=>ctx.fillText(ln,x+10,cy+53+i*18));if(who&&!isSpecial){ctx.font='12px sans-serif';ctx.fillStyle='#dff1ea';const eq=String(seat.occupantEquipmentText||'設備自備');ctx.fillText(('設備：'+eq).slice(0,22),x+10,cy+94);if(mode==='staff'){const ph=String(seat.occupantPhone||'');if(ph){ctx.fillStyle='#ffffff';ctx.font='11px sans-serif';ctx.fillText(ph,x+10,cy+116);}}}}});
-  cv.toBlob(blob=>{if(!blob)return toast('圖片產生失敗');const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(s.name||'本場')+'_'+(mode==='staff'?'工作人員':'發布')+'_排位圖.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1200);toast('已下載 '+(mode==='staff'?'工作人員版':'發布版')+' PNG');},'image/png');
+  const cfg=seatOpsBoardCfg(),s=SeatOps.session||{},seats=(SeatOps.seats||[]).filter(x=>x.active);if(!seats.length){toast('目前沒有可輸出的排位板');return;}
+  const width=1800,height=1050,cv=document.createElement('canvas');cv.width=width;cv.height=height;const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#1f2928';ctx.font='bold 38px sans-serif';ctx.fillText(String(s.name||'本場排位圖'),55,60);ctx.font='18px sans-serif';ctx.fillStyle='#52605e';const note=String(cfg.topNote||'').replace(/\n/g,' ｜ ');if(note)ctx.fillText(note.slice(0,120),55,96);ctx.fillText('產生時間：'+new Date().toLocaleString('zh-TW',{hour12:false})+(mode==='staff'?'｜工作人員版':'｜發布版'),55,128);
+  const sx=.88*width/100,sy=.78*height/100,ox=60,oy=170;const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
+  seats.forEach(seat=>{const p=seatOpsCanvasXY(seat),x=ox+p.x*sx,y=oy+p.y*sy,w=120,h=78,isSpecial=seat.type==='service'||seat.type==='closed',who=isSpecial?(seat.specialLabel||'自訂區塊'):(seat.occupantName||'空位');ctx.fillStyle=isSpecial?'#e9eef7':seat.occupantName?'#263130':'#eef7ef';rr(x-w/2,y-h/2,w,h,10);ctx.fill();ctx.strokeStyle='#c8c8c8';ctx.stroke();ctx.fillStyle=seat.occupantName&&!isSpecial?'#fff':'#22302f';ctx.font='bold 19px sans-serif';ctx.fillText(String(seat.code||''),x-w/2+8,y-h/2+22);ctx.font='bold 13px sans-serif';ctx.fillText(String(who).slice(0,13),x-w/2+8,y-h/2+43);if(seat.occupantName&&!isSpecial){ctx.font='10px sans-serif';ctx.fillText(('設備:'+String(seat.occupantEquipmentText||'設備自備')).slice(0,20),x-w/2+8,y-h/2+60);if(mode==='staff'&&seat.occupantPhone){ctx.font='9px sans-serif';ctx.fillText(String(seat.occupantPhone),x-w/2+8,y-h/2+72);}}});
+  cv.toBlob(blob=>{if(!blob)return toast('圖片產生失敗');const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(s.name||'本場')+'_'+(mode==='staff'?'工作人員':'發布')+'_自由排位圖.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1200);toast('已下載 '+(mode==='staff'?'工作人員版':'發布版')+' PNG');},'image/png');
 }
 
 function downloadSeatRoster(){
