@@ -2639,7 +2639,7 @@ function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v
 // 活動限定拍照框（H5：問卷 → 相機 → 套框 → 下載／分享）
 // ══════════════════════════════════════════════════════════════
 const PHOTO_DONE_KEY='2bl_photo_lead_done';
-let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'environment',zoom:1,offsetX:0,offsetY:0,win:null,fit:'cover',deviceId:'',drag:null};
+let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null,fit:'cover'};
 async function loadPhotoFrames(){
   try{ const r=await apiPost({action:'listActivePhotoFrames'}); ST.photoFrames=(r&&r.frames)||[]; }
   catch(e){ ST.photoFrames=[]; }
@@ -2714,46 +2714,27 @@ function applyFrameWindow(){
   w.style.width=(win.w*100)+'%'; w.style.height=(win.h*100)+'%';
 }
 function applyPhotoZoom(){
-  const v=document.getElementById('pfVideo');
-  const p=document.getElementById('pfPickedPreview');
-  const z=Math.max(1,Math.min(2.5,Number(PF.zoom)||1));
-  const tx=(Number(PF.offsetX)||0)*100, ty=(Number(PF.offsetY)||0)*100;
-  if(v){
-    const mirror=(PF.facing==='user')?-1:1;
-    v.style.objectFit='cover';
-    v.style.transform='translate('+tx+'%,'+ty+'%) scale('+(mirror*z)+','+z+')';
-    v.style.transformOrigin='center center';
-  }
-  if(p){
-    p.style.objectFit='cover';
-    p.style.transform='translate('+tx+'%,'+ty+'%) scale('+z+')';
-    p.style.transformOrigin='center center';
-    p.style.display=PF.pickedImg?'block':'none';
-  }
-  const slider=document.getElementById('pfZoom'); if(slider) slider.value=String(z);
-  const zv=document.getElementById('pfZoomValue'); if(zv) zv.textContent=z.toFixed(2)+'×';
+  const v=document.getElementById('pfVideo'); if(!v) return;
+  const z=Number(PF.zoom)||1;
+  const mirror=(PF.facing==='user')?-1:1;
+  v.style.objectFit=(PF.fit==='contain')?'contain':'cover';
+  v.style.transform='scale('+(mirror*z)+','+z+')';
+  v.style.transformOrigin='center center';
   const info=document.getElementById('pfCamInfo');
-  if(info){
-    const size=(v&&v.videoWidth)?('｜來源 '+v.videoWidth+'×'+v.videoHeight):'';
-    info.textContent='廣角優先・固定填滿相框，不留白'+size+'｜可拖曳調整位置';
+  if(info && v.videoWidth){
+    const portrait=v.videoHeight>=v.videoWidth;
+    let tip='';
+    if(PF.fit==='contain') tip=portrait?'完整不裁切':'完整不裁切（上下會留白）';
+    else tip=portrait?'填滿（幾乎不裁切）':'填滿（會裁掉左右）';
+    info.textContent='鏡頭畫面 '+v.videoWidth+'×'+v.videoHeight+'　'+tip+'　[PF4]';
   }
 }
-function togglePhotoFit(){ PF.fit='cover'; applyPhotoZoom(); }
-function setPhotoZoom(v){ PF.zoom=Math.max(1,Math.min(2.5,Number(v)||1)); applyPhotoZoom(); }
-function resetPhotoPosition(){ PF.zoom=1; PF.offsetX=0; PF.offsetY=0; applyPhotoZoom(); }
-function bindPhotoDrag(){
-  const w=document.getElementById('pfWin'); if(!w || w.dataset.dragBound==='1') return;
-  w.dataset.dragBound='1'; w.style.touchAction='none';
-  w.addEventListener('pointerdown',function(e){ PF.drag={x:e.clientX,y:e.clientY,ox:PF.offsetX||0,oy:PF.offsetY||0}; try{w.setPointerCapture(e.pointerId);}catch(_){} });
-  w.addEventListener('pointermove',function(e){
-    if(!PF.drag) return;
-    const r=w.getBoundingClientRect(); if(!r.width||!r.height) return;
-    PF.offsetX=Math.max(-0.45,Math.min(0.45,PF.drag.ox+(e.clientX-PF.drag.x)/r.width));
-    PF.offsetY=Math.max(-0.45,Math.min(0.45,PF.drag.oy+(e.clientY-PF.drag.y)/r.height));
-    applyPhotoZoom();
-  });
-  const end=function(){PF.drag=null;}; w.addEventListener('pointerup',end); w.addEventListener('pointercancel',end);
+function togglePhotoFit(){
+  PF.fit=(PF.fit==='contain')?'cover':'contain';
+  const b=document.getElementById('pfFitBtn'); if(b) b.textContent=(PF.fit==='contain')?'完整':'填滿';
+  applyPhotoZoom();
 }
+function setPhotoZoom(v){ PF.zoom=Math.min(2.2,Math.max(1,Number(v)||1)); applyPhotoZoom(); }
 async function flipPhotoCamera(){
   PF.facing=(PF.facing==='user')?'environment':'user';
   stopPhotoCamera();
@@ -2787,17 +2768,20 @@ function ensurePhotoModal(){
    +'</div>'
    +'<div id="pfCam" style="display:none">'
      +'<div id="pfCamBox" style="position:relative;height:min(56vh,calc(92vw*16/9));width:calc(min(56vh,calc(92vw*16/9))*9/16);max-width:100%;margin:0 auto;background:#000;border-radius:14px;overflow:hidden">'
-       +'<div id="pfWin" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;background:#000;touch-action:none"><video id="pfVideo" playsinline muted autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video><img id="pfPickedPreview" alt="相簿照片預覽" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></div>'
+       +'<div id="pfWin" style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;background:#fff"><video id="pfVideo" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video></div>'
        +'<img id="pfFrameImg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none">'
      +'</div>'
      +'<div id="pfCtrl" style="display:flex;align-items:center;gap:10px;margin-top:8px">'
        +'<button id="pfFlipBtn" onclick="flipPhotoCamera()" style="font-size:16px;font-weight:800;padding:11px 13px;border:0;border-radius:12px;background:#D9E5EE;cursor:pointer;white-space:nowrap">切換鏡頭</button>'
-       +'<button id="pfResetBtn" onclick="resetPhotoPosition()" style="font-size:16px;font-weight:800;padding:11px 13px;border:0;border-radius:12px;background:#FAEEC7;cursor:pointer;white-space:nowrap">重設位置</button>'
-       +'</div>'
-     +'<div id="pfZoomWrap" style="display:flex;align-items:center;gap:10px;margin-top:10px;font-size:16px"><label for="pfZoom" style="font-weight:800;white-space:nowrap">照片大小</label><input id="pfZoom" type="range" min="1" max="2.5" step="0.05" value="1" oninput="setPhotoZoom(this.value)" style="flex:1;min-width:0"><span id="pfZoomValue" style="min-width:52px;text-align:right;font-weight:800">1.00×</span></div>'
+       +'<button id="pfFitBtn" onclick="togglePhotoFit()" style="font-size:16px;font-weight:800;padding:11px 13px;border:0;border-radius:12px;background:#FAEEC7;cursor:pointer;white-space:nowrap">完整</button>'
+       +'<div style="flex:1;display:flex;align-items:center;gap:8px">'
+         +'<span style="font-size:16px;color:#555">原始</span>'
+         +'<input id="pfZoom" type="range" min="1" max="2.2" step="0.05" value="1" oninput="setPhotoZoom(this.value)" style="flex:1">'
+         +'<span style="font-size:16px;color:#555">放大</span>'
+       +'</div></div>'
      +'<div id="pfCamInfo" style="font-size:16px;color:#777;margin-top:6px"></div>'
      +'<div id="pfCamMsg" style="display:none;font-size:16px;background:#FAE1DD;border-radius:12px;padding:12px;margin-top:10px"></div>'
-     +'<div id="pfPickWrap" style="display:block;margin-top:10px"><label style="display:block;font-size:17px;font-weight:800;padding:14px;border:2px dashed #bbb;border-radius:14px;text-align:center;cursor:pointer">從相簿選照片套框<input type="file" accept="image/*" style="display:none" onchange="pickPhotoFile(this)"></label></div>'
+     +'<div id="pfPickWrap" style="display:none;margin-top:10px"><label style="display:block;font-size:17px;font-weight:800;padding:14px;border:2px dashed #bbb;border-radius:14px;text-align:center;cursor:pointer">從相簿選照片套框<input type="file" accept="image/*" style="display:none" onchange="pickPhotoFile(this)"></label></div>'
      +'<div style="position:sticky;bottom:0;background:#fff;padding:10px 0 2px;margin-top:8px"><button id="pf_shootBtn" onclick="takePhoto()" style="width:100%;font-size:20px;font-weight:900;padding:16px;border:0;border-radius:14px;background:#DDEAD1;cursor:pointer">拍照</button></div>'
    +'</div>'
    +'<div id="pfPreview" style="display:none">'
@@ -2809,7 +2793,6 @@ function ensurePhotoModal(){
      +'</div></div>'
    +'</div>';
   document.body.appendChild(d);
-  bindPhotoDrag();
 }
 function showPhotoSection(k){
   ['pfSurvey','pfCam','pfPreview'].forEach(function(id){ const el=document.getElementById(id); if(el) el.style.display=(id==='pf'+k.charAt(0).toUpperCase()+k.slice(1))?'':'none'; });
@@ -2817,7 +2800,7 @@ function showPhotoSection(k){
 function openPhotoFlow(frameId, sessionId){
   const f=((ST&&ST.photoFrames)||[]).find(x=>String(x.id)===String(frameId));
   if(!f){ toast&&toast('這個拍照框已結束'); return; }
-  PF.frame=f; PF.sessionId=sessionId||''; PF.shotDataUrl=''; PF.pickedImg=null; PF.zoom=1; PF.offsetX=0; PF.offsetY=0; PF.deviceId='';
+  PF.frame=f; PF.sessionId=sessionId||''; PF.shotDataUrl=''; PF.pickedImg=null;
   ensurePhotoModal();
   const m=document.getElementById('photoModal');
   if(m.parentElement!==document.body) document.body.appendChild(m);
@@ -2869,94 +2852,69 @@ async function submitPhotoSurvey(){
   finally{ if(btn){ btn.disabled=false; btn.textContent='送出，開始拍照'; } }
 }
 function showPhotoFallback(msg){
-  const box=document.getElementById('pfCamBox'); if(box) box.style.display='';
+  const box=document.getElementById('pfCamBox'); if(box) box.style.display='none';
   const m=document.getElementById('pfCamMsg');
   if(m){ m.style.display=''; m.innerHTML=esc(msg)+'<br>請改用 Safari 或 Chrome 開啟本頁，或直接從相簿選一張照片套框。'; }
   const w=document.getElementById('pfPickWrap'); if(w) w.style.display='';
   const c=document.getElementById('pfCtrl'); if(c) c.style.display='none';
   const b=document.getElementById('pf_shootBtn'); if(b) b.style.display='none';
 }
-async function getPreferredWideCamera(facing){
-  try{
-    const list=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-    const words=/ultra\s*wide|ultrawide|wide\s*angle|0[.,]5|超廣角|廣角/i;
-    const rear=/back|rear|environment|後置|背面/i, front=/front|user|前置|自拍/i;
-    const side=facing==='environment'?list.filter(d=>rear.test(d.label||'')):list.filter(d=>front.test(d.label||''));
-    return (side.find(d=>words.test(d.label||'')) || side[0] || null);
-  }catch(e){ return null; }
-}
-async function applyMinimumCameraZoom(stream){
-  try{
-    const track=stream&&stream.getVideoTracks&&stream.getVideoTracks()[0]; if(!track) return;
-    const caps=track.getCapabilities?track.getCapabilities():{};
-    if(caps.zoom && track.applyConstraints){ await track.applyConstraints({advanced:[{zoom:caps.zoom.min||1}]}); }
-  }catch(e){}
-}
 async function startPhotoCamera(){
   showPhotoSection('cam');
-  const img=document.getElementById('pfFrameImg'); if(img && PF.frame) img.src=PF.frame.frameUrl;
+  const img=document.getElementById('pfFrameImg');
+  if(img && PF.frame) img.src=PF.frame.frameUrl;
   const box=document.getElementById('pfCamBox'); if(box) box.style.display='';
   const msg=document.getElementById('pfCamMsg'); if(msg) msg.style.display='none';
-  const pick=document.getElementById('pfPickWrap'); if(pick) pick.style.display='block';
-  const shoot=document.getElementById('pf_shootBtn'); if(shoot){shoot.style.display=''; shoot.textContent=PF.pickedImg?'完成套框':'拍照';}
-  const ctrl=document.getElementById('pfCtrl'); if(ctrl) ctrl.style.display='flex';
-  const video=document.getElementById('pfVideo'); const picked=document.getElementById('pfPickedPreview');
-  if(video) video.style.display=PF.pickedImg?'none':'block';
-  if(picked) picked.style.display=PF.pickedImg?'block':'none';
-  if(PF.frame && PF.frame.frameUrl && PF._winFor!==PF.frame.frameUrl){ PF.win=await detectFrameWindow(PF.frame.frameUrl); PF._winFor=PF.frame.frameUrl; }
-  applyFrameWindow(); bindPhotoDrag(); applyPhotoZoom();
-  if(PF.pickedImg) return;
-  if(isInAppBrowser()){ showPhotoFallback('LINE／IG 內建瀏覽器通常無法直接開啟網頁相機，請使用下方「從相簿選照片套框」。'); return; }
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showPhotoFallback('這個瀏覽器不支援相機，請使用下方相簿選擇。'); return; }
-  stopPhotoCamera();
-  let stream=null;
-  const initial={facingMode:{ideal:PF.facing},width:{ideal:3840,min:1280},height:{ideal:2160,min:720},aspectRatio:{ideal:16/9}};
-  try{ stream=await navigator.mediaDevices.getUserMedia({video:initial,audio:false}); }catch(e){
-    try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:PF.facing}},audio:false}); }catch(_e){}
+  const pick=document.getElementById('pfPickWrap'); if(pick) pick.style.display='none';
+  const shoot=document.getElementById('pf_shootBtn'); if(shoot) shoot.style.display='';
+  const ctrl=document.getElementById('pfCtrl'); if(ctrl) ctrl.style.display='';
+  if(PF.frame && PF.frame.frameUrl && PF._winFor!==PF.frame.frameUrl){
+    PF.win=await detectFrameWindow(PF.frame.frameUrl);
+    PF._winFor=PF.frame.frameUrl;
   }
-  if(!stream){ showPhotoFallback('無法開啟相機（可能尚未允許權限）。'); return; }
-  PF.stream=stream;
-  const wide=await getPreferredWideCamera(PF.facing);
-  if(wide && wide.deviceId){
-    const current=(stream.getVideoTracks()[0]||{}).getSettings?.().deviceId||'';
-    if(current!==wide.deviceId){
-      stopPhotoCamera();
-      try{ PF.stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:wide.deviceId},width:{ideal:3840},height:{ideal:2160},aspectRatio:{ideal:16/9}},audio:false}); PF.deviceId=wide.deviceId; }
-      catch(e){ PF.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:PF.facing},width:{ideal:3840},height:{ideal:2160}},audio:false}); }
-    }
+  applyFrameWindow();
+  if(isInAppBrowser()){ showPhotoFallback('LINE／IG 內建瀏覽器無法開啟相機。'); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showPhotoFallback('這個瀏覽器不支援相機。'); return; }
+  const v=document.getElementById('pfVideo');
+  // 解析度＋直式：用「高解析度 ideal」讓裝置盡量給高畫質、接近直式的畫面。
+  // 之前用 exact 太嚴格，拿不到就一路掉到裝置預設(前鏡頭常 640×480)→又糊又像被裁很近。
+  // ideal 不會失敗，裝置會回傳它能給的最高解析度，畫質與視野都會明顯變好。
+  const tries=[
+    {facingMode:{ideal:PF.facing},width:{ideal:1080},height:{ideal:1920},aspectRatio:{ideal:9/16}},
+    {facingMode:{ideal:PF.facing},width:{ideal:1920},height:{ideal:1920}},
+    {facingMode:{ideal:PF.facing},width:{ideal:1280},height:{ideal:1280}},
+    {facingMode:{ideal:PF.facing}},
+    true
+  ];
+  let ok=false;
+  for(const cfg of tries){
+    try{
+      PF.stream=await navigator.mediaDevices.getUserMedia({video:cfg,audio:false});
+      v.srcObject=PF.stream; v.muted=true; v.setAttribute('playsinline','');
+      await v.play().catch(()=>{});
+      ok=true; break;
+    }catch(e){}
   }
-  await applyMinimumCameraZoom(PF.stream);
-  const v=document.getElementById('pfVideo'); v.srcObject=PF.stream; v.muted=true; v.setAttribute('playsinline','');
-  await v.play().catch(()=>{});
-  applyPhotoZoom(); try{v.addEventListener('loadedmetadata',applyPhotoZoom,{once:true});}catch(e){}
+  if(!ok){ showPhotoFallback('無法開啟相機（可能未允許權限）。'); return; }
+  const fb=document.getElementById('pfFitBtn'); if(fb) fb.textContent=(PF.fit==='contain')?'完整':'填滿';
+  applyPhotoZoom();
+  try{ v.addEventListener('loadedmetadata',applyPhotoZoom,{once:true}); }catch(e){}
 }
 function pickPhotoFile(input){
   const f=input&&input.files&&input.files[0]; if(!f) return;
-  if(!/^image\//.test(f.type||'')){ toast&&toast('請選擇照片檔案'); return; }
   const r=new FileReader();
-  r.onload=function(){ const im=new Image(); im.onload=function(){
-    PF.pickedImg=im; PF.zoom=1; PF.offsetX=0; PF.offsetY=0; stopPhotoCamera();
-    const p=document.getElementById('pfPickedPreview'); if(p){p.src=r.result; p.style.display='block';}
-    const v=document.getElementById('pfVideo'); if(v) v.style.display='none';
-    const b=document.getElementById('pf_shootBtn'); if(b){b.style.display='';b.textContent='完成套框';}
-    const ctrl=document.getElementById('pfCtrl'); if(ctrl) ctrl.style.display='flex';
-    const zw=document.getElementById('pfZoomWrap'); if(zw) zw.style.display='flex';
-    const box=document.getElementById('pfCamBox'); if(box) box.style.display='';
-    const msg=document.getElementById('pfCamMsg'); if(msg) msg.style.display='none';
-    applyPhotoZoom();
-  }; im.onerror=function(){toast&&toast('照片讀取失敗，請換一張再試');}; im.src=r.result; };
-  r.readAsDataURL(f); input.value='';
+  r.onload=function(){ const im=new Image(); im.onload=function(){ PF.pickedImg=im; takePhoto(); }; im.src=r.result; };
+  r.readAsDataURL(f);
 }
-function pfDrawFitRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom,offsetX,offsetY){
+function pfDrawFitRect(ctx,src,sw,sh,rx,ry,rw,rh,zoom,fit){
   if(!sw||!sh) return;
-  const z=Math.max(1,Number(zoom)||1);
-  const scale=Math.max(rw/sw,rh/sh)*z, dw=sw*scale, dh=sh*scale;
-  const dx=rx+(rw-dw)/2+(Number(offsetX)||0)*rw;
-  const dy=ry+(rh-dh)/2+(Number(offsetY)||0)*rh;
-  ctx.drawImage(src,dx,dy,dw,dh);
+  const z=Number(zoom)||1;
+  const base=(fit==='contain')?Math.min(rw/sw,rh/sh):Math.max(rw/sw,rh/sh);
+  const scale=base*z, dw=sw*scale, dh=sh*scale;
+  ctx.drawImage(src, rx+(rw-dw)/2, ry+(rh-dh)/2, dw, dh);
 }
 async function takePhoto(){
-  const W=2160,H=3840;  // 4K 等級直式輸出；照片來源不足時維持來源可用細節
+  const W=1080,H=1920;
   const c=document.createElement('canvas'); c.width=W; c.height=H;
   const ctx=c.getContext('2d');
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
@@ -2970,10 +2928,11 @@ async function takePhoto(){
   const sh=PF.pickedImg?PF.pickedImg.naturalHeight:v.videoHeight;
   ctx.save();
   ctx.beginPath(); ctx.rect(rx,ry,rw,rh); ctx.clip();
-    const mirror=(!PF.pickedImg && PF.facing==='user');
+  if(PF.fit==='contain'){ ctx.fillStyle='#ffffff'; ctx.fillRect(rx,ry,rw,rh); }
+  const mirror=(!PF.pickedImg && PF.facing==='user');
   if(mirror){ ctx.translate(W,0); ctx.scale(-1,1); }
   const drawX = mirror ? (W-rx-rw) : rx;
-  pfDrawFitRect(ctx,src,sw,sh,drawX,ry,rw,rh,z,mirror?-(PF.offsetX||0):(PF.offsetX||0),PF.offsetY||0);
+  pfDrawFitRect(ctx,src,sw,sh,drawX,ry,rw,rh,(PF.pickedImg?1:z),PF.fit);
   ctx.restore();
   if(PF.frame && PF.frame.frameUrl){
     await new Promise(function(res){
@@ -2989,7 +2948,7 @@ async function takePhoto(){
   stopPhotoCamera();
   showPhotoSection('preview');
 }
-function retakePhoto(){ PF.pickedImg=null; PF.shotDataUrl=''; PF.zoom=1; PF.offsetX=0; PF.offsetY=0; const p=document.getElementById('pfPickedPreview'); if(p){p.src='';p.style.display='none';} startPhotoCamera(); }
+function retakePhoto(){ PF.pickedImg=null; PF.shotDataUrl=''; startPhotoCamera(); const zs=document.getElementById('pfZoom'); if(zs) zs.value=PF.zoom; }
 function photoFileName(){
   const n=(PF.frame&&PF.frame.name?PF.frame.name:'活動拍照').replace(/[\\/:*?"<>|]/g,'');
   const d=new Date(); const z=x=>String(x).padStart(2,'0');
@@ -4055,7 +4014,9 @@ function showNewMemberProfileStep(s){
     <div class="fcard member-entry-card member-profile-entry-card" style="border:2px solid #9fb59c">
       <div class="fcard-t" style="background:#DDEAD1;color:#111">會員資料</div>
       <div class="fcard-body">
-        <div style="font-size:16px;color:#555;margin-bottom:12px;line-height:1.7">資料會直接儲存到系統。您可以先瀏覽所有開放場次；選擇報名後，完成會員資料即可繼續送出。下次可用相同 Email＋手機繼續補填。</div><div id="memberProfileProgress" style="font-size:16px;font-weight:900;padding:10px 12px;border-radius:12px;background:#FAEEC7;margin-bottom:12px">資料完整度計算中…</div>
+        <div style="font-size:16px;color:#555;margin-bottom:12px;line-height:1.7">
+          資料會直接儲存到系統，下次可用相同 Email＋手機繼續補填。
+        </div>
         <label>Email *</label>
         <input type="email" id="np_email" value="${esc(email)}" inputmode="email" placeholder="your@email.com">
         <label style="margin-top:10px">手機 *</label>
@@ -4079,24 +4040,8 @@ function showNewMemberProfileStep(s){
     </div>`;
   const btn=$('saveMemberProfileBtn');
   if(btn) btn.addEventListener('click',()=>saveMemberProfileToDb({silent:false}));
-  ['np_name','np_phone','np_brand','np_sellItem','np_brandIntro','np_fb','np_ig'].forEach(id=>{const el=$(id);if(el) el.addEventListener('input',refreshMemberProfileProgress);});
-  refreshMemberProfileProgress();
   try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
 }
-
-function currentProfileMissingFromForm(){
-  const g=id=>String(($(id)||{}).value||'').trim();
-  const checks=[['聯絡人姓名',g('np_name')],['手機',g('np_phone')],['攤位／品牌名稱',g('np_brand')],['販售商品／內容',g('np_sellItem')],['品牌介紹',g('np_brandIntro')],['FB 或 IG',g('np_fb')||g('np_ig')]];
-  return checks.filter(x=>!x[1]).map(x=>x[0]);
-}
-function refreshMemberProfileProgress(){
-  const el=$('memberProfileProgress'); if(!el) return;
-  const missing=currentProfileMissingFromForm(); const done=6-missing.length;
-  el.style.background=missing.length?'#FAEEC7':'#DDEAD1'; el.style.color=missing.length?'#6b4e00':'#2a4d18';
-  el.textContent=missing.length?('已完成 '+done+'／6；尚缺：'+missing.join('、')):'✅ 已完成 6／6，可儲存並進入報名表';
-  ['np_name','np_phone','np_brand','np_sellItem','np_brandIntro','np_fb','np_ig'].forEach(id=>{const e=$(id);if(e){const miss=(id==='np_fb'||id==='np_ig')?missing.includes('FB 或 IG'):missing.some(x=>({'np_name':'聯絡人姓名','np_phone':'手機','np_brand':'攤位／品牌名稱','np_sellItem':'販售商品／內容','np_brandIntro':'品牌介紹'}[id]===x));e.style.borderColor=miss?'#d3a932':'';e.style.background=miss?'#fffbea':'';}});
-}
-
 async function saveMemberProfileToDb({silent=false}={}){
   const g=id=>String(($(id)||{}).value||'').trim();
   const err=$('np_err');

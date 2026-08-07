@@ -67,104 +67,6 @@
 
 .session-chip-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:6px 9px;font-size:13px;font-weight:900;white-space:nowrap;text-decoration:none;color:inherit}.chip.click{cursor:pointer}.chip.click:hover{box-shadow:0 6px 16px rgba(0,0,0,.10);transform:translateY(-1px)}button.chip{font:inherit}.chip b{font-size:16px}.chip.green{background:var(--green)}.chip.yellow{background:var(--yellow)}.chip.blue{background:var(--blue)}.chip.pink{background:var(--pink)}.chip.purple{background:var(--purple)}.chip.gray{background:#F4F0EA}.detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}.report-card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px}.report-title{font-size:18px;font-weight:950;margin-bottom:10px}.mini-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mini-stat{border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px;text-align:center;position:relative}.metric-click{position:relative}.metric-click{cursor:pointer}.mini-stat b{display:block;font-size:22px}button.mini-stat{font:inherit;color:inherit;cursor:pointer;width:100%}button.mini-stat.click:hover{border-color:#9EB9B4;box-shadow:0 8px 20px rgba(0,0,0,.08);transform:translateY(-1px)}.info-line.click{border:1px solid var(--line);border-radius:13px;background:#fff;margin:6px 0;padding:9px 10px;cursor:pointer;width:100%;font:inherit;color:inherit;text-align:left}.info-line.click:hover{border-color:#9EB9B4;box-shadow:0 7px 16px rgba(0,0,0,.08);transform:translateY(-1px)}.click-note{font-size:12px;color:var(--muted);font-weight:850;margin-top:6px}.finance-side{position:sticky;top:78px}.readable-detail{display:grid;gap:12px}.quality-warn{background:#fff8ed;border:1px solid #f3d2a2;border-radius:14px;padding:10px;color:#7a3c00;font-weight:850;line-height:1.6}.daily-list{display:flex;flex-direction:column;gap:4px;align-items:flex-end}@media(max-width:900px){.detail-grid{grid-template-columns:1fr}.finance-side{position:static}.mini-stat-row{grid-template-columns:repeat(2,1fr)}}
 
-/* 20260801 跨場次總覽：桌機全寬＋手機響應式＋老花友善 */
-.panel.business-overview-panel .panel-head-in,
-.panel.business-overview-panel .panel-body{
-  width:calc(100vw - 40px)!important;
-  max-width:none!important;
-  margin-left:auto!important;
-  margin-right:auto!important;
-}
-.panel.business-overview-panel .panel-body{
-  padding-left:0!important;
-  padding-right:0!important;
-  overflow-x:hidden!important;
-}
-.panel.business-overview-panel .panel-sub{font-size:14px!important;line-height:1.5}
-.business-overview-layout{width:100%;max-width:none;min-width:0}
-.business-overview-layout .business-overview-cards{
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:14px!important;
-  align-items:stretch!important;
-}
-.business-overview-layout .report-card{min-width:0;padding:16px}
-.business-overview-layout .report-title{font-size:20px!important;line-height:1.35;margin-bottom:12px}
-.business-overview-layout .mini-stat-row{
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:9px!important;
-}
-.business-overview-layout .mini-stat{
-  min-width:0;
-  min-height:82px;
-  padding:11px 8px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-}
-.business-overview-layout .mini-stat b{
-  display:block;
-  max-width:100%;
-  font-size:clamp(18px,1.35vw,24px)!important;
-  line-height:1.18;
-  white-space:nowrap;
-  letter-spacing:-.02em;
-}
-.business-overview-layout .mini-stat span{
-  display:block;
-  margin-top:6px;
-  font-size:16px!important;
-  line-height:1.35;
-  font-weight:850;
-  white-space:normal;
-}
-.business-overview-layout h3{font-size:20px;line-height:1.4;margin:18px 0 10px}
-.business-overview-layout .table-wrap{
-  width:100%;
-  max-width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior-inline:contain;
-}
-.business-overview-layout .mini-table{min-width:1120px}
-.business-overview-layout .mini-table th,
-.business-overview-layout .mini-table td{
-  font-size:16px!important;
-  line-height:1.5;
-  padding:11px 12px;
-  white-space:nowrap;
-}
-.business-overview-layout .empty,
-.business-overview-layout .loading{font-size:16px!important}
-@media(max-width:1399px){
-  .business-overview-layout .business-overview-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-}
-@media(max-width:760px){
-  .panel.business-overview-panel .panel-head-in,
-  .panel.business-overview-panel .panel-body{width:calc(100vw - 24px)!important}
-  .panel.business-overview-panel .panel-head{padding-left:8px;padding-right:8px}
-  .panel.business-overview-panel .panel-title{font-size:20px!important}
-  .business-overview-layout .business-overview-cards{grid-template-columns:1fr!important;gap:12px!important}
-  .business-overview-layout .report-card{padding:14px}
-  .business-overview-layout .report-title{font-size:19px!important}
-  .business-overview-layout .mini-stat{min-height:76px;padding:10px 7px}
-  .business-overview-layout .mini-stat b{font-size:20px!important}
-  .business-overview-layout .mini-stat span{font-size:16px!important}
-  .business-overview-layout h3{font-size:19px}
-  .business-overview-layout .mini-table th,
-  .business-overview-layout .mini-table td{font-size:16px!important;padding:10px 11px}
-}
-@media(max-width:380px){
-  .panel.business-overview-panel .panel-head-in,
-  .panel.business-overview-panel .panel-body{width:calc(100vw - 16px)!important}
-  .business-overview-layout .mini-stat-row{gap:7px!important}
-  .business-overview-layout .mini-stat b{font-size:18px!important}
-}
-
-
 
 /* 待辦進度條模板｜20260701 */
 .todo-card{grid-template-columns:1fr auto;gap:14px;align-items:start}.todo-headline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.todo-main-title{font-size:21px!important;font-weight:950;line-height:1.35;color:#1f1f1f}.todo-socials{display:inline-flex;gap:6px;flex-wrap:wrap;vertical-align:middle}.todo-social{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:30px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:950;text-decoration:none;color:#333}.todo-social.fb{background:#EAF1FF;color:#2354A5}.todo-social.ig{background:#FFF0F7;color:#A13A78}.todo-social.web{background:#EEF7F4;color:#2d6a4f}.todo-stage-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 8px}.todo-stage-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:7px 13px;border:2px solid #1f1f1f;background:#fff;font-size:17px;font-weight:950;line-height:1.1}.todo-stage-badge.pending{background:var(--yellow)}.todo-stage-badge.unpaid{background:var(--pink)}.todo-stage-badge.paymentPending{background:var(--purple)}.todo-stage-badge.checkin{background:var(--green)}.todo-stage-badge.refund{background:var(--yellow);border-color:#B99745}.todo-stage-badge.dataIssue{background:#fff8ed;border-color:#B99745}.todo-stage-badge.equipment{background:var(--blue)}.todo-next{font-size:16px;font-weight:900;color:#333}.todo-sub{font-size:15.5px;line-height:1.65;color:#333;font-weight:800;margin-top:6px}.todo-flow{display:flex;gap:5px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px 10px;margin-top:10px}.todo-flow-step{border:1px solid var(--line);background:#F6F3EE;color:#777;border-radius:999px;padding:4px 8px;font-size:13px;font-weight:900;line-height:1.2}.todo-flow-step.done{background:#EEF7EA;color:#3C6E2D;border-color:#CFE3C5}.todo-flow-step.active{background:#fff;color:#111;border:2px solid #111;box-shadow:0 4px 12px rgba(0,0,0,.08)}.todo-flow-step.alert{background:#FFF0F0;color:#A43636;border-color:#E6B5B5}.todo-flow-arrow{color:#aaa;font-size:12px}.todo-direct-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;align-content:flex-start}.todo-direct-actions .btn{min-width:86px}.todo-one-layer-note{font-size:13px;color:var(--muted);font-weight:850;margin-top:6px}@media(max-width:860px){.todo-card{grid-template-columns:1fr}.todo-main-title{font-size:18px!important}.todo-stage-badge{font-size:16px}.todo-next,.todo-sub{font-size:15px}.todo-direct-actions{justify-content:flex-start}.todo-flow{overflow-x:auto;flex-wrap:nowrap}.todo-flow-step{white-space:nowrap}}
@@ -1160,51 +1062,6 @@
 
 
 
-
-/* TODO_CARD_DESKTOP_RESPONSIVE_20260801：待辦卡片桌機稍放大、手機不破版、字級老花友善 */
-#page-todos #todoList.cards{
-  grid-template-columns:repeat(auto-fill,minmax(292px,1fr))!important;
-  gap:14px!important;
-  align-items:stretch!important;
-}
-#page-todos .todo-card-lite{
-  padding:14px!important;
-  gap:9px!important;
-  min-height:260px!important;
-}
-#page-todos .todo-card-lite .todo-stage-badge{font-size:16px!important;padding:6px 11px!important}
-#page-todos .todo-next-mini{font-size:14px!important;line-height:1.35!important}
-#page-todos .todo-session-title{font-size:18px!important;line-height:1.4!important}
-#page-todos .todo-brand-name{font-size:16px!important;line-height:1.4!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
-#page-todos .todo-contact-line{font-size:16px!important;line-height:1.45!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
-#page-todos .todo-submit-time{font-size:14px!important;line-height:1.45!important;color:#555!important;font-weight:900!important;background:#F7F4EE;border:1px solid #E8DFD4;border-radius:11px;padding:7px 9px}
-#page-todos .todo-social{font-size:14px!important;min-width:34px!important;height:30px!important;padding:0 9px!important}
-#page-todos .todo-action-row{gap:7px!important;flex-wrap:wrap!important}
-#page-todos .todo-action-row .btn{font-size:14px!important;min-height:40px!important;padding:8px 7px!important;flex:1 1 110px!important}
-#page-todos .card-fixed-block .fixed-row span,
-#page-todos .card-fixed-block .fixed-pay{font-size:14px!important;line-height:1.45!important;padding:8px 9px!important}
-@media(min-width:1500px){#page-todos #todoList.cards{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))!important}}
-@media(max-width:900px){#page-todos #todoList.cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:620px){
-  #page-todos #todoList.cards{grid-template-columns:1fr!important;gap:12px!important}
-  #page-todos .todo-card-lite{min-height:0!important;padding:13px!important}
-  #page-todos .todo-action-row .btn{flex:1 1 calc(50% - 7px)!important;min-width:0!important}
-}
-
-/* REFUND_FLOW_UNIFIED_20260801：退費處理單一入口，部分日期保留其他天 */
-.refund-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
-.refund-mode-card{display:block;border:2px solid var(--line);border-radius:18px;padding:14px;background:#fff;cursor:pointer;min-height:108px}
-.refund-mode-card:has(input:checked){border-color:var(--main2);background:#F0F7F4;box-shadow:0 0 0 3px rgba(98,142,135,.12)}
-.refund-mode-card input{width:20px;height:20px;margin-right:8px;vertical-align:middle}
-.refund-mode-card b{font-size:18px}.refund-mode-card span{display:block;font-size:14px;line-height:1.55;color:#555;margin-top:6px}
-.refund-day-list{display:grid;gap:8px;margin:10px 0}
-.refund-day-option{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:14px;padding:11px;background:#fff;font-size:16px;line-height:1.5}
-.refund-day-option input{width:21px;height:21px;flex:0 0 auto;margin-top:2px}
-.refund-day-option .refund-day-meta{font-size:14px;color:#555;font-weight:800}
-.refund-kept-preview{font-size:16px;font-weight:900;line-height:1.55;background:var(--green);border:1px solid #bfd7b2;border-radius:14px;padding:10px 12px;margin-top:10px}
-.refund-warning{font-size:14px;line-height:1.55;color:#7a2d28;background:#fff5f4;border:1px solid #efc3bf;border-radius:14px;padding:10px 12px;margin-top:10px}
-@media(max-width:680px){.refund-mode-grid{grid-template-columns:1fr}.refund-mode-card{min-height:0}.refund-day-option{font-size:16px}}
-
 /* ── AI 主視覺生成模組 022：全部固定 1:1 ── */
 .ai-visual-box{border:1px solid var(--line);background:linear-gradient(135deg,#fff,#F7FAF4);border-radius:20px;padding:14px;margin-top:10px}
 .ai-visual-toolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin:10px 0}
@@ -1223,48 +1080,6 @@
 .ai-visual-actions .btn{flex:1 1 120px}
 .ai-visual-selected-badge{display:inline-flex;padding:4px 9px;border-radius:999px;background:var(--green);color:#2b5f24;font-size:12px;font-weight:950}
 @media(max-width:700px){.ai-visual-grid{grid-template-columns:1fr}.ai-visual-overlay b{font-size:19px}}
-
-
-/* MEMBER_PROFILE_COMPLETION_CLOSED_LOOP_20260801 */
-#page-members .member-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 190px auto;gap:10px;align-items:center;margin:10px 0 16px}
-#page-members .member-toolbar input,#page-members .member-toolbar select{min-height:46px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:10px 14px;font-size:16px}
-#page-members .member-toolbar .btn{min-height:46px;font-size:16px}
-#memberList.member-list{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))!important;gap:16px!important}
-.member-card-lite{padding:16px!important;min-height:340px!important;grid-template-columns:1fr!important;gap:9px!important}
-.member-card-lite .member-title{font-size:19px!important;line-height:1.4!important}
-.member-card-lite .member-sub,.member-card-lite .member-small-line{font-size:16px!important;line-height:1.45!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
-.member-card-lite .member-meta{gap:6px!important;margin-top:3px!important}
-.member-card-lite .member-meta .tag,.member-card-lite .member-title .tag{font-size:14px!important;padding:5px 9px!important}
-.member-card-lite .member-note{font-size:15px!important;line-height:1.5!important;-webkit-line-clamp:3!important;min-height:70px!important}
-.member-profile-status{border-radius:14px;padding:10px 12px;font-size:16px;font-weight:950;line-height:1.5}
-.member-profile-status.complete{background:var(--green);border:1px solid #b9d2a8;color:#315226}
-.member-profile-status.incomplete{background:var(--yellow);border:1px solid #e0cb83;color:#6b4e00}
-.member-missing-list{font-size:14px;line-height:1.55;color:#5d4a18;margin-top:5px;font-weight:800}
-.member-select-row{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:850;color:#555}
-.member-select-row input{width:20px;height:20px;flex:0 0 auto}
-.member-card-lite .member-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:auto!important}
-.member-card-lite .member-actions .btn{width:100%!important;min-height:42px!important;font-size:14px!important;padding:8px 7px!important}
-.member-reminder-editor textarea{width:100%;min-height:240px;font-size:16px;line-height:1.65;padding:12px;border:1px solid var(--line);border-radius:14px;resize:vertical}
-.member-reminder-editor input{width:100%;min-height:46px;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:14px}
-.member-reminder-editor label{display:block;font-size:16px;font-weight:950;margin:12px 0 6px}
-.member-reminder-editor .help{font-size:14px;line-height:1.55;color:#666;margin-top:7px}
-/* 場次日期欄位：日期縮窄、顯示名與時間加寬；手機自動分行 */
-.date-head-row,.date-row{grid-template-columns:minmax(128px,.8fr) minmax(220px,1.55fr) minmax(180px,1.35fr) minmax(180px,1.35fr) minmax(105px,.7fr) minmax(105px,.7fr) 48px!important;gap:9px!important;align-items:center!important}
-.date-row input,.date-row select{min-height:46px!important;font-size:16px!important;padding:9px 10px!important;min-width:0!important}
-.date-head-row span{font-size:14px!important;font-weight:950!important}
-@media(min-width:1500px){#memberList.member-list{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))!important}}
-@media(max-width:900px){
- #page-members .member-toolbar{grid-template-columns:1fr 1fr}.member-toolbar .member-search{grid-column:1/-1}
- #memberList.member-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- .date-head-row{display:none!important}.date-row{grid-template-columns:1fr 1fr!important;padding:12px!important;border:1px solid var(--line)!important;border-radius:16px!important;margin-bottom:10px!important;background:#fff!important}
- .date-row > *{width:100%!important}.date-row .date-del-btn{grid-column:1/-1!important}
-}
-@media(max-width:620px){
- #page-members .member-toolbar{grid-template-columns:1fr}.member-toolbar .member-search{grid-column:auto}
- #memberList.member-list{grid-template-columns:1fr!important}
- .member-card-lite{min-height:0!important}
- .date-row{grid-template-columns:1fr!important}.date-row .date-del-btn{grid-column:auto!important}
-}
 
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
@@ -1292,13 +1107,14 @@
       <button id="tab-onsite" class="tab" onclick="switchPage('onsite')">現場</button>
       <button id="tab-members" class="tab" onclick="switchPage('members')">會員</button>
       <button id="tab-leads" class="tab" onclick="switchPage('leads')">活動</button>
-      <button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
+      <button id="tab-consignment" class="tab" onclick="switchPage('consignment')">寄賣</button><button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
     </nav>
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoFilterBar"></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
-    <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；資料完整後才能進入正式報名。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="member-toolbar"><input class="member-search" id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"><select id="memberProfileFilter" onchange="renderMembers()"><option value="all">全部會員</option><option value="incomplete">資料未完整</option><option value="complete">資料完整</option></select><button class="btn" onclick="openBatchMemberReminder()">寄信提醒已勾選會員</button></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
+    <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
     <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
+    <section id="page-consignment" class="hidden"><div class="page-title"><div><h2>寄賣檔期／商品／POS</h2><div class="sub">寄賣申請、錄取後商品建檔、條碼入庫、庫存與現場結帳共用同一份正式資料。</div></div></div><div class="cards"><div class="card" style="padding:18px"><h3>寄賣檔期與商品管理</h3><p>建立檔期、設定抽成與進撤場、審核品牌、核准商品及列印條碼。</p><button class="btn" onclick="window.open('consignment.html?admin=1&tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟寄賣管理</button></div><div class="card" style="padding:18px"><h3>條碼入庫與 POS</h3><p>支援手機相機、條碼槍及手動輸入；可入庫、結帳、撤場退回及取消交易回補庫存。</p><button class="btn" onclick="window.open('pos.html?tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟 POS／掃碼</button></div></div></section>
     <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
 </section>
@@ -1381,53 +1197,18 @@ function sortNearestFirst(list, getter){
 
 function unwrap(j){ if(Array.isArray(j)) return j; if(j && Array.isArray(j.data)) return j.data; if(j && j.data !== undefined) return j.data; return j; }
 function activeTenant(){ return AdminState.tenantId || 'tuibile'; }
-let authRecoveryRunning=false;
-function isTokenError(status,msg){
-  const m=String(msg||'');
-  return status===401 || /token.*(無效|過期|不符)|未帶 token|請重新登入/i.test(m);
-}
-function showSignedOutState(message){
-  localStorage.removeItem(SESSION_KEY);
-  AdminState.email=''; AdminState.token=''; AdminState.role=''; AdminState.name='';
-  const admin=$('adminPage'), login=$('loginPage');
-  if(admin) admin.classList.add('hidden');
-  if(login) login.classList.remove('hidden');
-  showLoginError(message||'登入憑證已失效，資料沒有消失。請重新登入後繼續。');
-}
-async function validateSavedSession(s){
-  if(!s||!s.email||!s.token) return null;
-  try{
-    const r=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(s.token)+'&_t='+Date.now(),{cache:'no-store'});
-    const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'}));
-    if(!r.ok||j.error||!j.email) return null;
-    return j;
-  }catch(e){
-    throw new Error('目前無法連線驗證登入狀態，請確認網路後重新整理。');
-  }
-}
-async function recoverExpiredSession(){
-  if(authRecoveryRunning) return;
-  authRecoveryRunning=true;
-  try{
-    const s=readSession();
-    const me=await validateSavedSession(s);
-    if(!me) showSignedOutState('登入憑證已失效，資料沒有消失。請重新登入後繼續。');
-  }catch(e){
-    toast(e.message||'登入狀態驗證失敗',6000);
-  }finally{ authRecoveryRunning=false; }
-}
-async function api(params={}){ const p={...params,tenant:params.tenant||activeTenant(),email:params.email||AdminState.email||'_',token:params.token||AdminState.token||'',_t:Date.now()}; const qs=new URLSearchParams(); for(const k in p){ const v=p[k]; if(v!==undefined&&v!==null) qs.set(k, typeof v==='object'?JSON.stringify(v):String(v)); } const r=await fetch(API+'?'+qs.toString(),{cache:'no-store'}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error){ const msg=j.error||j.message||('連線失敗 '+r.status); if(isTokenError(r.status,msg)) recoverExpiredSession(); throw new Error(msg); } return unwrap(j); }
-async function apiPost(body={}){ const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,tenant:body.tenant||activeTenant(),email:body.email||AdminState.email,token:body.token||AdminState.token})}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error){ const msg=j.error||j.message||('連線失敗 '+r.status); if(isTokenError(r.status,msg)) recoverExpiredSession(); throw new Error(msg); } return unwrap(j); }
+async function api(params={}){ const p={...params,tenant:params.tenant||activeTenant(),email:params.email||AdminState.email||'_',token:params.token||AdminState.token||'',_t:Date.now()}; const qs=new URLSearchParams(); for(const k in p){ const v=p[k]; if(v!==undefined&&v!==null) qs.set(k, typeof v==='object'?JSON.stringify(v):String(v)); } const r=await fetch(API+'?'+qs.toString(),{cache:'no-store'}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error) throw new Error(j.error||j.message||('連線失敗 '+r.status)); return unwrap(j); }
+async function apiPost(body={}){ const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,tenant:body.tenant||activeTenant(),email:body.email||AdminState.email,token:body.token||AdminState.token})}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error) throw new Error(j.error||j.message||('連線失敗 '+r.status)); return unwrap(j); }
 function startGoogleLogin(){ const t=activeTenant(); if(!t){showLoginError('網址缺少 tenant，無法登入');return;} location.href=endpoint()+'/auth/google/start?tenant='+encodeURIComponent(t); }
 async function handleOAuthCallback(){ const token=sessionStorage.getItem('2bl_admin_token_pending'); const loginError=sessionStorage.getItem('2bl_login_error_pending'); sessionStorage.removeItem('2bl_admin_token_pending'); sessionStorage.removeItem('2bl_login_error_pending'); if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內',staff_inactive:'此管理員帳號已停用',id_token_verify_failed:'Google 身份驗證失敗',google_cancelled:'Google 登入已取消',token_exchange_failed:'Google 登入流程錯誤'}[loginError]||('登入失敗：'+loginError));return false;} if(!token) return false; try{ const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json()); if(j.error||!j.email){showLoginError('無權限登入後台');return false;} AdminState.tenantId=j.tenant_id||activeTenant(); sessionStorage.setItem(TENANT_KEY,AdminState.tenantId); saveSession({email:j.email,token,role:j.normalized_role||j.role||'',name:j.display_name||j.name||j.email,tenantId:AdminState.tenantId}); if((j.normalized_role||j.role)==='onsite_staff'){ location.href='onsite.html?admin_token='+encodeURIComponent(token)+'&tenant='+encodeURIComponent(AdminState.tenantId); return true; } enterAdmin(); return true; }catch(e){showLoginError('登入驗證失敗：'+e.message);return false;} }
 function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classList.remove('hidden');}
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function saveAdminPageState(page){ try{ const p=page||AdminState.currentPage||'sessions'; const L=AdminState.currentLayer||'root'; const st={page:p, layer:L, sid:AdminState.currentSessionId||'', filter:AdminState.currentFilter||'', dateKey:(L==='equipment')?(AdminState._navDateKey||''):'', dateLabel:(L==='equipment')?(AdminState._navDateLabel||''):'', updatedAt:Date.now()}; localStorage.setItem(ADMIN_PAGE_STATE_KEY, JSON.stringify(st)); }catch(e){} }
-function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','onsite','members','leads','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
+function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','onsite','members','leads','consignment','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
 async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜20260721全流程修復版 v2'; await refreshSessionsOverview(); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
-function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','leads','settings'].forEach(p=>{ const pg=$('page-'+p), tb=$('tab-'+p); if(pg) pg.classList.toggle('hidden',p!==page); if(tb) tb.classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); if(page==='leads') loadLeads(); }
+function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','leads','consignment','settings'].forEach(p=>{ const pg=$('page-'+p), tb=$('tab-'+p); if(pg) pg.classList.toggle('hidden',p!==page); if(tb) tb.classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); if(page==='leads') loadLeads(); }
 
 // ── 現場報到頁（重用後端 checkin 動作） ──
 function loadOnsite(){
@@ -1523,7 +1304,7 @@ function nz(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
 function getStats(s){ const st=s.stats||{}; return { total: nz(st.registrationTotal ?? s.registrationTotal ?? s.total), pending: nz(st.pendingReview ?? s.pendingReview ?? s.pending), approved: nz(st.approved ?? s.approved), unpaid: nz(st.unpaid ?? s.unpaid), paymentPending: nz(st.paymentPending ?? s.paymentPending ?? s.pendingPayment), paid: nz(st.paid ?? s.paid), free: nz(st.free ?? s.free), checked: nz(st.checkedIn ?? s.checkedIn ?? s.seated), refund: nz(st.refund ?? s.refund ?? s.refundReq) }; }
 function getFinance(s){ const f=s.finance||{}; return {deposit:nz(f.depositTotal ?? s.depositTotal), receivable:nz(f.receivableTotal ?? s.receivableTotal ?? s.invoiceTotal), received:nz(f.receivedTotal ?? s.receivedTotal ?? s.revenue), unreceived:nz(f.unreceivedTotal ?? s.unreceivedTotal)}; }
 function getEquip(s){ const e=s.equipment||{}; return {need:e.neededText ?? e.paidNeededText ?? e.approvedNeededText ?? textFromMap(s.equipNeed), dailyRows:e.dailyRows || s.dailyEquipmentRows || [], dailyText:e.dailyText || s.dailyEquipmentText || '', total:e.totalText || s.totalEquipmentText || e.neededText || textFromMap(s.equipNeed)}; }
-async function refreshSessionsOverview(){ AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; try{ toast('場次載入中…'); const rows=await api({action:'getSessionDashboard'}); AdminState.sessions = Array.isArray(rows) ? rows : []; renderSessions(); renderThemeFilter(); ensureThemeEventsData(); toast('場次已更新'); }catch(e){ const m=String(e.message||''); $('sessionList').innerHTML='<div class="empty">'+(isTokenError(0,m)?'登入憑證已失效，資料沒有消失，請重新登入。':'場次暫時無法載入：'+safe(m))+'</div>'; } }
+async function refreshSessionsOverview(){ AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; try{ toast('場次載入中…'); const rows=await api({action:'getSessionDashboard'}); AdminState.sessions = Array.isArray(rows) ? rows : []; renderSessions(); renderThemeFilter(); ensureThemeEventsData(); toast('場次已更新'); }catch(e){ $('sessionList').innerHTML='<div class="empty">場次載入失敗：'+safe(e.message)+'</div>'; } }
 
 function sessionLimit(s){ return nz(s.limit ?? s.limitCount ?? s.maxStalls ?? s.max_stalls ?? s.capacity ?? 0); }
 function progressText(s){ const st=getStats(s); const lim=sessionLimit(s); return lim>0 ? (st.total + '/' + lim) : String(st.total); }
@@ -1852,9 +1633,9 @@ function renderSessionCard(s){
 
 async function copySessionAction(sid){ if(!await uiConfirm('要複製這個場次嗎？會建立一個「（複製）」的新場次，內容全帶、名額歸零，之後改日期名稱即可。')) return; try{ await apiPost({action:'copySession', id:sid}); toast('已複製，請在列表編輯新場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('複製失敗：'+e.message,6000); } }
 async function setSessionStatus(sid, status){ const label={'報名中':'開放報名','關閉':'關閉報名','封存':'封存（移到過往場次）'}[status]||status; if(!await uiConfirm('確定「'+label+'」？')) return; try{ await apiPost({action:'toggleSessionStatus', sessionId:sid, status}); toast('已'+label); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('失敗：'+e.message,6000); } }
-function openPanel(title,sub,html,opts={}){ const p=$('panel'); p.classList.remove('business-overview-panel'); if(p.classList.contains('show')&&!opts.replace){ AdminState.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,layer:AdminState.currentLayer,sessionId:AdminState.currentSessionId,filter:AdminState.currentFilter}); } $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; $('panelRootBtn').classList.toggle('hidden',AdminState.currentLayer==='root'); p.classList.add('show'); document.body.style.overflow='hidden'; history.pushState({panel:true},''); saveAdminPageState(); }
+function openPanel(title,sub,html,opts={}){ const p=$('panel'); if(p.classList.contains('show')&&!opts.replace){ AdminState.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,layer:AdminState.currentLayer,sessionId:AdminState.currentSessionId,filter:AdminState.currentFilter}); } $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; $('panelRootBtn').classList.toggle('hidden',AdminState.currentLayer==='root'); p.classList.add('show'); document.body.style.overflow='hidden'; history.pushState({panel:true},''); saveAdminPageState(); }
 function panelBack(){ const prev=AdminState.panelStack.pop(); if(prev){ $('panelTitle').textContent=prev.title; $('panelSub').textContent=prev.sub; $('panelBody').innerHTML=prev.html; AdminState.currentLayer=prev.layer; AdminState.currentSessionId=prev.sessionId; AdminState.currentFilter=prev.filter; saveAdminPageState(); return; } closeAllPanels(); }
-function closeAllPanels(){ $('panel').classList.remove('show','business-overview-panel'); $('panelBody').innerHTML=''; document.body.style.overflow=''; AdminState.panelStack=[]; AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; saveAdminPageState(); }
+function closeAllPanels(){ $('panel').classList.remove('show'); $('panelBody').innerHTML=''; document.body.style.overflow=''; AdminState.panelStack=[]; AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; saveAdminPageState(); }
 window.addEventListener('popstate',()=>{ if($('panel').classList.contains('show')) panelBack(); });
 function isRefundLikeText(v){ const s=String(v||''); return s.includes('退費')||s.includes('退款')||s.includes('refund'); }
 function isRefundCompletedRow(r){ const t=String(r.transferStatus||r.transfer_status||r.refundStatus||r.refund_status||''); const p=String(r.paymentStatus||r.payStatus||r.payment_status||''); return ['已退費','已退款','refunded'].includes(t) || ['已退費','已退款','refunded'].includes(p) || !!(r.refundedAt||r.refunded_at); }
@@ -1905,14 +1686,7 @@ function regDateText(r){
 }
 function regDatesText(r){ return regDateText(r); }
 try{ window.regDatesText = regDatesText; }catch(e){}
-function regCreatedText(r){
-  const raw=r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '';
-  if(!raw) return '—';
-  if(r.createdText) return String(raw);
-  const d=new Date(raw);
-  if(Number.isNaN(d.getTime())) return String(raw);
-  return d.toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-}
+function regCreatedText(r){ return r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '—'; }
 function invoiceBrief(r){ const parts=[]; if(r.taxId) parts.push('統編 '+r.taxId); if(r.invoiceTitle) parts.push(r.invoiceTitle); if(r.invoiceEmail) parts.push(r.invoiceEmail); return parts.join('｜') || '—'; }
 
 function adminShortDateRange(v){
@@ -1983,24 +1757,8 @@ function renderRegistrationCards(){
 }
 function statusTags(r){ const review=r.reviewStatus||r.status||'待審核'; const pay=r.paymentStatus||r.payStatus||'未繳費'; const check=r.checkinStatus||r.checkin||'未報到'; return '<span class="tag '+(String(review).includes('錄取')?'ok':String(review).includes('待')?'warn':'info')+'">審核：'+safe(review)+'</span><span class="tag '+(String(pay).includes('已繳')||String(pay).includes('免費')?'ok':String(pay).includes('回報')||String(pay).includes('待確認')?'warn':'bad')+'">付款：'+safe(pay)+'</span><span class="tag '+(String(check).includes('已報到')?'ok':'purple')+'">報到：'+safe(check)+'</span>'; }
 function socialLinks(r){ let out=''; if(r.fb) out+='<a class="tag info" href="'+attr(r.fb)+'" target="_blank">FB</a>'; if(r.ig) out+='<a class="tag bad" href="'+attr(r.ig)+'" target="_blank">IG</a>'; return out || '<span class="tag">未填社群</span>'; }
-function actionButtons(r){
-  const id=r.id||r.regId||r.registrationId||r.registration_id||'';
-  const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||'';
-  if(Array.isArray(r.availableActions)){
-    let out=''; const seen=new Set();
-    for(let a of r.availableActions){
-      if(a==='partialDayRefund') a='refund';
-      if(seen.has(a)) continue; seen.add(a);
-      out += actionButton(id,a,sid);
-    }
-    return out || '<span class="tag">目前無可操作動作</span>';
-  }
-  return '<span class="tag">目前無可操作動作</span>';
-}
-function actionButton(id,a,sid=''){
-  const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'退費處理',partialDayRefund:'退費處理'};
-  return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>';
-}
+function actionButtons(r){ const id=r.id||r.regId||r.registrationId||r.registration_id||''; const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||''; if(Array.isArray(r.availableActions)){ let out=''; for(const a of r.availableActions) out += actionButton(id,a,sid); return out || '<span class="tag">目前無可操作動作</span>'; } return '<span class="tag">目前無可操作動作</span>'; }
+function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'取消／退費'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>'; }
 function renderRegCard(r){
   const brand=r.brand||r.brandName||r.brand_name||'未填品牌';
   const sid=regSessionId(r)||AdminState.currentSessionId;
@@ -2052,26 +1810,6 @@ function uiConfirm(message, opts){
     setTimeout(function(){ try{ok.focus();}catch(e){} },30);
   });
 }
-// ── 退費處理（REFUND_FLOW_UNIFIED_20260801）：同一入口選擇「退部分日期」或「整筆取消／退費」 ──
-let ActiveRefundContext=null;
-function refundDateKey(x){ return (x&&typeof x==='object')?String(x.date||x.day||x.key||x.value||''):String(x||''); }
-function refundModeChanged(){
-  const mode=document.querySelector('input[name="refundMode"]:checked')?.value||'full';
-  const partial=$('refundPartialSection'), full=$('refundFullSection');
-  if(partial) partial.classList.toggle('hidden',mode!=='partial');
-  if(full) full.classList.toggle('hidden',mode!=='full');
-  updatePartialRefundPreview();
-}
-function updatePartialRefundPreview(){
-  const ctx=ActiveRefundContext||{};
-  const chosen=[...document.querySelectorAll('.refundDayCheck:checked')].map(x=>x.value);
-  let sum=0; document.querySelectorAll('.refundDayCheck:checked').forEach(x=>{sum+=Number(x.dataset.fee)||0;});
-  const amount=$('partialRefundAmount'); if(amount && document.activeElement!==amount) amount.value=String(sum);
-  const selected=Array.isArray(ctx.selectedDates)?ctx.selectedDates:[];
-  const kept=selected.filter(d=>!chosen.includes(d));
-  const prev=$('refundKeptPreview');
-  if(prev) prev.textContent=chosen.length ? ('保留出席：'+(kept.join('、')||'無')) : '尚未選擇要退的日期';
-}
 async function openRefundPanel(regId, btn=null, sidOverride=''){
   const sid=sidOverride||AdminState.currentSessionId||'';
   if(!sid){ toast('缺少場次鎖定，無法處理退費',5000); return; }
@@ -2080,101 +1818,58 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
   if(btn){ btn.disabled=true; btn.textContent='讀取退費…'; }
   try{
     const sug=await apiPost({action:'getRefundSuggestion',regId,sessionId:sid});
-    if(sug&&sug.error) throw new Error(sug.error);
     const paid=Number(sug.paidAmount||0)||0;
     const adminFee=Number(sug.refundAdminFee||0)||0;
     const transferFee=Number(sug.refundTransferFee||0)||0;
-    const refund=Math.max(0,paid-adminFee-transferFee);
-    const selectedDates=(Array.isArray(sug.selectedDates)?sug.selectedDates:[]).map(refundDateKey).filter(Boolean);
-    const partialOptions=Array.isArray(sug.partialDateOptions)?sug.partialDateOptions:[];
-    const partialEligible=!!sug.partialEligible && selectedDates.length>1 && Number(sug.bundleCount||1)===1;
-    ActiveRefundContext={regId,sid,selectedDates,partialEligible,bundleCount:Number(sug.bundleCount||1),suggestion:sug};
-    const partialRows=partialOptions.map(o=>{
-      const d=refundDateKey(o.date||o); const fee=Number(o.refundAmount||o.fee||0)||0;
-      return '<label class="refund-day-option"><input type="checkbox" class="refundDayCheck" value="'+attr(d)+'" data-fee="'+attr(fee)+'" onchange="updatePartialRefundPreview()"><span><b>'+safe(d)+'</b><span class="refund-day-meta">此日期攤位費 '+money(fee)+'（不含押金與設備）</span></span></label>';
-    }).join('');
-    const modeHtml=partialEligible
-      ? '<div class="refund-mode-grid">'
-        +'<label class="refund-mode-card"><input type="radio" name="refundMode" value="partial" checked onchange="refundModeChanged()"><b>退部分日期</b><span>勾選要取消與退費的日期；未勾選日期維持錄取、付款與出席資格。</span></label>'
-        +'<label class="refund-mode-card"><input type="radio" name="refundMode" value="full" onchange="refundModeChanged()"><b>整筆取消／退費</b><span>整筆報名結束，釋出名額與已占用位置；組合報名依後端規則連動。</span></label>'
-       +'</div>'
-      : '<div class="notice"><b>本筆僅能整筆取消／退費</b><br><span class="sub">'+safe(Number(sug.bundleCount||1)>1?'此為組合報名，整組依規則處理。':'此筆目前沒有兩個以上可保留的報名日期。')+'</span></div>';
-    const partialSection=partialEligible
-      ? '<div id="refundPartialSection" class="report-card"><div class="report-title">選擇要退的日期</div>'
-        +'<div class="sub" style="font-size:14px;line-height:1.6;margin-bottom:10px">只會移除勾選日期，其他日期仍保留出席。退款記為待退，依原流程於現場出席後連同押金處理；設備與押金不在本次部分日期金額內。</div>'
-        +'<div class="refund-day-list">'+partialRows+'</div>'
-        +'<div id="refundKeptPreview" class="refund-kept-preview">尚未選擇要退的日期</div>'
-        +'<div class="form-field" style="margin-top:10px"><label>部分日期退款金額（可確認調整）</label><input id="partialRefundAmount" type="number" min="0" value="0" style="font-size:19px;font-weight:900"></div>'
-        +'<div class="refund-warning">至少保留一天；若要取消全部日期，請切換為「整筆取消／退費」。</div>'
-        +'<div class="card-actions"><button class="btn danger" onclick="confirmUnifiedRefund()">確認部分日期退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div></div>'
-      : '';
-    const fullHidden=partialEligible?' hidden':'';
-    const fullSection='<div id="refundFullSection" class="report-card'+fullHidden+'"><div class="report-title">整筆取消／退費</div>'
+    const refund=Math.max(0, paid-adminFee-transferFee);
+    const html='<div class="readable-detail">'
+      +'<div class="report-card"><div class="report-title">退費處理</div>'
       +'<div class="kv"><div class="k">已繳金額</div><div id="refundPaidText">'+money(paid)+'</div>'
-      +'<div class="k">處理範圍</div><div>'+(Number(sug.bundleCount||1)>1?'連動場次整組 '+num(sug.bundleCount)+' 場':'單一報名整筆')+'</div>'
-      +'<div class="k">目前出席日期</div><div>'+safe(selectedDates.join('、')||sug.eventDate||'日期異常')+'</div>'
+      +'<div class="k">處理範圍</div><div>'+(Number(sug.bundleCount||1)>1?'連動場次整組 '+num(sug.bundleCount)+' 場':'單一場次')+'</div>'
+      +'<div class="k">活動日期</div><div>'+safe(sug.eventDate||'日期異常')+'</div>'
       +'<div class="k">退費規則</div><div>'+safe(sug.refundRuleLabel||'主辦手動確認')+'</div>'
       +'<div class="k">距活動日</div><div>'+(sug.daysBefore===null||sug.daysBefore===undefined?'無法判斷':safe(sug.daysBefore)+' 天')+'</div></div>'
-      +'<div class="form-grid" style="margin-top:12px">'
+      +'</div>'
+      +'<div class="report-card"><div class="report-title">退費扣項</div>'
+      +'<div class="form-grid">'
       +'<div class="form-field"><label>行政費</label><input id="refundAdminFeeInput" type="number" min="0" value="'+attr(adminFee)+'" oninput="calcRefundAmount()"></div>'
       +'<div class="form-field"><label>轉帳手續費</label><input id="refundTransferFeeInput" type="number" min="0" value="'+attr(transferFee)+'" oninput="calcRefundAmount()"></div>'
-      +'<div class="form-field full"><label>退費備註</label><textarea id="refundNoteInput" placeholder="可填寫匯款帳號、處理備註或內部紀錄"></textarea></div></div>'
-      +'<div class="notice" style="margin-top:12px"><b>整筆實退金額</b><br><input id="refundAmountInput" type="number" min="0" value="'+attr(refund)+'" oninput="onRefundAmountEdit()" style="font-size:19px;font-weight:900;padding:10px;width:100%;max-width:240px;border:1.5px solid #C8645D;border-radius:10px;margin:6px 0"><br><span class="sub" style="font-size:14px">確認後整筆報名會改為已退費，並釋出名額與位置。此處不是部分日期退費。</span></div>'
-      +'<div class="card-actions"><button class="btn danger" onclick="confirmUnifiedRefund()">確認整筆退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div></div>';
-    const html='<div class="readable-detail">'+modeHtml+partialSection+fullSection+'</div>';
-    openPanel('退費處理','請先確認要退部分日期，或整筆取消／退費',html);
-    calcRefundAmount(); refundModeChanged();
-  }catch(e){
-    const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000);
-    if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} }
-  }finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
+      +'<div class="form-field full"><label>退費備註</label><textarea id="refundNoteInput" placeholder="可填寫匯款帳號、處理備註或內部紀錄"></textarea></div>'
+      +'</div>'
+      +'<div class="notice" style="margin-top:12px"><b>實退金額：</b><span id="refundAmountText">'+money(refund)+'</span><br><span class="sub">公式：已繳金額－行政費－轉帳手續費。確認後會改為已退費、釋出名額與攤位。</span></div>'
+      +'<div class="card-actions"><button class="btn danger" onclick="confirmAdminRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認完成退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div>'
+      +'</div></div>';
+    openPanel('取消／退費','下方金額可自行修改；要全退、部分退或不退（填 0）都由你決定',html);
+    calcRefundAmount();
+  }catch(e){ const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
+  finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
 }
 function calcRefundAmount(){
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
-  const paid=Number(paidTxt)||0, admin=Number($('refundAdminFeeInput')?.value||0)||0, transfer=Number($('refundTransferFeeInput')?.value||0)||0;
-  const out=$('refundAmountInput'); if(out) out.value=Math.max(0,paid-admin-transfer);
+  const paid=Number(paidTxt)||0;
+  const admin=Number($('refundAdminFeeInput')?.value||0)||0;
+  const transfer=Number($('refundTransferFeeInput')?.value||0)||0;
+  const refund=Math.max(0, paid-admin-transfer);
+  const out=$('refundAmountText');
+  if(out) out.textContent=money(refund);
 }
-function onRefundAmountEdit(){
+async function confirmAdminRefund(regId,sid){
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
-  const paid=Number(paidTxt)||0; let amt=Number($('refundAmountInput')?.value||0)||0;
-  if(amt<0) amt=0; if(amt>paid) amt=paid;
-  const af=$('refundAdminFeeInput'); if(af) af.value=Math.max(0,paid-amt);
-  const tf=$('refundTransferFeeInput'); if(tf) tf.value=0;
-}
-async function confirmUnifiedRefund(){
-  const ctx=ActiveRefundContext;
-  if(!ctx){toast('退費資料已失效，請重新開啟',5000);return;}
-  const mode=document.querySelector('input[name="refundMode"]:checked')?.value||'full';
-  if(mode==='partial'){
-    const removeDates=[...document.querySelectorAll('.refundDayCheck:checked')].map(x=>x.value);
-    if(!removeDates.length){toast('請勾選要退費的日期');return;}
-    const kept=ctx.selectedDates.filter(d=>!removeDates.includes(d));
-    if(!kept.length){toast('至少要保留一天；全部取消請選整筆退費',6000);return;}
-    const refundAmount=Math.max(0,Number($('partialRefundAmount')?.value||0)||0);
-    if(!await uiConfirm('確認部分日期退費？\n退掉：'+removeDates.join('、')+'\n保留：'+kept.join('、')+'\n待退金額：'+money(refundAmount),{danger:true,okText:'確認部分退費'})) return;
-    try{
-      const res=await apiPost({action:'partialDayRefund',regId:ctx.regId,sessionId:ctx.sid,removeDates,refundAmount});
-      toast('已保留其他日期；部分退款待處理 '+money((res&&res.refundAmount)||refundAmount),6000);
-      closeAllPanels(); ActiveRefundContext=null;
-      await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos();
-      else if(AdminState.currentSessionId) await openSessionList(AdminState.currentSessionId,AdminState.currentFilter||'all','名單');
-    }catch(e){toast('部分日期退費失敗：'+String(e.message||e),8000);}
-    return;
-  }
-  const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
-  const paid=Number(paidTxt)||0, refundAdminFee=Number($('refundAdminFeeInput')?.value||0)||0, refundTransferFee=Number($('refundTransferFeeInput')?.value||0)||0;
-  if(refundAdminFee<0||refundTransferFee<0){toast('扣項不可小於 0',5000);return;}
-  if(refundAdminFee+refundTransferFee>paid){toast('扣項不可大於已繳金額',5000);return;}
-  const refundNote=$('refundNoteInput')?.value||'', refundAmount=Math.max(0,paid-refundAdminFee-refundTransferFee);
-  if(!await uiConfirm('確認整筆取消／退費？\n實退：'+money(refundAmount)+'\n確認後會釋出名額與位置，且無法用部分日期方式保留出席。',{danger:true,okText:'確認整筆退費'})) return;
+  const paid=Number(paidTxt)||0;
+  const refundAdminFee=Number($('refundAdminFeeInput')?.value||0)||0;
+  const refundTransferFee=Number($('refundTransferFeeInput')?.value||0)||0;
+  if(refundAdminFee<0||refundTransferFee<0){ toast('扣項不可小於 0',5000); return; }
+  if(refundAdminFee+refundTransferFee>paid){ toast('扣項不可大於已繳金額',5000); return; }
+  const refundNote=$('refundNoteInput')?.value||'';
+  // 移除原生 confirm()：LINE 內建瀏覽器會吞掉原生彈窗導致按鈕無反應；
+  // 紅色「確認完成退費」按鈕本身即為確認步驟（面板已顯示實退金額與後果）。
   try{
-    const res=await apiPost({action:'confirmRefund',regId:ctx.regId,sessionId:ctx.sid,refundAdminFee,refundTransferFee,refundNote});
-    toast('整筆退費已完成，實退 '+money(res.refundAmount||0),5000);
-    closeAllPanels(); ActiveRefundContext=null; await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos();
-  }catch(e){
-    const msg=String(e.message||e); toast('退費處理失敗：'+msg,8000);
-    if(msg.includes('已完成退費')||msg.includes('已退費')){try{closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(_e){}}
-  }
+    const res=await apiPost({action:'confirmRefund',regId,sessionId:sid,refundAdminFee,refundTransferFee,refundNote});
+    toast('退費已完成，實退 '+money(res.refundAmount||0),5000);
+    closeAllPanels();
+    await refreshSessionsOverview();
+    if(AdminState.currentPage==='todos') await loadTodos();
+  }catch(e){ const msg=String(e.message||e); toast('退費處理失敗：'+msg,8000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ closeAllPanels(); await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
 }
 
 
@@ -2199,7 +1894,6 @@ async function runRegAction(regId,regAction,btn,sidOverride=''){
   if(!sid){ toast('缺少場次鎖定，已阻斷操作',5000); return; }
   if(!regId){toast('找不到報名 ID');return;}
   if(regAction==='refund' || regAction==='markRefunded') { await openRefundPanel(regId,btn,sid); return; }
-  if(regAction==='partialDayRefund') { await openRefundPanel(regId,btn,sid); return; }
   if(regAction==='note') { const note=(prompt('輸入備註內容（會存到這筆報名）：')||'').trim(); if(!note){ return; } try{ await apiPost({action:'saveRegNote',regId,sessionId:sid,note}); toast('備註已儲存'); await refreshCurrentPage(); }catch(e){ toast('備註儲存失敗：'+(e.message||e),5000); } return; }
   if(regAction==='remindPayment') { await sendPaymentReminder(regId,btn,sid); return; }
   const question={reject:'確定標記為不錄取？\n（若原本已錄取，改判後名額會自動釋出，系統會寄出通知信）',waitlist:'確定標記為備取？\n（若原本已錄取，改判後名額會自動釋出）',confirmPayment:'確定確認此筆已繳費？\n系統會記為應收全額、付款方式標「手動確認」，並寄出繳費確認信。',cancelUnpaid:'確定取消未繳費報名？'}[regAction];
@@ -2257,13 +1951,6 @@ function sessionEquip(s){ return safeJson(sessionField(s,'equip','equipJson','eq
 function sessionAddons(s){ return safeJson(sessionField(s,'addons','addonsJson','addons_json'), []); }
 function sessionInvoiceTax(s){ return safeJson(sessionField(s,'invoiceTax','invoiceTaxJson','invoice_tax_json'), {enabled:true,rate:5,stall:true,equip:false,addon:false,extra:false}); }
 const ADMIN_EQUIP_NAMES=['桌','椅','帳篷','電力','衣桿','網架'];
-// 新場次的標準設備預設（EQUIP_DEFAULT_20260727）：帶出名稱與預設單價，
-// 用火／用電單價預設空白；內含每場自填；每項預設不開放，由主辦勾選要提供的項目。
-const DEFAULT_SESSION_EQUIP={
-  '桌':{price:350,open:false}, '椅':{price:20,open:false}, '帳篷':{price:900,open:false},
-  '傘':{price:700,open:false}, '地墊':{price:50,open:false},
-  '用火':{price:'',open:false}, '用電':{price:'',open:false}
-};
 function sessionPortalList(s){
   const raw = sessionField(s,'portals','portalList') || s.portals || '';
   if(Array.isArray(raw)) return raw.map(x=>String(x).trim()).filter(Boolean);
@@ -2327,10 +2014,9 @@ function collectCoorgValues(){
 }
 
 function sessionEquipFormHtml(equip){
-  let entries = Object.entries(equip||{}).filter(([name,def])=>String(name||'').trim() && def && typeof def==='object');
+  const entries = Object.entries(equip||{}).filter(([name,def])=>String(name||'').trim() && def && typeof def==='object');
   if(!entries.length){
-    // 新場次（尚無設備）→ 帶出標準設備預設，主辦可勾選/調整；現有場次不受影響。
-    entries = Object.entries(DEFAULT_SESSION_EQUIP);
+    return '<div class="empty">目前沒有設備設定。</div>';
   }
   const rows=entries.map(([name,x])=>{
     const incl = x.incl ?? x.included ?? x.includedPerStall ?? x.included_per_stall ?? 0;
@@ -2469,7 +2155,7 @@ function normalizeAdminSeatItem(x={},i=0){
   let price=Math.max(0,Number(x.price||x.priceDelta||x.price_delta||0)||0);
   const type=kind==='service'?'service':kind==='closed'?'closed':(price>0?'paid':'auto');
   if(type==='service'||type==='closed') price=0;
-  return {code:String(x.code||x.seatCode||x.seat_code||x.stallNo||x.stall_no||x.number||'').trim(),type,price,note:String(x.note||''),order:Number(x.order||x.mapOrder||x.map_order||i+1)||i+1};
+  return {code:String(x.code||x.seatCode||x.seat_code||x.stallNo||x.stall_no||'').trim(),type,price,note:String(x.note||''),order:Number(x.order||x.mapOrder||x.map_order||i+1)||i+1};
 }
 function adminSeatKind(type){ return type==='service'?'service':type==='closed'?'closed':'fixed'; }
 function seatTypeSelectHtml(type,idx){
@@ -2676,14 +2362,14 @@ async function loadSeatOps(sid){
   try{
     const d=await api({action:'adminSeatBoard',sessionId:sid});
     if(!d || d.error) throw new Error((d&&d.error)||'載入失敗');
-    SeatOps={sid:sid, seats:Array.isArray(d.seats)?d.seats:[], regs:Array.isArray(d.regs)?d.regs:[]};
+    SeatOps={sid:sid, seats:Array.isArray(d.seats)?d.seats:[], regs:Array.isArray(d.regs)?d.regs:[], summary:d.summary||{}};
     renderSeatOps();
   }catch(e){ box.innerHTML='<div class="empty" style="color:#8b1c1c">載入失敗：'+safe(e&&e.message?e.message:String(e))+'</div>'; }
 }
 function seatOpsEmptyCodes(){ return (SeatOps.seats||[]).filter(x=>(x.type==='auto'||x.type==='paid')&&x.active&&!x.occupied).map(x=>x.code); }
 function renderSeatOps(){
   const box=$('seatOpsBox'); if(!box) return;
-  const esc=safe, seats=SeatOps.seats||[], regs=SeatOps.regs||[];
+  const esc=safe, seats=SeatOps.seats||[], regs=SeatOps.regs||[], sum=SeatOps.summary||{};
   const isPaid=v=>/已繳費|已付款/.test(String(v||''));
   const paidSeats=seats.filter(x=>x.type==='paid');
   const paidFree=paidSeats.filter(x=>x.active&&!x.occupied).length;
@@ -2695,8 +2381,10 @@ function renderSeatOps(){
   const noSeat=regs.filter(r=>!r.stallNumber);
   const chip=(t,n,c)=>'<span style="display:inline-block;background:'+c+';border-radius:10px;padding:4px 10px;margin:0 6px 6px 0;font-size:16px;font-weight:900">'+t+'：'+n+'</span>';
   let h='';
-  h+='<div style="margin-bottom:6px">'+chip('加價位',paidSeats.length,'#eef')+chip('加價可選',paidFree,paidFull?'#fdecea':'#e8f5ec')+chip('自動位可選',autoFree,'#eef')+(paidFull?'<span style="color:#c0392b;font-weight:900">（加價位已額滿）</span>':'')+'</div>';
-  h+='<div style="margin:8px 0 14px"><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">🔄 一鍵自動配位（未排位者依繳費順序補位）</button><div class="sub" style="margin-top:4px">只填「沒加價的自動位」；加價自選與已鎖位置不受影響。</div></div>';
+  h+='<div style="margin-bottom:6px">'+chip('已排位',Number(sum.assignedRegs||0),'#e8f5ec')+chip('已繳費待補位',Number(sum.waitingPaid||0),Number(sum.waitingPaid||0)>0?'#fff4dd':'#eef')+chip('剩餘自動位',Number(sum.autoFree!=null?sum.autoFree:autoFree),'#eef')+'</div>';
+  h+='<div style="margin-bottom:6px">'+chip('加價位',paidSeats.length,'#eef')+chip('加價可選',paidFree,paidFull?'#fdecea':'#e8f5ec')+(paidFull?'<span style="color:#c0392b;font-weight:900">（加價位已額滿）</span>':'')+'</div>';
+  if(sum.firstAssignedAt||sum.runCount){ h+='<div class="sub" style="margin:4px 0 8px">第一次正式排位：'+esc(sum.firstAssignedAt||'—')+'｜最近補排：'+esc(sum.lastAssignedAt||sum.firstAssignedAt||'—')+'｜補排執行次數：'+Number(sum.runCount||0)+'</div>'; }
+  h+='<div style="margin:8px 0 14px"><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">➕ 補排已繳費未排位攤商</button><div class="sub" style="margin-top:4px;line-height:1.65"><b>只補新名單，不重排舊名單。</b> 已有攤位號碼、stalls 已綁定、加價自選與已鎖位置全部保留；只從剩餘自動位依正式付款時間補排。</div></div>';
   h+='<div style="font-weight:900;margin:12px 0 6px">換位／指定位置</div>';
   if(!regs.length){ h+='<div class="sub">此場次尚無已錄取報名。</div>'; }
   else{
@@ -2736,13 +2424,14 @@ async function seatOpsAssign(sid, regId){
   }catch(e){ toast('安排失敗：'+(e&&e.message?e.message:e),7000); }
 }
 async function seatOpsBatch(sid){
-  if(!await uiConfirm('一鍵自動配位？\n\n把「還沒排位、且不是加價自選」的已付款攤友，依繳費順序補上自動位。\n已鎖位與加價自選不受影響。')) return;
+  if(!await uiConfirm('補排已繳費未排位攤商？\n\n系統只會處理「正式付款已確認＋已錄取＋尚未有位置」的攤商。\n\n已經排過的位置完全不動；加價自選、已鎖位也不會被重新分配。')) return;
   try{
     const r=await apiPost({action:'runBatchAssign',sessionId:sid});
     if(r&&r.error){ toast(r.error,7000); return; }
-    toast('已配位 '+((r&&r.assigned)||0)+' 筆（可配 '+((r&&r.total)||0)+' 筆）',6000);
+    const msg='第 '+((r&&r.runCount)||1)+' 次補排完成：新排 '+((r&&r.assigned)||0)+' 筆；保留既有 '+((r&&r.preserved)||0)+' 筆；待人工處理 '+((r&&r.waiting)||0)+' 筆。';
+    toast(msg,9000);
     await loadSeatOps(sid);
-  }catch(e){ toast('配位失敗：'+(e&&e.message?e.message:e),7000); }
+  }catch(e){ toast('補排失敗：'+(e&&e.message?e.message:e),7000); }
 }
 
 async function openSessionSettings(sid){
@@ -3120,12 +2809,11 @@ function exportFinanceOverviewCsv(){
 async function openBusinessOverviewPanel(){
   AdminState.currentLayer='businessOverview';
   openPanel('跨場次總覽','全場次、月報、季報、年報統計','<div class="loading">跨場次總覽載入中…</div>');
-  $('panel').classList.add('business-overview-panel');
   try{
     const d=await api({action:'adminBusinessOverview'});
     const sessionRows=Array.isArray(d.bySession)?d.bySession:[];
-    let html='<div class="business-overview-layout"><div class="business-overview-cards">'+overviewMetricCards('本月',d.month)+overviewMetricCards('本季',d.quarter)+overviewMetricCards('今年',d.year)+overviewMetricCards('全場次累積',d.all)+'</div><div style="height:14px"></div><h3>各場次摘要</h3>'+tableFromRows(sessionRows,['name','date','venue','total','pending','approved','paid','revenue','depositTotal','checkinDone'],['場次','日期','地點','報名','待審核','已錄取','已繳費','收入','押金','已報到']);
-    html+='<div style="height:14px"></div><h3>設備總覽</h3>'+tableFromRows(d.equipment||[],['name','count'],['設備','數量'])+'</div>';
+    let html='<div class="cards">'+overviewMetricCards('本月',d.month)+overviewMetricCards('本季',d.quarter)+overviewMetricCards('今年',d.year)+overviewMetricCards('全場次累積',d.all)+'</div><div style="height:14px"></div><h3>各場次摘要</h3>'+tableFromRows(sessionRows,['name','date','venue','total','pending','approved','paid','revenue','depositTotal','checkinDone'],['場次','日期','地點','報名','待審核','已錄取','已繳費','收入','押金','已報到']);
+    html+='<div style="height:14px"></div><h3>設備總覽</h3>'+tableFromRows(d.equipment||[],['name','count'],['設備','數量']);
     $('panelBody').innerHTML=html;
   }catch(e){$('panelBody').innerHTML='<div class="empty">跨場次總覽載入失敗：'+safe(e.message)+'</div>';}
 }
@@ -3289,7 +2977,6 @@ function renderTodoRows(rows){
       +'<div class="todo-action-row">'+todoStageButtons(r,kind)+'</div>'
       +'<div class="todo-brand-row"><span class="todo-brand-name" title="'+attr(who)+'">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
       +'<div class="todo-contact-line" title="'+attr(contactText)+'">'+safe(contactText)+'</div>'
-      +'<div class="todo-submit-time">送出時間：'+safe(regCreatedText(r))+'</div>'
       +adminRegFixedBlockHtml(r)
     +'</article>';
   }
@@ -3311,7 +2998,7 @@ function todoStageButtons(r,kind){
   if(kind==='paymentPending') return btn('confirmPayment','確認付款')+btn('markUnpaid','退回未繳費')+cancelBtn+btn('note','備註','secondary');
   if(kind==='unpaid') return btn('confirmPayment','確認付款')+btn('remindPayment','提醒')+cancelBtn+btn('note','備註','secondary');
   if(kind==='checkin') return btn('checkin','報到')+cancelBtn+btn('note','備註','secondary');
-  if(kind==='refund') return btn('refund','處理退費')+btn('note','備註','secondary');
+  if(kind==='refund') return btn('refund','處理退費')+btn('markRefunded','標記已退費')+btn('note','備註','secondary');
   if(kind==='dataIssue') return '<button class="btn small secondary" onclick="openRegDetail(\''+attr(id)+'\')">完整資料</button>'+cancelBtn+btn('note','備註','secondary');
   if(kind==='equipment') return '<button class="btn small secondary" onclick="openEquipmentPanel(\''+attr(sid)+'\')">設備總表</button>'+btn('note','備註','secondary');
   return actionButtons(r);
@@ -3332,41 +3019,6 @@ function memberIconLinks(m){
   if(web) out+='<a class="member-icon web" href="'+attr(web)+'" target="_blank" rel="noopener" title="開啟官網">官網</a>';
   return out || '<span class="tag">未填社群</span>';
 }
-
-function memberMissingFields(m){
-  const arr=Array.isArray(m.missingFields)?m.missingFields:(Array.isArray(m.missing_fields)?m.missing_fields:[]);
-  return arr.map(x=>String(x||'').trim()).filter(Boolean);
-}
-function memberProfileComplete(m){ return m.profileComplete===true||m.profile_complete===true||memberMissingFields(m).length===0; }
-function selectedIncompleteMemberEmails(){
-  return Array.from(document.querySelectorAll('.member-reminder-check:checked')).map(x=>x.value).filter(Boolean);
-}
-function defaultMemberReminderSubject(){ return '請補齊會員資料，以完成活動報名'; }
-function defaultMemberReminderBody(){ return `您好，{{會員名稱}}：\n\n我們發現您的會員資料尚未完整，目前還缺少：\n{{缺漏欄位清單}}\n\n您仍可瀏覽目前開放的活動與場次；為了順利送出正式報名，請先補齊會員資料。已儲存的內容不需要重填；資料完整後，就可以繼續完成報名。\n\n請點擊下方按鈕回到活動報名頁，選擇欲報名場次後，系統會先帶您完成會員資料：\n{{補資料連結}}\n\n若您已完成更新，請忽略此信。\n\n如有操作問題，請聯繫主辦單位。\n\n{{主辦名稱}}`; }
-function openMemberReminderEditor(emails){
-  const targets=(emails||[]).filter(Boolean);
-  if(!targets.length){ toast('請先勾選至少一位資料未完整的會員'); return; }
-  const html='<div class="notice">本次將寄給 <b>'+targets.length+'</b> 位資料未完整會員。每封信會自動替換會員名稱、實際缺漏欄位、主辦名稱與補資料連結。</div>'
-   +'<div class="member-reminder-editor"><label>信件主旨</label><input id="mpr_subject" value="'+attr(defaultMemberReminderSubject())+'"><label>信件內容</label><textarea id="mpr_body">'+safe(defaultMemberReminderBody())+'</textarea><div class="help">可用變數：{{會員名稱}}、{{缺漏欄位清單}}、{{補資料連結}}、{{主辦名稱}}。補資料連結會由 Worker 依租戶正式網址產生。</div><div class="card-actions"><button class="btn" onclick="sendMemberProfileReminders(this)">確認寄出</button><button class="btn secondary" onclick="closePanel()">取消</button></div></div>';
-  AdminState.memberReminderTargets=targets;
-  openPanel('會員補資料提醒','寄送前可編輯信件內容',html);
-}
-function openSingleMemberReminder(email){ openMemberReminderEditor([email]); }
-function openBatchMemberReminder(){ openMemberReminderEditor(selectedIncompleteMemberEmails()); }
-async function sendMemberProfileReminders(btn){
-  const targets=AdminState.memberReminderTargets||[];
-  if(!targets.length){ toast('沒有可寄送的會員'); return; }
-  if(!await uiConfirm('確定寄出 '+targets.length+' 封會員補資料提醒信？')) return;
-  const old=btn.textContent; btn.disabled=true; btn.textContent='寄送中…';
-  try{
-    const res=await apiPost({action:'sendMemberProfileReminder',targetEmails:targets,subject:String(($('mpr_subject')||{}).value||''),body:String(($('mpr_body')||{}).value||'')});
-    const sent=Number(res.sent||0), failed=Number(res.failed||0), skipped=Number(res.skipped||0);
-    toast('寄送完成：成功 '+sent+'、失敗 '+failed+'、略過 '+skipped,8000);
-    if(failed===0){ closePanel(); await loadMembers(); }
-    else { btn.disabled=false; btn.textContent=old; }
-  }catch(e){ toast('寄送失敗：'+e.message,8000); btn.disabled=false; btn.textContent=old; }
-}
-
 async function loadMembers(){
   const box=$('memberList');
   if(!box) return;
@@ -3439,9 +3091,6 @@ function renderMembers(){
   const kw=($('memberSearch')?.value||'').trim().toLowerCase();
   let list=Array.isArray(AdminState.members)?AdminState.members.slice():[];
   if(kw) list=list.filter(m=>memberSearchText(m).includes(kw));
-  const pf=String(($('memberProfileFilter')||{}).value||'all');
-  if(pf==='complete') list=list.filter(memberProfileComplete);
-  if(pf==='incomplete') list=list.filter(m=>!memberProfileComplete(m));
   list.sort((a,b)=>String(memberBrand(a)).localeCompare(String(memberBrand(b)),'zh-Hant'));
   if(!list.length){
     box.innerHTML='<div class="empty">目前沒有符合條件的會員 / 品牌</div>';
@@ -3458,21 +3107,16 @@ function renderMembers(){
     const intro=m.intro||m.brandIntro||m.description||m.brand_intro||'—';
     const updated=m.updatedAt||m.updated_at||m.joinedAt||m.joined_at||m.createdAt||m.created_at||'—';
     const fp=(m.fastPass===true||m.fast_pass===true||m.fastPass==='true'||m.fast_pass==='true');
-    const missing=memberMissingFields(m);
-    const complete=memberProfileComplete(m);
     html+='<article class="member-card member-card-lite">'
-      +(!complete?'<label class="member-select-row"><input class="member-reminder-check" type="checkbox" value="'+attr(email)+'"> 勾選寄送補資料提醒</label>':'')
-      +'<div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple">備註</span>':'')+'</div>'
+      +'<div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green" style="font-size:11px">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple" style="font-size:11px">備註</span>':'')+'</div>'
       +'<div class="member-icons">'+memberIconLinks(m)+'</div>'
       +'<div class="member-sub">'+safe(name)+'｜'+safe(phone)+'</div>'
       +'<div class="member-small-line" title="'+attr(email)+'">Email：'+safe(email)+'</div>'
       +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span></div>'
-      +(complete?'<div class="member-profile-status complete">✅ 會員資料完整，可直接進入報名</div>':'<div class="member-profile-status incomplete">⚠ 尚缺 '+missing.length+' 項<div class="member-missing-list">'+safe(missing.join('、'))+'</div></div>')
       +'<div class="member-note">'+safe(intro)+'</div>'
       +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
-      +'<button class="btn secondary small" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
-      +(!complete?'<button class="btn small" onclick="openSingleMemberReminder(\''+attr(email)+'\')">寄信提醒補資料</button>':'')
-      +'<button class="btn small '+(fp?'':'secondary')+'" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
+      +'<button class="btn secondary small" style="white-space:nowrap;min-width:0" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
+      +'<button class="btn small '+(fp?'':'secondary')+'" style="white-space:nowrap;min-width:0" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
     +'</article>';
   }
   box.innerHTML=html;
@@ -3671,7 +3315,7 @@ function renderPhotoFramesPanel(totalLeads){
       +'</div></article>';
   }).join('')+'</div>';
 }
-function photoFrameLink(id){ const tenant=encodeURIComponent((AdminState&&AdminState.tenantId)||''); return location.origin.replace(/\/$/,'')+'/?tenant='+tenant+'&pf='+encodeURIComponent(id); }
+function photoFrameLink(id){ return location.origin.replace(/\/$/,'')+'/?pf='+encodeURIComponent(id); }
 function showPhotoFrameLink(id){
   const f=(AdminPhotoFrames||[]).find(x=>String(x.id)===String(id)); if(!f) return;
   const url=photoFrameLink(id);
@@ -4304,29 +3948,7 @@ async function deleteFeatEvent(id, btn){
 async function applyTenantLogo(){ try{ const c=await api({action:'getSiteConfig'}); if(c && c.logoUrl){ document.querySelectorAll('.login-mark, .logo').forEach(img=>{ img.src=c.logoUrl; }); } }catch(e){} }
 document.addEventListener('DOMContentLoaded', applyTenantLogo);
 async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; const val=id=>($(id)?$(id).value:''); try{ await apiPost({action:'saveSiteConfig',heroImg:val('home_hero'),infoText:val('home_info'),logoUrl:val('home_logo'),mascotHome:val('home_mascotHome'),mascotPortal:val('home_mascotPortal'),mascotMember:val('home_mascotMember'),mascotSupport:val('home_mascotSupport'),mascotProfile:val('home_mascotProfile'),mascotModal:val('home_mascotModal')}); toast('首頁顯示已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
-(async function boot(){
-  const oauth=await handleOAuthCallback();
-  if(oauth) return;
-  const s=readSession();
-  if(!(s&&s.email&&s.token)) return;
-  try{
-    const me=await validateSavedSession(s);
-    if(!me){
-      showSignedOutState('登入憑證已失效，資料沒有消失。請重新登入後繼續。');
-      return;
-    }
-    saveSession({
-      email:me.email,
-      token:s.token,
-      role:me.normalized_role||me.role||s.role||'',
-      name:me.display_name||s.name||me.email,
-      tenantId:me.tenant_id||s.tenantId||activeTenant()
-    });
-    await enterAdmin();
-  }catch(e){
-    showLoginError(e.message||'登入狀態驗證失敗，請重新整理後再試。');
-  }
-})();
+(async function boot(){ const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ saveSession(s); enterAdmin(); } })();
 </script>
 </body>
 </html>
