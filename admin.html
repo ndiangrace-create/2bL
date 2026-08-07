@@ -1216,7 +1216,35 @@ function dateTsFromAny(v){
   if(m2){ const y=new Date().getFullYear(); const d=new Date(y,Number(m2[1])-1,Number(m2[2])); return Number.isNaN(d.getTime())?Infinity:d.getTime(); }
   const d=new Date(s); return Number.isNaN(d.getTime())?Infinity:d.getTime();
 }
-function sessionSortTs(s){ return dateTsFromAny(s?.dates||s?.dates_json||s?.date||s?.dateText||s?.start_date||s?.startAt||s?.createdAt||''); }
+function sessionDateTsList(s){
+  const raw=s?.dates||s?.dates_json||s?.date||s?.dateText||s?.start_date||s?.startAt||'';
+  let arr=raw;
+  if(typeof arr==='string'){
+    const t=arr.trim();
+    if(t.startsWith('[')||t.startsWith('{')){ try{arr=JSON.parse(t);}catch(_e){} }
+  }
+  if(!Array.isArray(arr)) arr=[arr];
+  return arr.map(x=>dateTsFromAny(x)).filter(Number.isFinite).sort((a,b)=>a-b);
+}
+function sessionOperationalTs(s){
+  const ds=sessionDateTsList(s);
+  if(!ds.length) return {bucket:2,ts:Infinity};
+  const now=new Date(); now.setHours(0,0,0,0); const base=now.getTime();
+  // 今天／未來：優先取「下一個尚未過去的活動日」；已全數結束：丟到後面，最近結束的先。
+  const next=ds.find(ts=>ts>=base);
+  if(Number.isFinite(next)) return {bucket:0,ts:next};
+  return {bucket:1,ts:ds[ds.length-1]};
+}
+function sortOperationalSessions(list){
+  return (list||[]).slice().sort((a,b)=>{
+    const aa=sessionOperationalTs(a),bb=sessionOperationalTs(b);
+    if(aa.bucket!==bb.bucket) return aa.bucket-bb.bucket;
+    if(aa.bucket===0 && aa.ts!==bb.ts) return aa.ts-bb.ts;       // 今天／未來：近到遠
+    if(aa.bucket===1 && aa.ts!==bb.ts) return bb.ts-aa.ts;       // 已結束：最近結束的先
+    return String(sessionName(a)||'').localeCompare(String(sessionName(b)||''),'zh-Hant');
+  });
+}
+function sessionSortTs(s){ const o=sessionOperationalTs(s); return o.ts; }
 function regSortTs(r){ return dateTsFromAny(r?.selectedDates||r?.selected_dates||r?.selected_dates_json||r?.selectedDatesText||r?.dateText||r?.sessionDate||r?.createdAt||r?.created_at||''); }
 function sortNearestFirst(list, getter){
   const now=new Date(); now.setHours(0,0,0,0); const base=now.getTime();
@@ -1250,8 +1278,8 @@ function loadOnsite(){
   if(sel){
     const cur=sel.value;
     // 現場報到只列可用場次：排除封存／已取消
-    const usable=(AdminState.sessions||[]).filter(s=>{ const st=String(s.status||'').trim(); return st!=='封存' && st!=='已取消'; });
-    const opts=usable.map(s=>{ const id=sessionId(s); return '<option value="'+attr(id)+'">'+safe(sessionName(s))+'</option>'; }).join('');
+    const usable=sortOperationalSessions((AdminState.sessions||[]).filter(s=>{ const st=String(s.status||'').trim(); return st!=='封存' && st!=='已取消'; }));
+    const opts=usable.map(s=>{ const id=sessionId(s); const ds=sessionDateTsList(s); const next=sessionOperationalTs(s); const d=Number.isFinite(next.ts)?new Date(next.ts).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit'}):''; return '<option value="'+attr(id)+'">'+(d?'【'+safe(d)+'】 ':'')+safe(sessionName(s))+'</option>'; }).join('');
     sel.innerHTML=opts||'<option value="">尚無可報到場次</option>';
     if(cur) sel.value=cur;
   }
@@ -1440,7 +1468,7 @@ function renderThemeFilter(){
   }).join('');
 }
 function setThemeFilter(id){ AdminState.themeFilter=String(id||''); renderThemeFilter(); renderSessions(); }
-function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current'; const list=[]; for(const s of AdminState.sessions){ if(mode==='current' && isArchived(s)) continue; if(mode==='archived' && !isArchived(s)) continue; if(kw && ![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw)) continue; const tf=AdminState.themeFilter||''; if(tf && String(s.eventId||s.event_id||'')!==String(tf)) continue; list.push(s); } if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;} const sorted=sortNearestFirst(list, sessionSortTs); let out=''; for(const s of sorted) out += renderSessionCard(s); box.innerHTML=out; }
+function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current'; const list=[]; for(const s of AdminState.sessions){ if(mode==='current' && isArchived(s)) continue; if(mode==='archived' && !isArchived(s)) continue; if(kw && ![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw)) continue; const tf=AdminState.themeFilter||''; if(tf && String(s.eventId||s.event_id||'')!==String(tf)) continue; list.push(s); } if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;} const sorted=sortOperationalSessions(list); let out=''; for(const s of sorted) out += renderSessionCard(s); box.innerHTML=out; }
 // ── 場次短網址 ──────────────────────────────────────────────
 // 一個場次只會有一組短網址，後端以唯一索引保證；重複按只會取回同一組。
 // 點擊數由資料庫原子累加，不在前端計算。
@@ -4229,6 +4257,57 @@ async function removeSessionBundle(sid, btn){
   finally{ btn.disabled=false; btn.textContent=old; }
 }
 function pcDate(x){ try{ return new Date(x).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}); }catch(e){ return x||''; } }
+
+function onsitePublicUrl(){
+  const tenant=encodeURIComponent(activeTenant()||'tuibile');
+  return 'https://2b-love.com/onsite.html?tenant='+tenant;
+}
+async function copyTextSafe(text,okMsg='已複製'){
+  try{
+    if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(String(text||'')); }
+    else{
+      const ta=document.createElement('textarea');ta.value=String(text||'');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    }
+    toast(okMsg);
+    return true;
+  }catch(e){ toast('複製失敗，請手動複製',6000); return false; }
+}
+function onsitePasscodeShareText(s,p){
+  return (s.name||'現場活動')+'｜現場工作人員入口\n'
+    +'通行碼：'+String(p.code||'')+'\n'
+    +'開啟現場頁後輸入 4 位通行碼即可進入\n'
+    +onsitePublicUrl();
+}
+async function shareOnsitePasscode(sid){
+  const s=(AdminState.sessions||[]).find(x=>String(sessionId(x))===String(sid));
+  const p=pcFor(sid);
+  if(!s||!p){toast('請先產生通行碼');return;}
+  const text=onsitePasscodeShareText(s,p);
+  try{
+    if(navigator.share){ await navigator.share({title:(s.name||'現場活動')+'｜現場通行碼',text}); toast('已開啟分享'); }
+    else await copyTextSafe(text,'此裝置不支援系統分享，已複製完整分享內容');
+  }catch(e){
+    if(String(e&&e.name||'')!=='AbortError') await copyTextSafe(text,'分享未完成，已改為複製完整內容');
+  }
+}
+async function copyOnsiteCode(sid){
+  const p=pcFor(sid); if(!p)return toast('請先產生通行碼');
+  await copyTextSafe(String(p.code||''),'已複製 4 位通行碼');
+}
+async function copyOnsiteLink(){ await copyTextSafe(onsitePublicUrl(),'已複製現場入口連結'); }
+function showOnsitePasscodeQr(sid){
+  const s=(AdminState.sessions||[]).find(x=>String(sessionId(x))===String(sid));
+  const p=pcFor(sid); if(!s||!p)return toast('請先產生通行碼');
+  const url=onsitePublicUrl();
+  const qr='https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=10&data='+encodeURIComponent(url);
+  const html='<div style="text-align:center;padding:8px"><h3 style="margin:0 0 8px">'+safe(s.name||'現場活動')+'</h3>'
+    +'<img src="'+attr(qr)+'" alt="現場入口 QR Code" style="width:min(320px,80vw);height:auto;border-radius:14px;border:1px solid #ddd">'
+    +'<div style="font-size:30px;font-weight:950;letter-spacing:6px;margin:12px 0;color:#2a6a10">'+safe(p.code)+'</div>'
+    +'<div class="sub">掃描後開啟現場入口，再輸入上方 4 位通行碼。</div>'
+    +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px"><button class="btn small" onclick="copyOnsiteCode(\''+attr(sid)+'\')">複製通行碼</button><button class="btn secondary small" onclick="copyOnsiteLink()">複製入口連結</button><button class="btn secondary small" onclick="shareOnsitePasscode(\''+attr(sid)+'\')">分享</button></div></div>';
+  openPanel('現場通行碼 QR',safe(s.name||''),html);
+}
+
 async function openOnsitePasscodes(){
   openPanel('現場通行碼','工讀生免登入、輸入 4 位碼直接進該場報到','<div class="loading">載入中…</div>');
   try{
@@ -4241,17 +4320,17 @@ async function openOnsitePasscodes(){
 function pcFor(sid){ return (AdminState.passcodes||[]).find(p=>String(p.sessionId)===String(sid) && p.active); }
 function renderPasscodeCards(){
   const el=$('panelBody'); if(!el) return;
-  const sess=(AdminState.sessions||[]);
+  const sess=sortOperationalSessions((AdminState.sessions||[]).filter(s=>{const st=String(s.status||'').trim();return st!=='封存'&&st!=='已取消';}));
   if(!sess.length){ el.innerHTML='<div class="empty">目前沒有場次</div>'; return; }
   el.innerHTML='<div class="sub" style="margin-bottom:10px">每個場次一組 4 位碼；開放時間＝活動前 2 天 ～ 結束後 8 小時，可隨時換碼或停用。通行碼只能做報到相關動作。</div>'+sess.map(s=>{
     const p=pcFor(s.id);
     const codeBox = p ? '<span style="font-size:26px;font-weight:900;letter-spacing:4px;color:#2a6a10">'+safe(p.code)+'</span>' : '<span style="color:#999">尚未產生</span>';
     const win = (p&&p.openFrom) ? '<div style="font-size:12px;color:#999;margin-top:4px">開放：'+safe(pcDate(p.openFrom))+' ～ '+safe(pcDate(p.openUntil))+'</div>' : '';
     const btns = p
-      ? '<button class="btn small" onclick="genPasscode(\''+attr(s.id)+'\',this)">換碼</button><button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="togglePasscode(\''+attr(p.id)+'\',false,this)">停用</button>'
+      ? '<button class="btn small" onclick="copyOnsiteCode(\''+attr(s.id)+'\')">複製碼</button><button class="btn small" onclick="shareOnsitePasscode(\''+attr(s.id)+'\')">分享</button><button class="btn secondary small" onclick="copyOnsiteLink()">複製連結</button><button class="btn secondary small" onclick="showOnsitePasscodeQr(\''+attr(s.id)+'\')">QR Code</button><button class="btn secondary small" onclick="genPasscode(\''+attr(s.id)+'\',this)">換碼</button><button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="togglePasscode(\''+attr(p.id)+'\',false,this)">停用</button>'
       : '<button class="btn small" onclick="genPasscode(\''+attr(s.id)+'\',this)">產生通行碼</button>';
     return '<div class="card" style="padding:14px;margin-bottom:10px">'
-      +'<b>'+safe(s.name||s.id)+'</b>'
+      +'<b>'+safe(s.name||s.id)+'</b>'+(Number.isFinite(sessionOperationalTs(s).ts)?'<span class="sub" style="margin-left:8px">'+safe(new Date(sessionOperationalTs(s).ts).toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'}))+'</span>':'')
       +'<div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap">'+codeBox+btns+'</div>'+win
       +'<div style="margin-top:10px"><label style="font-size:13px;color:#666">指派給（備註，例：小明）</label><input id="pc_note_'+attr(s.id)+'" value="'+attr(p?p.assignee:'')+'" placeholder="現場人員名字" style="width:100%;margin-top:4px"></div>'
       +'</div>';
