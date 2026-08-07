@@ -1616,6 +1616,7 @@ function renderSessionCard(s){
         +'</div>'
         +'<div class="session3-actions">'
           +'<button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
+          +'<button class="btn secondary small" onclick="openSeatOps(\''+attr(sid)+'\')">🪑 排位結果</button>'
           +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
           +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
           +'<button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
@@ -1719,12 +1720,14 @@ function adminPaymentText(r){
 function adminRegFixedBlockHtml(r){
   const date=adminShortDateRange(regDateText(r));
   const stalls=adminStallText(r);
+  const seatNo=String(r.stallNumber||r.stallNo||r.stall_number||'').trim();
   const equip=regEquipText(r)||'無';
   const addon=regAddonText(r)||'無';
   const pay=adminPaymentText(r);
   return '<div class="card-fixed-block">'
     +'<div class="fixed-row fixed-main"><span>'+safe(date)+'</span><span>'+safe(stalls)+'</span></div>'
-    +'<div class="fixed-row"><span title="'+attr(equip)+'">設備：'+safe(equip)+'</span><span title="'+attr(addon)+'">加購：'+safe(addon)+'</span></div>'
+    +'<div class="fixed-row"><span><b>位置號碼：</b>'+safe(seatNo||'尚未排位')+'</span><span title="'+attr(equip)+'">設備：'+safe(equip)+'</span></div>'
+    +'<div class="fixed-row"><span title="'+attr(addon)+'">加購：'+safe(addon)+'</span><span></span></div>'
     +'<div class="fixed-pay">繳費(含押金)：<b>'+safe(pay)+'</b></div>'
   +'</div>';
 }
