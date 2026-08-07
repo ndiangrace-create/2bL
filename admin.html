@@ -1937,39 +1937,71 @@ async function openSessionDetail(sid){
 
 async function openFinancePanel(sid){
   AdminState.currentSessionId=sid; AdminState.currentLayer='finance'; const s=sessionById(sid);
-  openPanel(sessionName(s)+'｜本場財報','收入、押金、支出、發票與財務明細','<div class="loading">財務載入中…</div>');
+  openPanel(sessionName(s)+'｜本場財報','正式數字由資料庫／Worker統一計算；支出變更後即時重算','<div class="loading">財務載入中…</div>');
   try{
-    const [summaryRows,finance,invoices,paymentGroups,expenseData]=await Promise.all([
-      api({action:'getSessionDashboard',sessionId:sid}).catch(()=>[]),
+    const [report,finance,invoices,paymentGroups]=await Promise.all([
+      api({action:'getSessionFinanceReport',sessionId:sid}),
       api({action:'getFinance',sessionId:sid}).catch(()=>[]),
       api({action:'getInvoiceList',sessionId:sid}).catch(()=>[]),
-      api({action:'getFinancePaymentGroups',sessionId:sid}).catch(()=>[]),
-      api({action:'getSessionExpenses',sessionId:sid}).catch(()=>({items:[],totalExpense:0}))
+      api({action:'getFinancePaymentGroups',sessionId:sid}).catch(()=>[])
     ]);
-    const d=Array.isArray(summaryRows)?summaryRows[0]:summaryRows; const f=getFinance(d||s);
-    const expenseItems=Array.isArray(expenseData?.items)?expenseData.items:[];
-    const expenseTotal=Number(expenseData?.totalExpense)||0;
-    const expenseRows=expenseItems.length?tableFromRows(expenseItems,['type','name','amount','createdAt'],['支出類別','名稱 / 說明','金額','登錄時間']):'<div class="empty">尚未登錄支出</div>';
-    const expenseForm='<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費</option><option value="場地費稅額">場地費稅額</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="1" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">正式支出會直接寫入資料庫 finance_items，不存前端。</div></div>';
-    $('panelBody').innerHTML='<div class="detail-grid"><div>'+financeCardsHtml(f,sid)+'<div style="height:14px"></div>'+expenseForm+'<div style="height:14px"></div><div class="report-card"><div class="report-title">本場支出明細</div><div class="info-line"><span>已登錄支出總額</span><span>'+money(expenseTotal)+'</span></div>'+expenseRows+'</div><div style="height:14px"></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載本場完整 Excel</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>報名金流項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side"><div class="report-card"><div class="report-title">本場目前收款</div><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'received\',\'已收明細\')"><span>已收</span><span>'+money(f.received)+'</span></button><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'deposit\',\'押金明細\')"><span>押金</span><span>'+money(f.deposit)+'</span></button><div class="info-line"><span>已登錄支出</span><span>'+money(expenseTotal)+'</span></div><div class="sub" style="margin-top:8px">本區先如實顯示資料庫收款與支出；正式損益／分潤不在前端自行推算。</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div>';
+    const r=report||{}; const locked=!!r.settlementLocked; const expenseItems=Array.isArray(r.expenseItems)?r.expenseItems:[];
+    const warn=(r.warnings||[]).map(x=>'<div class="quality-warn">⚠ '+safe(x)+'</div>').join('');
+    const stat=(label,val,cls)=>'<div class="mini-stat"'+(cls?' style="background:'+cls+'"':'')+'><b>'+money(val||0)+'</b><span>'+safe(label)+'</span></div>';
+    const financeSummary='<div class="report-card"><div class="report-title">正式損益計算</div><div class="sub" style="margin-bottom:8px">收入只認 payments.status＝已確認；退款只扣已完成退款；支出只讀 finance_items。</div><div class="mini-stat-row">'
+      +stat('已確認收入',r.confirmedRevenue,'#eef7ee')+stat('已完成退款',r.refundAmount,'#fff0ee')+stat('退款後淨收入',r.netRevenue,'#eef5fb')+stat('本場總支出',r.totalExpense,'#fff8ed')
+      +stat('其中場地稅5%',r.venueTax,'#f6f1ff')+stat('可分配盈餘',r.distributableProfit,(Number(r.distributableProfit)||0)>=0?'#eef7ee':'#fff0ee')+stat('公司分潤',r.companyShare,'#eef5fb')+stat('合作方分潤',r.partnerShare,'#fff8ed')+'</div></div>';
+    const expenseRows=expenseTableHtml(sid,expenseItems,locked);
+    const expenseForm=locked?'':'<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費（自動加5%稅額）</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="人事費">人事費</option><option value="行銷費">行銷費</option><option value="物流費">物流費</option><option value="清潔費">清潔費</option><option value="保險費">保險費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">場地費登錄後，Worker 會自動建立 5% 場地稅支出；正式金額不由前端計算。</div></div>';
+    const shareCard='<div class="report-card"><div class="report-title">本場分潤設定</div><div class="sub" style="margin-bottom:8px">目前來源：'+safe(r.shareSource==='session'?'本場設定':r.shareSource==='event'?'系列設定':'系統預設 50/50')+'</div><div class="form-grid"><div class="form-field full"><label>合作方名稱</label><input id="share_partner" value="'+attr(r.partnerName||'')+'" '+(locked?'disabled':'')+' placeholder="例如：合作主辦方"></div><div class="form-field"><label>公司 %</label><input id="share_company" type="number" min="0" max="100" step="0.01" value="'+attr(r.companyRatio??50)+'" '+(locked?'disabled':'')+'></div><div class="form-field"><label>合作方 %</label><input id="share_partner_ratio" type="number" min="0" max="100" step="0.01" value="'+attr(r.partnerRatio??50)+'" '+(locked?'disabled':'')+'></div></div>'+(locked?'':'<div class="card-actions"><button class="btn secondary" onclick="saveFinanceShare(\''+attr(sid)+'\',this)">儲存本場分潤比例</button></div>')+'</div>';
+    const settleCard=locked?'<div class="report-card"><div class="report-title">🔒 已正式結算</div><div class="sub">鎖定時間：'+safe(r.settlement?.lockedAt||'—')+'<br>鎖定人：'+safe(r.settlement?.lockedBy||'—')+'</div><div class="card-actions"><button class="btn danger" onclick="unlockFinanceSettlement(\''+attr(sid)+'\',this)">解除結算鎖定（僅平台超管）</button></div></div>':'<div class="report-card"><div class="report-title">正式結算</div><div class="sub">鎖定後會保存本次收入／退款／支出／分潤快照，並禁止修改支出與比例。</div><div class="card-actions"><button class="btn" onclick="lockFinanceSettlement(\''+attr(sid)+'\',this)">🔒 確認並鎖定本場結算</button></div></div>';
+    $('panelBody').innerHTML='<div class="readable-detail">'+warn+financeSummary+'<div class="detail-grid"><div>'+expenseForm+'<div style="height:14px"></div><div class="report-card"><div class="report-title">本場支出明細</div><div class="info-line"><span>正式支出總額</span><span>'+money(r.totalExpense||0)+'</span></div>'+expenseRows+'</div><div style="height:14px"></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載本場完整 Excel</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>報名金流項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side">'+shareCard+'<div style="height:14px"></div>'+settleCard+'<div style="height:14px"></div><div class="report-card"><div class="report-title">口徑提醒</div><div class="sub">押金不列收入；未確認付款不列收入；退費中尚未完成前不扣回；所有正式損益由 Worker 重新讀取 DB 後回傳。</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div></div>';
   }catch(e){$('panelBody').innerHTML='<div class="empty">財務載入失敗：'+safe(e.message)+'</div>';}
 }
 
-async function saveSessionExpense(sid,btn){
-  const type=($('expense_type')?.value||'').trim();
-  const amount=Number($('expense_amount')?.value||0);
-  const name=($('expense_name')?.value||'').trim();
-  if(!type){ toast('請選擇支出類別'); return; }
-  if(!Number.isFinite(amount)||amount<=0){ toast('請輸入正確支出金額'); return; }
-  const old=btn?.textContent||''; if(btn){btn.disabled=true;btn.textContent='儲存中…';}
-  try{
-    await apiPost({action:'saveFinanceItem',sessionId:sid,type,name:name||type,amount});
-    toast('支出已寫入資料庫');
-    await openFinancePanel(sid);
-  }catch(e){ toast('支出儲存失敗：'+e.message); if(btn){btn.disabled=false;btn.textContent=old;} }
+function expenseTableHtml(sid,items,locked){
+  if(!items.length) return '<div class="empty">尚未登錄支出</div>';
+  let h='<div class="table-wrap"><table class="mini-table"><thead><tr><th>類別</th><th>名稱 / 說明</th><th>金額</th><th>來源</th><th>時間</th><th>操作</th></tr></thead><tbody>';
+  for(const x of items){
+    const auto=!!x.isAuto; h+='<tr><td>'+safe(x.type)+'</td><td>'+safe(x.name||'')+'</td><td>'+money(x.amount||0)+'</td><td>'+(auto?'系統自動':'人工登錄')+'</td><td>'+safe(x.createdAt||'')+'</td><td>';
+    if(!locked&&!auto) h+='<button class="btn secondary small" onclick="editSessionExpense(\''+attr(sid)+'\',\''+attr(x.id)+'\',\''+attr(x.type)+'\',\''+attr(x.name||'')+'\','+Number(x.amount||0)+')">編輯</button> <button class="btn danger small" onclick="deleteSessionExpense(\''+attr(sid)+'\',\''+attr(x.id)+'\')">刪除</button>';
+    else h+=auto?'自動連動':'已鎖定'; h+='</td></tr>';
+  }
+  return h+'</tbody></table></div>';
 }
 
-function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) return '<div class="empty">資料庫目前未提供資料</div>'; let h='<div class="table-wrap"><table class="mini-table"><thead><tr>'; for(const x of heads) h+='<th>'+safe(x)+'</th>'; h+='</tr></thead><tbody>'; for(const r of rows){ h+='<tr>'; for(const k of keys){ const v=['amount','receivable','received','transferDue','deposit'].includes(k)?money(r[k]):safe(r[k]||''); h+='<td>'+v+'</td>'; } h+='</tr>'; } return h+'</tbody></table></div>'; }
+async function saveSessionExpense(sid,btn){
+  const type=($('expense_type')?.value||'').trim(); const amount=Number($('expense_amount')?.value||0); const name=($('expense_name')?.value||'').trim();
+  if(!type){toast('請選擇支出類別');return;} if(!Number.isFinite(amount)||amount<=0){toast('請輸入正確支出金額');return;}
+  const old=btn?.textContent||''; if(btn){btn.disabled=true;btn.textContent='儲存中…';}
+  try{await apiPost({action:'saveFinanceItem',sessionId:sid,type,name:name||type,amount});toast('支出已寫入並重新計算');await openFinancePanel(sid);}
+  catch(e){toast('支出儲存失敗：'+e.message,6000);if(btn){btn.disabled=false;btn.textContent=old;}}
+}
+async function editSessionExpense(sid,id,type,name,amount){
+  const n=prompt('修改名稱 / 說明：',name||type); if(n===null)return; const a=prompt('修改金額：',String(amount||0)); if(a===null)return; const v=Number(a); if(!Number.isFinite(v)||v<=0){toast('金額不正確');return;}
+  try{await apiPost({action:'saveFinanceItem',id,sessionId:sid,type,name:String(n||'').trim()||type,amount:v});toast('支出已更新並重新計算');await openFinancePanel(sid);}catch(e){toast('更新失敗：'+e.message,6000);}
+}
+async function deleteSessionExpense(sid,id){
+  if(!confirm('確定刪除此支出？若為場地費，其5%自動稅額也會一起移除。'))return;
+  try{await apiPost({action:'deleteFinanceItem',id,sessionId:sid});toast('支出已刪除並重新計算');await openFinancePanel(sid);}catch(e){toast('刪除失敗：'+e.message,6000);}
+}
+async function saveFinanceShare(sid,btn){
+  const companyRatio=Number($('share_company')?.value),partnerRatio=Number($('share_partner_ratio')?.value),partnerName=($('share_partner')?.value||'').trim();
+  if(!Number.isFinite(companyRatio)||!Number.isFinite(partnerRatio)||Math.abs(companyRatio+partnerRatio-100)>0.000001){toast('公司＋合作方比例必須等於100%');return;}
+  const old=btn?.textContent||'';if(btn){btn.disabled=true;btn.textContent='儲存中…';}
+  try{await apiPost({action:'saveFinanceShare',sessionId:sid,companyRatio,partnerRatio,partnerName});toast('分潤比例已儲存並重新計算');await openFinancePanel(sid);}catch(e){toast('儲存失敗：'+e.message,6000);if(btn){btn.disabled=false;btn.textContent=old;}}
+}
+async function lockFinanceSettlement(sid,btn){
+  if(!confirm('確認正式結算？鎖定後支出與分潤比例不能再修改，並保存本次結算快照。'))return;
+  const old=btn?.textContent||'';if(btn){btn.disabled=true;btn.textContent='結算中…';}
+  try{await apiPost({action:'lockFinanceSettlement',sessionId:sid});toast('本場已正式結算鎖定');await openFinancePanel(sid);}catch(e){toast('結算失敗：'+e.message,6000);if(btn){btn.disabled=false;btn.textContent=old;}}
+}
+async function unlockFinanceSettlement(sid,btn){
+  if(!confirm('確定解除正式結算鎖定？僅平台超級管理員可執行。'))return;
+  try{await apiPost({action:'unlockFinanceSettlement',sessionId:sid});toast('已解除結算鎖定');await openFinancePanel(sid);}catch(e){toast('解除失敗：'+e.message,6000);}
+}
+
+function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) return '<div class="empty">資料庫目前未提供資料</div>'; let h='<div class="table-wrap"><table class="mini-table"><thead><tr>'; for(const x of heads) h+='<th>'+safe(x)+'</th>'; h+='</tr></thead><tbody>'; for(const r of rows){ h+='<tr>'; for(const k of keys){ const v=['amount','receivable','received','transferDue','deposit','revenue','expense','profit','refund','net','totalExpense','distributableProfit'].includes(k)?money(r[k]):safe(r[k]||''); h+='<td>'+v+'</td>'; } h+='</tr>'; } return h+'</tbody></table></div>'; }
 function sessionField(s, ...keys){ for(const k of keys){ if(s && s[k]!==undefined && s[k]!==null) return s[k]; } return ''; }
 function sessionBool(v, def=false){ if(v===undefined||v===null||v==='') return def; if(typeof v==='boolean') return v; const s=String(v).trim(); return ['1','true','是','開啟','啟用','yes','on'].includes(s); }
 function sessionDates(s){ return safeJson(sessionField(s,'dates','datesJson','dates_json'), []); }
@@ -2770,7 +2802,7 @@ async function downloadSessionExcel(sid){ try{ const data=await api({action:'dow
 
 function overviewMetricCards(title,d){
   d=d||{}; const tip='onclick="toast(\'跨場次數字請看下方各場次摘要；單場數字可點進明細\',4200)"';
-  return '<div class="report-card"><div class="report-title">'+safe(title)+'</div><div class="mini-stat-row"><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.sessions||0)+'</b><span>場次</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.registrations||0)+'</b><span>報名</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.approved||0)+'</b><span>已錄取</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.paid||0)+'</b><span>已繳費</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.grossRevenue||0)+'</b><span>收入</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.depositTotal||0)+'</b><span>押金</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.equipmentTotal||0)+'</b><span>設備件數</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.checkinDone||0)+'</b><span>已報到</span></button></div></div>';
+  return '<div class="report-card"><div class="report-title">'+safe(title)+'</div><div class="mini-stat-row"><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.sessions||0)+'</b><span>場次</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.registrations||0)+'</b><span>報名</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.paid||0)+'</b><span>已繳費</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.grossRevenue||0)+'</b><span>已確認收入</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.refundTotal||0)+'</b><span>已完成退款</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.expenseTotal||0)+'</b><span>正式支出</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.distributableProfit||0)+'</b><span>可分配盈餘</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.depositTotal||0)+'</b><span>押金</span></button></div></div>';
 }
 let FinOvData=null;
 async function openFinanceOverview(){
@@ -2789,18 +2821,18 @@ function renderFinanceOverview(d){
   const cnt=(label,val)=>'<div class="mini-stat"><b>'+num(val||0)+'</b><span>'+safe(label)+'</span></div>';
   let h='<div style="margin-bottom:10px"><button type="button" class="btn secondary" onclick="exportFinanceOverviewCsv()">⬇ 匯出 Excel</button></div>';
   if(d.scoped) h+='<div class="sub" style="margin-bottom:8px">🔒 僅顯示你有管理權限的場次／主題（不含跨主題或未授權場次）。</div>';
-  h+='<div class="report-card"><div class="report-title">金流總計</div><div class="mini-stat-row">'+card('已收',t.received)+card('應收',t.receivable)+card('未收',t.unreceived)+card('押金',t.deposit)+card('已退',t.refund)+card('淨收（已收－已退）',t.net,true)+'</div></div>';
+  h+='<div class="report-card"><div class="report-title">金流總計</div><div class="mini-stat-row">'+card('已確認收入',t.received)+card('應收',t.receivable)+card('未收',t.unreceived)+card('押金',t.deposit)+card('已完成退款',t.refund)+card('退款後淨收入',t.net,true)+card('正式支出',t.expense)+card('可分配盈餘',t.profit,true)+'</div><div class="sub" style="margin-top:8px">正式收入只認 payments.status＝已確認；支出來自 finance_items。</div></div>';
   h+='<div style="height:12px"></div>';
   h+='<div class="report-card"><div class="report-title">名單概況</div><div class="mini-stat-row">'+cnt('場次',c.sessions)+cnt('報名',c.registrations)+cnt('已繳費',c.paid)+cnt('未繳費',c.unpaid)+cnt('待確認',c.paymentPending)+cnt('免費',c.free)+'</div></div>';
   h+='<div style="height:12px"></div>';
   const themes=Array.isArray(d.byTheme)?d.byTheme:[];
   h+='<div class="report-card"><div class="report-title">依主題</div>';
-  h+= themes.length ? themes.map(x=>'<div class="info-line"><span class="metric-click">'+safe(x.eventName)+'（'+num(x.sessions)+' 場）</span><span>已收 '+money(x.received)+'｜淨收 '+money(x.net)+'</span></div><div class="sub" style="padding:0 0 8px">應收 '+money(x.receivable)+'｜未收 '+money(x.unreceived)+'｜押金 '+money(x.deposit)+'｜已退 '+money(x.refund)+'</div>').join('') : '<div class="sub">無資料</div>';
+  h+= themes.length ? themes.map(x=>'<div class="info-line"><span class="metric-click">'+safe(x.eventName)+'（'+num(x.sessions)+' 場）</span><span>淨收入 '+money(x.net)+'｜盈餘 '+money(x.profit)+'</span></div><div class="sub" style="padding:0 0 8px">已確認 '+money(x.received)+'｜退款 '+money(x.refund)+'｜支出 '+money(x.expense)+'｜押金 '+money(x.deposit)+'</div>').join('') : '<div class="sub">無資料</div>';
   h+='</div>';
   h+='<div style="height:12px"></div>';
   const ss=Array.isArray(d.bySession)?d.bySession:[];
   h+='<div class="report-card"><div class="report-title">依場次（點進該場財報）</div>';
-  h+= ss.length ? ss.map(s=>'<button type="button" class="info-line click" onclick="openFinancePanel(\''+attr(s.id)+'\')"><span class="metric-click">'+safe(s.name)+'<span class="sub"> ｜'+safe(s.eventName)+'｜'+safe(s.date||'')+'</span></span><span>已收 '+money(s.received)+'｜淨 '+money(s.net)+'</span></button>').join('') : '<div class="sub">無資料</div>';
+  h+= ss.length ? ss.map(s=>'<button type="button" class="info-line click" onclick="openFinancePanel(\''+attr(s.id)+'\')"><span class="metric-click">'+safe(s.name)+'<span class="sub"> ｜'+safe(s.eventName)+'｜'+safe(s.date||'')+'</span></span><span>淨 '+money(s.net)+'｜支出 '+money(s.expense)+'｜盈餘 '+money(s.profit)+'</span></button>').join('') : '<div class="sub">無資料</div>';
   h+='</div>';
   box.innerHTML=h;
 }
@@ -2814,17 +2846,17 @@ function exportFinanceOverviewCsv(){
   L.push('');
   L.push('總計'); L.push('項目,金額');
   L.push('已收,'+(t.received||0)); L.push('應收,'+(t.receivable||0)); L.push('未收,'+(t.unreceived||0));
-  L.push('押金,'+(t.deposit||0)); L.push('已退,'+(t.refund||0)); L.push('淨收(已收-已退),'+(t.net||0));
+  L.push('押金,'+(t.deposit||0)); L.push('已完成退款,'+(t.refund||0)); L.push('退款後淨收入,'+(t.net||0)); L.push('正式支出,'+(t.expense||0)); L.push('可分配盈餘,'+(t.profit||0));
   L.push('');
   L.push('名單概況'); L.push('項目,數量');
   L.push('場次,'+(c.sessions||0)); L.push('報名,'+(c.registrations||0)); L.push('已繳費,'+(c.paid||0));
   L.push('未繳費,'+(c.unpaid||0)); L.push('待確認,'+(c.paymentPending||0)); L.push('免費,'+(c.free||0));
   L.push('');
-  L.push('依主題'); L.push('主題,場次數,已收,應收,未收,押金,已退,淨收');
-  (d.byTheme||[]).forEach(x=>L.push([q(x.eventName),x.sessions||0,x.received||0,x.receivable||0,x.unreceived||0,x.deposit||0,x.refund||0,x.net||0].join(',')));
+  L.push('依主題'); L.push('主題,場次數,已確認收入,應收,未收,押金,已完成退款,退款後淨收入,正式支出,可分配盈餘');
+  (d.byTheme||[]).forEach(x=>L.push([q(x.eventName),x.sessions||0,x.received||0,x.receivable||0,x.unreceived||0,x.deposit||0,x.refund||0,x.net||0,x.expense||0,x.profit||0].join(',')));
   L.push('');
-  L.push('依場次'); L.push('場次,主題,日期,已收,應收,未收,押金,已退,淨收');
-  (d.bySession||[]).forEach(s=>L.push([q(s.name),q(s.eventName),q(s.date||''),s.received||0,s.receivable||0,s.unreceived||0,s.deposit||0,s.refund||0,s.net||0].join(',')));
+  L.push('依場次'); L.push('場次,主題,日期,已確認收入,應收,未收,押金,已完成退款,退款後淨收入,正式支出,可分配盈餘');
+  (d.bySession||[]).forEach(s=>L.push([q(s.name),q(s.eventName),q(s.date||''),s.received||0,s.receivable||0,s.unreceived||0,s.deposit||0,s.refund||0,s.net||0,s.expense||0,s.profit||0].join(',')));
   const csv='\ufeff'+L.join('\r\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -2839,7 +2871,7 @@ async function openBusinessOverviewPanel(){
   try{
     const d=await api({action:'adminBusinessOverview'});
     const sessionRows=Array.isArray(d.bySession)?d.bySession:[];
-    let html='<div class="cards">'+overviewMetricCards('本月',d.month)+overviewMetricCards('本季',d.quarter)+overviewMetricCards('今年',d.year)+overviewMetricCards('全場次累積',d.all)+'</div><div style="height:14px"></div><h3>各場次摘要</h3>'+tableFromRows(sessionRows,['name','date','venue','total','pending','approved','paid','revenue','depositTotal','checkinDone'],['場次','日期','地點','報名','待審核','已錄取','已繳費','收入','押金','已報到']);
+    let html='<div class="cards">'+overviewMetricCards('本月',d.month)+overviewMetricCards('本季',d.quarter)+overviewMetricCards('今年',d.year)+overviewMetricCards('全場次累積',d.all)+'</div><div style="height:14px"></div><h3>各場次摘要</h3>'+tableFromRows(sessionRows,['name','date','venue','total','pending','approved','paid','revenue','expense','profit','depositTotal','checkinDone'],['場次','日期','地點','報名','待審核','已錄取','已繳費','淨收入','支出','盈餘','押金','已報到']);
     html+='<div style="height:14px"></div><h3>設備總覽</h3>'+tableFromRows(d.equipment||[],['name','count'],['設備','數量']);
     $('panelBody').innerHTML=html;
   }catch(e){$('panelBody').innerHTML='<div class="empty">跨場次總覽載入失敗：'+safe(e.message)+'</div>';}
