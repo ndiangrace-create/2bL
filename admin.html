@@ -1937,12 +1937,36 @@ async function openSessionDetail(sid){
 
 async function openFinancePanel(sid){
   AdminState.currentSessionId=sid; AdminState.currentLayer='finance'; const s=sessionById(sid);
-  openPanel(sessionName(s)+'｜本場財報','收入、押金、發票與財務明細；財務數字可點','<div class="loading">財務載入中…</div>');
+  openPanel(sessionName(s)+'｜本場財報','收入、押金、支出、發票與財務明細','<div class="loading">財務載入中…</div>');
   try{
-    const [summaryRows,finance,invoices,paymentGroups]=await Promise.all([api({action:'getSessionDashboard',sessionId:sid}).catch(()=>[]),api({action:'getFinance',sessionId:sid}).catch(()=>[]),api({action:'getInvoiceList',sessionId:sid}).catch(()=>[]),api({action:'getFinancePaymentGroups',sessionId:sid}).catch(()=>[])]);
+    const [summaryRows,finance,invoices,paymentGroups,expenseData]=await Promise.all([
+      api({action:'getSessionDashboard',sessionId:sid}).catch(()=>[]),
+      api({action:'getFinance',sessionId:sid}).catch(()=>[]),
+      api({action:'getInvoiceList',sessionId:sid}).catch(()=>[]),
+      api({action:'getFinancePaymentGroups',sessionId:sid}).catch(()=>[]),
+      api({action:'getSessionExpenses',sessionId:sid}).catch(()=>({items:[],totalExpense:0}))
+    ]);
     const d=Array.isArray(summaryRows)?summaryRows[0]:summaryRows; const f=getFinance(d||s);
-    $('panelBody').innerHTML='<div class="detail-grid"><div>'+financeCardsHtml(f,sid)+'<div style="height:14px"></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載本場完整 Excel</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>財務項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side"><div class="report-card"><div class="report-title">本場淨收</div><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'received\',\'已收明細\')"><span>已收</span><span>'+money(f.received)+'</span></button><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'deposit\',\'押金明細\')"><span>扣除押金</span><span>'+money(f.deposit)+'</span></button><div style="font-size:30px;font-weight:950;text-align:right">'+money(Math.max(0,(f.received||0)-(f.deposit||0)))+'</div><div class="sub" style="text-align:right">已收－押金</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div>';
+    const expenseItems=Array.isArray(expenseData?.items)?expenseData.items:[];
+    const expenseTotal=Number(expenseData?.totalExpense)||0;
+    const expenseRows=expenseItems.length?tableFromRows(expenseItems,['type','name','amount','createdAt'],['支出類別','名稱 / 說明','金額','登錄時間']):'<div class="empty">尚未登錄支出</div>';
+    const expenseForm='<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費</option><option value="場地費稅額">場地費稅額</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="1" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">正式支出會直接寫入資料庫 finance_items，不存前端。</div></div>';
+    $('panelBody').innerHTML='<div class="detail-grid"><div>'+financeCardsHtml(f,sid)+'<div style="height:14px"></div>'+expenseForm+'<div style="height:14px"></div><div class="report-card"><div class="report-title">本場支出明細</div><div class="info-line"><span>已登錄支出總額</span><span>'+money(expenseTotal)+'</span></div>'+expenseRows+'</div><div style="height:14px"></div><div class="card-actions"><button class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載本場完整 Excel</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>報名金流項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side"><div class="report-card"><div class="report-title">本場目前收款</div><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'received\',\'已收明細\')"><span>已收</span><span>'+money(f.received)+'</span></button><button type="button" class="info-line click" onclick="openSessionList(\''+attr(sid)+'\',\'deposit\',\'押金明細\')"><span>押金</span><span>'+money(f.deposit)+'</span></button><div class="info-line"><span>已登錄支出</span><span>'+money(expenseTotal)+'</span></div><div class="sub" style="margin-top:8px">本區先如實顯示資料庫收款與支出；正式損益／分潤不在前端自行推算。</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div>';
   }catch(e){$('panelBody').innerHTML='<div class="empty">財務載入失敗：'+safe(e.message)+'</div>';}
+}
+
+async function saveSessionExpense(sid,btn){
+  const type=($('expense_type')?.value||'').trim();
+  const amount=Number($('expense_amount')?.value||0);
+  const name=($('expense_name')?.value||'').trim();
+  if(!type){ toast('請選擇支出類別'); return; }
+  if(!Number.isFinite(amount)||amount<=0){ toast('請輸入正確支出金額'); return; }
+  const old=btn?.textContent||''; if(btn){btn.disabled=true;btn.textContent='儲存中…';}
+  try{
+    await apiPost({action:'saveFinanceItem',sessionId:sid,type,name:name||type,amount});
+    toast('支出已寫入資料庫');
+    await openFinancePanel(sid);
+  }catch(e){ toast('支出儲存失敗：'+e.message); if(btn){btn.disabled=false;btn.textContent=old;} }
 }
 
 function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) return '<div class="empty">資料庫目前未提供資料</div>'; let h='<div class="table-wrap"><table class="mini-table"><thead><tr>'; for(const x of heads) h+='<th>'+safe(x)+'</th>'; h+='</tr></thead><tbody>'; for(const r of rows){ h+='<tr>'; for(const k of keys){ const v=['amount','receivable','received','transferDue','deposit'].includes(k)?money(r[k]):safe(r[k]||''); h+='<td>'+v+'</td>'; } h+='</tr>'; } return h+'</tbody></table></div>'; }
