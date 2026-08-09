@@ -41,6 +41,155 @@
   
     .onsite-map-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.onsite-map-card summary{font-weight:900;font-size:17px;cursor:pointer}.onsite-map-card img{display:block;max-width:100%;max-height:60vh;object-fit:contain;margin:10px auto 0;border-radius:12px;background:#f5f5f5}.onsite-map-stage{position:relative;width:max-content;max-width:100%;margin:10px auto 0}.onsite-map-stage img{margin:0;max-height:none;width:auto;max-width:100%;height:auto}.onsite-map-marker{position:absolute;transform:translate(-50%,-50%);min-width:48px;max-width:120px;padding:4px 6px;border:2px solid #fff;border-radius:10px;background:#26312f;color:#fff;box-shadow:0 2px 7px rgba(0,0,0,.25);font-size:11px;font-weight:900;line-height:1.1;text-align:center}.onsite-map-marker.special{background:#e9eef7;color:#26324a;border-color:#fff}.onsite-map-marker small{display:block;font-size:9px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.onsite-equip-total{background:#edf7f1;border:1px solid #c9dfd1;border-radius:10px;padding:8px 10px;margin:8px 0;font-size:14px}.onsite-blank-note{background:#fff8e6;border:1px solid #eed29a;border-radius:10px;padding:9px;margin:8px 0;font-weight:800}.onsite-blank-row{margin:10px 0}.onsite-blank-row-head{font-weight:900;margin-bottom:5px}.onsite-blank-grid{display:grid;gap:5px;overflow-x:auto}.onsite-blank-cell{min-height:58px;border:1px solid var(--line);border-radius:9px;padding:5px;background:#f7faf8;display:flex;flex-direction:column}.onsite-blank-cell.used{background:#26312f;color:#fff}.onsite-blank-cell.special{background:#e9eef7;color:#26324a;border-color:#b9c9e6;font-weight:850}.onsite-blank-cell b{font-size:16px}.onsite-blank-cell span{font-size:12px;line-height:1.25;word-break:break-word}.onsite-blank-cell .equip{font-size:10px;color:#d9f0e6;margin-top:3px}.onsite-blank-cell.special .equip{color:#52606f}.onsite-free-stage{position:relative;width:100%;height:62vh;min-height:430px;background-color:#fbfbf8;background-image:linear-gradient(#ece9e2 1px,transparent 1px),linear-gradient(90deg,#ece9e2 1px,transparent 1px);background-size:22px 22px;border:1px solid var(--line);border-radius:12px;overflow:hidden}.onsite-free-marker{position:absolute;transform:translate(-50%,-50%);width:98px;min-height:62px;padding:5px;border-radius:10px;background:#26312f;color:#fff;border:2px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.2);font-size:11px;line-height:1.15}.onsite-free-marker.special{background:#e9eef7;color:#26324a}.onsite-free-marker.free{background:#eef7ef;color:#26324a;border-color:#c7deca}.onsite-free-marker b{font-size:16px}.onsite-free-marker small{display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.position-banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:5px 0 9px}.position-no{font-size:28px;font-weight:950;line-height:1;background:#26312f;color:#fff;border-radius:12px;padding:8px 12px;letter-spacing:.5px}.position-no.none{background:#e7e1d7;color:#766}.position-label{font-size:14px;color:var(--muted);font-weight:800}
 .onsite-free-stage{min-height:520px;background-color:#fff;background-image:linear-gradient(#edf0ec 1px,transparent 1px),linear-gradient(90deg,#edf0ec 1px,transparent 1px);background-size:24px 24px;overflow:hidden}.onsite-free-object{position:absolute;transform:translate(-50%,-50%);z-index:4;min-width:100px;max-width:220px;padding:8px 12px;border:2px dashed #86a6a0;border-radius:11px;background:#eef7f5;color:#24413d;font-weight:900;text-align:center}.onsite-free-object.blocked{background:#f2ecec;border-color:#b98b8b;color:#713f3f}@media(max-width:680px){.onsite-free-stage{min-height:420px}.onsite-free-object{min-width:78px;font-size:12px;padding:6px 8px}}
+
+/* ===== 2BL 現場手機工作模式：位置圖先看、卡片精簡、避免長頁面 ===== */
+.onsite-map-fit{
+  position:relative;
+  width:100%;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fbfbf8;
+  margin-top:8px;
+}
+.onsite-map-virtual{
+  position:absolute;
+  left:0;top:0;
+  width:1200px;height:700px;
+  transform-origin:top left;
+  background-color:#fbfbf8;
+  background-image:linear-gradient(#ece9e2 1px,transparent 1px),linear-gradient(90deg,#ece9e2 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.onsite-map-virtual .onsite-map-marker{
+  width:112px;min-width:112px;max-width:112px;min-height:72px;
+  padding:6px;border-radius:12px;font-size:11px;line-height:1.15;
+}
+.onsite-map-virtual .onsite-map-marker b{font-size:17px}
+.onsite-map-virtual .onsite-map-marker small{font-size:10px}
+.onsite-map-virtual .onsite-free-object{
+  min-width:110px;max-width:220px;padding:8px 12px;font-size:13px;
+}
+.onsite-map-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.onsite-map-actions button{padding:8px 12px;font-size:14px}
+.onsite-map-marker.focused-seat{
+  outline:7px solid rgba(255,163,26,.92);
+  box-shadow:0 0 0 3px #fff,0 7px 22px rgba(0,0,0,.35);
+  z-index:20;
+}
+.onsite-map-fullscreen{
+  position:fixed;inset:0;z-index:9999;background:#f7f4ee;
+  display:flex;flex-direction:column;
+}
+.onsite-map-fullscreen.hidden{display:none!important}
+.onsite-map-fullscreen-head{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line)
+}
+.onsite-map-fullscreen-body{
+  flex:1;overflow:auto;-webkit-overflow-scrolling:touch;
+  padding:10px;touch-action:pan-x pan-y pinch-zoom;
+}
+.onsite-map-fullscreen-scroll{
+  position:relative;width:1200px;height:700px;
+  background-color:#fbfbf8;
+  background-image:linear-gradient(#ece9e2 1px,transparent 1px),linear-gradient(90deg,#ece9e2 1px,transparent 1px);
+  background-size:24px 24px;
+  border:1px solid var(--line);border-radius:12px;
+  transform-origin:top left;
+}
+.onsite-map-fullscreen-scroll .onsite-map-marker{
+  width:112px;min-width:112px;max-width:112px;min-height:72px;
+  padding:6px;border-radius:12px;font-size:11px;line-height:1.15;
+}
+.onsite-map-fullscreen-scroll .onsite-map-marker b{font-size:17px}
+.onsite-map-fullscreen-scroll .onsite-map-marker small{font-size:10px}
+.onsite-map-fullscreen-scroll .onsite-free-object{min-width:110px;max-width:220px;padding:8px 12px;font-size:13px}
+
+/* 現場攤商卡：桌機維持完整，手機改成工作小卡 */
+.mobile-reg-main{display:none}
+.reg-more{display:none}
+.reg-more.open{display:block}
+
+@media(max-width:680px){
+  body{font-size:16px}
+  header .bar{padding:9px 10px;align-items:center}
+  .brand{font-size:17px}
+  header .sub{font-size:11px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  main{padding:8px 8px 70px}
+  .card{margin:7px 0;padding:10px;border-radius:13px}
+  #regsView>.card{padding:9px;margin-top:4px}
+  #backBtn{font-size:13px;padding:7px 10px}
+  #sessionTitle{font-size:19px;line-height:1.25;margin-top:8px!important}
+  #sessionSub{font-size:12px;margin-top:3px}
+
+  /* 位置圖是第一個工作區，但只佔約一個手機畫面的 35~40% */
+  .onsite-map-card{padding:8px;margin:8px 0}
+  .onsite-map-card summary{font-size:15px}
+  .onsite-equip-total{font-size:12px;padding:6px 8px;margin:6px 0}
+  .onsite-blank-note{font-size:12px;padding:6px 8px}
+  .onsite-map-fit{height:clamp(190px,36vh,300px)}
+  .onsite-map-actions{margin-top:6px}
+  .onsite-map-actions button{flex:1;font-size:13px;padding:7px 8px}
+
+  /* 搜尋區縮短，不再吃掉一大段螢幕 */
+  .toolbar{margin:7px 0;gap:6px}
+  .toolbar input,.toolbar select{font-size:15px;padding:9px 10px;border-radius:11px}
+  .toolbar input{min-width:100%}
+  .toolbar select{width:100%;min-width:0}
+
+  /* 一個手機畫面可看約 2~3 張工作卡 */
+  #regsList{display:grid;grid-template-columns:1fr;gap:7px}
+  .reg{
+    margin:0;padding:10px 10px 9px;border-radius:13px;
+    display:block;min-height:142px;box-shadow:0 2px 8px rgba(0,0,0,.04)
+  }
+  .reg>.reg-left,.reg>.reg-actions{display:none!important}
+  .mobile-reg-main{display:block}
+  .mobile-reg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .mobile-reg-brand{
+    font-size:18px;font-weight:950;line-height:1.22;
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+  }
+  .mobile-reg-seat{
+    flex:0 0 auto;background:#26312f;color:#fff;font-size:15px;font-weight:950;
+    border-radius:9px;padding:5px 8px;line-height:1
+  }
+  .mobile-reg-seat.none{background:#e7e1d7;color:#6d655d}
+  .mobile-reg-equip{
+    margin-top:6px;font-size:14px;font-weight:800;color:#384946;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .mobile-reg-state{margin-top:4px;font-size:12px;color:var(--muted)}
+  .mobile-reg-buttons{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px
+  }
+  .mobile-reg-buttons button{
+    width:100%;min-width:0;padding:8px 4px;font-size:13px;border-radius:10px;white-space:nowrap
+  }
+  .mobile-reg-buttons .checked{background:#5d8f64}
+  .reg-more{
+    margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);
+    font-size:13px
+  }
+  .reg-more .kv{grid-template-columns:64px 1fr;font-size:13px;gap:3px 7px}
+  .reg-more-actions{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px
+  }
+  .reg-more-actions button{width:100%;min-width:0;padding:8px 4px;font-size:12px;border-radius:9px}
+
+  /* 退費現金統計壓成一條，不再佔一整張大卡 */
+  .onsite-refund-summary{
+    grid-column:1/-1;margin:0 0 2px;padding:7px 9px;border-radius:10px;
+    background:#fff8ed;border:1px solid #f5d7a1;font-size:12px;color:#6c552e
+  }
+  .onsite-refund-summary b{font-size:13px}
+}
+
+
+.onsite-day-tabs{display:flex;gap:7px;overflow:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
+.onsite-day-btn{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#273330;border-radius:999px;padding:8px 13px;font-weight:900}
+.onsite-day-btn.active{background:#26312f;color:#fff;border-color:#26312f}
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -76,9 +225,9 @@
       <div class="card">
         <button class="secondary" id="backBtn" onclick="backToSessions()">← 回我的場次</button>
         <h2 id="sessionTitle" style="margin-bottom:0"></h2>
-        <div class="sub" id="sessionSub"></div><div id="onsiteSeatMap"></div>
+        <div class="sub" id="sessionSub"></div><div id="onsiteDayTabs"></div><div id="onsiteSeatMap"></div>
         <div class="toolbar">
-          <input id="kw" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderRegs()" />
+          <input id="kw" placeholder="搜尋品牌、姓名、手機、位置" oninput="renderRegs()" />
           <select id="filter" onchange="renderRegs()">
             <option value="all">全部名單</option>
             <option value="canCheckin">可報到</option>
@@ -92,6 +241,18 @@
     </section>
   </section>
 </main>
+
+<div id="onsiteMapFullscreen" class="onsite-map-fullscreen hidden" aria-hidden="true">
+  <div class="onsite-map-fullscreen-head">
+    <div>
+      <b id="onsiteMapFullscreenTitle">本場位置圖</b>
+      <div class="sub">可左右／上下拖動畫布查看位置</div>
+    </div>
+    <button class="secondary" onclick="closeOnsiteMapFullscreen()">關閉</button>
+  </div>
+  <div id="onsiteMapFullscreenBody" class="onsite-map-fullscreen-body"></div>
+</div>
+
 <script>
 const API='https://2bl-v7.ndiangrace.workers.dev';
 const TENANT='tuibile';
@@ -142,48 +303,217 @@ function handleCallback(){const u=new URL(location.href); const t=u.searchParams
 async function boot(){handleCallback(); token=localStorage.getItem(LS_TOKEN)||''; $('googleLogin').href=API+'/auth/google/unified/start?tenant='+encodeURIComponent(TENANT)+'&next=onsite'; if(!token){$('loginView').classList.remove('hidden');return} try{me=await apiGet('adminMe',{email:'_'}); email=me.email; localStorage.setItem(LS_EMAIL,email); $('who').textContent=`${me.display_name||me.email}｜${me.role||''}`; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); await loadSessions();}catch(e){localStorage.removeItem(LS_TOKEN); $('loginView').classList.remove('hidden'); $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden')}}
 async function loadSessions(){try{sessions=sortOnsiteSessions(await apiGet('onsiteSessions')); renderSessions()}catch(e){showMsg(e.message,'err')}}
 function renderSessions(){const box=$('sessionsList'); if(!sessions.length){box.innerHTML='<div class="card empty" style="grid-column:1/-1">目前沒有可報到的場次<br><span style="font-size:14px;color:var(--muted)">（僅顯示有已繳費名單、且未封存的場次）</span></div>';return} box.innerHTML=sessions.map(s=>{const od=onsiteOperationalDate(s);const d=Number.isFinite(od.ts)?new Date(od.ts).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',weekday:'short'}):'';return `<div class="card session" onclick="openSession('${esc(s.id)}')"><div class="session-title">${d?'<span class="tag warn">'+esc(d)+'</span> ':''}${esc(s.name)}</div><div class="row"><span class="tag">全部 ${s.total||0}</span><span class="tag ok">可報到 ${s.payable||0}</span><span class="tag">已報到 ${s.checkedIn||0}</span><span class="tag warn">攤位 ${s.stallCount||0}</span>${s.refundFlag?`<span class="tag bad">退費 ${s.refundFlag}</span>`:''}</div><div class="grid"><div class="stat"><b>${money(s.paidAmount||0)}</b><span>已繳金額</span></div><div class="stat"><b>${money(s.depositTotal||0)}</b><span>押金</span></div><div class="stat"><b>${s.approved||0}</b><span>已錄取</span></div></div><button>查看名單</button></div>`}).join('')}
-async function openSession(id){const found=sessions.find(s=>String(s.id)===String(id)); currentSession=found||currentSession||{id,name:''}; $('sessionsView').classList.add('hidden'); $('regsView').classList.remove('hidden'); $('sessionTitle').textContent=currentSession.name||''; $('sessionSub').textContent='載入現場報到名單中…'; renderOnsiteSeatMap(); try{regs=await apiGet('onsiteRegs',{sessionId:id}); if(!currentSession.seatMapUrl&&regs[0]&&regs[0].seatMapUrl) currentSession.seatMapUrl=regs[0].seatMapUrl; if(regs[0]&&regs[0].seatBoard) currentSession.seatBoard=regs[0].seatBoard; renderOnsiteSeatMap(); $('sessionSub').textContent=`現場報到名單 ${regs.length} 筆｜未報到 ${regs.filter(r=>r.checkin!=='已報到').length}｜已報到 ${regs.filter(r=>r.checkin==='已報到').length}`; renderRegs()}catch(e){showMsg(e.message,'err')}}
+function onsiteSessionDays(s){
+  let raw=s&&s.dates||[];
+  if(typeof raw==='string'){try{raw=JSON.parse(raw)}catch(_e){raw=[raw]}}
+  if(!Array.isArray(raw))raw=[raw];
+  return raw.map(x=>String((x&&typeof x==='object')?(x.date||x.key||x.value||''):x).slice(0,10)).filter(Boolean);
+}
+function pickOnsiteDefaultDay(s){
+  const ds=onsiteSessionDays(s);if(!ds.length)return '';
+  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  return ds.includes(today)?today:(ds.find(d=>d>=today)||ds[ds.length-1]);
+}
+function renderOnsiteDayTabs(){
+  const box=$('onsiteDayTabs');if(!box)return;
+  const ds=onsiteSessionDays(currentSession);
+  if(ds.length<=1){box.innerHTML='';return;}
+  box.innerHTML='<div class="onsite-day-tabs">'+ds.map(d=>`<button class="onsite-day-btn ${d===currentActivityDate?'active':''}" onclick="switchOnsiteDay('${esc(d)}')">${esc(d.replace(/^\d{4}-/,''))}</button>`).join('')+'</div>';
+}
+async function switchOnsiteDay(day){
+  currentActivityDate=String(day||'').slice(0,10);renderOnsiteDayTabs();await loadOnsiteRegsForDay();
+}
+async function loadOnsiteRegsForDay(){
+  if(!currentSession)return;
+  $('sessionSub').textContent=(currentActivityDate?currentActivityDate+'｜':'')+'載入現場報到名單中…';
+  try{
+    regs=await apiGet('onsiteRegs',{sessionId:currentSession.id,activityDate:currentActivityDate});
+    renderOnsiteSeatMap();
+    $('sessionSub').textContent=(currentActivityDate?currentActivityDate+'｜':'')+`現場名單 ${regs.length} 筆｜未報到 ${regs.filter(r=>r.checkin!=='已報到').length}｜已報到 ${regs.filter(r=>r.checkin==='已報到').length}`;
+    renderRegs();
+  }catch(e){showMsg(e.message,'err')}
+}
+async function openSession(id){
+  const found=sessions.find(s=>String(s.id)===String(id));
+  currentSession=found||currentSession||{id,name:''};
+  currentActivityDate=pickOnsiteDefaultDay(currentSession);
+  $('sessionsView').classList.add('hidden');$('regsView').classList.remove('hidden');
+  $('sessionTitle').textContent=currentSession.name||'';
+  renderOnsiteDayTabs();renderOnsiteSeatMap();
+  await loadOnsiteRegsForDay();
+}
+function onsiteMapMarkerHtml(m){
+  const code=String(m&&m.code||'');
+  const label=String(m&&m.specialLabel||m&&m.brand||'空位');
+  const equip=(!m.specialLabel&&m.brand)?'<small>設備：'+esc(m.equipmentText||'設備自備')+'</small>':'';
+  return '<div class="onsite-map-marker '+(m.specialLabel?'special':'')+'" data-code="'+esc(code)+'" style="left:'+Math.max(1,Math.min(99,Number(m.x)||50))+'%;top:'+Math.max(2,Math.min(98,Number(m.y)||50))+'%"><b>'+esc(code)+'</b><small>'+esc(label)+'</small>'+equip+'</div>';
+}
+function onsiteMapObjectHtml(o){
+  return '<div class="onsite-free-object '+(String(o.kind||'')==='blocked'?'blocked':'')+'" style="left:'+Math.max(1,Math.min(99,Number(o.x)||50))+'%;top:'+Math.max(2,Math.min(98,Number(o.y)||50))+'%">'+esc(o.label||'自訂區塊')+'</div>';
+}
+function onsiteMapCanvasHtml(cfg,includeBg){
+  const markers=Array.isArray(cfg.markers)?cfg.markers:[];
+  const freeObjects=Array.isArray(cfg.freeObjects)?cfg.freeObjects:[];
+  const markerHtml=markers.filter(m=>(Number(m.x)>0||Number(m.y)>0)).map(onsiteMapMarkerHtml).join('');
+  const objectHtml=freeObjects.map(onsiteMapObjectHtml).join('');
+  const bg=includeBg&&currentSession&&currentSession.seatMapUrl
+    ? '<img src="'+esc(currentSession.seatMapUrl)+'" alt="本場位置圖" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none">'
+    : '';
+  return bg+markerHtml+objectHtml;
+}
+function fitOnsiteMap(){
+  const fit=$('onsiteMapFit'),canvas=$('onsiteMapVirtual');
+  if(!fit||!canvas)return;
+  const vw=1200,vh=700;
+  const scale=Math.min(fit.clientWidth/vw,fit.clientHeight/vh);
+  canvas.style.transform='scale('+scale+')';
+  canvas.style.left=Math.max(0,(fit.clientWidth-vw*scale)/2)+'px';
+  canvas.style.top=Math.max(0,(fit.clientHeight-vh*scale)/2)+'px';
+}
+function openOnsiteMapFullscreen(){
+  const cfg=(currentSession&&currentSession.seatBoard)||{};
+  const modal=$('onsiteMapFullscreen'),body=$('onsiteMapFullscreenBody');
+  if(!modal||!body)return;
+  $('onsiteMapFullscreenTitle').textContent=(currentSession&&currentSession.name?currentSession.name+'｜':'')+'本場位置圖';
+  body.innerHTML='<div id="onsiteMapFullscreenCanvas" class="onsite-map-fullscreen-scroll">'+onsiteMapCanvasHtml(cfg,String(cfg.mode||'')!=='blank')+'</div>';
+  modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{
+    const c=$('onsiteMapFullscreenCanvas'),b=$('onsiteMapFullscreenBody');
+    if(!c||!b)return;
+    // 手機預設放大到「字可辨識」而不是把 1200px 全塞進 360px。
+    const scale=Math.max(.62,Math.min(1,b.clientWidth/760));
+    c.style.transform='scale('+scale+')';
+    c.parentElement.style.minWidth=(1200*scale+20)+'px';
+    c.parentElement.style.minHeight=(700*scale+20)+'px';
+  },0);
+}
+function closeOnsiteMapFullscreen(){
+  const modal=$('onsiteMapFullscreen');if(!modal)return;
+  modal.classList.add('hidden');modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+function focusOnsiteSeat(regId){
+  const r=regs.find(x=>String(x.id)===String(regId));if(!r)return;
+  const raw=String(r.stallNumber||'').trim();
+  if(!raw){showMsg('這位攤商目前尚未排位','err');return;}
+  const codes=raw.split(/[、,，\/\s]+/).map(x=>x.trim()).filter(Boolean);
+  const details=document.querySelector('#onsiteSeatMap details');if(details)details.open=true;
+  document.querySelectorAll('#onsiteSeatMap .onsite-map-marker').forEach(el=>{
+    el.classList.toggle('focused-seat',codes.includes(String(el.dataset.code||'')));
+  });
+  const map=$('onsiteSeatMap');if(map)map.scrollIntoView({behavior:'smooth',block:'start'});
+  showMsg('帶位位置：'+codes.join('、'));
+  setTimeout(()=>{
+    document.querySelectorAll('#onsiteSeatMap .onsite-map-marker.focused-seat').forEach(el=>el.classList.remove('focused-seat'));
+  },7000);
+}
 function renderOnsiteSeatMap(){
   const box=$('onsiteSeatMap');if(!box)return;
   const cfg=(currentSession&&currentSession.seatBoard)||{};
-  const equipTotal=String(cfg.equipmentTotalText||'').trim();
-  const equipSummary=equipTotal?'<div class="onsite-equip-total"><b>本場設備總計：</b>'+esc(equipTotal)+'</div>':'';
-  if(String(cfg.mode||'')==='blank'){
-    const markers=Array.isArray(cfg.markers)?cfg.markers:[], freeObjects=Array.isArray(cfg.freeObjects)?cfg.freeObjects:[];
-    if(!markers.length&&!freeObjects.length){box.innerHTML='';return;}
-    let h='<details class="onsite-map-card" open><summary>📍 本場自由排位圖（位置＋設備，可直接帶位）</summary>'+equipSummary;
-    if(cfg.topNote)h+='<div class="onsite-blank-note">'+esc(cfg.topNote).replace(/\n/g,'<br>')+'</div>';
-    h+='<div class="onsite-map-stage onsite-free-stage">';
-    h+=markers.filter(m=>(Number(m.x)>0||Number(m.y)>0)).map(m=>'<div class="onsite-map-marker '+(m.specialLabel?'special':'')+'" style="left:'+Math.max(1,Math.min(99,Number(m.x)||50))+'%;top:'+Math.max(2,Math.min(98,Number(m.y)||50))+'%"><b>'+esc(m.code||'')+'</b><small>'+esc(m.specialLabel||m.brand||'空位')+'</small>'+(!m.specialLabel&&m.brand?'<small>設備：'+esc(m.equipmentText||'設備自備')+'</small>':'')+'</div>').join('');
-    h+=freeObjects.map(o=>'<div class="onsite-free-object '+(String(o.kind||'')==='blocked'?'blocked':'')+'" style="left:'+Math.max(1,Math.min(99,Number(o.x)||50))+'%;top:'+Math.max(2,Math.min(98,Number(o.y)||50))+'%">'+esc(o.label||'自訂區塊')+'</div>').join('');
-    h+='</div></details>';box.innerHTML=h;return;
-  }
-  const url=String((currentSession&&currentSession.seatMapUrl)||'').trim();if(!url){box.innerHTML='';return;}
   const markers=Array.isArray(cfg.markers)?cfg.markers:[];
-  const mh=markers.filter(m=>(Number(m.x)>0||Number(m.y)>0)).map(m=>'<div class="onsite-map-marker '+(m.specialLabel?'special':'')+'" style="left:'+Math.max(0,Math.min(100,Number(m.x)||0))+'%;top:'+Math.max(0,Math.min(100,Number(m.y)||0))+'%"><b>'+esc(m.code||'')+'</b><small>'+esc(m.specialLabel||m.brand||'')+'</small>'+(!m.specialLabel&&m.brand?'<small>設備：'+esc(m.equipmentText||'設備自備')+'</small>':'')+'</div>').join('');
-  box.innerHTML='<details class="onsite-map-card" open><summary>📍 本場位置圖（位置＋設備，可直接帶位）</summary>'+equipSummary+'<div class="onsite-map-stage"><img src="'+esc(url)+'" alt="本場位置圖">'+mh+'</div></details>';
+  const freeObjects=Array.isArray(cfg.freeObjects)?cfg.freeObjects:[];
+  const url=String((currentSession&&currentSession.seatMapUrl)||'').trim();
+  if(!markers.length&&!freeObjects.length&&!url){box.innerHTML='';return;}
+  const equipTotal=String(cfg.equipmentTotalText||'').trim();
+  const equipSummary=equipTotal?'<div class="onsite-equip-total"><b>本場設備：</b>'+esc(equipTotal)+'</div>':'';
+  const note=cfg.topNote?'<div class="onsite-blank-note">'+esc(cfg.topNote).replace(/\n/g,'<br>')+'</div>':'';
+  const includeBg=String(cfg.mode||'')!=='blank';
+  box.innerHTML=
+    '<details class="onsite-map-card" open>'
+      +'<summary>📍 本場位置圖</summary>'
+      +equipSummary+note
+      +'<div id="onsiteMapFit" class="onsite-map-fit"><div id="onsiteMapVirtual" class="onsite-map-virtual">'
+      +onsiteMapCanvasHtml(cfg,includeBg)
+      +'</div></div>'
+      +'<div class="onsite-map-actions"><button type="button" class="secondary" onclick="fitOnsiteMap()">適合螢幕</button><button type="button" onclick="openOnsiteMapFullscreen()">放大位置圖</button></div>'
+    +'</details>';
+  requestAnimationFrame(fitOnsiteMap);
 }
 function backToSessions(){ if(passcode) return; currentSession=null; regs=[]; $('regsView').classList.add('hidden'); $('sessionsView').classList.remove('hidden')}
 function canCheckin(r){return r.status==='已錄取' && (String(r.payStatus).includes('已繳費') || r.payStatus==='免費') && !String(r.transferStatus||'').includes('退費')}
-function filteredRegs(){const kw=$('kw').value.trim().toLowerCase(); const f=$('filter').value; return regs.filter(r=>{const hay=[r.brand,r.name,r.phone,r.email].join(' ').toLowerCase(); if(kw&&!hay.includes(kw))return false; if(f==='canCheckin')return canCheckin(r); if(f==='checked')return r.checkin==='已報到'; if(f==='notChecked')return r.checkin!=='已報到'; if(f==='issue')return String(r.adminNote||'').includes('特殊')||String(r.transferStatus||'').includes('退費'); return true})}
+function filteredRegs(){const kw=$('kw').value.trim().toLowerCase(); const f=$('filter').value; return regs.filter(r=>{const hay=[r.brand,r.name,r.phone,r.email,r.stallNumber,r.equipmentText].join(' ').toLowerCase(); if(kw&&!hay.includes(kw))return false; if(f==='canCheckin')return canCheckin(r); if(f==='checked')return r.checkin==='已報到'; if(f==='notChecked')return r.checkin!=='已報到'; if(f==='issue')return String(r.adminNote||'').includes('特殊')||String(r.transferStatus||'').includes('退費'); return true})}
+function toggleRegMore(id){
+  const el=document.getElementById('regMore_'+String(id).replace(/[^a-zA-Z0-9_-]/g,'_'));
+  if(el)el.classList.toggle('open');
+}
 function renderRegs(){
   const box=$('regsList');
   const list=filteredRegs();
-  // 退費總計（整場待退：未退押金 + 退部分天待退）——資料全部來自資料庫的 regs
-  let totDeposit=0, totPartial=0;
-  regs.forEach(r=>{ const dr=String(r.depositRefunded||''); if(Number(r.deposit||0)>0 && dr!=='已退押金' && dr!=='押金沒收') totDeposit+=Number(r.deposit||0); if(dr!=='已退押金') totPartial+=Number(r.pendingPartialRefund||0); });
-  const totalHtml=`<div class="card" style="background:#fff8ed;border:1.5px solid #f5d7a1"><b style="font-size:18px">💰 退費總計：${money(totDeposit+totPartial)}</b><div class="sub" style="font-size:14px">要帶的現金＝待退押金 ${money(totDeposit)}＋退部分天 ${money(totPartial)}</div></div>`;
+  let totDeposit=0,totPartial=0;
+  regs.forEach(r=>{
+    const dr=String(r.depositRefunded||'');
+    if(Number(r.deposit||0)>0&&dr!=='已退押金'&&dr!=='押金沒收')totDeposit+=Number(r.deposit||0);
+    if(dr!=='已退押金')totPartial+=Number(r.pendingPartialRefund||0);
+  });
+  const total=totDeposit+totPartial;
+  const totalHtml=total>0
+    ? `<div class="onsite-refund-summary"><b>現場待處理退款 ${money(total)}</b>｜押金 ${money(totDeposit)}｜部分退款 ${money(totPartial)}</div>`
+    : '';
   if(!list.length){box.innerHTML=totalHtml+'<div class="card empty">沒有符合條件的名單</div>';return}
+
   box.innerHTML=totalHtml+list.map(r=>{
-    const hasDeposit = Number(r.deposit||0) > 0;
-    const depositDone = r.depositRefunded==='已退押金'||r.depositRefunded==='押金沒收';
-    const depositTag = hasDeposit
+    const hasDeposit=Number(r.deposit||0)>0;
+    const safeId=String(r.id).replace(/[^a-zA-Z0-9_-]/g,'_');
+    const equipment=esc(r.equipmentText||equipText(r.equip)||'設備自備');
+    const seat=esc(r.stallNumber||'未排位');
+    const checkBtn=r.checkin==='已報到'
+      ? `<button class="checked" disabled>已報到</button>`
+      : `<button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)?'':'disabled'}>報到</button>`;
+
+    const depositTag=hasDeposit
       ? `<span class="tag ${r.depositRefunded==='已退押金'?'ok':r.depositRefunded==='押金沒收'?'bad':'warn'}">${esc(r.depositRefunded||'未退押金')}</span>`
       : '';
+
     return `<div class="reg">
+      <!-- 手機工作小卡 -->
+      <div class="mobile-reg-main">
+        <div class="mobile-reg-head">
+          <div class="mobile-reg-brand">${esc(r.brand||'未填品牌')}</div>
+          <div class="mobile-reg-seat ${r.stallNumber?'':'none'}">${seat}</div>
+        </div>
+        <div class="mobile-reg-equip">設備｜${equipment}</div>
+        <div class="mobile-reg-state">${esc(r.checkin||'未報到')}${r.stallCount>1?'｜'+esc(r.stallCount)+' 攤':''}</div>
+        <div class="mobile-reg-buttons">
+          ${checkBtn}
+          <button class="secondary" onclick="focusOnsiteSeat('${esc(r.id)}')">帶位</button>
+          <button class="secondary" onclick="toggleRegMore('${safeId}')">更多</button>
+        </div>
+        <div id="regMore_${safeId}" class="reg-more">
+          <div class="kv">
+            <div class="k">聯絡人</div><div>${esc(r.name)}｜${esc(r.phone)}</div>
+            <div class="k">付款</div><div>${esc(r.payStatus||'—')}｜${money(r.amount||r.totalAmount||0)}</div>
+            <div class="k">位置</div><div><b>${seat}</b></div>
+            <div class="k">攤位數</div><div>${r.stallCount||1}</div>
+            <div class="k">設備</div><div><b>${equipment}</b></div>
+            ${hasDeposit?`<div class="k">押金</div><div>${money(r.deposit||0)}｜${esc(r.depositRefunded||'未退押金')}</div>`:''}
+            ${Number(r.pendingPartialRefund||0)>0?`<div class="k">待退款</div><div>${money(r.pendingPartialRefund)} ${esc(r.pendingPartialNote||'')}</div>`:''}
+            <div class="k">備註</div><div>${esc(r.adminNote||'—')}</div>
+          </div>
+          <div class="row" style="margin-top:7px">
+            <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
+            <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus||'')}</span>
+            ${depositTag}
+            ${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}
+          </div>
+          <div class="reg-more-actions">
+            <button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>
+            <button class="secondary" onclick="mark('${esc(r.id)}','noShow')">未到</button>
+            <button class="warn" onclick="mark('${esc(r.id)}','lateFlag')">遲到</button>
+            <button class="warn" onclick="mark('${esc(r.id)}','ruleFlag')">違規</button>
+            <button class="warn" onclick="mark('${esc(r.id)}','earlyFlag')">早退</button>
+            <button onclick="mark('${esc(r.id)}','teardownDone')" ${r.teardown==='已撤場'?'disabled':''}>已撤場</button>
+            <button class="secondary" onclick="mark('${esc(r.id)}','teardownUndo')" ${r.teardown==='已撤場'?'':'disabled'}>取消撤場</button>
+            ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositRefunded==='已退押金'?'disabled':''}>退押金</button><button class="secondary" onclick="mark('${esc(r.id)}','depositUnrefund')" ${r.depositRefunded==='已退押金'?'':'disabled'}>取消退押金</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')">沒收押金</button>`}`:''}
+            <button class="secondary" onclick="mark('${esc(r.id)}','note')">特殊備註</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 桌機沿用完整資料卡 -->
       <div class="reg-left">
         <h3>${esc(r.brand||'未填品牌')}</h3>
-        <div class="position-banner"><span class="position-label">位置</span><span class="position-no ${r.stallNumber?'':'none'}">${esc(r.stallNumber||'未排位')}</span><span class="position-label">${r.stallCount||1} 攤</span></div>
+        <div class="position-banner"><span class="position-label">位置</span><span class="position-no ${r.stallNumber?'':'none'}">${seat}</span><span class="position-label">${r.stallCount||1} 攤</span></div>
         <div class="row" style="margin-bottom:8px">
           <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
           <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span>
@@ -198,22 +528,22 @@ function renderRegs(){
           <div class="k">已繳金額</div><div>${money(r.amount||r.totalAmount||0)}</div>
           <div class="k">付款時間</div><div>${dt(r.paidAt)}</div>
           <div class="k">攤位數</div><div>${r.stallCount||1}</div>
-          <div class="k">設備</div><div><b>${esc(r.equipmentText||equipText(r.equip)||'設備自備')}</b></div>
+          <div class="k">設備</div><div><b>${equipment}</b></div>
           <div class="k">押金</div><div>${money(r.deposit||0)}　${esc(r.depositRefunded||'未退押金')}</div>
-          ${Number(r.pendingPartialRefund||0)>0?`<div class="k">退部分天（待退）</div><div>${money(r.pendingPartialRefund)}${r.pendingPartialNote?`　<span style="font-size:13px;color:#8a6d3b">${esc(r.pendingPartialNote)}</span>`:''}</div><div class="k">現場共退</div><div><b>${money((String(r.depositRefunded||'')!=='已退押金'&&String(r.depositRefunded||'')!=='押金沒收'?Number(r.deposit||0):0)+(String(r.depositRefunded||'')!=='已退押金'?Number(r.pendingPartialRefund||0):0))}</b></div>`:''}
+          ${Number(r.pendingPartialRefund||0)>0?`<div class="k">退部分天（待退）</div><div>${money(r.pendingPartialRefund)}${r.pendingPartialNote?`　<span style="font-size:13px;color:#8a6d3b">${esc(r.pendingPartialNote)}</span>`:''}</div>`:''}
           <div class="k">備註</div><div>${esc(r.adminNote||'—')}</div>
         </div>
       </div>
       <div class="reg-actions">
         <button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>報到</button>
         <button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>
+        <button class="secondary" onclick="focusOnsiteSeat('${esc(r.id)}')">帶位</button>
         <button class="secondary" onclick="mark('${esc(r.id)}','noShow')">未到</button>
         <button class="warn" onclick="mark('${esc(r.id)}','lateFlag')">遲到</button>
         <button class="warn" onclick="mark('${esc(r.id)}','ruleFlag')">不遵守規定</button>
         <button class="warn" onclick="mark('${esc(r.id)}','earlyFlag')">早退</button>
         <button onclick="mark('${esc(r.id)}','teardownDone')" ${r.teardown==='已撤場'?'disabled':''}>已撤場</button>
         <button class="secondary" onclick="mark('${esc(r.id)}','teardownUndo')" ${r.teardown==='已撤場'?'':'disabled'}>未撤場</button>
-        ${!hasDeposit?`<button disabled title="本場未收押金">退押金（無押金）</button>`:''}
         ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositRefunded==='已退押金'?'disabled':''}>退押金</button><button class="secondary" onclick="mark('${esc(r.id)}','depositUnrefund')" ${r.depositRefunded==='已退押金'?'':'disabled'}>未退</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')">沒收押金</button>`}`:''}
         <button class="secondary" onclick="mark('${esc(r.id)}','note')">特殊備註</button>
       </div>
@@ -228,8 +558,9 @@ async function mark(id,mode){
   };
   if(confirmMsgs[mode] && !confirm(confirmMsgs[mode])) return;
   const note=needNote.includes(mode)?prompt('可輸入現場備註（可留空）',''):'';
-  try{await apiPost('onsiteMark',{regId:id,mode,note,operatorName}); showMsg('已更新'); if(currentSession) await openSession(currentSession.id)}catch(e){showMsg(e.message,'err')}
+  try{await apiPost('onsiteMark',{regId:id,mode,note,operatorName,activityDate:currentActivityDate}); showMsg('已更新'); if(currentSession) await loadOnsiteRegsForDay()}catch(e){showMsg(e.message,'err')}
 }
+window.addEventListener('resize',()=>{if($('onsiteMapFit'))fitOnsiteMap();});
 boot();
 </script>
 </body>
