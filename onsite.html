@@ -303,7 +303,7 @@ async function apiPost(action, body={}){const r=await fetch(API+'?action='+encod
 function logout(){localStorage.removeItem(LS_TOKEN);localStorage.removeItem(LS_EMAIL);localStorage.removeItem(LS_OPERATOR);location.href='onsite.html'}
 function ensureOperatorName(){ let n=(localStorage.getItem(LS_OPERATOR)||'').trim(); while(!n){ n=(prompt('請輸入你的名字（現場報到記錄用，只需填一次）：')||'').trim(); } localStorage.setItem(LS_OPERATOR,n); operatorName=n; return n; }
 function changeOperatorName(){ const n=(prompt('換人操作？輸入新的名字：',operatorName||'')||'').trim(); if(!n) return; localStorage.setItem(LS_OPERATOR,n); operatorName=n; if(passcode){ $('who').textContent='現場碼｜操作人：'+n+(currentSession&&currentSession.name?'｜'+currentSession.name:''); } showMsg('已切換操作人：'+n); }
-async function enterByPasscode(){ const code=($('pcInput').value||'').trim(); if(!/^\d{4}$/.test(code)){ $('loginErr').textContent='請輸入 4 位數字通行碼'; $('loginErr').classList.remove('hidden'); return; } try{ const r=await apiGet('onsitePasscodeVerify',{code}); passcode=code; email='_'; const who=ensureOperatorName(); $('who').innerHTML=esc('現場碼｜操作人：'+who+(r.sessionName?'｜'+r.sessionName:''))+' <a href="javascript:void(0)" onclick="changeOperatorName()" style="text-decoration:underline">換人</a>'; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('sessionsView').classList.add('hidden'); const bb=$('backBtn'); if(bb) bb.style.display='none'; currentSession={id:r.sessionId,name:r.sessionName,seatMapUrl:r.seatMapUrl||'',seatBoard:r.seatBoard||{}}; await openSession(r.sessionId); }catch(e){ $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden'); } }
+async function enterByPasscode(){ const code=($('pcInput').value||'').trim(); if(!/^\d{4}$/.test(code)){ $('loginErr').textContent='請輸入 4 位數字通行碼'; $('loginErr').classList.remove('hidden'); return; } try{ const r=await apiGet('onsitePasscodeVerify',{code}); passcode=code; email='_'; const who=ensureOperatorName(); $('who').innerHTML=esc('現場碼｜操作人：'+who+(r.sessionName?'｜'+r.sessionName:''))+' <a href="javascript:void(0)" onclick="changeOperatorName()" style="text-decoration:underline">換人</a>'; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('sessionsView').classList.add('hidden'); const bb=$('backBtn'); if(bb) bb.style.display='none'; currentSession={id:r.sessionId,name:r.sessionName,dates:r.dates||[],seatMapUrl:r.seatMapUrl||'',seatBoard:r.seatBoard||{}}; await openSession(r.sessionId); }catch(e){ $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden'); } }
 function handleCallback(){const u=new URL(location.href); const t=u.searchParams.get('admin_token'); const tenant=u.searchParams.get('tenant'); const err=u.searchParams.get('login_error'); if(err){$('loginErr').textContent='登入失敗：'+err; $('loginErr').classList.remove('hidden')} if(t){localStorage.setItem(LS_TOKEN,t); if(tenant)localStorage.setItem('2bl_onsite_tenant',tenant); history.replaceState({},'',location.pathname);}}
 async function boot(){handleCallback(); token=localStorage.getItem(LS_TOKEN)||''; $('googleLogin').href=API+'/auth/google/unified/start?tenant='+encodeURIComponent(TENANT)+'&next=onsite'; if(!token){$('loginView').classList.remove('hidden');return} try{me=await apiGet('adminMe',{email:'_'}); email=me.email; localStorage.setItem(LS_EMAIL,email); $('who').textContent=`${me.display_name||me.email}｜${me.role||''}`; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); await loadSessions();}catch(e){localStorage.removeItem(LS_TOKEN); $('loginView').classList.remove('hidden'); $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden')}}
 async function loadSessions(){try{sessions=sortOnsiteSessions(await apiGet('onsiteSessions')); renderSessions()}catch(e){showMsg(e.message,'err')}}
@@ -345,7 +345,8 @@ async function loadOnsiteRegsForDay(){
 }
 async function openSession(id){
   const found=sessions.find(s=>String(s.id)===String(id));
-  currentSession=found||currentSession||{id,name:''};
+  currentSession=found||currentSession||{id,name:'',dates:[]};
+  if(!currentSession.id)currentSession.id=id;
   currentActivityDate=pickOnsiteDefaultDay(currentSession);
   $('sessionsView').classList.add('hidden');$('regsView').classList.remove('hidden');
   $('sessionTitle').textContent=currentSession.name||'';
@@ -465,6 +466,7 @@ function setOnsiteQuickFilter(f){onsiteQuickFilter=f||'all';renderOnsiteLiveSumm
 function renderOnsiteLiveSummary(){
   const s=currentDaySummary||{},a=s.attendance||{},t=s.teardown||{},d=s.deposit||{};
   const total=Number(a.total)||regs.length,checked=Number(a.checked)||0,unchecked=Number(a.unchecked)||0,notTeardown=Number(t.pending)||0;
+  const eq=Array.isArray(s.equipment)?s.equipment:[];
   if($('onsiteLiveSummary'))$('onsiteLiveSummary').innerHTML=`
     <div class="onsite-live-summary">
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('all')"><span>應報到</span><b>${total}</b></button>
@@ -477,7 +479,9 @@ function renderOnsiteLiveSummary(){
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('allDeposit')"><span>當日押金總額</span><b>${money(d.totalAmount||0)}</b></button>
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('refundedDeposit')"><span>已退 ${Number(d.refundedCount)||0}</span><b>${money(d.refundedAmount||0)}</b></button>
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('notDeposit')"><span>待退 ${Number(d.pendingCount)||0}</span><b>${money(d.pendingAmount||0)}</b></button>
-    </div>`;
+    </div>
+    ${Number(d.totalCount||0)===0?`<div class="sub" style="margin:3px 0 6px">本日沒有應退押金；連續多日報名只在最後一個實際參加日退還。</div>`:''}
+    ${eq.length?`<div class="sub" style="margin:4px 0 8px"><b>當日設備：</b>${eq.map(x=>`${esc(x.name)} × ${Number(x.qty)||0}`).join('、')}</div>`:''}`;
   const chips=[['all','全部 '+total],['unchecked','未報到 '+unchecked],['checked','已報到 '+checked],['notTeardown','未撤場 '+notTeardown],['allDeposit','全部押金 '+(Number(d.totalCount)||0)],['refundedDeposit','已退押金 '+(Number(d.refundedCount)||0)],['notDeposit','待退押金 '+(Number(d.pendingCount)||0)]];
   if($('onsiteQuickFilters'))$('onsiteQuickFilters').innerHTML=chips.map(([f,label])=>`<button class="onsite-quick-chip ${onsiteQuickFilter===f?'active':''}" onclick="setOnsiteQuickFilter('${f}')">${esc(label)}</button>`).join('');
 }

@@ -1431,6 +1431,7 @@ function renderOnsiteList(){
   const o=AdminState.onsite||{},list=o.list||[],filter=o.filter||'unchecked',kw=($('onsiteSearch')?.value||'').trim().toLowerCase();
   const s=o.summary||{},a=s.attendance||{},t=s.teardown||{},d=s.deposit||{};
   const total=Number(a.total)||list.length,checked=Number(a.checked)||0,unchecked=Number(a.unchecked)||0,notTeardown=Number(t.pending)||0;
+  const eq=Array.isArray(s.equipment)?s.equipment:[];
 
   if($('onsiteSummary'))$('onsiteSummary').innerHTML=`
     <div class="ops-summary">
@@ -1444,7 +1445,9 @@ function renderOnsiteList(){
       <button class="ops-stat clickable" onclick="onsiteSetFilter('allDeposit',null)"><span>當日押金總額</span><b>${money(d.totalAmount||0)}</b><small>${num(d.totalCount||0)} 筆</small></button>
       <button class="ops-stat ok clickable" onclick="onsiteSetFilter('refundedDeposit',null)"><span>已退押金</span><b>${money(d.refundedAmount||0)}</b><small>${num(d.refundedCount||0)} 筆・點擊名單</small></button>
       <button class="ops-stat warn clickable" onclick="onsiteSetFilter('notDeposit',null)"><span>待退押金</span><b>${money(d.pendingAmount||0)}</b><small>${num(d.pendingCount||0)} 筆・即時同步</small></button>
-    </div>`;
+    </div>
+    ${Number(d.totalCount||0)===0?`<div class="sub" style="margin:3px 0 6px">本日沒有應退押金；連續多日報名的押金只會列在最後一個實際參加日。</div>`:''}
+    ${eq.length?`<div class="sub" style="margin:3px 0 8px"><b>當日設備：</b>${eq.map(x=>`${safe(x.name)} × ${num(x.qty)}`).join('、')}</div>`:''}`;
 
   const chips=[['all','全部 '+total],['unchecked','未報到 '+unchecked],['checked','已報到 '+checked],['notTeardown','未撤場 '+notTeardown],['allDeposit','全部押金 '+num(d.totalCount||0)],['refundedDeposit','已退押金 '+num(d.refundedCount||0)],['notDeposit','待退押金 '+num(d.pendingCount||0)]];
   if($('onsiteQuickFilters'))$('onsiteQuickFilters').innerHTML=chips.map(([f,label])=>`<button class="quick-chip onsite-fbtn ${filter===f?'active':''}" data-onsite-filter="${f}" onclick="onsiteSetFilter('${f}',this)">${safe(label)}</button>`).join('');
@@ -1881,6 +1884,7 @@ function renderSessionCard(s){
         +'<div class="session3-actions">'
           +'<button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
           +'<button class="btn secondary small" onclick="openSeatOps(\''+attr(sid)+'\')">🪑 排位結果</button>'
+          +'<button class="btn small" onclick="openAdminManualRegistrationForSession(\''+attr(sid)+'\')">＋ 代報名</button>'
           +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
           +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
           +'<button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
@@ -3923,12 +3927,81 @@ function openAdminManualRegistrationForSession(sessionIdValue=''){
   },0);
 }
 
-async function openAdminManualRegistration(memberEmail=''){if(!AdminState.members.length){try{await loadMembers()}catch(_e){}}if(!AdminState.sessions.length){try{await refreshSessionsOverview()}catch(_e){}}AdminManualReg={session:null,memberEmail:memberEmail||''};openPanel('主辦代報名','建立的是正式 registration；費用由 Worker 正式計價','<div class="report-card"><div class="form-grid"><div class="form-field full"><label>會員 / 品牌</label><select id="amrMember"><option value="">請選擇會員</option>'+adminManualMemberOptions()+'</select></div><div class="form-field full"><label>場次</label><select id="amrSession" onchange="loadAdminManualSession(this.value)"><option value="">請選擇場次</option>'+adminManualSessionOptions()+'</select></div></div><div id="amrSessionBody"><div class="empty">請先選擇場次</div></div></div>');if(memberEmail)$('amrMember').value=memberEmail;}
-async function loadAdminManualSession(sid){const box=$('amrSessionBody');if(!sid){box.innerHTML='<div class="empty">請先選擇場次</div>';return;}box.innerHTML='<div class="loading">載入場次設定…</div>';try{const s=await api({action:'getSession',sessionId:sid});AdminManualReg.session=s;const dates=Array.isArray(s.dates)?s.dates:[],dateHtml=dates.length?dates.map(d=>'<label style="display:flex;gap:7px;align-items:center;margin:6px 0"><input type="checkbox" class="amrDate" value="'+attr(d.date||d.day||'')+'"> '+safe(d.date||d.day||'')+'｜'+money(Number(d.fee)||0)+'</label>').join(''):'<div class="sub">使用場次單場費用</div>',equip=s.equip&&typeof s.equip==='object'?s.equip:{},equipHtml=Object.entries(equip).filter(([k,v])=>v&&v.open!==false).map(([name,def])=>'<div class="form-field"><label>'+safe(name)+'｜單價 '+money(Number(def.price)||0)+'｜每攤含 '+num(Number(def.incl)||0)+'</label><input type="number" min="0" class="amrEquip" data-name="'+attr(name)+'" value="'+num(Number(def.incl)||0)+'"></div>').join(''),adds=Array.isArray(s.addons)?s.addons:[],addonHtml=adds.map((a,i)=>a&&a.open===true?'<div class="form-field"><label>'+safe(a.name||('加購'+(i+1)))+'｜'+money(Number(a.price)||0)+'</label><input type="number" min="0" class="amrAddon" data-index="'+i+'" value="0"></div>':'').join('');box.innerHTML='<div class="form-grid" style="margin-top:10px"><div class="form-field full"><label>參加日期</label>'+dateHtml+'</div><div class="form-field"><label>攤位數</label><input id="amrStalls" type="number" min="1" max="'+attr(s.maxStalls||3)+'" value="1" onchange="adminManualUpdateIncludedEquip()"></div>'+equipHtml+(addonHtml?'<div class="form-field full"><b>加購</b></div>'+addonHtml:'')+'<div class="form-field full"><label><input id="amrConsent" type="checkbox"> 已取得攤商同意，由主辦代填正式報名</label></div><div class="form-field full"><label><input id="amrSendEmail" type="checkbox"> 建立後寄送報名成立通知（補歷史資料建議不要勾）</label></div></div><div id="amrPreview" class="report-card" style="margin-top:10px"><div class="sub">先按「試算費用」，金額由 Worker 正式計算。</div></div><div class="card-actions"><button class="btn secondary" onclick="previewAdminManualRegistration()">試算費用</button><button class="btn" onclick="submitAdminManualRegistration()">建立正式報名</button></div>';adminManualUpdateIncludedEquip();}catch(e){box.innerHTML='<div class="empty">場次載入失敗：'+safe(e.message)+'</div>';}}
+async function openAdminManualRegistration(memberEmail=''){
+  let memberErr='',sessionErr='';
+  if(!AdminState.members.length){try{await loadMembers();}catch(e){memberErr=e.message||String(e);}}
+  if(!AdminState.sessions.length){try{await refreshSessionsOverview();}catch(e){sessionErr=e.message||String(e);}}
+  AdminManualReg={session:null,memberEmail:memberEmail||''};
+
+  const memberOptions=adminManualMemberOptions(),sessionOptions=adminManualSessionOptions();
+  openPanel('主辦代報名','建立正式 registration；費用、押金、設備、加購由 Worker 正式計價。',`
+    <div class="report-card">
+      ${(memberErr||sessionErr)?`<div class="empty">資料載入異常：${safe([memberErr,sessionErr].filter(Boolean).join('｜'))}</div>`:''}
+      <div class="form-grid">
+        <div class="form-field full"><label>會員 / 品牌</label>
+          <select id="amrMember"><option value="">請選擇會員</option>${memberOptions}</select>
+          ${!memberOptions?'<div class="sub">目前沒有可選會員，請先建立/補齊會員資料。</div>':''}
+        </div>
+        <div class="form-field full"><label>場次</label>
+          <select id="amrSession" onchange="loadAdminManualSession(this.value)"><option value="">請選擇場次</option>${sessionOptions}</select>
+          ${!sessionOptions?'<div class="sub">目前沒有可選場次，或你的帳號沒有場次權限。</div>':''}
+        </div>
+      </div>
+      <div id="amrSessionBody"><div class="empty">請先選擇場次</div></div>
+    </div>`);
+  if(memberEmail&&$('amrMember'))$('amrMember').value=memberEmail;
+}
+async function loadAdminManualSession(sid){
+  const box=$('amrSessionBody');
+  if(!sid){box.innerHTML='<div class="empty">請先選擇場次</div>';return;}
+  box.innerHTML='<div class="loading">載入場次設定…</div>';
+  try{
+    const s=await api({action:'adminManualSession',sessionId:sid,_t:Date.now()});
+    AdminManualReg.session=s;
+    const dates=Array.isArray(s.dates)?s.dates:[];
+    const dateHtml=dates.length?dates.map(d=>{
+      const day=String((d&&typeof d==='object')?(d.date||d.day||''):d);
+      const fee=(d&&typeof d==='object')?Number(d.fee||0):0;
+      return `<label style="display:flex;gap:7px;align-items:center;margin:6px 0"><input type="checkbox" class="amrDate" value="${attr(day)}"> ${safe(day)}${fee?`｜${money(fee)}`:''}</label>`;
+    }).join(''):'<div class="sub">此場次沒有多日選項，使用場次單場費用。</div>';
+
+    const equip=s.equip&&typeof s.equip==='object'?s.equip:{};
+    const equipHtml=Object.entries(equip).filter(([_,v])=>v&&v.open!==false).map(([name,def])=>`
+      <div class="form-field"><label>${safe(name)}｜單價 ${money(Number(def.price)||0)}｜每攤含 ${num(Number(def.incl)||0)}</label>
+      <input type="number" min="0" class="amrEquip" data-name="${attr(name)}" value="${num(Number(def.incl)||0)}"></div>`).join('');
+
+    const adds=Array.isArray(s.addons)?s.addons:[];
+    const addonHtml=adds.map((a,i)=>a&&a.open===true?`
+      <div class="form-field"><label>${safe(a.name||('加購'+(i+1)))}｜${money(Number(a.price)||0)}</label>
+      <input type="number" min="0" class="amrAddon" data-index="${i}" value="0"></div>`:'').join('');
+
+    box.innerHTML=`<div class="form-grid" style="margin-top:10px">
+      <div class="form-field full"><label>參加日期</label>${dateHtml}</div>
+      <div class="form-field"><label>攤位數</label><input id="amrStalls" type="number" min="1" max="${attr(s.maxStalls||3)}" value="1" onchange="adminManualUpdateIncludedEquip()"></div>
+      ${equipHtml}${addonHtml?'<div class="form-field full"><b>加購</b></div>'+addonHtml:''}
+      <div class="form-field full"><label><input id="amrConsent" type="checkbox"> 已取得攤商同意，由主辦代填正式報名</label></div>
+      <div class="form-field full"><label><input id="amrSendEmail" type="checkbox"> 建立後寄送報名成立通知</label></div>
+    </div>
+    <div id="amrPreview" class="report-card" style="margin-top:10px"><div class="sub">請先試算；建立時 Worker 會再次重算正式金額。</div></div>
+    <div class="card-actions"><button class="btn secondary" onclick="previewAdminManualRegistration()">試算費用</button><button class="btn" onclick="submitAdminManualRegistration()">建立正式報名</button></div>`;
+    adminManualUpdateIncludedEquip();
+  }catch(e){box.innerHTML=`<div class="empty">場次載入失敗：${safe(e.message)}</div>`;}
+}
 function adminManualUpdateIncludedEquip(){const s=AdminManualReg.session||{},stalls=Math.max(1,Number($('amrStalls')?.value)||1),defs=s.equip||{};document.querySelectorAll('.amrEquip').forEach(inp=>{const d=defs[inp.dataset.name]||{},min=(Number(d.incl)||0)*stalls;if(Number(inp.value)<min)inp.value=String(min)})}
 function adminManualPayload(){const equip={},addonQty={};document.querySelectorAll('.amrEquip').forEach(x=>equip[x.dataset.name]=Math.max(0,Number(x.value)||0));document.querySelectorAll('.amrAddon').forEach(x=>addonQty[x.dataset.index]=Math.max(0,Number(x.value)||0));return{memberEmail:$('amrMember')?.value||'',sessionId:$('amrSession')?.value||'',selectedDates:[...document.querySelectorAll('.amrDate:checked')].map(x=>x.value),stallCount:Math.max(1,Number($('amrStalls')?.value)||1),equip,addonQty,confirmedConsent:!!$('amrConsent')?.checked,sendEmail:!!$('amrSendEmail')?.checked}}
 async function previewAdminManualRegistration(){try{const r=await apiPost({action:'adminPreviewRegistration',...adminManualPayload()});$('amrPreview').innerHTML='<div class="report-title">正式試算</div><div class="kv"><div class="k">場地／報名費</div><div>'+money(r.fee)+'</div><div class="k">押金</div><div>'+money(r.deposit)+'</div><div class="k">設備</div><div>'+money(r.equipment)+'</div><div class="k">加購</div><div>'+money(r.addon)+'</div><div class="k">總應繳</div><div><b>'+money(r.total)+'</b></div><div class="k">審核狀態</div><div>'+safe(r.reviewStatus||'')+'</div></div>'}catch(e){toast('試算失敗：'+e.message,7000)}}
-async function submitAdminManualRegistration(){const p=adminManualPayload();if(!p.memberEmail||!p.sessionId){toast('請選會員與場次');return}if(!p.confirmedConsent){toast('請勾選已取得攤商同意');return}if(!await uiConfirm('確定建立正式報名？費用由 Worker 重算，付款仍走正式付款確認。'))return;try{const r=await apiPost({action:'adminCreateRegistration',...p});toast('正式報名已建立｜應繳 '+money(r.total),7000);await refreshSessionsOverview();panelBack()}catch(e){toast('代報名失敗：'+e.message,8000)}}
+async function submitAdminManualRegistration(){
+  const p=adminManualPayload();
+  if(!p.memberEmail||!p.sessionId){toast('請選會員與場次');return;}
+  if(!p.confirmedConsent){toast('請勾選已取得攤商同意');return;}
+  if(!await uiConfirm('確定建立正式報名？Worker 會重新計價，並建立正式 registration。'))return;
+  try{
+    const r=await apiPost({action:'adminCreateRegistration',...p});
+    await Promise.allSettled([refreshSessionsOverview(),loadMembers()]);
+    panelBack();
+    toast(`正式報名已建立${r.id||r.registrationId?`｜編號 ${r.id||r.registrationId}`:''}｜應繳 ${money(r.total||0)}`,8000);
+  }catch(e){toast('代報名失敗：'+e.message,8000);}
+}
 
 
 function memberDayOpsSyncHtml(r){
@@ -3936,7 +4009,7 @@ function memberDayOpsSyncHtml(r){
   if(!rows.length)return '';
   return `<div class="member-day-sync">${rows.map(d=>{
     const day=String(d.activityDate||''),cancel=String(d.participationStatus||'')==='已取消';
-    return `<button class="mini-day" onclick="jumpMemberHistoryToOnsiteDay('${attr(sid)}','${attr(day)}')"><b>${safe(day.replace(/^\d{4}-/,''))}</b><br>${safe(cancel?'已取消':(d.checkinStatus||'未報到'))}｜${safe(d.teardownStatus||'未撤場')}｜${safe(d.depositStatus||'未退押金')}</button>`;
+    return `<button class="mini-day" onclick="jumpMemberHistoryToOnsiteDay('${attr(sid)}','${attr(day)}')"><b>${safe(day.replace(/^\d{4}-/,''))}</b><br>${safe(cancel?'已取消':(d.checkinStatus||'未報到'))}｜${safe(d.teardownStatus||'未撤場')}｜${safe(d.depositApplicable===false?'押金非本日':(d.depositStatus||'未退押金'))}</button>`;
   }).join('')}</div>`;
 }
 function jumpMemberHistoryToOnsiteDay(sid,day){
