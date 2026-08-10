@@ -1519,6 +1519,16 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     padding-right:10px !important;
   }
 }
+
+/* MEMBER_NOTIFICATION_UI_20260809 */
+.m-notify-btn{position:relative;width:42px;height:42px;border:1.5px solid #cbd8d3;background:#fff;border-radius:999px;font-size:20px;cursor:pointer}
+.m-notify-count{position:absolute;right:-4px;top:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#d83a35;color:#fff;font-size:11px;font-weight:950;display:grid;place-items:center}
+.m-notify-count.hidden,.m-notify-panel.hidden{display:none!important}
+.m-notify-panel{margin:10px 16px 12px;background:#fff;border:1px solid #dce7e2;border-radius:18px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:10px}
+.m-notify-item{padding:10px;border-bottom:1px solid #edf1ef;cursor:pointer}.m-notify-item:last-child{border-bottom:0}.m-notify-item.unread{background:#f1f9f5;border-radius:12px}
+.m-notify-title{font-size:15px;font-weight:950}.m-notify-msg{font-size:13px;line-height:1.45;color:#64716d;margin-top:3px}
+.m-record-new{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 8px;background:#fff0ef;color:#b42318;font-size:12px;font-weight:950;margin:0 0 7px}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><!-- 2BL-REGISTER-BUNDLE-INLINE-v3 --></head>
 <body>
@@ -1704,9 +1714,18 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
         <p class="m-hero-brand" id="memberBrandShow"></p>
       </div>
       <div class="m-hero-actions">
+        <button type="button" class="m-notify-btn" id="memberNotifyBtn" onclick="toggleMemberNotifications()" aria-label="通知">🔔<span id="memberNotifyCount" class="m-notify-count hidden">0</span></button>
         <button type="button" class="m-btn-edit-green" id="memberHeroEditBtn" onclick="openMemberEditModal()">編輯</button>
         <button type="button" class="m-btn-logout" onclick="memberLogout()">登出</button>
       </div>
+    </div>
+
+    <div id="memberNotifyPanel" class="m-notify-panel hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px">
+        <b>最新通知</b>
+        <button type="button" class="m-btn-edit-green" style="padding:7px 10px;font-size:13px" onclick="markAllMemberNotificationsRead()">全部已讀</button>
+      </div>
+      <div id="memberNotifyList"></div>
     </div>
 
     <div class="m-tabs">
@@ -3498,6 +3517,7 @@ async function safeGetMyRegs(email, phone){
     }
     const list=Array.isArray(regs)?regs:[];
     ST.regs=list;
+    try{ await loadMemberNotifications(); }catch(_e){}
     renderMyRegs(list);
     try{ if(Array.isArray(ST.sessions) && ST.sessions.length){ ['renderRecentSessions','renderSessions','renderAllSessions','renderHomeFallbackSessions'].forEach(fn=>{ try{ if(typeof window[fn]==='function') window[fn](); }catch(_e){} }); } }catch(_e){}
     return list;
@@ -3841,11 +3861,37 @@ function getFrontSessionThemeInfo(s){
 }
 
 
+
+// ── BUNDLE_ACTIVE_GUARD_20260809 ───────────────────────────────
+function frontDateKeyTaipei(){
+  try{return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+  catch(_e){return new Date().toISOString().slice(0,10);}
+}
+function frontBundleSessionAvailable(bs){
+  if(!bs)return false;
+  if(bs.available===false)return false;
+  const status=String(bs.status||'').trim();
+  if(['關閉','已關閉','停用','封存','已封存','取消','已取消'].includes(status))return false;
+  const ds=Array.isArray(bs.dates)?bs.dates:[];
+  const keys=ds.map(d=>String((d&&typeof d==='object')?(d.date||d.day||''):d).slice(0,10)).filter(Boolean).sort();
+  if(keys.length&&keys[keys.length-1]<frontDateKeyTaipei())return false;
+  return true;
+}
+function activeBundlesForSession(s){
+  const sid=String((s&&s.id)||'');
+  return (Array.isArray(ST.bundles)?ST.bundles:[]).filter(b=>{
+    const list=Array.isArray(b&&b.sessions)?b.sessions:[];
+    return list.length>=2 &&
+      list.some(x=>String((x&&x.id)||'')===sid) &&
+      list.every(frontBundleSessionAvailable);
+  });
+}
+
 function frontBundleBadgeHtml(s){
   try{
     const sid=String((s&&s.id)||'').trim();
     if(!sid) return '';
-    const bundles=Array.isArray(ST.bundles)?ST.bundles:[];
+    const bundles=activeBundlesForSession(s);
     let addCount=0;
     bundles.forEach(b=>{
       const list=Array.isArray(b&&b.sessions)?b.sessions:[];
@@ -4336,7 +4382,7 @@ function renderDynFormFull(s, isNew=false){
 
     // 加價選位告知（正式規則：報名階段只告知，不選位、不加價、不卡位）
     try{
-      const _myB=(ST.bundles||[]).filter(b=>(b.sessions||[]).some(x=>String(x.id)===String(s.id)));
+      const _myB=activeBundlesForSession(s);
       if(_myB.length){
         ST.bundleAddon='';
         html+=`<div class="form-card-new card-blue" style="margin-top:12px"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">＋</span>加報其他場次（組合優惠）</div><div style="font-size:16px;color:#c0392b;background:#fff5f5;border:1px solid #f0c0c0;border-radius:10px;padding:8px 10px;margin-bottom:8px">⚠️ 加報屬「組合報名，同進退」：退場即整組退出、組合優惠失效；若只需單場，請取消後重新報名單場。</div>`;
@@ -5937,6 +5983,59 @@ function mRecordFixedBlockHtml(r){
     <div class="m-fixed-pay">繳費(含押金)：<b>${escHtml(pay)}</b></div>
   </div>`;
 }
+
+// ── MEMBER_NOTIFICATIONS_20260809 ───────────────────────────────
+let MemberNotifications=[];
+function memberRecordUnreadCount(regId){
+  return (MemberNotifications||[]).filter(n=>!n.isRead&&String(n.registrationId||'')===String(regId||'')).length;
+}
+function memberRecordUnreadHtml(regId){
+  const n=memberRecordUnreadCount(regId);
+  return n?`<div class="m-record-new">🔔 ${n} 則新通知</div>`:'';
+}
+function memberNotifyCredentials(){
+  return {email:String(ST.memberEmail||memberSafeEmail()||'').trim(),phone:String(getMemberPhone()||'').trim()};
+}
+async function loadMemberNotifications(){
+  const c=memberNotifyCredentials();
+  if(!c.email||!c.phone){MemberNotifications=[];renderMemberNotifications();return;}
+  try{
+    const r=await api({action:'memberNotifications',email:c.email,phone:c.phone,_t:Date.now()});
+    MemberNotifications=Array.isArray(r)?r:[];
+  }catch(e){MemberNotifications=[];}
+  renderMemberNotifications();
+}
+function renderMemberNotifications(){
+  const unread=(MemberNotifications||[]).filter(n=>!n.isRead).length;
+  const badge=$('memberNotifyCount');
+  if(badge){badge.textContent=String(unread);badge.classList.toggle('hidden',unread<=0);}
+  const box=$('memberNotifyList');
+  if(box){
+    box.innerHTML=MemberNotifications.length
+      ? MemberNotifications.map(n=>`<div class="m-notify-item ${n.isRead?'':'unread'}" onclick="openMemberNotification('${escHtml(n.id||'')}','${escHtml(n.registrationId||'')}')"><div class="m-notify-title">${escHtml(n.title||'通知')}</div><div class="m-notify-msg">${escHtml(n.message||'')}</div></div>`).join('')
+      : '<div style="padding:14px;text-align:center;color:#8b9591;font-size:14px">目前沒有通知</div>';
+  }
+  if(Array.isArray(ST.regs)&&ST.regs.length) renderMyRegs(ST.regs);
+}
+function toggleMemberNotifications(){
+  const p=$('memberNotifyPanel'); if(p)p.classList.toggle('hidden');
+}
+async function openMemberNotification(id,regId){
+  const c=memberNotifyCredentials();
+  try{await apiPost({action:'markMemberNotificationRead',id,email:c.email,phone:c.phone});}catch(e){}
+  const n=MemberNotifications.find(x=>String(x.id)===String(id)); if(n)n.isRead=true;
+  renderMemberNotifications();
+  const p=$('memberNotifyPanel');if(p)p.classList.add('hidden');
+  if(regId){
+    setTimeout(()=>{const el=document.querySelector('[data-registration-id="'+CSS.escape(String(regId))+'"]');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},50);
+  }
+}
+async function markAllMemberNotificationsRead(){
+  const c=memberNotifyCredentials();
+  try{await apiPost({action:'markMemberNotificationRead',all:true,email:c.email,phone:c.phone});}catch(e){}
+  MemberNotifications.forEach(n=>n.isRead=true);renderMemberNotifications();
+}
+
 function mReviewPill(r){
   if(isCancelledReg(r)) return {text:'已取消', icon:'✕', bg:'#f3f4f6', color:'#777', border:'#e5e7eb', note:'此筆報名已取消'};
   const st=String(r.status||r.reviewStatus||'待審核').trim();
@@ -6027,7 +6126,8 @@ function renderMyRegs(regs){
       ? `<div class="m-record-id">報名編號：${legs.map(x=>escHtml(x.id)).join('、')}</div>`
       : `<div class="m-record-id">報名編號：${escHtml(r.id)}</div>`;
 
-    return `<div class="m-record-card m-record-card-lite">
+    return `<div class="m-record-card m-record-card-lite" data-registration-id="${escHtml(r.id||'')}">
+      ${memberRecordUnreadHtml(r.id)}
       <div class="m-record-top">
         <div class="m-record-thumb"><img src="${cover}" alt="" onerror="this.src='IP指引.png'"></div>
         <div class="m-record-main">
