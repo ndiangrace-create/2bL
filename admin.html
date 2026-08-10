@@ -1016,8 +1016,8 @@
   .todo-filter-bar .todo-filter-chip{font-size:14px;padding:8px 4px}
 }
 .mini-card-grid .member-card{overflow:hidden!important}
-#memberList .member-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;align-items:stretch!important}
-#memberList .member-actions .btn{width:100%!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-height:40px!important;font-size:14px!important;padding:8px 6px!important}
+/* legacy memberList 2-column action rule removed: MEMBER_CARD_V3_20260810 */
+/* legacy memberList button rule removed: MEMBER_CARD_V3_20260810 */
 .mini-card-grid .member-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin-top:10px!important;width:100%!important;justify-content:stretch!important}
 .mini-card-grid .member-actions .btn{white-space:nowrap!important;font-size:13px!important;padding:8px 4px!important;min-width:0!important;width:100%!important;min-height:38px!important}
 @media(max-width:860px){
@@ -1115,6 +1115,73 @@
 
 .seat-special-toolbox .sub{flex-basis:100%}
 
+
+/* MEMBER_COMPACT_MOBILE_20260809 */
+@media (max-width:760px){
+  #memberList{gap:9px!important}
+  #memberList .member-card{
+    padding:12px 13px!important;
+    margin:0 0 9px!important;
+    border-radius:18px!important;
+  }
+  #memberList .member-title{font-size:19px!important;line-height:1.25!important;margin-bottom:3px!important}
+  #memberList .member-icons{margin:2px 0!important}
+  #memberList .member-sub,
+  #memberList .member-small-line{font-size:14px!important;line-height:1.35!important;margin:3px 0!important}
+  #memberList .member-meta{display:flex!important;gap:5px!important;flex-wrap:wrap!important;margin:5px 0!important}
+  #memberList .member-note{
+    font-size:14px!important;
+    line-height:1.4!important;
+    padding:7px 9px!important;
+    margin:6px 0!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:1!important;
+    -webkit-box-orient:vertical!important;
+    overflow:hidden!important;
+  }
+  #memberList .member-actions{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+    margin-top:7px!important;
+  }
+  #memberList .member-actions .btn{
+    min-width:0!important;
+    min-height:36px!important;
+    padding:7px 5px!important;
+    font-size:13px!important;
+    line-height:1.2!important;
+    white-space:normal!important;
+  }
+}
+
+
+/* MEMBER_CARD_V3_20260810 */
+#memberList .member-card-v3{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:12px 13px;display:block;overflow:hidden;margin:0}
+#memberList .member-card-v3 .member-v3-head{display:flex;align-items:center;gap:7px;min-width:0}
+#memberList .member-card-v3 .member-title{font-size:20px;font-weight:950;line-height:1.25;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#memberList .member-card-v3 .member-icons{display:flex;gap:4px;flex:0 0 auto;margin:0}
+#memberList .member-card-v3 .member-icon{min-width:32px;height:28px;font-size:12px}
+#memberList .member-card-v3 .member-sub{font-size:14px;line-height:1.35;margin:5px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#memberList .member-card-v3 .member-email{font-size:13px;color:#666;line-height:1.3;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#memberList .member-card-v3 .member-meta{display:flex;gap:5px;flex-wrap:wrap;margin:5px 0}
+#memberList .member-card-v3 .member-note{font-size:13px;line-height:1.35;margin:5px 0 7px;padding:6px 8px;border-radius:10px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+#memberList .member-card-v3 .member-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;margin:0!important}
+#memberList .member-card-v3 .member-actions .btn{width:100%!important;min-width:0!important;min-height:34px!important;padding:6px 4px!important;font-size:12.5px!important;line-height:1.15!important;white-space:normal!important}
+@media(max-width:760px){
+  #memberList.member-list{gap:8px!important}
+  #memberList .member-card-v3{padding:10px 11px!important;border-radius:16px!important}
+  #memberList .member-card-v3 .member-title{font-size:18px!important}
+  #memberList .member-card-v3 .member-sub{font-size:13.5px!important}
+  #memberList .member-card-v3 .member-email{font-size:12.5px!important}
+  #memberList .member-card-v3 .member-note{font-size:12.5px!important;margin:4px 0 6px!important;padding:5px 7px!important}
+  #memberList .member-card-v3 .member-actions .btn{min-height:32px!important;font-size:12px!important;padding:5px 3px!important}
+}
+
+
+/* ACCOUNTING_REPORT_UI_20260810 */
+.accounting-total-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0}.accounting-total{border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px}.accounting-total span{display:block;font-size:12px;color:#777;font-weight:850}.accounting-total b{display:block;font-size:21px;margin-top:4px}.accounting-total.income{background:#f2faf4}.accounting-total.expense{background:#fff6f0}.accounting-total.profit.pos{background:#eef8ef}.accounting-total.profit.neg{background:#fff0f0}.accounting-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.accounting-ledger{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}.accounting-row{display:flex;justify-content:space-between;gap:12px;padding:7px 4px;border-bottom:1px dashed #e8e3dc;font-size:14px}.accounting-session-table{overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff;margin-top:12px}.accounting-session-table table{width:100%;border-collapse:collapse;min-width:820px}.accounting-session-table th,.accounting-session-table td{padding:9px 10px;border-bottom:1px solid #eee;text-align:right;white-space:nowrap}.accounting-session-table th:first-child,.accounting-session-table td:first-child,.accounting-session-table th:nth-child(2),.accounting-session-table td:nth-child(2){text-align:left}.acct-profit-pos{color:#23743a;font-weight:950}.acct-profit-neg{color:#b42318;font-weight:950}@media(max-width:760px){.accounting-total-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.accounting-two{grid-template-columns:1fr}.accounting-total b{font-size:18px}}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -1141,13 +1208,15 @@
       <button id="tab-onsite" class="tab" onclick="switchPage('onsite')">現場</button>
       <button id="tab-members" class="tab" onclick="switchPage('members')">會員</button>
       <button id="tab-leads" class="tab" onclick="switchPage('leads')">活動</button>
+      <button id="tab-finance" class="tab" onclick="switchPage('finance')">財務</button>
       <button id="tab-consignment" class="tab" onclick="switchPage('consignment')">寄賣</button><button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
     </nav>
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoFilterBar"></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
-    <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
+    <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn" onclick="openAdminManualRegistration()">＋ 主辦代報名</button><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
     <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
+    <section id="page-finance" class="hidden"><div class="page-title"><div><h2>財務總表</h2><div class="sub">收入、退款、支出分開；月／季／年與各場損益一次看。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadAccountingReport()">重新整理</button><button class="btn secondary" onclick="downloadAccountingCsv()">下載 CSV</button></div></div><div class="filter-row"><select id="acctMode" onchange="acctModeChanged()"><option value="month">月報</option><option value="quarter">季報</option><option value="year">年報</option><option value="custom">自訂區間</option></select><input id="acctAnchor" type="date" onchange="loadAccountingReport()"><input id="acctStart" class="hidden" type="date"><input id="acctEnd" class="hidden" type="date"><button id="acctCustomBtn" class="btn secondary hidden" onclick="loadAccountingReport()">套用區間</button></div><div id="accountingBody"><div class="loading">載入財務總表中…</div></div></section>
     <section id="page-consignment" class="hidden"><div class="page-title"><div><h2>寄賣檔期／商品／POS</h2><div class="sub">寄賣申請、錄取後商品建檔、條碼入庫、庫存與現場結帳共用同一份正式資料。</div></div></div><div class="cards"><div class="card" style="padding:18px"><h3>寄賣檔期與商品管理</h3><p>建立檔期、設定抽成與進撤場、審核品牌、核准商品及列印條碼。</p><button class="btn" onclick="window.open('consignment.html?admin=1&tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟寄賣管理</button></div><div class="card" style="padding:18px"><h3>條碼入庫與 POS</h3><p>支援手機相機、條碼槍及手動輸入；可入庫、結帳、撤場退回及取消交易回補庫存。</p><button class="btn" onclick="window.open('pos.html?tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟 POS／掃碼</button></div></div></section>
     <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
@@ -1270,7 +1339,7 @@ function saveAdminPageState(page){ try{ const p=page||AdminState.currentPage||'s
 function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','onsite','members','leads','consignment','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
 async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜20260721全流程修復版 v2'; await refreshSessionsOverview(); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
-function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','leads','consignment','settings'].forEach(p=>{ const pg=$('page-'+p), tb=$('tab-'+p); if(pg) pg.classList.toggle('hidden',p!==page); if(tb) tb.classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); if(page==='leads') loadLeads(); }
+function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','leads','finance','consignment','settings'].forEach(p=>{ const pg=$('page-'+p), tb=$('tab-'+p); if(pg) pg.classList.toggle('hidden',p!==page); if(tb) tb.classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); if(page==='leads') loadLeads(); if(page==='finance') loadAccountingReport(); }
 
 // ── 現場報到頁（重用後端 checkin 動作） ──
 function loadOnsite(){
@@ -3382,6 +3451,14 @@ async function openBusinessOverviewPanel(){
     $('panelBody').innerHTML=html;
   }catch(e){$('panelBody').innerHTML='<div class="empty">跨場次總覽載入失敗：'+safe(e.message)+'</div>';}
 }
+
+let AccountingState={data:null};
+function acctModeChanged(){const mode=$('acctMode')?.value||'month',custom=mode==='custom';$('acctAnchor')?.classList.toggle('hidden',custom);$('acctStart')?.classList.toggle('hidden',!custom);$('acctEnd')?.classList.toggle('hidden',!custom);$('acctCustomBtn')?.classList.toggle('hidden',!custom);if(!custom)loadAccountingReport();}
+function accountingMoney(n){return money(Number(n)||0)}
+function accountingRow(label,value,cls=''){return '<div class="accounting-row"><span>'+safe(label)+'</span><b class="'+cls+'">'+accountingMoney(value)+'</b></div>'}
+async function loadAccountingReport(){const body=$('accountingBody');if(!body)return;if(!$('acctAnchor').value)$('acctAnchor').value=new Date().toISOString().slice(0,10);const mode=$('acctMode')?.value||'month',q={action:'accountingReport',mode,anchor:$('acctAnchor')?.value||''};if(mode==='custom'){q.start=$('acctStart')?.value||'';q.end=$('acctEnd')?.value||'';}body.innerHTML='<div class="loading">載入正式財務資料中…</div>';try{const d=await api(q);AccountingState.data=d;const t=d.totals||{},c=d.counts||{},rows=d.sessions||[],exp=d.expenseBreakdown||[],pc=(Number(t.profit)||0)>=0?'pos':'neg';let html='<div class="report-card"><div class="report-title">'+safe(d.period?.label||'財務報表')+'</div><div class="sub">'+safe(d.basis||'')+'</div><div class="accounting-total-grid"><div class="accounting-total income"><span>收入</span><b>'+accountingMoney(t.income)+'</b></div><div class="accounting-total"><span>退款</span><b>'+accountingMoney(t.refund)+'</b></div><div class="accounting-total expense"><span>支出</span><b>'+accountingMoney(t.expense)+'</b></div><div class="accounting-total profit '+pc+'"><span>總損益</span><b>'+accountingMoney(t.profit)+'</b></div><div class="accounting-total"><span>場次</span><b>'+num(c.sessions||0)+'</b><span>賺 '+num(c.profitable||0)+'｜賠 '+num(c.loss||0)+'</span></div></div></div>';html+='<div class="accounting-two"><div class="accounting-ledger"><h3>收入</h3>'+accountingRow('正式已確認收入（不含押金）',t.income)+accountingRow('已完成退款','-'+(Number(t.refund)||0))+accountingRow('退款後淨收入',t.netIncome,'acct-profit-pos')+'</div><div class="accounting-ledger"><h3>支出</h3>'+(exp.length?exp.map(x=>accountingRow(x.name,x.amount)).join(''):'<div class="empty">此期間尚無正式支出</div>')+accountingRow('支出合計',t.expense)+'</div></div>';html+='<div class="accounting-session-table"><table><thead><tr><th>日期</th><th>場次</th><th>收入</th><th>退款</th><th>淨收入</th><th>支出</th><th>損益</th><th>公司份額</th><th>合作方份額</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+safe(r.date||'')+'</td><td>'+safe(r.sessionName||'')+'</td><td>'+accountingMoney(r.income)+'</td><td>'+accountingMoney(r.refund)+'</td><td>'+accountingMoney(r.netIncome)+'</td><td>'+accountingMoney(r.expense)+'</td><td class="'+((Number(r.profit)||0)>=0?'acct-profit-pos':'acct-profit-neg')+'">'+accountingMoney(r.profit)+'</td><td>'+accountingMoney(r.companyShare)+'</td><td>'+accountingMoney(r.partnerShare)+'</td></tr>').join('')+'</tbody></table></div>';body.innerHTML=html;}catch(e){body.innerHTML='<div class="empty">財務總表載入失敗：'+safe(e.message)+'</div>';}}
+function downloadAccountingCsv(){const d=AccountingState.data;if(!d){toast('請先載入報表');return;}const rows=[['日期','場次','收入','退款','淨收入','支出','損益','公司份額','合作方份額']];(d.sessions||[]).forEach(r=>rows.push([r.date,r.sessionName,r.income,r.refund,r.netIncome,r.expense,r.profit,r.companyShare,r.partnerShare]));const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='2BL_'+String(d.period?.label||'財務報表').replace(/[\/\\\s]/g,'_')+'.csv';a.click();URL.revokeObjectURL(a.href);}
+
 async function loadTodos(){
   if(AdminState.currentPage!=='todos') return;
   AdminState.currentLayer='todos';
@@ -3683,20 +3760,30 @@ function renderMembers(){
     const intro=m.intro||m.brandIntro||m.description||m.brand_intro||'—';
     const updated=m.updatedAt||m.updated_at||m.joinedAt||m.joined_at||m.createdAt||m.created_at||'—';
     const fp=(m.fastPass===true||m.fast_pass===true||m.fastPass==='true'||m.fast_pass==='true');
-    html+='<article class="member-card member-card-lite">'
-      +'<div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green" style="font-size:11px">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple" style="font-size:11px">備註</span>':'')+'</div>'
-      +'<div class="member-icons">'+memberIconLinks(m)+'</div>'
+    html+='<article class="member-card-v3">'
+      +'<div class="member-v3-head"><div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green" style="font-size:10px">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple" style="font-size:10px">備註</span>':'')+'</div><div class="member-icons">'+memberIconLinks(m)+'</div></div>'
       +'<div class="member-sub">'+safe(name)+'｜'+safe(phone)+'</div>'
-      +'<div class="member-small-line" title="'+attr(email)+'">Email：'+safe(email)+'</div>'
+      +'<div class="member-email" title="'+attr(email)+'">'+safe(email)+'</div>'
       +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span></div>'
       +'<div class="member-note">'+safe(intro)+'</div>'
       +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
-      +'<button class="btn secondary small" style="white-space:nowrap;min-width:0" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
-      +'<button class="btn small '+(fp?'':'secondary')+'" style="white-space:nowrap;min-width:0" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
+      +'<button class="btn secondary small" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
+      +'<button class="btn small '+(fp?'':'secondary')+'" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
     +'</article>';
   }
   box.innerHTML=html;
 }
+
+let AdminManualReg={session:null,memberEmail:''};
+function adminManualSessionOptions(){return (AdminState.sessions||[]).slice().sort((a,b)=>String(sessionName(a)).localeCompare(String(sessionName(b)),'zh-Hant')).map(s=>'<option value="'+attr(sessionId(s))+'">'+safe(sessionName(s))+'｜'+safe(sessionDateText(s))+'</option>').join('')}
+function adminManualMemberOptions(){return (AdminState.members||[]).slice().sort((a,b)=>memberBrand(a).localeCompare(memberBrand(b),'zh-Hant')).map(m=>'<option value="'+attr(m.email||'')+'">'+safe(memberBrand(m))+'｜'+safe(m.name||'')+'｜'+safe(m.phone||'')+'</option>').join('')}
+async function openAdminManualRegistration(memberEmail=''){if(!AdminState.members.length){try{await loadMembers()}catch(_e){}}if(!AdminState.sessions.length){try{await refreshSessionsOverview()}catch(_e){}}AdminManualReg={session:null,memberEmail:memberEmail||''};openPanel('主辦代報名','建立的是正式 registration；費用由 Worker 正式計價','<div class="report-card"><div class="form-grid"><div class="form-field full"><label>會員 / 品牌</label><select id="amrMember"><option value="">請選擇會員</option>'+adminManualMemberOptions()+'</select></div><div class="form-field full"><label>場次</label><select id="amrSession" onchange="loadAdminManualSession(this.value)"><option value="">請選擇場次</option>'+adminManualSessionOptions()+'</select></div></div><div id="amrSessionBody"><div class="empty">請先選擇場次</div></div></div>');if(memberEmail)$('amrMember').value=memberEmail;}
+async function loadAdminManualSession(sid){const box=$('amrSessionBody');if(!sid){box.innerHTML='<div class="empty">請先選擇場次</div>';return;}box.innerHTML='<div class="loading">載入場次設定…</div>';try{const s=await api({action:'getSession',sessionId:sid});AdminManualReg.session=s;const dates=Array.isArray(s.dates)?s.dates:[],dateHtml=dates.length?dates.map(d=>'<label style="display:flex;gap:7px;align-items:center;margin:6px 0"><input type="checkbox" class="amrDate" value="'+attr(d.date||d.day||'')+'"> '+safe(d.date||d.day||'')+'｜'+money(Number(d.fee)||0)+'</label>').join(''):'<div class="sub">使用場次單場費用</div>',equip=s.equip&&typeof s.equip==='object'?s.equip:{},equipHtml=Object.entries(equip).filter(([k,v])=>v&&v.open!==false).map(([name,def])=>'<div class="form-field"><label>'+safe(name)+'｜單價 '+money(Number(def.price)||0)+'｜每攤含 '+num(Number(def.incl)||0)+'</label><input type="number" min="0" class="amrEquip" data-name="'+attr(name)+'" value="'+num(Number(def.incl)||0)+'"></div>').join(''),adds=Array.isArray(s.addons)?s.addons:[],addonHtml=adds.map((a,i)=>a&&a.open===true?'<div class="form-field"><label>'+safe(a.name||('加購'+(i+1)))+'｜'+money(Number(a.price)||0)+'</label><input type="number" min="0" class="amrAddon" data-index="'+i+'" value="0"></div>':'').join('');box.innerHTML='<div class="form-grid" style="margin-top:10px"><div class="form-field full"><label>參加日期</label>'+dateHtml+'</div><div class="form-field"><label>攤位數</label><input id="amrStalls" type="number" min="1" max="'+attr(s.maxStalls||3)+'" value="1" onchange="adminManualUpdateIncludedEquip()"></div>'+equipHtml+(addonHtml?'<div class="form-field full"><b>加購</b></div>'+addonHtml:'')+'<div class="form-field full"><label><input id="amrConsent" type="checkbox"> 已取得攤商同意，由主辦代填正式報名</label></div><div class="form-field full"><label><input id="amrSendEmail" type="checkbox"> 建立後寄送報名成立通知（補歷史資料建議不要勾）</label></div></div><div id="amrPreview" class="report-card" style="margin-top:10px"><div class="sub">先按「試算費用」，金額由 Worker 正式計算。</div></div><div class="card-actions"><button class="btn secondary" onclick="previewAdminManualRegistration()">試算費用</button><button class="btn" onclick="submitAdminManualRegistration()">建立正式報名</button></div>';adminManualUpdateIncludedEquip();}catch(e){box.innerHTML='<div class="empty">場次載入失敗：'+safe(e.message)+'</div>';}}
+function adminManualUpdateIncludedEquip(){const s=AdminManualReg.session||{},stalls=Math.max(1,Number($('amrStalls')?.value)||1),defs=s.equip||{};document.querySelectorAll('.amrEquip').forEach(inp=>{const d=defs[inp.dataset.name]||{},min=(Number(d.incl)||0)*stalls;if(Number(inp.value)<min)inp.value=String(min)})}
+function adminManualPayload(){const equip={},addonQty={};document.querySelectorAll('.amrEquip').forEach(x=>equip[x.dataset.name]=Math.max(0,Number(x.value)||0));document.querySelectorAll('.amrAddon').forEach(x=>addonQty[x.dataset.index]=Math.max(0,Number(x.value)||0));return{memberEmail:$('amrMember')?.value||'',sessionId:$('amrSession')?.value||'',selectedDates:[...document.querySelectorAll('.amrDate:checked')].map(x=>x.value),stallCount:Math.max(1,Number($('amrStalls')?.value)||1),equip,addonQty,confirmedConsent:!!$('amrConsent')?.checked,sendEmail:!!$('amrSendEmail')?.checked}}
+async function previewAdminManualRegistration(){try{const r=await apiPost({action:'adminPreviewRegistration',...adminManualPayload()});$('amrPreview').innerHTML='<div class="report-title">正式試算</div><div class="kv"><div class="k">場地／報名費</div><div>'+money(r.fee)+'</div><div class="k">押金</div><div>'+money(r.deposit)+'</div><div class="k">設備</div><div>'+money(r.equipment)+'</div><div class="k">加購</div><div>'+money(r.addon)+'</div><div class="k">總應繳</div><div><b>'+money(r.total)+'</b></div><div class="k">審核狀態</div><div>'+safe(r.reviewStatus||'')+'</div></div>'}catch(e){toast('試算失敗：'+e.message,7000)}}
+async function submitAdminManualRegistration(){const p=adminManualPayload();if(!p.memberEmail||!p.sessionId){toast('請選會員與場次');return}if(!p.confirmedConsent){toast('請勾選已取得攤商同意');return}if(!await uiConfirm('確定建立正式報名？費用由 Worker 重算，付款仍走正式付款確認。'))return;try{const r=await apiPost({action:'adminCreateRegistration',...p});toast('正式報名已建立｜應繳 '+money(r.total),7000);await refreshSessionsOverview();panelBack()}catch(e){toast('代報名失敗：'+e.message,8000)}}
+
 async function openMemberHistory(key){
   const k=String(key||'').trim();
   if(!k){toast('缺少會員查詢關鍵字');return;}
