@@ -190,6 +190,11 @@
 .onsite-day-tabs{display:flex;gap:7px;overflow:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
 .onsite-day-btn{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#273330;border-radius:999px;padding:8px 13px;font-weight:900}
 .onsite-day-btn.active{background:#26312f;color:#fff;border-color:#26312f}
+
+/* INTUITIVE_ONSITE_UX_20260810 */
+.onsite-live-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0}.onsite-live-stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 8px}.onsite-live-stat span{display:block;font-size:10.5px;color:var(--muted);font-weight:850;white-space:nowrap}.onsite-live-stat b{font-size:17px;line-height:1.15}.onsite-quick-scroll{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 6px}.onsite-quick-scroll::-webkit-scrollbar{display:none}.onsite-quick-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#333;border-radius:999px;padding:7px 10px;font-size:12.5px;font-weight:900}.onsite-quick-chip.active{background:#26312f;color:#fff;border-color:#26312f}.mobile-reg-state-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.mobile-reg-main .mobile-reg-buttons{display:flex!important;gap:5px!important;overflow-x:auto;flex-wrap:nowrap!important}.mobile-reg-main .mobile-reg-buttons button{width:auto!important;flex:0 0 auto!important;min-width:0!important;padding:7px 9px!important}
+@media(max-width:680px){.onsite-live-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.toolbar{display:block}.toolbar input{margin-bottom:5px}#filter{display:none}.reg{min-height:0!important;padding:8px 9px!important}.mobile-reg-equip{font-size:13px!important;margin-top:4px!important}.mobile-reg-state{display:none}.mobile-reg-brand{font-size:16.5px!important}.mobile-reg-seat{font-size:13px!important;padding:4px 7px!important}.reg-more-actions{display:flex!important;flex-wrap:wrap!important}.reg-more-actions button{width:auto!important;min-width:0!important}}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -237,7 +242,7 @@
           </select>
         </div>
       </div>
-      <div id="regsList"></div>
+      <div id="onsiteLiveSummary"></div><div id="onsiteQuickFilters" class="onsite-quick-scroll"></div><div id="regsList"></div>
     </section>
   </section>
 </main>
@@ -327,10 +332,15 @@ async function loadOnsiteRegsForDay(){
   if(!currentSession)return;
   $('sessionSub').textContent=(currentActivityDate?currentActivityDate+'｜':'')+'載入現場報到名單中…';
   try{
-    regs=await apiGet('onsiteRegs',{sessionId:currentSession.id,activityDate:currentActivityDate});
+    const [list,sum]=await Promise.all([
+      apiGet('onsiteRegs',{sessionId:currentSession.id,activityDate:currentActivityDate}),
+      apiGet('onsiteDaySummary',{sessionId:currentSession.id,activityDate:currentActivityDate})
+    ]);
+    regs=Array.isArray(list)?list:[];
+    currentDaySummary=sum||{};
     renderOnsiteSeatMap();
-    $('sessionSub').textContent=(currentActivityDate?currentActivityDate+'｜':'')+`現場名單 ${regs.length} 筆｜未報到 ${regs.filter(r=>r.checkin!=='已報到').length}｜已報到 ${regs.filter(r=>r.checkin==='已報到').length}`;
-    renderRegs();
+    $('sessionSub').textContent=(currentActivityDate?currentActivityDate+'｜':'')+`現場名單 ${regs.length} 筆`;
+    renderOnsiteLiveSummary();renderRegs();
   }catch(e){showMsg(e.message,'err')}
 }
 async function openSession(id){
@@ -432,11 +442,46 @@ function renderOnsiteSeatMap(){
 }
 function backToSessions(){ if(passcode) return; currentSession=null; regs=[]; $('regsView').classList.add('hidden'); $('sessionsView').classList.remove('hidden')}
 function canCheckin(r){return r.status==='已錄取' && (String(r.payStatus).includes('已繳費') || r.payStatus==='免費') && !String(r.transferStatus||'').includes('退費')}
-function filteredRegs(){const kw=$('kw').value.trim().toLowerCase(); const f=$('filter').value; return regs.filter(r=>{const hay=[r.brand,r.name,r.phone,r.email,r.stallNumber,r.equipmentText].join(' ').toLowerCase(); if(kw&&!hay.includes(kw))return false; if(f==='canCheckin')return canCheckin(r); if(f==='checked')return r.checkin==='已報到'; if(f==='notChecked')return r.checkin!=='已報到'; if(f==='issue')return String(r.adminNote||'').includes('特殊')||String(r.transferStatus||'').includes('退費'); return true})}
+function filteredRegs(){
+  const kw=$('kw').value.trim().toLowerCase();
+  return regs.filter(r=>{
+    const hay=[r.brand,r.name,r.phone,r.email,r.stallNumber,r.equipmentText].join(' ').toLowerCase();
+    if(kw&&!hay.includes(kw))return false;
+    if(onsiteQuickFilter==='unchecked')return r.checkin!=='已報到';
+    if(onsiteQuickFilter==='checked')return r.checkin==='已報到';
+    if(onsiteQuickFilter==='notTeardown')return String(r.teardown||'未撤場')!=='已撤場';
+    if(onsiteQuickFilter==='allDeposit')return Number(r.deposit||0)>0;
+    if(onsiteQuickFilter==='refundedDeposit')return Number(r.deposit||0)>0&&String(r.depositRefunded||'')==='已退押金';
+    if(onsiteQuickFilter==='notDeposit')return Number(r.deposit||0)>0&&!['已退押金','押金沒收'].includes(String(r.depositRefunded||'未退押金'));
+    return true;
+  });
+}
 function toggleRegMore(id){
   const el=document.getElementById('regMore_'+String(id).replace(/[^a-zA-Z0-9_-]/g,'_'));
   if(el)el.classList.toggle('open');
 }
+
+function setOnsiteQuickFilter(f){onsiteQuickFilter=f||'all';renderOnsiteLiveSummary();renderRegs();}
+function renderOnsiteLiveSummary(){
+  const s=currentDaySummary||{},a=s.attendance||{},t=s.teardown||{},d=s.deposit||{};
+  const total=Number(a.total)||regs.length,checked=Number(a.checked)||0,unchecked=Number(a.unchecked)||0,notTeardown=Number(t.pending)||0;
+  if($('onsiteLiveSummary'))$('onsiteLiveSummary').innerHTML=`
+    <div class="onsite-live-summary">
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('all')"><span>應報到</span><b>${total}</b></button>
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('checked')"><span>已報到</span><b>${checked}</b></button>
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('unchecked')"><span>未報到</span><b>${unchecked}</b></button>
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('notTeardown')"><span>未撤場</span><b>${notTeardown}</b></button>
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('notDeposit')"><span>待退押金</span><b>${Number(d.pendingCount)||0}</b></button>
+    </div>
+    <div class="onsite-live-summary" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('allDeposit')"><span>當日押金總額</span><b>${money(d.totalAmount||0)}</b></button>
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('refundedDeposit')"><span>已退 ${Number(d.refundedCount)||0}</span><b>${money(d.refundedAmount||0)}</b></button>
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('notDeposit')"><span>待退 ${Number(d.pendingCount)||0}</span><b>${money(d.pendingAmount||0)}</b></button>
+    </div>`;
+  const chips=[['all','全部 '+total],['unchecked','未報到 '+unchecked],['checked','已報到 '+checked],['notTeardown','未撤場 '+notTeardown],['allDeposit','全部押金 '+(Number(d.totalCount)||0)],['refundedDeposit','已退押金 '+(Number(d.refundedCount)||0)],['notDeposit','待退押金 '+(Number(d.pendingCount)||0)]];
+  if($('onsiteQuickFilters'))$('onsiteQuickFilters').innerHTML=chips.map(([f,label])=>`<button class="onsite-quick-chip ${onsiteQuickFilter===f?'active':''}" onclick="setOnsiteQuickFilter('${f}')">${esc(label)}</button>`).join('');
+}
+
 function renderRegs(){
   const box=$('regsList');
   const list=filteredRegs();
@@ -473,9 +518,15 @@ function renderRegs(){
           <div class="mobile-reg-seat ${r.stallNumber?'':'none'}">${seat}</div>
         </div>
         <div class="mobile-reg-equip">設備｜${equipment}</div>
-        <div class="mobile-reg-state">${esc(r.checkin||'未報到')}${r.stallCount>1?'｜'+esc(r.stallCount)+' 攤':''}</div>
+        <div class="mobile-reg-state-tags">
+          <span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>
+          <span class="tag ${r.teardown==='已撤場'?'ok':''}">${esc(r.teardown||'未撤場')}</span>
+          ${hasDeposit?`<span class="tag ${r.depositRefunded==='已退押金'?'ok':r.depositRefunded==='押金沒收'?'bad':'warn'}">${esc(r.depositRefunded||'未退押金')}</span>`:''}
+        </div>
         <div class="mobile-reg-buttons">
           ${checkBtn}
+          <button class="secondary" onclick="mark('${esc(r.id)}','${r.teardown==='已撤場'?'teardownUndo':'teardownDone'}')">${r.teardown==='已撤場'?'取消撤場':'撤場'}</button>
+          ${hasDeposit?`<button class="secondary" onclick="mark('${esc(r.id)}','${r.depositRefunded==='已退押金'?'depositUnrefund':'depositRefund'}')">${r.depositRefunded==='已退押金'?'取消退押金':'退押金'}</button>`:''}
           <button class="secondary" onclick="focusOnsiteSeat('${esc(r.id)}')">帶位</button>
           <button class="secondary" onclick="toggleRegMore('${safeId}')">更多</button>
         </div>

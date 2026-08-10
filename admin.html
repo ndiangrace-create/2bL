@@ -1182,6 +1182,31 @@
 /* ACCOUNTING_REPORT_UI_20260810 */
 .accounting-total-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0}.accounting-total{border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px}.accounting-total span{display:block;font-size:12px;color:#777;font-weight:850}.accounting-total b{display:block;font-size:21px;margin-top:4px}.accounting-total.income{background:#f2faf4}.accounting-total.expense{background:#fff6f0}.accounting-total.profit.pos{background:#eef8ef}.accounting-total.profit.neg{background:#fff0f0}.accounting-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.accounting-ledger{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}.accounting-row{display:flex;justify-content:space-between;gap:12px;padding:7px 4px;border-bottom:1px dashed #e8e3dc;font-size:14px}.accounting-session-table{overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff;margin-top:12px}.accounting-session-table table{width:100%;border-collapse:collapse;min-width:820px}.accounting-session-table th,.accounting-session-table td{padding:9px 10px;border-bottom:1px solid #eee;text-align:right;white-space:nowrap}.accounting-session-table th:first-child,.accounting-session-table td:first-child,.accounting-session-table th:nth-child(2),.accounting-session-table td:nth-child(2){text-align:left}.acct-profit-pos{color:#23743a;font-weight:950}.acct-profit-neg{color:#b42318;font-weight:950}@media(max-width:760px){.accounting-total-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.accounting-two{grid-template-columns:1fr}.accounting-total b{font-size:18px}}
 
+
+/* INTUITIVE_RESPONSIVE_UX_20260810 */
+.quick-scroll{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 1px 7px}.quick-scroll::-webkit-scrollbar{display:none}
+.quick-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#333;border-radius:999px;padding:8px 11px;font-size:13px;font-weight:950;min-height:36px;white-space:nowrap}.quick-chip.active{background:#2C2C2C;color:#fff;border-color:#2C2C2C}
+.ops-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:8px 0 10px}.ops-stat{border:1px solid var(--line);border-radius:13px;background:#fff;padding:8px 9px;min-width:0}.ops-stat span{display:block;font-size:11px;color:#777;font-weight:900;white-space:nowrap}.ops-stat b{display:block;font-size:19px;line-height:1.15;margin-top:3px}.ops-stat.ok{background:#eef8ef}.ops-stat.warn{background:#fff8df}.ops-stat.bad{background:#fff1ef}
+.direct-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.direct-actions .btn{width:auto!important;min-width:0!important;min-height:32px!important;padding:6px 9px!important;font-size:12.5px!important;border-radius:10px!important;white-space:nowrap!important}
+#page-onsite .onsite-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:9px;align-items:start}#page-onsite .onsite-card{gap:6px;padding:11px 12px;border-radius:14px;min-height:0}#page-onsite .onsite-name{font-size:17px;line-height:1.25}#page-onsite .onsite-sub{font-size:13px;line-height:1.3}#page-onsite .onsite-card .tag{font-size:11.5px;padding:3px 7px}#page-onsite .onsite-card-btn{margin-top:4px!important}#page-onsite .onsite-card-btn .btn{width:auto!important;min-width:0!important;padding:6px 9px!important;min-height:32px!important;font-size:12.5px!important;border-radius:10px!important}
+#memberList.member-list{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))!important;gap:9px!important}#memberList .member-card-v3{padding:10px 11px!important;border-radius:15px!important}#memberList .member-card-v3 .member-note{-webkit-line-clamp:1!important}#memberList .member-card-v3 .member-actions{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin-top:5px!important}#memberList .member-card-v3 .member-actions .btn{width:auto!important;min-width:0!important;min-height:32px!important;padding:6px 9px!important;font-size:12px!important}
+.accounting-session-mobile{display:none}.accounting-session-table{max-width:100%;overflow:auto;-webkit-overflow-scrolling:touch}.accounting-session-table table{min-width:860px}
+@media(max-width:900px){.ops-summary{grid-template-columns:repeat(3,minmax(0,1fr))}#memberList.member-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:620px){
+  .app{overflow-x:hidden}.page-actions .btn{padding:7px 9px;font-size:12.5px;min-height:34px}.filter-row{display:flex;flex-wrap:wrap;gap:6px}.filter-row input,.filter-row select{width:100%!important;min-width:0!important}
+  .ops-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.ops-stat{padding:7px 8px}.ops-stat b{font-size:17px}.ops-stat span{font-size:10.5px}
+  #page-onsite .onsite-grid{grid-template-columns:1fr;gap:7px}#page-onsite .onsite-card{padding:9px 10px}#page-onsite .onsite-name{font-size:16px}#page-onsite .onsite-card-btn{display:flex!important;gap:5px!important;overflow-x:auto;flex-wrap:nowrap!important;padding-bottom:2px}#page-onsite .onsite-card-btn .btn{flex:0 0 auto!important}
+  #memberList.member-list{grid-template-columns:1fr!important;gap:7px!important}#memberList .member-card-v3{padding:9px 10px!important}#memberList .member-card-v3 .member-title{font-size:17px!important}#memberList .member-card-v3 .member-sub{font-size:13px!important}#memberList .member-card-v3 .member-email{font-size:12px!important}#memberList .member-card-v3 .member-note{display:none!important}#memberList .member-card-v3 .member-meta{margin:4px 0!important}#memberList .member-card-v3 .member-actions{overflow-x:auto;flex-wrap:nowrap!important;padding-bottom:1px}#memberList .member-card-v3 .member-actions .btn{flex:0 0 auto!important}
+  .accounting-session-table{display:none}.accounting-session-mobile{display:grid;gap:7px;margin-top:10px}.accounting-mobile-card{border:1px solid var(--line);background:#fff;border-radius:14px;padding:9px 10px}.accounting-mobile-head{display:flex;justify-content:space-between;gap:8px}.accounting-mobile-title{font-size:15px;font-weight:950}.accounting-mobile-date{font-size:11px;color:#777}.accounting-mobile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}.accounting-mobile-cell{background:#faf8f4;border-radius:9px;padding:6px}.accounting-mobile-cell span{display:block;font-size:10px;color:#777;font-weight:900}.accounting-mobile-cell b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+
+
+/* DAILY_OPS_SYNC_UI_20260810 */
+.ops-stat.clickable{cursor:pointer;text-align:left}.ops-deposit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 8px}.ops-deposit .ops-stat b{font-size:16px}.ops-deposit .ops-stat small{display:block;color:#777;font-size:10px;margin-top:2px}
+.session-day-sync{border-top:1px dashed var(--line);margin-top:7px;padding-top:7px}.session-day-mini{display:flex;gap:5px;flex-wrap:wrap}.session-day-mini .mini{border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 7px;font-size:11px;font-weight:850;cursor:pointer}.session-day-mini .mini b{margin-left:3px}
+.member-day-sync{display:flex;gap:5px;overflow-x:auto;padding:4px 0}.member-day-sync .mini-day{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:#fff;font-size:11px}
+@media(max-width:620px){.ops-deposit{grid-template-columns:1fr 1fr}.ops-deposit .ops-stat:first-child{grid-column:1/-1}}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -1213,7 +1238,7 @@
     </nav>
     <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn" onclick="openAdminManualRegistrationForSession()">＋ 主辦代報名</button><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoFilterBar"></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
-    <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div class="filter-row" style="margin-top:0"><button class="btn secondary small onsite-fbtn active" onclick="onsiteSetFilter('unchecked',this)">未報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('checked',this)">已報到</button><button class="btn secondary small onsite-fbtn" onclick="onsiteSetFilter('all',this)">全部</button></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
+    <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div id="onsiteDateTabs" class="quick-scroll"></div><div id="onsiteSummary"></div><div id="onsiteQuickFilters" class="quick-scroll"></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn" onclick="openAdminManualRegistration()">＋ 主辦代報名</button><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
     <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
     <section id="page-finance" class="hidden"><div class="page-title"><div><h2>財務總表</h2><div class="sub">收入、退款、支出分開；月／季／年與各場損益一次看。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadAccountingReport()">重新整理</button><button class="btn secondary" onclick="downloadAccountingCsv()">下載 CSV</button></div></div><div class="filter-row"><select id="acctMode" onchange="acctModeChanged()"><option value="month">月報</option><option value="quarter">季報</option><option value="year">年報</option><option value="custom">自訂區間</option></select><input id="acctAnchor" type="date" onchange="loadAccountingReport()"><input id="acctStart" class="hidden" type="date"><input id="acctEnd" class="hidden" type="date"><button id="acctCustomBtn" class="btn secondary hidden" onclick="loadAccountingReport()">套用區間</button></div><div id="accountingBody"><div class="loading">載入財務總表中…</div></div></section>
@@ -1356,70 +1381,107 @@ function loadOnsite(){
   if(sid) loadOnsiteList(sid);
   else $('onsiteBody').innerHTML='<div class="empty">尚無場次，請先到「場次」建立</div>';
 }
-async function loadOnsiteList(sid){
-  sid=sid||$('onsiteSession')?.value||(AdminState.onsite&&AdminState.onsite.sid)||'';
+async function loadOnsiteList(sid,activityDate=''){
+  sid=String(sid||($('onsiteSession')?.value)||AdminState.onsite?.sid||'');
   AdminState.onsite=AdminState.onsite||{filter:'unchecked'};
-  if(!sid){ $('onsiteBody').innerHTML='<div class="empty">請先選擇場次</div>'; return; }
+  if(!sid){$('onsiteBody').innerHTML='<div class="empty">請先選擇場次</div>';return;}
   AdminState.onsite.sid=sid;
+  const ses=(AdminState.sessions||[]).find(x=>String(sessionId(x))===sid)||{};
+  const days=adminSessionDays(ses);
+  let day=String(activityDate||AdminState.onsite.activityDate||'').slice(0,10);
+  if(!day||!days.includes(day))day=adminDefaultOpsDay(ses);
+  AdminState.onsite.activityDate=day;
+
+  if($('onsiteDateTabs'))$('onsiteDateTabs').innerHTML=days.map(d=>`<button class="quick-chip ${d===day?'active':''}" onclick="loadOnsiteList('${attr(sid)}','${attr(d)}')">${safe(d.replace(/^\d{4}-/,''))}</button>`).join('');
   $('onsiteBody').innerHTML='<div class="loading">名單載入中…</div>';
+
   try{
-    // 與獨立 onsite.html 使用同一個 DB API，避免後台出現另一套不完整名單。
-    const rows=await api({action:'onsiteRegs',sessionId:sid});
+    const [rows,sum]=await Promise.all([
+      api({action:'onsiteRegs',sessionId:sid,activityDate:day}),
+      api({action:'onsiteDaySummary',sessionId:sid,activityDate:day})
+    ]);
     AdminState.onsite.list=Array.isArray(rows)?rows:[];
+    AdminState.onsite.summary=sum||{};
+    OpsDashboardCache[sid]=sum||{};
     renderOnsiteList();
-  }catch(e){ $('onsiteBody').innerHTML='<div class="empty">名單載入失敗：'+safe(e.message)+'</div>'; }
+  }catch(e){$('onsiteBody').innerHTML='<div class="empty">名單載入失敗：'+safe(e.message)+'</div>';}
 }
 function onsiteSetFilter(f,btn){
-  AdminState.onsite=AdminState.onsite||{};
-  AdminState.onsite.filter=f;
-  document.querySelectorAll('.onsite-fbtn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderOnsiteList();
+  AdminState.onsite=AdminState.onsite||{};AdminState.onsite.filter=f;
+  document.querySelectorAll('.onsite-fbtn,.quick-chip[data-onsite-filter]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');renderOnsiteList();
 }
 function _onsiteIsChecked(r){ return String(r.checkinStatus||r.checkin||'').includes('已報到'); }
+
+async function openMemberFromOnsite(email){
+  const q=String(email||'').trim();switchPage('members');
+  if(!AdminState.members.length){try{await loadMembers();}catch(_e){}}
+  const inp=$('memberSearch');if(inp){inp.value=q;renderMembers();}
+  if(q)setTimeout(()=>openMemberDetail(q),30);
+}
+function jumpMemberHistoryToOnsite(sessionIdValue){
+  const sid=String(sessionIdValue||'').trim();if(!sid)return;panelBack();switchPage('onsite');
+  setTimeout(()=>{const sel=$('onsiteSession');if(!sel)return;sel.value=sid;if(sel.value)loadOnsiteList(sid);},40);
+}
+function jumpFinanceToSession(sessionIdValue){
+  const sid=String(sessionIdValue||'').trim();if(!sid)return;switchPage('sessions');setTimeout(()=>openSessionDetail(sid),30);
+}
+
 function renderOnsiteList(){
-  const o=AdminState.onsite||{}; const list=o.list||[]; const filter=o.filter||'unchecked';
-  const kw=($('onsiteSearch')?.value||'').trim().toLowerCase();
-  const done=list.filter(_onsiteIsChecked).length; const notYet=list.length-done;
+  const o=AdminState.onsite||{},list=o.list||[],filter=o.filter||'unchecked',kw=($('onsiteSearch')?.value||'').trim().toLowerCase();
+  const s=o.summary||{},a=s.attendance||{},t=s.teardown||{},d=s.deposit||{};
+  const total=Number(a.total)||list.length,checked=Number(a.checked)||0,unchecked=Number(a.unchecked)||0,notTeardown=Number(t.pending)||0;
+
+  if($('onsiteSummary'))$('onsiteSummary').innerHTML=`
+    <div class="ops-summary">
+      <button class="ops-stat clickable" onclick="onsiteSetFilter('all',null)"><span>應報到</span><b>${num(total)}</b></button>
+      <button class="ops-stat ok clickable" onclick="onsiteSetFilter('checked',null)"><span>已報到</span><b>${num(checked)}</b></button>
+      <button class="ops-stat warn clickable" onclick="onsiteSetFilter('unchecked',null)"><span>未報到</span><b>${num(unchecked)}</b></button>
+      <button class="ops-stat clickable" onclick="onsiteSetFilter('notTeardown',null)"><span>未撤場</span><b>${num(notTeardown)}</b></button>
+      <button class="ops-stat bad clickable" onclick="onsiteSetFilter('notDeposit',null)"><span>待退押金</span><b>${num(d.pendingCount||0)}</b></button>
+    </div>
+    <div class="ops-deposit">
+      <button class="ops-stat clickable" onclick="onsiteSetFilter('allDeposit',null)"><span>當日押金總額</span><b>${money(d.totalAmount||0)}</b><small>${num(d.totalCount||0)} 筆</small></button>
+      <button class="ops-stat ok clickable" onclick="onsiteSetFilter('refundedDeposit',null)"><span>已退押金</span><b>${money(d.refundedAmount||0)}</b><small>${num(d.refundedCount||0)} 筆・點擊名單</small></button>
+      <button class="ops-stat warn clickable" onclick="onsiteSetFilter('notDeposit',null)"><span>待退押金</span><b>${money(d.pendingAmount||0)}</b><small>${num(d.pendingCount||0)} 筆・即時同步</small></button>
+    </div>`;
+
+  const chips=[['all','全部 '+total],['unchecked','未報到 '+unchecked],['checked','已報到 '+checked],['notTeardown','未撤場 '+notTeardown],['allDeposit','全部押金 '+num(d.totalCount||0)],['refundedDeposit','已退押金 '+num(d.refundedCount||0)],['notDeposit','待退押金 '+num(d.pendingCount||0)]];
+  if($('onsiteQuickFilters'))$('onsiteQuickFilters').innerHTML=chips.map(([f,label])=>`<button class="quick-chip onsite-fbtn ${filter===f?'active':''}" data-onsite-filter="${f}" onclick="onsiteSetFilter('${f}',this)">${safe(label)}</button>`).join('');
+
   let rows=list.slice();
-  if(filter==='unchecked') rows=rows.filter(r=>!_onsiteIsChecked(r));
-  else if(filter==='checked') rows=rows.filter(_onsiteIsChecked);
-  if(kw) rows=rows.filter(r=>((r.brand||'')+(r.name||'')+(r.phone||'')+(r.email||'')).toLowerCase().includes(kw));
-  const counts='<div class="onsite-count">已報到 <b>'+done+'</b>｜未報到 <b>'+notYet+'</b>｜共 '+list.length+'</div>';
+  if(filter==='unchecked')rows=rows.filter(r=>!_onsiteIsChecked(r));
+  else if(filter==='checked')rows=rows.filter(_onsiteIsChecked);
+  else if(filter==='notTeardown')rows=rows.filter(r=>String(r.teardown||r.teardownStatus||'未撤場')!=='已撤場');
+  else if(filter==='allDeposit')rows=rows.filter(r=>(Number(r.deposit||0)||0)>0);
+  else if(filter==='refundedDeposit')rows=rows.filter(r=>(Number(r.deposit||0)||0)>0&&String(r.depositRefunded||'')==='已退押金');
+  else if(filter==='notDeposit')rows=rows.filter(r=>(Number(r.deposit||0)||0)>0&&!['已退押金','押金沒收'].includes(String(r.depositRefunded||'未退押金')));
+  if(kw)rows=rows.filter(r=>((r.brand||'')+(r.name||'')+(r.phone||'')+(r.email||'')+(r.stallNumber||'')).toLowerCase().includes(kw));
+
   let cards='';
-  if(!rows.length){ cards='<div class="empty" style="grid-column:1/-1">沒有符合的攤友</div>'; }
+  if(!rows.length)cards='<div class="empty" style="grid-column:1/-1">沒有符合的攤友</div>';
   else for(const r of rows){
-    const id=attr(r.id||r.regId); const checked=_onsiteIsChecked(r);
-    const teardown=String(r.teardown||r.teardownStatus||'未撤場');
-    const dep=Number(r.deposit||0)||0; const depStatus=String(r.depositRefunded||'未退押金');
-    const tags='<span class="tag '+(checked?'ok':'')+'">'+safe(checked?'已報到':'未報到')+'</span>'
-      +'<span class="tag '+(teardown==='已撤場'?'ok':'')+'">'+safe(teardown)+'</span>'
-      +(dep>0?'<span class="tag '+(depStatus==='已退押金'?'ok':depStatus==='押金沒收'?'bad':'warn')+'">'+safe(depStatus)+'</span>':'');
-    const actions='<button class="btn '+(checked?'secondary':'green')+' small" onclick="onsiteMarkAdmin(\''+id+'\',\''+(checked?'undoCheckin':'checkin')+'\',this)">'+(checked?'取消報到':'報到')+'</button>'
-      +'<button class="btn secondary small" onclick="onsiteMarkAdmin(\''+id+'\',\''+(teardown==='已撤場'?'teardownUndo':'teardownDone')+'\',this)">'+(teardown==='已撤場'?'改為未撤場':'已撤場')+'</button>'
-      +(dep>0?'<button class="btn secondary small" onclick="onsiteMarkAdmin(\''+id+'\',\''+(depStatus==='已退押金'?'depositUnrefund':'depositRefund')+'\',this)">'+(depStatus==='已退押金'?'改為未退':'退押金')+'</button><button class="btn danger small" onclick="onsiteMarkAdmin(\''+id+'\',\'depositForfeited\',this)">沒收押金</button>':'')
-      +'<button class="btn secondary small" onclick="onsiteMarkAdmin(\''+id+'\',\'note\',this)">備註</button>';
-    cards+='<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">'+safe(r.brand||r.name||'未填品牌')+'</div>'
-      +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin:7px 0">'+tags+'</div>'
-      +'<div class="onsite-sub">'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div>'
-      +'<div class="onsite-sub">攤位 '+num(r.stallCount||1)+'｜押金 '+money(dep)+'</div></div>'
-      +'<div class="onsite-card-btn" style="display:flex;gap:6px;flex-wrap:wrap">'+actions+'</div></article>';
+    const id=attr(r.id||r.regId),ck=_onsiteIsChecked(r),teardown=String(r.teardown||r.teardownStatus||'未撤場'),dep=Number(r.deposit||0)||0,depStatus=String(r.depositRefunded||'未退押金'),seat=String(r.stallNumber||'未排位');
+    const tags=`<span class="tag ${ck?'ok':''}">${safe(ck?'已報到':'未報到')}</span><span class="tag ${teardown==='已撤場'?'ok':''}">${safe(teardown)}</span>${dep>0?`<span class="tag ${depStatus==='已退押金'?'ok':depStatus==='押金沒收'?'bad':'warn'}">${safe(depStatus)} ${money(dep)}</span>`:''}`;
+    const actions=`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button><button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${depStatus==='已退押金'?'depositUnrefund':'depositRefund'}',this)">${depStatus==='已退押金'?'取消退押金':'退押金'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
+    cards+=`<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">${safe(r.brand||r.name||'未填品牌')}</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${tags}</div><div class="onsite-sub">${safe(r.name||'—')}｜${safe(r.phone||'—')}｜${safe(seat)}</div>${r.equipmentText?`<div class="onsite-sub">設備｜${safe(r.equipmentText)}</div>`:''}</div><div class="onsite-card-btn direct-actions">${actions}</div></article>`;
   }
-  $('onsiteBody').innerHTML=counts+'<div class="onsite-grid" style="margin-top:10px">'+cards+'</div>';
+  $('onsiteBody').innerHTML=`<div class="onsite-grid">${cards}</div>`;
 }
 async function onsiteMarkAdmin(regId,mode,btn){
-  const sid=(AdminState.onsite&&AdminState.onsite.sid)||'';
-  if(!sid||!regId){ toast('缺少場次或報名資料，已阻斷操作'); return; }
-  const confirmMap={depositRefund:'確認退還押金？',depositForfeited:'確認沒收押金？',teardownDone:'確認已完成撤場？'};
-  if(confirmMap[mode] && !await uiConfirm(confirmMap[mode])) return;
-  const needNote=['note','depositForfeited'];
-  const note=needNote.includes(mode)?(prompt('請輸入備註（可留空）','')||''):'';
-  const old=btn?btn.textContent:''; if(btn){btn.disabled=true;btn.textContent='處理中…';}
+  const sid=AdminState.onsite?.sid||'',day=AdminState.onsite?.activityDate||'';
+  if(!sid||!day||!regId){toast('缺少場次、日期或報名資料，已阻斷操作');return;}
+  const confirmMap={depositRefund:'確認退還此日押金？',depositForfeited:'確認沒收此日押金？',teardownDone:'確認此日已完成撤場？'};
+  if(confirmMap[mode]&&!await uiConfirm(confirmMap[mode]))return;
+  const note=['note','depositForfeited'].includes(mode)?(prompt('請輸入備註（可留空）','')||''):'';
+  const old=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='處理中…';}
   try{
-    await apiPost({action:'onsiteMark',regId,sessionId:sid,mode,note});
+    await apiPost({action:'onsiteMark',regId,sessionId:sid,activityDate:day,mode,note});
     toast('已更新');
-    await loadOnsiteList(sid);
-  }catch(e){ toast('操作失敗：'+e.message,7000); if(btn){btn.disabled=false;btn.textContent=old;} }
+    await loadOnsiteList(sid,day);
+    OpsDashboardCache[sid]=AdminState.onsite.summary||{};
+    renderSessions();
+  }catch(e){toast('操作失敗：'+e.message,7000);if(btn){btn.disabled=false;btn.textContent=old;}}
 }
 function restoreDeepNav(st){ try{ if(!st || st.page!=='sessions') return; const sid=st.sid||''; const filter=st.filter||'all'; const L=st.layer||'root'; const labelMap={all:'全部名單',pending:'待審核',approved:'已錄取',paid:'已繳費',free:'免費錄取',paymentPending:'付款待確認',unpaid:'未繳費',checked:'已報到',checkin:'現場報到名單',refund:'退款',receivable:'應收明細',received:'已收明細',unreceived:'未收明細',deposit:'押金明細',equipment:'設備名單'}; if(L==='businessOverview'){ if(typeof openBusinessOverviewPanel==='function') openBusinessOverviewPanel(); return; } if(!sid) return; if(L==='sessionList'){ openSessionList(sid,filter,labelMap[filter]||'名單'); } else if(L==='equipment'){ openEquipmentPanel(sid, st.dateKey||'', st.dateLabel||''); } else if(L==='sessionDetail'){ openSessionDetail(sid); } else if(L==='finance'){ openFinancePanel(sid); } else if(L==='sessionSettings'){ openSessionSettings(sid); } }catch(e){} }
 async function refreshCurrentPage(){ if(AdminState.currentLayer !== 'root' && AdminState.currentSessionId){ await refreshCurrentSessionOnly(); return; } if(AdminState.currentPage==='sessions') await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); if(AdminState.currentPage==='members') await loadMembers(); }
@@ -1537,7 +1599,63 @@ function renderThemeFilter(){
   }).join('');
 }
 function setThemeFilter(id){ AdminState.themeFilter=String(id||''); renderThemeFilter(); renderSessions(); }
-function renderSessions(){ const box=$('sessionList'); const kw=($('sessionSearch')?.value||'').trim().toLowerCase(); const mode=$('sessionStatusFilter')?.value||'current'; const list=[]; for(const s of AdminState.sessions){ if(mode==='current' && isArchived(s)) continue; if(mode==='archived' && !isArchived(s)) continue; if(kw && ![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw)) continue; const tf=AdminState.themeFilter||''; if(tf && String(s.eventId||s.event_id||'')!==String(tf)) continue; list.push(s); } if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;} const sorted=sortOperationalSessions(list); let out=''; for(const s of sorted) out += renderSessionCard(s); box.innerHTML=out; }
+
+function sessionDaySyncHtml(s){
+  const sid=sessionId(s),x=OpsDashboardCache[String(sid)];
+  if(!x)return '<div class="session-day-sync"><div class="sub">現場進度載入中…</div></div>';
+  const day=x.activityDate||'',a=x.attendance||{},t=x.teardown||{},d=x.deposit||{},days=Array.isArray(x.availableDates)?x.availableDates:[];
+  return `<div class="session-day-sync">
+    <div class="quick-scroll">${days.map(dd=>`<button class="quick-chip ${dd===day?'active':''}" onclick="event.stopPropagation();loadSessionOpsOne('${attr(sid)}','${attr(dd)}')">${safe(dd.replace(/^\d{4}-/,''))}</button>`).join('')}</div>
+    <div class="session-day-mini">
+      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','all')">應報到 <b>${num(a.total||0)}</b></button>
+      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','checked')">已報到 <b>${num(a.checked||0)}</b></button>
+      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','unchecked')">未報到 <b>${num(a.unchecked||0)}</b></button>
+      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','notTeardown')">未撤場 <b>${num(t.pending||0)}</b></button>
+      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','refundedDeposit')">已退 <b>${num(d.refundedCount||0)} / ${money(d.refundedAmount||0)}</b></button>
+      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','notDeposit')">待退 <b>${num(d.pendingCount||0)} / ${money(d.pendingAmount||0)}</b></button>
+    </div>
+  </div>`;
+}
+async function queueOpsForSessions(list){
+  if(OpsDashboardInFlight)return;
+  const ids=(list||[]).map(sessionId).filter(id=>!OpsDashboardCache[String(id)]);
+  if(!ids.length)return;
+  OpsDashboardInFlight=true;
+  try{
+    const rows=await api({action:'opsDashboard',sessionIds:ids.slice(0,60).join(','),_t:Date.now()});
+    for(const r of (Array.isArray(rows)?rows:[]))OpsDashboardCache[String(r.sessionId)]=r;
+    renderSessions();
+  }catch(_e){}finally{OpsDashboardInFlight=false;}
+}
+async function loadSessionOpsOne(sid,day){
+  try{
+    const r=await api({action:'onsiteDaySummary',sessionId:sid,activityDate:day,_t:Date.now()});
+    OpsDashboardCache[String(sid)]=r;renderSessions();
+  }catch(e){toast('現場進度載入失敗：'+e.message);}
+}
+function openOpsFromSessionCard(sid,day,filter='all'){
+  switchPage('onsite');
+  setTimeout(()=>{
+    const sel=$('onsiteSession');if(sel)sel.value=String(sid);
+    loadOnsiteList(String(sid),String(day||'')).then(()=>onsiteSetFilter(filter,null));
+  },40);
+}
+
+function renderSessions(){
+  const box=$('sessionList'),kw=($('sessionSearch')?.value||'').trim().toLowerCase(),mode=$('sessionStatusFilter')?.value||'current',list=[];
+  for(const s of AdminState.sessions){
+    if(mode==='current'&&isArchived(s))continue;
+    if(mode==='archived'&&!isArchived(s))continue;
+    if(kw&&![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw))continue;
+    const tf=AdminState.themeFilter||'';if(tf&&String(s.eventId||s.event_id||'')!==String(tf))continue;
+    list.push(s);
+  }
+  if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;}
+  const sorted=sortOperationalSessions(list);let out='';
+  for(const s of sorted)out+=renderSessionCard(s);
+  box.innerHTML=out;
+  queueOpsForSessions(sorted);
+}
 // ── 場次短網址 ──────────────────────────────────────────────
 // 一個場次只會有一組短網址，後端以唯一索引保證；重複按只會取回同一組。
 // 點擊數由資料庫原子累加，不在前端計算。
@@ -1706,6 +1824,20 @@ async function purgeErrorLogs(days){
     await loadErrorLogs();
   }catch(e){ toast('清除失敗：'+((e&&e.message)||e)); }
 }
+
+let OpsDashboardCache={},OpsDashboardInFlight=false;
+function adminSessionDays(s){
+  let raw=(s&&s.dates)||(s&&s.dates_json)||[];
+  if(typeof raw==='string'){try{raw=JSON.parse(raw)}catch(_e){raw=[]}}
+  if(!Array.isArray(raw))raw=[];
+  return raw.map(x=>String((x&&typeof x==='object')?(x.date||x.day||x.key||x.value||''):x).slice(0,10)).filter(Boolean);
+}
+function adminDefaultOpsDay(s){
+  const ds=adminSessionDays(s);if(!ds.length)return '';
+  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  return ds.includes(today)?today:(ds.find(d=>d>=today)||ds[ds.length-1]);
+}
+
 function renderSessionCard(s){
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
@@ -1725,6 +1857,7 @@ function renderSessionCard(s){
         +'<div class="session3-title">'+safe(sessionName(s))+'</div>'
         +'<div class="meta"><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div>'
         +'<div class="session-date-equip-list">'+dateEquip+'</div>'
+        +sessionDaySyncHtml(s)
       +'</div>'
       +'<div class="session3-content">'
         +'<div class="session3-main">'
@@ -3456,7 +3589,7 @@ let AccountingState={data:null};
 function acctModeChanged(){const mode=$('acctMode')?.value||'month',custom=mode==='custom';$('acctAnchor')?.classList.toggle('hidden',custom);$('acctStart')?.classList.toggle('hidden',!custom);$('acctEnd')?.classList.toggle('hidden',!custom);$('acctCustomBtn')?.classList.toggle('hidden',!custom);if(!custom)loadAccountingReport();}
 function accountingMoney(n){return money(Number(n)||0)}
 function accountingRow(label,value,cls=''){return '<div class="accounting-row"><span>'+safe(label)+'</span><b class="'+cls+'">'+accountingMoney(value)+'</b></div>'}
-async function loadAccountingReport(){const body=$('accountingBody');if(!body)return;if(!$('acctAnchor').value)$('acctAnchor').value=new Date().toISOString().slice(0,10);const mode=$('acctMode')?.value||'month',q={action:'accountingReport',mode,anchor:$('acctAnchor')?.value||''};if(mode==='custom'){q.start=$('acctStart')?.value||'';q.end=$('acctEnd')?.value||'';}body.innerHTML='<div class="loading">載入正式財務資料中…</div>';try{const d=await api(q);AccountingState.data=d;const t=d.totals||{},c=d.counts||{},rows=d.sessions||[],exp=d.expenseBreakdown||[],pc=(Number(t.profit)||0)>=0?'pos':'neg';let html='<div class="report-card"><div class="report-title">'+safe(d.period?.label||'財務報表')+'</div><div class="sub">'+safe(d.basis||'')+'</div><div class="accounting-total-grid"><div class="accounting-total income"><span>收入</span><b>'+accountingMoney(t.income)+'</b></div><div class="accounting-total"><span>退款</span><b>'+accountingMoney(t.refund)+'</b></div><div class="accounting-total expense"><span>支出</span><b>'+accountingMoney(t.expense)+'</b></div><div class="accounting-total profit '+pc+'"><span>總損益</span><b>'+accountingMoney(t.profit)+'</b></div><div class="accounting-total"><span>場次</span><b>'+num(c.sessions||0)+'</b><span>賺 '+num(c.profitable||0)+'｜賠 '+num(c.loss||0)+'</span></div></div></div>';html+='<div class="accounting-two"><div class="accounting-ledger"><h3>收入</h3>'+accountingRow('正式已確認收入（不含押金）',t.income)+accountingRow('已完成退款','-'+(Number(t.refund)||0))+accountingRow('退款後淨收入',t.netIncome,'acct-profit-pos')+'</div><div class="accounting-ledger"><h3>支出</h3>'+(exp.length?exp.map(x=>accountingRow(x.name,x.amount)).join(''):'<div class="empty">此期間尚無正式支出</div>')+accountingRow('支出合計',t.expense)+'</div></div>';html+='<div class="accounting-session-table"><table><thead><tr><th>日期</th><th>場次</th><th>收入</th><th>退款</th><th>淨收入</th><th>支出</th><th>損益</th><th>公司份額</th><th>合作方份額</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+safe(r.date||'')+'</td><td>'+safe(r.sessionName||'')+'</td><td>'+accountingMoney(r.income)+'</td><td>'+accountingMoney(r.refund)+'</td><td>'+accountingMoney(r.netIncome)+'</td><td>'+accountingMoney(r.expense)+'</td><td class="'+((Number(r.profit)||0)>=0?'acct-profit-pos':'acct-profit-neg')+'">'+accountingMoney(r.profit)+'</td><td>'+accountingMoney(r.companyShare)+'</td><td>'+accountingMoney(r.partnerShare)+'</td></tr>').join('')+'</tbody></table></div>';body.innerHTML=html;}catch(e){body.innerHTML='<div class="empty">財務總表載入失敗：'+safe(e.message)+'</div>';}}
+async function loadAccountingReport(){const body=$('accountingBody');if(!body)return;if(!$('acctAnchor').value)$('acctAnchor').value=new Date().toISOString().slice(0,10);const mode=$('acctMode')?.value||'month',q={action:'accountingReport',mode,anchor:$('acctAnchor')?.value||''};if(mode==='custom'){q.start=$('acctStart')?.value||'';q.end=$('acctEnd')?.value||'';}body.innerHTML='<div class="loading">載入正式財務資料中…</div>';try{const d=await api(q);AccountingState.data=d;const t=d.totals||{},c=d.counts||{},rows=d.sessions||[],exp=d.expenseBreakdown||[],pc=(Number(t.profit)||0)>=0?'pos':'neg';let html='<div class="report-card"><div class="report-title">'+safe(d.period?.label||'財務報表')+'</div><div class="sub">'+safe(d.basis||'')+'</div><div class="accounting-total-grid"><div class="accounting-total income"><span>收入</span><b>'+accountingMoney(t.income)+'</b></div><div class="accounting-total"><span>退款</span><b>'+accountingMoney(t.refund)+'</b></div><div class="accounting-total expense"><span>支出</span><b>'+accountingMoney(t.expense)+'</b></div><div class="accounting-total profit '+pc+'"><span>總損益</span><b>'+accountingMoney(t.profit)+'</b></div><div class="accounting-total"><span>場次</span><b>'+num(c.sessions||0)+'</b><span>賺 '+num(c.profitable||0)+'｜賠 '+num(c.loss||0)+'</span></div></div></div>';html+='<div class="accounting-two"><div class="accounting-ledger"><h3>收入</h3>'+accountingRow('正式已確認收入（不含押金）',t.income)+accountingRow('已完成退款','-'+(Number(t.refund)||0))+accountingRow('退款後淨收入',t.netIncome,'acct-profit-pos')+'</div><div class="accounting-ledger"><h3>支出</h3>'+(exp.length?exp.map(x=>accountingRow(x.name,x.amount)).join(''):'<div class="empty">此期間尚無正式支出</div>')+accountingRow('支出合計',t.expense)+'</div></div>';html+='<div class="accounting-session-table"><table><thead><tr><th>日期</th><th>場次</th><th>收入</th><th>退款</th><th>淨收入</th><th>支出</th><th>損益</th><th>公司份額</th><th>合作方份額</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+safe(r.date||'')+'</td><td>'+safe(r.sessionName||'')+'</td><td>'+accountingMoney(r.income)+'</td><td>'+accountingMoney(r.refund)+'</td><td>'+accountingMoney(r.netIncome)+'</td><td>'+accountingMoney(r.expense)+'</td><td class="'+((Number(r.profit)||0)>=0?'acct-profit-pos':'acct-profit-neg')+'">'+accountingMoney(r.profit)+'</td><td>'+accountingMoney(r.companyShare)+'</td><td>'+accountingMoney(r.partnerShare)+'</td></tr>').join('')+'</tbody></table></div>';html+='<div class="accounting-session-mobile">'+rows.map(r=>`<div class="accounting-mobile-card"><div class="accounting-mobile-head"><div class="accounting-mobile-title">${safe(r.sessionName||'')}</div><div class="accounting-mobile-date">${safe(r.date||'')}</div></div><div class="accounting-mobile-grid"><div class="accounting-mobile-cell"><span>收入</span><b>${accountingMoney(r.income)}</b></div><div class="accounting-mobile-cell"><span>支出</span><b>${accountingMoney(r.expense)}</b></div><div class="accounting-mobile-cell"><span>損益</span><b class="${(Number(r.profit)||0)>=0?'acct-profit-pos':'acct-profit-neg'}">${accountingMoney(r.profit)}</b></div></div><div class="direct-actions" style="margin-top:6px"><button class="btn secondary small" onclick="jumpFinanceToSession('${attr(r.sessionId)}')">查看場次</button></div></div>`).join('')+'</div>';body.innerHTML=html;}catch(e){body.innerHTML='<div class="empty">財務總表載入失敗：'+safe(e.message)+'</div>';}}
 function downloadAccountingCsv(){const d=AccountingState.data;if(!d){toast('請先載入報表');return;}const rows=[['日期','場次','收入','退款','淨收入','支出','損益','公司份額','合作方份額']];(d.sessions||[]).forEach(r=>rows.push([r.date,r.sessionName,r.income,r.refund,r.netIncome,r.expense,r.profit,r.companyShare,r.partnerShare]));const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='2BL_'+String(d.period?.label||'財務報表').replace(/[\/\\\s]/g,'_')+'.csv';a.click();URL.revokeObjectURL(a.href);}
 
 async function loadTodos(){
@@ -3768,7 +3901,7 @@ function renderMembers(){
       +'<div class="member-note">'+safe(intro)+'</div>'
       +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
       +'<button class="btn secondary small" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
-      +'<button class="btn small '+(fp?'':'secondary')+'" onclick="toggleFastPass(\''+attr(email)+'\','+(fp?'false':'true')+',this)" title="免審核會員：報名需審核的場次也直接錄取">'+(fp?'✅ 免審核':'設為免審核')+'</button></div>'
+      +'<button class="btn small" onclick="openAdminManualRegistration(\''+attr(email)+'\')">代報名</button></div>'
     +'</article>';
   }
   box.innerHTML=html;
@@ -3797,6 +3930,20 @@ function adminManualPayload(){const equip={},addonQty={};document.querySelectorA
 async function previewAdminManualRegistration(){try{const r=await apiPost({action:'adminPreviewRegistration',...adminManualPayload()});$('amrPreview').innerHTML='<div class="report-title">正式試算</div><div class="kv"><div class="k">場地／報名費</div><div>'+money(r.fee)+'</div><div class="k">押金</div><div>'+money(r.deposit)+'</div><div class="k">設備</div><div>'+money(r.equipment)+'</div><div class="k">加購</div><div>'+money(r.addon)+'</div><div class="k">總應繳</div><div><b>'+money(r.total)+'</b></div><div class="k">審核狀態</div><div>'+safe(r.reviewStatus||'')+'</div></div>'}catch(e){toast('試算失敗：'+e.message,7000)}}
 async function submitAdminManualRegistration(){const p=adminManualPayload();if(!p.memberEmail||!p.sessionId){toast('請選會員與場次');return}if(!p.confirmedConsent){toast('請勾選已取得攤商同意');return}if(!await uiConfirm('確定建立正式報名？費用由 Worker 重算，付款仍走正式付款確認。'))return;try{const r=await apiPost({action:'adminCreateRegistration',...p});toast('正式報名已建立｜應繳 '+money(r.total),7000);await refreshSessionsOverview();panelBack()}catch(e){toast('代報名失敗：'+e.message,8000)}}
 
+
+function memberDayOpsSyncHtml(r){
+  const rows=Array.isArray(r&&r.dayOps)?r.dayOps:[],sid=String(r.sessionId||r.session_id||'');
+  if(!rows.length)return '';
+  return `<div class="member-day-sync">${rows.map(d=>{
+    const day=String(d.activityDate||''),cancel=String(d.participationStatus||'')==='已取消';
+    return `<button class="mini-day" onclick="jumpMemberHistoryToOnsiteDay('${attr(sid)}','${attr(day)}')"><b>${safe(day.replace(/^\d{4}-/,''))}</b><br>${safe(cancel?'已取消':(d.checkinStatus||'未報到'))}｜${safe(d.teardownStatus||'未撤場')}｜${safe(d.depositStatus||'未退押金')}</button>`;
+  }).join('')}</div>`;
+}
+function jumpMemberHistoryToOnsiteDay(sid,day){
+  panelBack();switchPage('onsite');
+  setTimeout(()=>{const sel=$('onsiteSession');if(sel)sel.value=String(sid);loadOnsiteList(String(sid),String(day));},40);
+}
+
 async function openMemberHistory(key){
   const k=String(key||'').trim();
   if(!k){toast('缺少會員查詢關鍵字');return;}
@@ -3805,7 +3952,7 @@ async function openMemberHistory(key){
     const rows=await api({action:'getMemberHistory',memberKey:k});
     const list=Array.isArray(rows)?rows:[];
     if(!list.length){ $('panelBody').innerHTML='<div class="empty">查無歷史報名紀錄</div>'; return; }
-    $('panelBody').innerHTML='<div class="cards">'+list.map(r=>renderRegCard(r)).join('')+'</div>';
+    $('panelBody').innerHTML='<div class="cards">'+list.map(r=>'<div class="history-direct-item">'+renderRegCard(r)+memberDayOpsSyncHtml(r)+'<div class="direct-actions" style="margin-top:5px"><button class="btn secondary small" onclick="jumpMemberHistoryToOnsite(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">現場</button><button class="btn secondary small" onclick="openSessionDetail(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">場次</button></div></div>').join('')+'</div>';
   }catch(e){
     $('panelBody').innerHTML='<div class="empty">歷史報名載入失敗：'+safe(e.message)+'</div>';
   }
