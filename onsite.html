@@ -266,6 +266,7 @@ const LS_EMAIL='2bl_onsite_email';
 const LS_OPERATOR='2bl_onsite_operator';
 let token='', email='', me=null, sessions=[], regs=[], currentSession=null;
 let passcode='', operatorName='';
+let currentActivityDate='', currentDaySummary={}, onsiteQuickFilter='all';
 function $(id){return document.getElementById(id)}
 function money(n){return 'NT$ '+(Number(n)||0).toLocaleString('zh-TW')}
 function dt(v){if(!v)return '—'; try{return new Date(v).toLocaleString('zh-TW',{hour12:false})}catch(e){return v}}

@@ -1236,7 +1236,7 @@
       <button id="tab-finance" class="tab" onclick="switchPage('finance')">財務</button>
       <button id="tab-consignment" class="tab" onclick="switchPage('consignment')">寄賣</button><button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
     </nav>
-    <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button class="btn" onclick="openAdminManualRegistrationForSession()">＋ 主辦代報名</button><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
+    <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button type="button" class="btn" onclick="openAdminManualRegistrationForSession()">＋ 主辦代報名</button><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoFilterBar"></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 報到 → 撤場 → 退押金；資料全部即時讀取資料庫。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div id="onsiteDateTabs" class="quick-scroll"></div><div id="onsiteSummary"></div><div id="onsiteQuickFilters" class="quick-scroll"></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn" onclick="openAdminManualRegistration()">＋ 主辦代報名</button><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
@@ -1884,7 +1884,7 @@ function renderSessionCard(s){
         +'<div class="session3-actions">'
           +'<button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
           +'<button class="btn secondary small" onclick="openSeatOps(\''+attr(sid)+'\')">🪑 排位結果</button>'
-          +'<button class="btn small" onclick="openAdminManualRegistrationForSession(\''+attr(sid)+'\')">＋ 代報名</button>'
+          +'<button type="button" class="btn small" onclick="openAdminManualRegistrationForSession(\''+attr(sid)+'\')">＋ 代報名</button>'
           +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
           +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
           +'<button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
@@ -3912,44 +3912,81 @@ function renderMembers(){
 }
 
 let AdminManualReg={session:null,memberEmail:''};
-function adminManualSessionOptions(){return (AdminState.sessions||[]).slice().sort((a,b)=>String(sessionName(a)).localeCompare(String(sessionName(b)),'zh-Hant')).map(s=>'<option value="'+attr(sessionId(s))+'">'+safe(sessionName(s))+'｜'+safe(sessionDateText(s))+'</option>').join('')}
+function adminManualSessionOptions(){return (AdminState.sessions||[]).slice().sort((a,b)=>String(sessionName(a)).localeCompare(String(sessionName(b)),'zh-Hant')).map(s=>'<option value="'+attr(sessionId(s))+'">'+safe(sessionName(s))+'｜'+safe((adminSessionDays(s)||[]).join('、'))+'</option>').join('')}
 function adminManualMemberOptions(){return (AdminState.members||[]).slice().sort((a,b)=>memberBrand(a).localeCompare(memberBrand(b),'zh-Hant')).map(m=>'<option value="'+attr(m.email||'')+'">'+safe(memberBrand(m))+'｜'+safe(m.name||'')+'｜'+safe(m.phone||'')+'</option>').join('')}
 
-function openAdminManualRegistrationForSession(sessionIdValue=''){
-  openAdminManualRegistration('');
+async function openAdminManualRegistrationForSession(sessionIdValue=''){
   const preferred=String(sessionIdValue||AdminState.currentSessionId||'').trim();
-  if(!preferred)return;
-  setTimeout(()=>{
+  try{
+    await openAdminManualRegistration('');
+    if(!preferred)return;
     const sel=$('amrSession');
-    if(!sel)return;
+    if(!sel){
+      toast('代報名面板尚未建立，已阻斷操作',6000);
+      return;
+    }
     sel.value=preferred;
-    if(sel.value) loadAdminManualSession(sel.value);
-  },0);
+    if(!sel.value){
+      toast('找不到此場次，請重新整理場次後再試',6000);
+      return;
+    }
+    await loadAdminManualSession(preferred);
+  }catch(e){
+    toast('主辦代報名開啟失敗：'+(e?.message||e),7000);
+  }
 }
 
 async function openAdminManualRegistration(memberEmail=''){
   let memberErr='',sessionErr='';
-  if(!AdminState.members.length){try{await loadMembers();}catch(e){memberErr=e.message||String(e);}}
-  if(!AdminState.sessions.length){try{await refreshSessionsOverview();}catch(e){sessionErr=e.message||String(e);}}
+
+  if(!Array.isArray(AdminState.members)||!AdminState.members.length){
+    try{
+      const rows=await api({action:'getMembers',_t:Date.now()});
+      AdminState.members=Array.isArray(rows)?rows:[];
+    }catch(e){
+      memberErr=e?.message||String(e);
+      AdminState.members=[];
+    }
+  }
+
+  if(!Array.isArray(AdminState.sessions)||!AdminState.sessions.length){
+    try{
+      const rows=await api({action:'getSessionDashboard',_t:Date.now()});
+      AdminState.sessions=Array.isArray(rows)?rows:[];
+    }catch(e){
+      sessionErr=e?.message||String(e);
+      AdminState.sessions=[];
+    }
+  }
+
   AdminManualReg={session:null,memberEmail:memberEmail||''};
 
-  const memberOptions=adminManualMemberOptions(),sessionOptions=adminManualSessionOptions();
-  openPanel('主辦代報名','建立正式 registration；費用、押金、設備、加購由 Worker 正式計價。',`
-    <div class="report-card">
+  const memberOptions=adminManualMemberOptions();
+  const sessionOptions=adminManualSessionOptions();
+
+  openPanel(
+    '主辦代報名',
+    '建立正式 registration；費用、押金、設備、加購由 Worker 正式計價。',
+    `<div class="report-card">
       ${(memberErr||sessionErr)?`<div class="empty">資料載入異常：${safe([memberErr,sessionErr].filter(Boolean).join('｜'))}</div>`:''}
       <div class="form-grid">
         <div class="form-field full"><label>會員 / 品牌</label>
           <select id="amrMember"><option value="">請選擇會員</option>${memberOptions}</select>
-          ${!memberOptions?'<div class="sub">目前沒有可選會員，請先建立/補齊會員資料。</div>':''}
+          ${!memberOptions?'<div class="sub">目前沒有可選會員，或會員資料載入失敗。</div>':''}
         </div>
         <div class="form-field full"><label>場次</label>
-          <select id="amrSession" onchange="loadAdminManualSession(this.value)"><option value="">請選擇場次</option>${sessionOptions}</select>
-          ${!sessionOptions?'<div class="sub">目前沒有可選場次，或你的帳號沒有場次權限。</div>':''}
+          <select id="amrSession" onchange="loadAdminManualSession(this.value)">
+            <option value="">請選擇場次</option>${sessionOptions}
+          </select>
+          ${!sessionOptions?'<div class="sub">目前沒有可選場次，或此帳號沒有場次權限。</div>':''}
         </div>
       </div>
       <div id="amrSessionBody"><div class="empty">請先選擇場次</div></div>
-    </div>`);
+    </div>`
+  );
+
   if(memberEmail&&$('amrMember'))$('amrMember').value=memberEmail;
+  return true;
 }
 async function loadAdminManualSession(sid){
   const box=$('amrSessionBody');

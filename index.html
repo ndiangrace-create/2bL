@@ -3447,6 +3447,16 @@ function syncMemberIntoCurrentRegForm(member){
   setVal('f_invoiceEmail',memberVal(m,'invoiceEmail','invoice_email') || memberVal(m,'email') || ST.memberEmail || '');
 }
 
+function preFillMemberFields(){
+  try{
+    const m=ST.member||{};
+    syncMemberIntoCurrentRegForm(m);
+    const email=(m.email||ST.memberEmail||memberSafeEmail()||'').trim();
+    const fEmail=$('f_email'); if(fEmail)fEmail.value=email;
+    const dispEmail=$('disp_email'); if(dispEmail)dispEmail.textContent=email;
+  }catch(e){ console.warn('[preFillMemberFields]',e); }
+}
+
 function fillMemberCard(member){
   const m=member||{};
   const email=String(m.email||ST.memberEmail||memberSafeEmail()||'').trim();
