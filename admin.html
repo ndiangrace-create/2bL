@@ -2656,9 +2656,9 @@ async function openFinancePanel(sid){
     const stat=(label,val,cls)=>'<div class="mini-stat"'+(cls?' style="background:'+cls+'"':'')+'><b>'+money(val||0)+'</b><span>'+safe(label)+'</span></div>';
     const financeSummary='<div class="report-card"><div class="report-title">正式損益計算</div><div class="sub" style="margin-bottom:8px">收入以已確認收款為準；退款以已完成退款為準；支出以已登錄的正式支出為準。</div><div class="mini-stat-row">'
       +stat('已確認收入',r.confirmedRevenue,'#eef7ee')+stat('已完成退款',r.refundAmount,'#fff0ee')+stat('退款後淨收入',r.netRevenue,'#eef5fb')+stat('本場總支出',r.totalExpense,'#fff8ed')
-      +stat('其中場地稅5%',r.venueTax,'#f6f1ff')+stat('可分配盈餘',r.distributableProfit,(Number(r.distributableProfit)||0)>=0?'#eef7ee':'#fff0ee')+stat('公司分潤',r.companyShare,'#eef5fb')+stat('合作方分潤',r.partnerShare,'#fff8ed')+'</div></div>';
+      +stat('攤位費開票稅5%',r.stallInvoiceTax??r.invoiceTaxAmount??0,'#f6f1ff')+stat('可分配盈餘',r.distributableProfit,(Number(r.distributableProfit)||0)>=0?'#eef7ee':'#fff0ee')+stat('公司分潤',r.companyShare,'#eef5fb')+stat('合作方分潤',r.partnerShare,'#fff8ed')+'</div></div>';
     const expenseRows=expenseTableHtml(sid,expenseItems,locked);
-    const expenseForm=locked?'':'<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費（自動加5%稅額）</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="人事費">人事費</option><option value="行銷費">行銷費</option><option value="物流費">物流費</option><option value="清潔費">清潔費</option><option value="保險費">保險費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">登錄場地費後，系統會自動計入 5% 場地稅額。</div></div>';
+    const expenseForm=locked?'':'<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費（主辦實際支付）</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="人事費">人事費</option><option value="行銷費">行銷費</option><option value="物流費">物流費</option><option value="清潔費">清潔費</option><option value="保險費">保險費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">場地費照主辦實際支付金額登錄，不會自動加稅；5% 稅額只套用於攤友繳交、需開立發票的攤位費。</div></div>';
     const shareCard='<div class="report-card"><div class="report-title">本場分潤設定</div><div class="sub" style="margin-bottom:8px">目前來源：'+safe(r.shareSource==='session'?'本場設定':r.shareSource==='event'?'系列設定':'系統預設 50/50')+'</div><div class="form-grid"><div class="form-field full"><label>合作方名稱</label><input id="share_partner" value="'+attr(r.partnerName||'')+'" '+(locked?'disabled':'')+' placeholder="例如：合作主辦方"></div><div class="form-field"><label>公司 %</label><input id="share_company" type="number" min="0" max="100" step="0.01" value="'+attr(r.companyRatio??50)+'" '+(locked?'disabled':'')+'></div><div class="form-field"><label>合作方 %</label><input id="share_partner_ratio" type="number" min="0" max="100" step="0.01" value="'+attr(r.partnerRatio??50)+'" '+(locked?'disabled':'')+'></div></div>'+(locked?'':'<div class="card-actions"><button class="btn secondary" onclick="saveFinanceShare(\''+attr(sid)+'\',this)">儲存本場分潤比例</button></div>')+'</div>';
     const settleCard=locked?'<div class="report-card"><div class="report-title">🔒 已正式結算</div><div class="sub">鎖定時間：'+safe(r.settlement?.lockedAt||'—')+'<br>鎖定人：'+safe(r.settlement?.lockedBy||'—')+'</div><div class="card-actions"><button class="btn danger" onclick="unlockFinanceSettlement(\''+attr(sid)+'\',this)">解除結算鎖定（僅平台超管）</button></div></div>':'<div class="report-card"><div class="report-title">正式結算</div><div class="sub">鎖定後會保存本次收入／退款／支出／分潤快照，並禁止修改支出與比例。</div><div class="card-actions"><button class="btn" onclick="lockFinanceSettlement(\''+attr(sid)+'\',this)">🔒 確認並鎖定本場結算</button></div></div>';
     $('panelBody').innerHTML='<div class="readable-detail">'+warn+financeSummary+'<div class="detail-grid"><div>'+expenseForm+'<div style="height:14px"></div><div class="report-card"><div class="report-title">本場支出明細</div><div class="info-line"><span>正式支出總額</span><span>'+money(r.totalExpense||0)+'</span></div>'+expenseRows+'</div><div style="height:14px"></div><div class="card-actions"><button type="button" class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載全場完整資料</button><button type="button" class="btn secondary" onclick="shareFinanceReconciliation(\''+attr(sid)+'\')">分享財報給夥伴對帳</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>報名金流項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side">'+shareCard+'<div style="height:14px"></div>'+settleCard+'<div style="height:14px"></div><div class="report-card"><div class="report-title">口徑提醒</div><div class="sub">押金不列入營收；未確認收款不列入收入；退款完成後才會扣回，結案前請確認所有收支已登錄完成。</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div></div>';
@@ -2688,7 +2688,7 @@ async function editSessionExpense(sid,id,type,name,amount){
   try{await apiPost({action:'saveFinanceItem',id,sessionId:sid,type,name:String(n||'').trim()||type,amount:v});toast('支出已更新並重新計算');await openFinancePanel(sid);}catch(e){toast('更新失敗：'+e.message,6000);}
 }
 async function deleteSessionExpense(sid,id){
-  if(!confirm('確定刪除此支出？若為場地費，其5%自動稅額也會一起移除。'))return;
+  if(!confirm('確定刪除此支出？'))return;
   try{await apiPost({action:'deleteFinanceItem',id,sessionId:sid});toast('支出已刪除並重新計算');await openFinancePanel(sid);}catch(e){toast('刪除失敗：'+e.message,6000);}
 }
 async function shareFinanceReconciliation(sid){
@@ -3213,7 +3213,7 @@ async function loadSeatOps(sid,activityDate){
     const d=await api({action:'adminSeatBoard',sessionId:sid,activityDate:activityDate||SeatOps.activityDate||''});
     if(!d || d.error) throw new Error((d&&d.error)||'載入失敗');
     const prev=SeatOps||{};
-    SeatOps={sid:sid,activityDate:String(d.activityDate||activityDate||prev.activityDate||''),availableDates:Array.isArray(d.availableDates)?d.availableDates:[],seats:Array.isArray(d.seats)?d.seats:[],regs:Array.isArray(d.regs)?d.regs:[],summary:d.summary||{},session:d.session||{},query:prev.query||'',filter:prev.filter||'all',moveRegId:'',markerMode:false,markerCode:'',boardEdit:prev.boardEdit||false,customSpecials:Array.isArray(prev.customSpecials)?prev.customSpecials:[],multiSelect:!!prev.multiSelect,selectedCanvasItems:Array.isArray(prev.selectedCanvasItems)?prev.selectedCanvasItems:[],objectMenuId:''};
+    SeatOps={sid:sid,activityDate:String(d.activityDate||activityDate||prev.activityDate||''),availableDates:Array.isArray(d.availableDates)?d.availableDates:[],seats:Array.isArray(d.seats)?d.seats:[],regs:Array.isArray(d.regs)?d.regs:[],summary:d.summary||{},session:d.session||{},query:prev.query||'',filter:prev.filter||'all',moveRegId:'',markerMode:!!prev.markerMode,markerCode:prev.markerCode||'',boardEdit:prev.boardEdit||false,customSpecials:Array.isArray(prev.customSpecials)?prev.customSpecials:[],multiSelect:!!prev.multiSelect,selectedCanvasItems:Array.isArray(prev.selectedCanvasItems)?prev.selectedCanvasItems:[],objectMenuId:''};
     renderSeatOps();
   }catch(e){ box.innerHTML='<div class="empty" style="color:#8b1c1c">載入失敗：'+safe(e&&e.message?e.message:String(e))+'</div>'; }
 }
@@ -3275,7 +3275,7 @@ function seatOpsClearMultiSelection(){SeatOps.selectedCanvasItems=[];renderSeatO
 function seatOpsSelectAllVendors(){SeatOps.multiSelect=true;SeatOps.selectedCanvasItems=(SeatOps.seats||[]).filter(s=>s.active&&s.occupied).map(s=>seatOpsCanvasKey('seat',s.code));renderSeatOps();}
 function seatOpsBlankBoardHtml(){
   const esc=safe,cfg=seatOpsBoardCfg(),seats=(SeatOps.seats||[]).filter(x=>x.active);
-  if(!seats.length)return '<div class="seatcanvas-wrap"><div class="seatops-map-empty"><b>還沒有位置。</b><br>先按「依付款順序重建位置編號」。位置編號會依付款確認順序產生，再由你自由拖成任何場地形狀。</div></div>';
+  if(!seats.length)return '<div class="seatcanvas-wrap"><div class="seatops-map-empty"><b>本場尚未建立位置。</b><br>系統會依每日已錄取且正式付款已確認／免費的名單，建立足夠位置並一次完成每日排位。<br><button type="button" class="btn" style="margin-top:14px" onclick="seatOpsRebuildBlankBoard()">＋ 建立位置並自動排位</button></div></div>';
   const markers=seats.map(seat=>{const p=seatOpsCanvasXY(seat),isSpecial=seat.type==='service'||seat.type==='closed',cls=isSpecial?'special':seat.occupied?'used':seat.type==='paid'?'paid':'free';const label=isSpecial?(seat.specialLabel||'自訂區塊'):(seat.occupantName||'空位');const eq=seat.occupantName?(seat.occupantEquipmentText||'設備自備'):'';const sel=seatOpsCanvasIsSelected('seat',seat.code)?' multi-selected':'';return '<button type="button" class="seatcanvas-marker '+cls+sel+'" data-seat="'+esc(seat.code)+'" style="left:'+p.x+'%;top:'+p.y+'%" title="'+esc(seat.code+'｜'+label+(eq?'｜'+eq:''))+'" onclick="seatOpsMarkerClick(event,\''+esc(seat.code)+'\')" onpointerdown="seatOpsMarkerPointerDown(event,\''+esc(seat.code)+'\')" ondragover="event.preventDefault()" ondrop="seatOpsMarkerDrop(event,\''+esc(seat.code)+'\')"><span class="code">'+esc(seat.code)+'</span><span class="who">'+esc(label)+'</span>'+(eq?'<span class="equip">'+esc(eq)+'</span>':'')+'</button>';}).join('');
   // 工具列只保留固定快捷；已建立的自訂名稱不再回灌到上方造成越加越長。
   const specials=['服務台','禁用'];
@@ -3295,9 +3295,44 @@ async function seatOpsSaveBoardLabels(){
   try{const r=await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'blank',columnsPerRow:cfg.columnsPerRow,topNote:top,rowLabels:labels});if(r&&r.error)throw new Error(r.error);SeatOps.boardEdit=false;toast('方向標示已儲存');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('儲存方向標示失敗：'+e.message,8000);}
 }
 async function seatOpsRebuildBlankBoard(){
-  toast('名單編號已改由正式付款順序自動產生；排位工作台只安排底圖位置，不再人工重編號。',9000);
+  if(!await uiConfirm('建立本場位置並自動排位？\n\n系統會依每日實際參加、已錄取且正式付款已確認／免費的名單建立位置，再依付款順序排位。'))return;
+  try{
+    const r=await apiPost({action:'rebuildBlankSeatBoard',sessionId:SeatOps.sid,columnsPerRow:9,force:true});
+    if(r&&r.error)throw new Error(r.error);
+    toast('排位完成：已建立 '+Number(r.createdSeats||0)+' 個位置，新排 '+Number(r.assigned||0)+' 筆，待人工 '+Number(r.waiting||0)+' 筆。',10000);
+    await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
+  }catch(e){toast('建立位置並排位失敗：'+(e&&e.message?e.message:e),10000);}
 }
 async function seatOpsExpandBlankBoard(){toast('不需要先建空位；新增已繳費攤商會自動取得下一個連號。',7000);}
+
+async function seatOpsUploadMapFile(input){
+  const file=input&&input.files&&input.files[0]; if(!file)return;
+  if(!/^image\//.test(file.type||'')){toast('請選擇 PNG、JPG 或 WebP 圖片');input.value='';return;}
+  if(file.size>5*1024*1024){toast('底圖請小於 5MB');input.value='';return;}
+  try{
+    toast('場地底圖上傳中…');
+    const image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('圖片讀取失敗'));reader.readAsDataURL(file);});
+    const up=await apiPost({action:'uploadCover',image});
+    if(!up||!up.url)throw new Error((up&&up.error)||'圖片上傳失敗');
+    await apiPost({action:'saveSeatMapImage',sessionId:SeatOps.sid,mapUrl:up.url});
+    const cfg=seatOpsBoardCfg();
+    await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'map',columnsPerRow:cfg.columnsPerRow,topNote:cfg.topNote,rowLabels:cfg.rowLabels});
+    SeatOps.markerMode=true;
+    toast('底圖已套用。請選擇位置號碼後點圖，或直接拖曳位置標記。',9000);
+    await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
+  }catch(e){toast('底圖上傳失敗：'+(e&&e.message?e.message:e),9000);}
+  finally{input.value='';}
+}
+async function seatOpsRemoveMap(){
+  if(!await uiConfirm('移除本場場地底圖？\n\n只移除圖片；位置編號、排位名單與既有標點座標都會保留。'))return;
+  try{
+    await apiPost({action:'saveSeatMapImage',sessionId:SeatOps.sid,mapUrl:''});
+    const cfg=seatOpsBoardCfg();
+    await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'blank',columnsPerRow:cfg.columnsPerRow,topNote:cfg.topNote,rowLabels:cfg.rowLabels});
+    toast('底圖已移除，排位與位置編號均保留');
+    await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
+  }catch(e){toast('移除底圖失敗：'+e.message,9000);}
+}
 
 function seatOpsMapHtml(){
   const esc=safe, seats=SeatOps.seats||[], mapUrl=String((SeatOps.session||{}).seatMapUrl||'').trim();
@@ -3325,7 +3360,10 @@ function renderSeatOps(){
   h+='<div class="seatops-counts">'+chip('已排位',sum.assignedRegs,'#e8f5ec')+chip('已繳費待補位',sum.waitingPaid,Number(sum.waitingPaid)>0?'#fff4dd':'#eef')+chip('剩餘自動位',sum.autoFree!=null?sum.autoFree:autoFree,'#eef')+chip('加價可選',paidFree,'#fff4dd')+'</div>';
   const eqText=String(sum.equipmentTotalText||'').trim();if(eqText&&eqText!=='無')h+='<div class="notice" style="margin:7px 0"><b>本場設備總計：</b>'+esc(eqText)+'</div>';
   if(sum.firstAssignedAt||sum.runCount) h+='<div class="sub" style="margin:4px 0 8px">第一次正式排位：'+esc(sum.firstAssignedAt||'—')+'｜最近補排：'+esc(sum.lastAssignedAt||sum.firstAssignedAt||'—')+'｜補排執行次數：'+Number(sum.runCount||0)+'</div>';
-  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋品牌、姓名、電話、位置號碼" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已排位</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待補位</option><option value="auto" '+(SeatOps.filter==='auto'?'selected':'')+'>自動位</option><option value="paid" '+(SeatOps.filter==='paid'?'selected':'')+'>加價自選</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">＋ 補排已繳費未排位</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 發布版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatRoster()">⬇ 排位名單</button><button type="button" class="btn secondary" onclick="seatOpsRebuildBlankBoard()">▦ 依付款順序重建位置編號</button><button type="button" class="btn secondary" onclick="seatOpsExpandBlankBoard()">＋ 擴充一列</button></div>';
+  const published=String((SeatOps.session||{}).seatLayoutPublishedAt||'');
+  const hasMap=!!String((SeatOps.session||{}).seatMapUrl||'').trim();
+  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋品牌、姓名、電話、位置號碼" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已排位</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待補位</option><option value="auto" '+(SeatOps.filter==='auto'?'selected':'')+'>自動位</option><option value="paid" '+(SeatOps.filter==='paid'?'selected':'')+'>加價自選</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">＋ 補排已繳費未排位</button><label class="btn secondary" style="cursor:pointer">🗺 '+(hasMap?'更換場地底圖':'上傳場地底圖')+'<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="seatOpsUploadMapFile(this)"></label>'+(hasMap?'<button type="button" class="btn secondary" onclick="seatOpsRemoveMap()">移除底圖</button>':'')+'<button type="button" class="btn" onclick="seatOpsPublish()">📣 '+(published?'重新發布排位':'發布排位')+'</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 發布版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatRoster()">⬇ 排位名單</button></div>';
+  h+='<div class="sub" style="margin:4px 0 9px">'+(published?'已發布：'+esc(published):'尚未發布；攤商端不會顯示未完成的排位。')+'</div>';
   if(SeatOps.moveRegId){const mr=seatOpsRegById(SeatOps.moveRegId);h+='<div class="notice warn"><b>換位模式：</b> '+esc(mr?(mr.brand||mr.name):SeatOps.moveRegId)+'。請直接點排位板／位置圖上的<b>空位</b>；若點到另一位單攤攤商，可確認交換位置。 <button type="button" class="btn secondary small" onclick="seatOpsCancelMove()">取消</button></div>';}
   h+=seatOpsBoardHtml();
   h+='<div style="font-weight:900;margin:12px 0 6px">排位名單（'+list.length+'）</div>';
@@ -3518,7 +3556,7 @@ async function seatOpsMarkerClick(ev,code){
     if(!other){toast('此位置已有占用資料，請重新整理');return;}
     if((other.stallCount||1)!==1){toast('對方為多攤報名，為避免破壞整組位置，不能直接交換；請使用「指定」功能調整');return;}
     if(!await uiConfirm('交換位置？\n\n'+(moving.brand||moving.name)+'：'+(moving.stallNumber||'未排')+'\n'+(other.brand||other.name)+'：'+(other.stallNumber||code))) return;
-    toast('每日排位不直接互換兩筆資料；請先用「指定」替其中一位安排空位，再調整另一位，避免當日位置衝突。',9000); return;
+    try{const res=await apiPost({action:'adminSwapSeat',regIdA:moving.regId,regIdB:other.regId,activityDate:SeatOps.activityDate});if(res&&res.error)throw new Error(res.error);toast('位置已安全交換');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('交換失敗：'+e.message,9000);} return;
   }
   if(seat.occupantRegId){
     const card=$('seatCard_'+seat.occupantRegId); if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.classList.add('selected');setTimeout(()=>card.classList.remove('selected'),1800);}
@@ -3538,6 +3576,10 @@ async function seatOpsAssignDirect(regId,codes){
 async function seatOpsBatch(sid){
   if(!await uiConfirm('補排 '+(SeatOps.activityDate||'本日')+' 已繳費未排位攤商？\n\n只處理「該日參加＋正式付款已確認／免費＋已錄取＋尚未有當日位置」的攤商。其他日期與既有位置完全不動。')) return;
   try{const r=await apiPost({action:'runBatchAssign',sessionId:sid,activityDate:SeatOps.activityDate});if(r&&r.error)throw new Error(r.error);toast((r.activityDate||SeatOps.activityDate)+' 補排完成：新排 '+((r&&r.assigned)||0)+'；保留既有 '+((r&&r.preserved)||0)+'；待人工 '+((r&&r.waiting)||0),9000);await loadSeatOps(sid);}catch(e){toast('補排失敗：'+(e&&e.message?e.message:e),8000);}
+}
+async function seatOpsPublish(){
+  if(!await uiConfirm('發布本場全部活動日的排位？\n\n發布後攤商可在「我的紀錄」查看各日位置，系統也會建立排位通知。'))return;
+  try{const r=await apiPost({action:'publishSeatLayout',sessionId:SeatOps.sid});if(r&&r.error)throw new Error(r.error);toast('排位已發布，通知 '+Number(r.notified||0)+' 位攤商',9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('發布失敗：'+e.message,9000);}
 }
 function seatOpsToggleMarkerMode(){SeatOps.markerMode=!SeatOps.markerMode;SeatOps.moveRegId='';renderSeatOps();toast(SeatOps.markerMode?'位置圖標點已開啟：選位置號碼後點圖；已標位置可拖曳':'已結束標點模式');}
 async function seatOpsMapClick(ev){
