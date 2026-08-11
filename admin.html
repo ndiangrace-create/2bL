@@ -2413,12 +2413,14 @@ function adminPaymentText(r){
 function adminRegFixedBlockHtml(r){
   const date=adminShortDateRange(regDateText(r));
   const stalls=adminStallText(r);
+  const rosterNo=String(r.rosterNumber||r.roster_number||'').trim();
   const seatNo=String(r.stallNumber||r.stallNo||r.stall_number||'').trim();
   const equip=regEquipText(r)||'無';
   const addon=regAddonText(r)||'無';
   const pay=adminPaymentText(r);
   return '<div class="card-fixed-block">'
     +'<div class="fixed-row fixed-main"><span>'+safe(date)+'</span><span>'+safe(stalls)+'</span></div>'
+    +'<div class="fixed-row"><span><b>名單編號：</b>'+safe(rosterNo||'付款確認後產生')+'</span><span></span></div>'
     +'<div class="fixed-row"><span><b>位置號碼：</b>'+safe(seatNo||'尚未排位')+'</span><span title="'+attr(equip)+'">設備：'+safe(equip)+'</span></div>'
     +'<div class="fixed-row"><span title="'+attr(addon)+'">加購：'+safe(addon)+'</span><span></span></div>'
     +'<div class="fixed-pay">繳費(含押金)：<b>'+safe(pay)+'</b></div>'
@@ -3293,11 +3295,9 @@ async function seatOpsSaveBoardLabels(){
   try{const r=await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'blank',columnsPerRow:cfg.columnsPerRow,topNote:top,rowLabels:labels});if(r&&r.error)throw new Error(r.error);SeatOps.boardEdit=false;toast('方向標示已儲存');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('儲存方向標示失敗：'+e.message,8000);}
 }
 async function seatOpsRebuildBlankBoard(){
-  const cfg=seatOpsBoardCfg(),raw=prompt('每列幾個位置？（預設 9；可填 3～12）',String(cfg.columnsPerRow||9));if(raw===null)return;const cols=Math.max(3,Math.min(12,Number(raw)||9));
-  if(!await uiConfirm('確定把本場改成「空白智慧排位板」？\n\n系統會依目前「已錄取＋正式已付款／免費＋非退費流程」名單重新編成 A1～A'+cols+'、B1～B'+cols+'…。\n\n這會重新編號目前既有位置，但不會刪除報名、付款或歷史資料。'))return;
-  try{const r=await apiPost({action:'rebuildBlankSeatBoard',sessionId:SeatOps.sid,columnsPerRow:cols,force:true});if(r&&r.error)throw new Error(r.error);toast('空白排位板已建立：'+Number(r.registrations||0)+' 筆名單／'+Number(r.assignedStalls||0)+' 攤',9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('建立失敗：'+e.message,10000);}
+  toast('名單編號已改由正式付款順序自動產生；排位工作台只安排底圖位置，不再人工重編號。',9000);
 }
-async function seatOpsExpandBlankBoard(){if(!await uiConfirm('新增下一整列空位？既有排位完全不動。'))return;try{const r=await apiPost({action:'expandBlankSeatBoard',sessionId:SeatOps.sid});if(r&&r.error)throw new Error(r.error);toast('已新增 '+(r.row||'下一')+' 列空位');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('擴充失敗：'+e.message,8000);}}
+async function seatOpsExpandBlankBoard(){toast('不需要先建空位；新增已繳費攤商會自動取得下一個連號。',7000);}
 
 function seatOpsMapHtml(){
   const esc=safe, seats=SeatOps.seats||[], mapUrl=String((SeatOps.session||{}).seatMapUrl||'').trim();
