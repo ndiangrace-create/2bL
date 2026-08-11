@@ -1258,6 +1258,18 @@ const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
 const ADMIN_PAGE_STATE_KEY = '2bl_admin_page_state';
 const AdminState = { tenantId:'', email:'', token:'', role:'', name:'', currentPage:'sessions', currentSessionId:null, currentLayer:'root', currentFilter:null, sessions:[], currentSessionDetail:null, currentList:[], members:[], settings:{}, events:[], panelStack:[] };
+let OpsDashboardCache={},OpsDashboardInFlight=false;
+let AdminSessionAddonItems=[];
+let AdminSessionSeatMapDirty=false;
+let AdminSessionVisualAssets=[];
+let SeatOps={sid:'',activityDate:'',availableDates:[],seats:[],regs:[],summary:{},session:{},query:'',filter:'all',moveRegId:'',markerMode:false,markerCode:'',boardEdit:false,customSpecials:[],multiSelect:false,selectedCanvasItems:[],objectMenuId:''};
+let AdminManualReg={session:null,memberEmail:''};
+let sessionDateRowIdx=0;
+let AdminSessionSeatItems=[];
+let AdminSessionSeatLoaded=false;
+let AdminSessionSeatListDirty=false;
+let FinOvData=null;
+const FORCE_REASONS={typhoon:'颱風警報',heavy_rain:'豪雨／大雨特報',earthquake_or_disaster:'地震或災害安全疑慮',gov_work_school_suspension:'政府公告停班停課',gov_order_cancel:'政府／主管機關要求停辦',venue_safety_request:'場地方公共安全要求',venue_unavailable:'場地突發不可使用',traffic_disruption:'交通中斷或重大管制',other_force_majeure:'其他不可抗力因素'};
 const $ = id => document.getElementById(id);
 const urlParams = new URLSearchParams(location.search);
 (function initUrl(){ const t=urlParams.get('tenant')||urlParams.get('tenantId'); const tok=urlParams.get('admin_token'); const err=urlParams.get('login_error'); if(t) sessionStorage.setItem(TENANT_KEY,t); if(tok) sessionStorage.setItem('2bl_admin_token_pending',tok); if(err) sessionStorage.setItem('2bl_login_error_pending',err); if(t||tok||err) history.replaceState({},'',location.pathname+(t?'?tenant='+encodeURIComponent(t):'')); })();
@@ -1607,6 +1619,7 @@ function sessionDaySyncHtml(s){
   const sid=sessionId(s),x=OpsDashboardCache[String(sid)];
   if(!x)return '<div class="session-day-sync"><div class="sub">現場進度載入中…</div></div>';
   const day=x.activityDate||'',a=x.attendance||{},t=x.teardown||{},d=x.deposit||{},days=Array.isArray(x.availableDates)?x.availableDates:[];
+  const regTotal=Number(x.registrationTotal??a.total??0)||0,excluded=Number(x.excludedCount||0)||0;
   return `<div class="session-day-sync">
     <div class="quick-scroll">${days.map(dd=>`<button class="quick-chip ${dd===day?'active':''}" onclick="event.stopPropagation();loadSessionOpsOne('${attr(sid)}','${attr(dd)}')">${safe(dd.replace(/^\d{4}-/,''))}</button>`).join('')}</div>
     <div class="session-day-mini">
@@ -1662,7 +1675,7 @@ function renderSessions(){
 // ── 場次短網址 ──────────────────────────────────────────────
 // 一個場次只會有一組短網址，後端以唯一索引保證；重複按只會取回同一組。
 // 點擊數由資料庫原子累加，不在前端計算。
-const FORCE_REASONS={typhoon:'颱風警報',heavy_rain:'豪雨／大雨特報',earthquake_or_disaster:'地震或災害安全疑慮',gov_work_school_suspension:'政府公告停班停課',gov_order_cancel:'政府／主管機關要求停辦',venue_safety_request:'場地方公共安全要求',venue_unavailable:'場地突發不可使用',traffic_disruption:'交通中斷或重大管制',other_force_majeure:'其他不可抗力因素'};
+
 function openForceCancelPanel(sid){
   const ses=(AdminState.sessions||[]).find(x=>String(sessionId(x))===String(sid))||{};
   if(ses.force_cancel){
@@ -1828,7 +1841,7 @@ async function purgeErrorLogs(days){
   }catch(e){ toast('清除失敗：'+((e&&e.message)||e)); }
 }
 
-let OpsDashboardCache={},OpsDashboardInFlight=false;
+
 function adminSessionDays(s){
   let raw=(s&&s.dates)||(s&&s.dates_json)||[];
   if(typeof raw==='string'){try{raw=JSON.parse(raw)}catch(_e){raw=[]}}
@@ -1882,18 +1895,18 @@ function renderSessionCard(s){
           +equipmentTotal
         +'</div>'
         +'<div class="session3-actions">'
-          +'<button class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
-          +'<button class="btn secondary small" onclick="openSeatOps(\''+attr(sid)+'\')">🪑 排位結果</button>'
+          +'<button type="button" class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
+          +'<button type="button" class="btn secondary small" onclick="openSeatOps(\''+attr(sid)+'\')">🪑 排位結果</button>'
           +'<button type="button" class="btn small" onclick="openAdminManualRegistrationForSession(\''+attr(sid)+'\')">＋ 代報名</button>'
-          +'<button class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
-          +'<button class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
-          +'<button class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
-          +'<button class="btn small" onclick="openShortLink(\''+attr(sid)+'\')">短網址</button>'
-          +'<button class="btn small" style="background:#FAE1DD;border:1.5px solid #d98c8c;color:#8b1c1c" onclick="openForceCancelPanel(\''+attr(sid)+'\')">颱風／不可抗力</button>'
-          +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button>'
+          +'<button type="button" class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
+          +'<button type="button" class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
+          +'<button type="button" class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
+          +'<button type="button" class="btn small" onclick="openShortLink(\''+attr(sid)+'\')">短網址</button>'
+          +'<button type="button" class="btn small" style="background:#FAE1DD;border:1.5px solid #d98c8c;color:#8b1c1c" onclick="openForceCancelPanel(\''+attr(sid)+'\')">颱風／不可抗力</button>'
+          +'<button type="button" class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'封存\')">封存</button>'
-          +(isPlatformSuperAdmin()?'<button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteSessionUI(\''+attr(sid)+'\')">刪除</button>':'')
+          +(isPlatformSuperAdmin()?'<button type="button" class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteSessionUI(\''+attr(sid)+'\')">刪除</button>':'')
         +'</div>'
       +'</div>'
     +'</div>'
@@ -2433,7 +2446,7 @@ function timeOptionsHtml(selected){
   }
   return html;
 }
-let sessionDateRowIdx=0;
+
 function sessionDateRowHtml(d={},idx){
   d = d || {};
   return '<div class="date-line-row" data-idx="'+idx+'">'
@@ -2483,9 +2496,9 @@ function collectSessionDates(){
   return out;
 }
 
-let AdminSessionSeatItems=[];
-let AdminSessionSeatLoaded=false;
-let AdminSessionSeatListDirty=false;
+
+
+
 function normalizeAdminSeatItem(x={},i=0){
   const rawType=String(x.type||x.seatType||x.seat_type||'auto').trim();
   const legacyInactive=(x.active===false||x.active==='false'||x.is_active===false||x.is_active==='false');
@@ -2688,7 +2701,7 @@ async function saveSessionSeatMapOnly(sid,btn){
 }
 
 // ── 選位營運（SEAT_OPS_UX_20260807）：互動位置圖／小卡／增量補排／換位／下載 ──
-let SeatOps={sid:'',activityDate:'',availableDates:[],seats:[],regs:[],summary:{},session:{},query:'',filter:'all',moveRegId:'',markerMode:false,markerCode:'',boardEdit:false,customSpecials:[],multiSelect:false,selectedCanvasItems:[],objectMenuId:''};
+
 async function openSeatOps(sid){
   const s=sessionById(sid)||{};
   openPanel('排位營運', safe((s.name||s.title||'場次'))+'｜位置圖・排位・補排・換位', '<div id="seatOpsBox" class="sub">載入中…</div>');
@@ -3239,9 +3252,9 @@ function featureSectionHtml(key,label,mods,bodyHtml,extraTitle=''){
   return '<div class="report-card feature-card"><div class="feature-head"><label class="feature-title"><input type="checkbox" id="mod_'+key+'" onchange="toggleSessionFeatureSections()" '+(on?'checked':'')+'> '+safe(label)+'</label>'+extraTitle+'</div><div id="sec_'+key+'_body" class="feature-body '+(on?'':'off')+'">'+bodyHtml+'</div></div>';
 }
 
-let AdminSessionAddonItems=[];
-let AdminSessionSeatMapDirty=false;
-let AdminSessionVisualAssets=[];
+
+
+
 function normalizeSessionAddonItem(x={},i=0){
   if(typeof x === 'string') x={name:x};
   return {
@@ -3516,7 +3529,7 @@ function overviewMetricCards(title,d){
   d=d||{}; const tip='onclick="toast(\'跨場次數字請看下方各場次摘要；單場數字可點進明細\',4200)"';
   return '<div class="report-card"><div class="report-title">'+safe(title)+'</div><div class="mini-stat-row"><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.sessions||0)+'</b><span>場次</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.registrations||0)+'</b><span>報名</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+num(d.paid||0)+'</b><span>已繳費</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.grossRevenue||0)+'</b><span>已確認收入</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.refundTotal||0)+'</b><span>已完成退款</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.expenseTotal||0)+'</b><span>正式支出</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.distributableProfit||0)+'</b><span>可分配盈餘</span></button><button type="button" class="mini-stat click" '+tip+'><b>'+money(d.depositTotal||0)+'</b><span>押金</span></button></div></div>';
 }
-let FinOvData=null;
+
 async function openFinanceOverview(){
   AdminState.currentLayer='financeOverview';
   openPanel('金流總覽','依你的管理權限彙總；只顯示你能管理的場次／主題','<div id="finOvBox" class="sub">載入中…</div>');
@@ -3911,7 +3924,7 @@ function renderMembers(){
   box.innerHTML=html;
 }
 
-let AdminManualReg={session:null,memberEmail:''};
+
 function adminManualSessionOptions(){return (AdminState.sessions||[]).slice().sort((a,b)=>String(sessionName(a)).localeCompare(String(sessionName(b)),'zh-Hant')).map(s=>'<option value="'+attr(sessionId(s))+'">'+safe(sessionName(s))+'｜'+safe((adminSessionDays(s)||[]).join('、'))+'</option>').join('')}
 function adminManualMemberOptions(){return (AdminState.members||[]).slice().sort((a,b)=>memberBrand(a).localeCompare(memberBrand(b),'zh-Hant')).map(m=>'<option value="'+attr(m.email||'')+'">'+safe(memberBrand(m))+'｜'+safe(m.name||'')+'｜'+safe(m.phone||'')+'</option>').join('')}
 
