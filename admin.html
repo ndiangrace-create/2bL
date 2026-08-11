@@ -1208,7 +1208,92 @@
 @media(max-width:620px){.ops-deposit{grid-template-columns:1fr 1fr}.ops-deposit .ops-stat:first-child{grid-column:1/-1}}
 
 </style>
-<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
+<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg">
+<style>
+/* DESKTOP_WIDE_FRAME_FINAL_20260811
+   桌機用真正桌機寬度；手機/窄平板沿用原本 responsive。 */
+@media (min-width:861px){
+  :root{--admin-desktop-gutter:clamp(18px,2vw,34px);}
+
+  .app,
+  .topbar-in,
+  .panel-head-in,
+  .panel-body{
+    width:min(1600px,calc(100vw - (var(--admin-desktop-gutter) * 2)))!important;
+    max-width:none!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  .app,.topbar-in{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+
+  .panel-head{padding-left:0!important;padding-right:0!important;}
+  .panel-body{
+    box-sizing:border-box!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+
+  /* 場次詳細 / 財務：欄位本身縮放，不再把整個 panel 撐出橫向捲軸 */
+  .detail-grid,
+  .accounting-two,
+  .finance-layout,
+  .finance-grid,
+  .session-finance-layout{
+    width:100%!important;
+    min-width:0!important;
+  }
+  .detail-grid>*,
+  .accounting-two>*,
+  .finance-layout>*,
+  .finance-grid>*,
+  .session-finance-layout>*{
+    min-width:0!important;
+  }
+
+  .accounting-session-table{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important; /* 只有表格本身必要時可捲，不讓整個視窗破窗 */
+  }
+  .accounting-session-table table{
+    width:100%!important;
+    min-width:0!important;
+  }
+
+  /* 大螢幕不再被舊版 1280px override 壓回去 */
+  #sessionList.session-list{
+    width:100%!important;
+  }
+}
+@media (min-width:1280px){
+  .app,
+  .topbar-in,
+  .panel-head-in,
+  .panel-body{
+    width:min(1600px,calc(100vw - (var(--admin-desktop-gutter) * 2)))!important;
+    max-width:none!important;
+  }
+}
+
+/* 手機與窄平板保持原本框架，不吃桌機寬版 */
+@media (max-width:860px){
+  .panel-body{
+    width:100%!important;
+    max-width:100%!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+    overflow-x:hidden!important;
+  }
+}
+</style>
+
+</head>
 <body>
 <section id="loginPage" class="login-wrap">
   <div class="login-card">
@@ -3979,7 +4064,7 @@ async function openAdminManualRegistration(memberEmail=''){
 
   openPanel(
     '主辦代報名',
-    '建立正式 registration；費用、押金、設備、加購由 Worker 正式計價。',
+    '主辦直接建立正式報名並直接錄取；可補登已結束場次，已收款可同步進正式金流。',
     `<div class="report-card">
       ${(memberErr||sessionErr)?`<div class="empty">資料載入異常：${safe([memberErr,sessionErr].filter(Boolean).join('｜'))}</div>`:''}
       <div class="form-grid">
@@ -4009,6 +4094,13 @@ async function loadAdminManualSession(sid){
     const s=await api({action:'adminManualSession',sessionId:sid,_t:Date.now()});
     AdminManualReg.session=s;
     const dates=Array.isArray(s.dates)?s.dates:[];
+    const dateKeys=dates.map(d=>String((d&&typeof d==='object')?(d.date||d.day||''):d)).filter(Boolean);
+    const lastDate=dateKeys.slice().sort().pop()||'';
+    const today=new Date().toISOString().slice(0,10);
+    const ended=!!lastDate&&lastDate<today;
+    const closed=['關閉','停用','已結束','封存'].includes(String(s.status||''));
+    const suggestHistorical=ended||closed;
+
     const dateHtml=dates.length?dates.map(d=>{
       const day=String((d&&typeof d==='object')?(d.date||d.day||''):d);
       const fee=(d&&typeof d==='object')?Number(d.fee||0):0;
@@ -4025,32 +4117,113 @@ async function loadAdminManualSession(sid){
       <div class="form-field"><label>${safe(a.name||('加購'+(i+1)))}｜${money(Number(a.price)||0)}</label>
       <input type="number" min="0" class="amrAddon" data-index="${i}" value="0"></div>`:'').join('');
 
-    box.innerHTML=`<div class="form-grid" style="margin-top:10px">
+    box.innerHTML=`<div class="report-card" style="margin-top:10px;background:#f7fbf7">
+      <b>主辦代報名＝直接建立正式報名並直接錄取</b>
+      <div class="sub">不進待審核、不等攤商再按一次。可用於電話／LINE／現場代登、漏登補資料、已結束場次補登。</div>
+    </div>
+    <div class="form-grid" style="margin-top:10px">
       <div class="form-field full"><label>參加日期</label>${dateHtml}</div>
       <div class="form-field"><label>攤位數</label><input id="amrStalls" type="number" min="1" max="${attr(s.maxStalls||3)}" value="1" onchange="adminManualUpdateIncludedEquip()"></div>
       ${equipHtml}${addonHtml?'<div class="form-field full"><b>加購</b></div>'+addonHtml:''}
-      <div class="form-field full"><label><input id="amrConsent" type="checkbox"> 已取得攤商同意，由主辦代填正式報名</label></div>
-      <div class="form-field full"><label><input id="amrSendEmail" type="checkbox"> 建立後寄送報名成立通知</label></div>
+
+      <div class="form-field full"><label>代報／補登原因</label>
+        <select id="amrReason">
+          <option value="主辦代報名">主辦代報名</option>
+          <option value="電話／LINE代報">電話／LINE 代報</option>
+          <option value="現場代報">現場代報</option>
+          <option value="漏登補資料">漏登補資料</option>
+          <option value="歷史場次補登"${suggestHistorical?' selected':''}>歷史場次補登</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="form-field full">
+        <label style="display:flex;gap:7px;align-items:flex-start">
+          <input id="amrHistorical" type="checkbox" ${suggestHistorical?'checked':''}>
+          <span><b>歷史／漏登補登</b><br><span class="sub">允許已結束／關閉場次補錄，不用現在的剩餘名額去否定過去已發生的參加紀錄。</span></span>
+        </label>
+      </div>
+
+      <div class="form-field full"><label>本筆金流狀態</label>
+        <select id="amrPaymentMode" onchange="adminManualPaymentModeChanged()">
+          <option value="unpaid">未繳費／尚未確認收款</option>
+          <option value="paid">已繳費（主辦確認已實際收款，立即進正式金流）</option>
+          <option value="free">免費（僅正式應繳 NT$0 可用）</option>
+        </select>
+        <div class="sub">選「已繳費」會同步建立 payments.status=已確認，場次收入／財務總表會立即納入；押金仍依正式財務規則排除於營收。</div>
+      </div>
+      <div id="amrPaidFields" class="form-field full hidden">
+        <div class="form-grid">
+          <div class="form-field"><label>收款方式</label><input id="amrPaymentMethod" value="主辦補登／手動確認"></div>
+          <div class="form-field"><label>實際收款時間（可補歷史）</label><input id="amrPaidAt" type="datetime-local"></div>
+        </div>
+      </div>
+
+      <div class="form-field full"><label><input id="amrSendEmail" type="checkbox"> 建立後寄送報名成立通知（歷史補登通常不勾）</label></div>
     </div>
-    <div id="amrPreview" class="report-card" style="margin-top:10px"><div class="sub">請先試算；建立時 Worker 會再次重算正式金額。</div></div>
-    <div class="card-actions"><button class="btn secondary" onclick="previewAdminManualRegistration()">試算費用</button><button class="btn" onclick="submitAdminManualRegistration()">建立正式報名</button></div>`;
+    <div id="amrPreview" class="report-card" style="margin-top:10px"><div class="sub">請先試算；建立時 Worker 會再次重算正式金額。主辦代報固定直接「已錄取」。</div></div>
+    <div class="card-actions"><button type="button" class="btn secondary" onclick="previewAdminManualRegistration()">試算費用</button><button type="button" class="btn" onclick="submitAdminManualRegistration()">建立正式報名</button></div>`;
     adminManualUpdateIncludedEquip();
+    adminManualPaymentModeChanged();
   }catch(e){box.innerHTML=`<div class="empty">場次載入失敗：${safe(e.message)}</div>`;}
 }
 function adminManualUpdateIncludedEquip(){const s=AdminManualReg.session||{},stalls=Math.max(1,Number($('amrStalls')?.value)||1),defs=s.equip||{};document.querySelectorAll('.amrEquip').forEach(inp=>{const d=defs[inp.dataset.name]||{},min=(Number(d.incl)||0)*stalls;if(Number(inp.value)<min)inp.value=String(min)})}
-function adminManualPayload(){const equip={},addonQty={};document.querySelectorAll('.amrEquip').forEach(x=>equip[x.dataset.name]=Math.max(0,Number(x.value)||0));document.querySelectorAll('.amrAddon').forEach(x=>addonQty[x.dataset.index]=Math.max(0,Number(x.value)||0));return{memberEmail:$('amrMember')?.value||'',sessionId:$('amrSession')?.value||'',selectedDates:[...document.querySelectorAll('.amrDate:checked')].map(x=>x.value),stallCount:Math.max(1,Number($('amrStalls')?.value)||1),equip,addonQty,confirmedConsent:!!$('amrConsent')?.checked,sendEmail:!!$('amrSendEmail')?.checked}}
-async function previewAdminManualRegistration(){try{const r=await apiPost({action:'adminPreviewRegistration',...adminManualPayload()});$('amrPreview').innerHTML='<div class="report-title">正式試算</div><div class="kv"><div class="k">場地／報名費</div><div>'+money(r.fee)+'</div><div class="k">押金</div><div>'+money(r.deposit)+'</div><div class="k">設備</div><div>'+money(r.equipment)+'</div><div class="k">加購</div><div>'+money(r.addon)+'</div><div class="k">總應繳</div><div><b>'+money(r.total)+'</b></div><div class="k">審核狀態</div><div>'+safe(r.reviewStatus||'')+'</div></div>'}catch(e){toast('試算失敗：'+e.message,7000)}}
+function adminManualPayload(){
+  const equip={},addonQty={};
+  document.querySelectorAll('.amrEquip').forEach(x=>equip[x.dataset.name]=Math.max(0,Number(x.value)||0));
+  document.querySelectorAll('.amrAddon').forEach(x=>addonQty[x.dataset.index]=Math.max(0,Number(x.value)||0));
+  return{
+    memberEmail:$('amrMember')?.value||'',
+    sessionId:$('amrSession')?.value||'',
+    selectedDates:[...document.querySelectorAll('.amrDate:checked')].map(x=>x.value),
+    stallCount:Math.max(1,Number($('amrStalls')?.value)||1),
+    equip,addonQty,
+    manualReason:$('amrReason')?.value||'主辦代報名',
+    historicalBackfill:!!$('amrHistorical')?.checked,
+    paymentMode:$('amrPaymentMode')?.value||'unpaid',
+    paymentMethod:$('amrPaymentMethod')?.value||'主辦補登／手動確認',
+    paidAt:$('amrPaidAt')?.value||'',
+    sendEmail:!!$('amrSendEmail')?.checked
+  };
+}
+function adminManualPaymentModeChanged(){
+  const mode=$('amrPaymentMode')?.value||'unpaid';
+  $('amrPaidFields')?.classList.toggle('hidden',mode!=='paid');
+}
+async function previewAdminManualRegistration(){
+  try{
+    const p=adminManualPayload();
+    const r=await apiPost({action:'adminPreviewRegistration',...p});
+    const payText=p.paymentMode==='paid'?'已繳費（建立後立即進正式金流）':(p.paymentMode==='free'?'免費':'未繳費');
+    $('amrPreview').innerHTML='<div class="report-title">正式試算</div><div class="kv">'+
+      '<div class="k">場地／報名費</div><div>'+money(r.fee)+'</div>'+
+      '<div class="k">押金</div><div>'+money(r.deposit)+'</div>'+
+      '<div class="k">設備</div><div>'+money(r.equipment)+'</div>'+
+      '<div class="k">加購</div><div>'+money(r.addon)+'</div>'+
+      '<div class="k">總應繳</div><div><b>'+money(r.total)+'</b></div>'+
+      '<div class="k">錄取狀態</div><div><b>已錄取（主辦代報不審核）</b></div>'+
+      '<div class="k">金流狀態</div><div>'+safe(payText)+'</div>'+
+      '<div class="k">歷史補登</div><div>'+(p.historicalBackfill?'是':'否')+'</div></div>';
+  }catch(e){toast('試算失敗：'+e.message,7000)}
+}
 async function submitAdminManualRegistration(){
   const p=adminManualPayload();
   if(!p.memberEmail||!p.sessionId){toast('請選會員與場次');return;}
-  if(!p.confirmedConsent){toast('請勾選已取得攤商同意');return;}
-  if(!await uiConfirm('確定建立正式報名？Worker 會重新計價，並建立正式 registration。'))return;
+  if(p.paymentMode==='paid'&&!p.paidAt){
+    // 允許不填：Worker 會使用目前時間；只提示，不阻斷。
+  }
+  const msg=p.paymentMode==='paid'
+    ? '確定建立正式報名並直接錄取？此筆同時會建立正式「已確認收款」，立即進入場次與財務總表。'
+    : '確定建立正式報名並直接錄取？不會進待審核，也不需要攤商再按確認。';
+  if(!await uiConfirm(msg))return;
   try{
     const r=await apiPost({action:'adminCreateRegistration',...p});
-    await Promise.allSettled([refreshSessionsOverview(),loadMembers()]);
+    const jobs=[refreshSessionsOverview(),loadMembers()];
+    if(AdminState.currentPage==='finance')jobs.push(loadAccountingReport());
+    await Promise.allSettled(jobs);
     panelBack();
-    toast(`正式報名已建立${r.id||r.registrationId?`｜編號 ${r.id||r.registrationId}`:''}｜應繳 ${money(r.total||0)}`,8000);
-  }catch(e){toast('代報名失敗：'+e.message,8000);}
+    toast(`正式報名已建立｜已錄取｜${r.paymentStatus||'未繳費'}${r.financeLinked?'｜金流已同步':''}${r.historicalBackfill?'｜歷史補登':''}${r.id?`｜${r.id}`:''}`,9000);
+  }catch(e){toast('代報名失敗：'+e.message,9000);}
 }
 
 
