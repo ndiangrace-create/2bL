@@ -3325,7 +3325,9 @@ function renderSeatOps(){
   h+='<div class="seatops-counts">'+chip('已排位',sum.assignedRegs,'#e8f5ec')+chip('已繳費待補位',sum.waitingPaid,Number(sum.waitingPaid)>0?'#fff4dd':'#eef')+chip('剩餘自動位',sum.autoFree!=null?sum.autoFree:autoFree,'#eef')+chip('加價可選',paidFree,'#fff4dd')+'</div>';
   const eqText=String(sum.equipmentTotalText||'').trim();if(eqText&&eqText!=='無')h+='<div class="notice" style="margin:7px 0"><b>本場設備總計：</b>'+esc(eqText)+'</div>';
   if(sum.firstAssignedAt||sum.runCount) h+='<div class="sub" style="margin:4px 0 8px">第一次正式排位：'+esc(sum.firstAssignedAt||'—')+'｜最近補排：'+esc(sum.lastAssignedAt||sum.firstAssignedAt||'—')+'｜補排執行次數：'+Number(sum.runCount||0)+'</div>';
-  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋品牌、姓名、電話、位置號碼" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已排位</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待補位</option><option value="auto" '+(SeatOps.filter==='auto'?'selected':'')+'>自動位</option><option value="paid" '+(SeatOps.filter==='paid'?'selected':'')+'>加價自選</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">＋ 補排已繳費未排位</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 發布版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatRoster()">⬇ 排位名單</button><button type="button" class="btn secondary" onclick="seatOpsRebuildBlankBoard()">▦ 依付款順序重建位置編號</button><button type="button" class="btn secondary" onclick="seatOpsExpandBlankBoard()">＋ 擴充一列</button></div>';
+  const published=String((SeatOps.session||{}).seatLayoutPublishedAt||'');
+  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋品牌、姓名、電話、位置號碼" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已排位</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待補位</option><option value="auto" '+(SeatOps.filter==='auto'?'selected':'')+'>自動位</option><option value="paid" '+(SeatOps.filter==='paid'?'selected':'')+'>加價自選</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">＋ 補排已繳費未排位</button><button type="button" class="btn" onclick="seatOpsPublish()">📣 '+(published?'重新發布排位':'發布排位')+'</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 發布版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatRoster()">⬇ 排位名單</button></div>';
+  h+='<div class="sub" style="margin:4px 0 9px">'+(published?'已發布：'+esc(published):'尚未發布；攤商端不會顯示未完成的排位。')+'</div>';
   if(SeatOps.moveRegId){const mr=seatOpsRegById(SeatOps.moveRegId);h+='<div class="notice warn"><b>換位模式：</b> '+esc(mr?(mr.brand||mr.name):SeatOps.moveRegId)+'。請直接點排位板／位置圖上的<b>空位</b>；若點到另一位單攤攤商，可確認交換位置。 <button type="button" class="btn secondary small" onclick="seatOpsCancelMove()">取消</button></div>';}
   h+=seatOpsBoardHtml();
   h+='<div style="font-weight:900;margin:12px 0 6px">排位名單（'+list.length+'）</div>';
@@ -3518,7 +3520,7 @@ async function seatOpsMarkerClick(ev,code){
     if(!other){toast('此位置已有占用資料，請重新整理');return;}
     if((other.stallCount||1)!==1){toast('對方為多攤報名，為避免破壞整組位置，不能直接交換；請使用「指定」功能調整');return;}
     if(!await uiConfirm('交換位置？\n\n'+(moving.brand||moving.name)+'：'+(moving.stallNumber||'未排')+'\n'+(other.brand||other.name)+'：'+(other.stallNumber||code))) return;
-    toast('每日排位不直接互換兩筆資料；請先用「指定」替其中一位安排空位，再調整另一位，避免當日位置衝突。',9000); return;
+    try{const res=await apiPost({action:'adminSwapSeat',regIdA:moving.regId,regIdB:other.regId,activityDate:SeatOps.activityDate});if(res&&res.error)throw new Error(res.error);toast('位置已安全交換');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('交換失敗：'+e.message,9000);} return;
   }
   if(seat.occupantRegId){
     const card=$('seatCard_'+seat.occupantRegId); if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.classList.add('selected');setTimeout(()=>card.classList.remove('selected'),1800);}
@@ -3538,6 +3540,10 @@ async function seatOpsAssignDirect(regId,codes){
 async function seatOpsBatch(sid){
   if(!await uiConfirm('補排 '+(SeatOps.activityDate||'本日')+' 已繳費未排位攤商？\n\n只處理「該日參加＋正式付款已確認／免費＋已錄取＋尚未有當日位置」的攤商。其他日期與既有位置完全不動。')) return;
   try{const r=await apiPost({action:'runBatchAssign',sessionId:sid,activityDate:SeatOps.activityDate});if(r&&r.error)throw new Error(r.error);toast((r.activityDate||SeatOps.activityDate)+' 補排完成：新排 '+((r&&r.assigned)||0)+'；保留既有 '+((r&&r.preserved)||0)+'；待人工 '+((r&&r.waiting)||0),9000);await loadSeatOps(sid);}catch(e){toast('補排失敗：'+(e&&e.message?e.message:e),8000);}
+}
+async function seatOpsPublish(){
+  if(!await uiConfirm('發布本場全部活動日的排位？\n\n發布後攤商可在「我的紀錄」查看各日位置，系統也會建立排位通知。'))return;
+  try{const r=await apiPost({action:'publishSeatLayout',sessionId:SeatOps.sid});if(r&&r.error)throw new Error(r.error);toast('排位已發布，通知 '+Number(r.notified||0)+' 位攤商',9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('發布失敗：'+e.message,9000);}
 }
 function seatOpsToggleMarkerMode(){SeatOps.markerMode=!SeatOps.markerMode;SeatOps.moveRegId='';renderSeatOps();toast(SeatOps.markerMode?'位置圖標點已開啟：選位置號碼後點圖；已標位置可拖曳':'已結束標點模式');}
 async function seatOpsMapClick(ev){

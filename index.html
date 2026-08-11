@@ -5777,6 +5777,12 @@ function stallSelectionHtml(reg){
   }
   return `<div style="background:#fff;border:1px solid #eee;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:16px;font-weight:800;color:#555;line-height:1.6">不加價選位將依付款確認順序安排位置。</div>`;
 }
+function publishedSeatHtml(reg){
+  const days=Array.isArray(reg&&reg.dayPositions)?reg.dayPositions:[];
+  if(days.length)return `<div style="font-size:19px;color:var(--g);font-weight:900">您的攤位：${days.map(x=>`${escHtml(String(x.date||'').replace(/^\d{4}-/,''))}｜${escHtml(x.stallNumber||'')}`).join('、')}</div>`;
+  if(reg&&reg.stallNumber)return `<div style="font-size:19px;color:var(--g);font-weight:900">您的攤位：${escHtml(reg.stallNumber)}</div>`;
+  return '';
+}
 function payBadge(reg){
   if(isCancelledReg(reg)) return {t:'已取消',bg:'#eeeeee',c:'#777777'};
   const ts=String(reg.transferStatus||'');
@@ -5954,7 +5960,7 @@ function openPreNoticeSupport(id){
   }
 }
 
-function openPreEventNotice(regId){
+async function openPreEventNotice(regId){
   const r=findMyRegById(regId);
   if(!r){ toast('找不到報名資料，請重新整理我的紀錄'); return; }
   const body=$('preNoticeBody');
@@ -5970,6 +5976,7 @@ function openPreEventNotice(regId){
       <div class="pre-notice-row"><b>攤位</b><span>${escHtml(mRecordStallText(r))}</span></div>
       <div class="pre-notice-row"><b>設備</b><span>${escHtml(mPreNoticeEquipDisplayText(r))}</span></div>
     </div>
+    <div id="preNoticeSeatMap" style="margin-top:12px"></div>
     <div style="background:#fff8ed;border:1.5px solid #f5d7a1;border-radius:14px;padding:12px;font-size:16px;font-weight:900;line-height:1.7;color:#5b4630">
       已完成繳費，請務必查看下方行前規範。後續提醒與現場異動，均以官方大群組統一公告為主。
     </div>
@@ -5980,6 +5987,21 @@ function openPreEventNotice(regId){
       <button class="info" onclick="openPreNoticeSupport('faqNotice')">查看寄放／公告說明</button>
     </div>`;
   openModal('preNoticeModal');
+  const mapBox=$('preNoticeSeatMap');
+  if(!mapBox||!r.seatMapUrl||(!r.stallNumber&&!(Array.isArray(r.dayPositions)&&r.dayPositions.length)))return;
+  mapBox.innerHTML='<div style="font-size:16px;font-weight:900;margin-bottom:7px">🗺️ 位置圖（金色標記是您的位置）</div><div style="color:#8b9591;font-size:14px">正在載入正式排位…</div>';
+  try{
+    const seatData=await api({action:'getSeatMap',sessionId:r.sessionId,regId:r.id,email:getMemberEmail(),phone:getMemberPhone(),_t:Date.now()});
+    if(seatData&&seatData.error)throw new Error(seatData.error);
+    const seats=Array.isArray(seatData&&seatData.seats)?seatData.seats:[];
+    const markers=seats.filter(s=>Number(s.x)>0||Number(s.y)>0).map(s=>{
+      const mine=!!s.mine;
+      return `<span title="${escHtml(s.code||'')}" style="position:absolute;left:${Math.max(0,Math.min(100,Number(s.x)||0))}%;top:${Math.max(0,Math.min(100,Number(s.y)||0))}%;transform:translate(-50%,-50%);min-width:34px;padding:4px 6px;border-radius:8px;text-align:center;font-size:12px;font-weight:900;background:${mine?'#ffd76a':'#fff'};border:2px solid ${mine?'#c98b00':'#b8aaa0'};color:#3d342e;box-shadow:${mine?'0 0 0 4px rgba(255,215,106,.42)':'0 1px 3px rgba(0,0,0,.12)'};z-index:${mine?3:2}">${escHtml(s.code||'')}</span>`;
+    }).join('');
+    mapBox.innerHTML=`<div style="font-size:16px;font-weight:900;margin-bottom:7px">🗺️ 位置圖（金色標記是您的位置）</div><div style="position:relative;border:1px solid #e5d7c2;border-radius:14px;overflow:hidden;background:#f6f0e5"><img src="${escHtml(r.seatMapUrl)}" alt="場地位置圖" style="width:100%;display:block">${markers}</div>`;
+  }catch(e){
+    mapBox.innerHTML=`<div style="font-size:16px;font-weight:900;margin-bottom:7px">🗺️ 位置圖</div><img src="${escHtml(r.seatMapUrl)}" alt="場地位置圖" style="width:100%;display:block;border:1px solid #eee;border-radius:12px"><div style="font-size:13px;color:#9a6b42;margin-top:5px">目前僅顯示正式底圖，請以上方攤位編號為準。</div>`;
+  }
 }
 function mRecordFixedBlockHtml(r){
   const date=mShortDateRange(mRecordDateText(r));
@@ -6406,8 +6428,8 @@ function openRegDetail(regId){
       <div style="font-size:18px;color:var(--md)">審核：<strong>${escHtml(reg.status||'')}</strong></div>
       <div style="font-size:18px;color:var(--md)">攤位數：<strong>${reg.stallCount||1} 攤</strong></div>
       ${reg.seatPricingEnabled ? (
-        reg.stallNumber
-          ? `<div style="font-size:19px;color:var(--g);font-weight:900">您的攤位：${escHtml(reg.stallNumber)}</div>`+(reg.seatMapUrl?`<div style="margin-top:6px"><div style="font-size:16px;color:var(--md);margin-bottom:4px">場地圖</div><img src="${escHtml(reg.seatMapUrl)}" alt="場地圖" style="width:100%;border:1px solid #eee;border-radius:10px;display:block"></div>`:'')
+        ((Array.isArray(reg.dayPositions)&&reg.dayPositions.length)||reg.stallNumber)
+          ? publishedSeatHtml(reg)+(reg.seatMapUrl?`<div style="margin-top:6px"><div style="font-size:16px;color:var(--md);margin-bottom:4px">場地圖</div><img src="${escHtml(reg.seatMapUrl)}" alt="場地圖" style="width:100%;border:1px solid #eee;border-radius:10px;display:block"></div>`:'')
           : ((canViewPreNoticeReg(reg) && String(reg.seatChoiceIntent||'auto')!=='paid') ? `<div style="font-size:18px;color:var(--md)">攤位號碼：<strong>將於活動前公布</strong><div style="font-size:16px;color:var(--lt);margin-top:2px">排定後會在此顯示，並隨行前通知一起寄給您</div></div>` : '')
       ) : ''}
       ${reg.equipmentText?`<div style="font-size:18px;color:var(--md)">設備：<strong>${escHtml(reg.equipmentText)}</strong></div>`:''}
