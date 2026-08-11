@@ -1,11 +1,65 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>寄賣檔期與商品管理</title><style>*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#f6fbfb;color:#17343a}.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #d8e6e6;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}.wrap{max-width:1180px;margin:auto;padding:18px}.card{background:#fff;border:1px solid #d8e6e6;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px rgba(20,80,80,.06)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.btn{border:0;border-radius:12px;padding:11px 15px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer}.btn.alt{background:#e8f4f3;color:#175d58}.btn.danger{background:#b42318}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.field{display:flex;flex-direction:column;gap:5px;margin:8px 0}.field input,.field select,.field textarea{border:1px solid #bdd2d1;border-radius:11px;padding:10px;font-size:16px}.field textarea{min-height:90px}.muted{color:#60777b}.pill{display:inline-flex;padding:4px 9px;border-radius:999px;background:#e8f4f3;font-weight:800;font-size:13px}.hidden{display:none!important}.notice{padding:12px;border-radius:12px;background:#fff7dc;border:1px solid #eadba0}.ok{background:#e9f8ea}.bad{background:#fff0ef}.tabs{display:flex;gap:6px;overflow:auto;margin-bottom:12px}.tabs button{white-space:nowrap}.product{border:1px solid #d8e6e6;border-radius:14px;padding:12px;margin:8px 0}.big{font-size:28px;font-weight:900}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px;border-bottom:1px solid #e6eeee;text-align:left}.scanner{width:100%;max-width:460px;margin:auto}.price{font-size:22px;font-weight:900}.right{margin-left:auto}@media(max-width:650px){.wrap{padding:10px}.top{padding:10px}.card{border-radius:14px}.table{font-size:14px}</style><script src="https://unpkg.com/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script></head><body>
-<div class="top"><b>寄賣檔期與商品管理</b><div class="row"><button class="btn alt" onclick="showTab('apply')">檔期申請</button><button class="btn alt" onclick="showTab('products')">商品建檔</button><button class="btn alt adminOnly hidden" onclick="showTab('admin')">後台管理</button></div></div>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>寄賣檔期與商品管理</title><style>*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#f6fbfb;color:#17343a}.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #d8e6e6;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}.wrap{max-width:1180px;margin:auto;padding:18px}.card{background:#fff;border:1px solid #d8e6e6;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px rgba(20,80,80,.06)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.btn{border:0;border-radius:12px;padding:11px 15px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer}.btn.alt{background:#e8f4f3;color:#175d58}.btn.danger{background:#b42318}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.field{display:flex;flex-direction:column;gap:5px;margin:8px 0}.field input,.field select,.field textarea{border:1px solid #bdd2d1;border-radius:11px;padding:10px;font-size:16px}.field textarea{min-height:90px}.muted{color:#60777b}.pill{display:inline-flex;padding:4px 9px;border-radius:999px;background:#e8f4f3;font-weight:800;font-size:13px}.hidden{display:none!important}.notice{padding:12px;border-radius:12px;background:#fff7dc;border:1px solid #eadba0}.ok{background:#e9f8ea}.bad{background:#fff0ef}.tabs{display:flex;gap:6px;overflow:auto;margin-bottom:12px}.tabs button{white-space:nowrap}.product{border:1px solid #d8e6e6;border-radius:14px;padding:12px;margin:8px 0}.big{font-size:28px;font-weight:900}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px;border-bottom:1px solid #e6eeee;text-align:left}.scanner{width:100%;max-width:460px;margin:auto}.price{font-size:22px;font-weight:900}.right{margin-left:auto}@media(max-width:650px){.wrap{padding:10px}.top{padding:10px}.card{border-radius:14px}.table{font-size:14px}</style><script src="https://unpkg.com/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<style>
+.admin-headbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+.admin-headbar .back-main{background:#fff;color:#175d58;border:1px solid #bdd2d1}
+.admin-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}
+.admin-tool{background:#fff;border:1px solid #d8e6e6;border-radius:16px;padding:16px;cursor:pointer;min-height:126px}
+.admin-tool:hover{border-color:#72aaa5;box-shadow:0 8px 22px rgba(20,80,80,.08)}
+.admin-tool b{display:block;font-size:18px;margin-bottom:7px}
+.admin-tool .n{font-size:28px;font-weight:900;margin-top:6px}
+.admin-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.admin-summary .sum{background:#f8fbfb;border:1px solid #d8e6e6;border-radius:14px;padding:12px}
+.admin-summary .sum span{display:block;color:#60777b;font-size:13px;margin-bottom:4px}
+.admin-summary .sum b{font-size:18px}
+.admin-subnav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+.admin-bottom-back{display:flex;justify-content:center;gap:8px;margin:18px 0 8px}
+.admin-app-card,.admin-product-card{border-left:5px solid #6faea8}
+.admin-empty{padding:26px;text-align:center;color:#60777b}
+@media(max-width:900px){.admin-dashboard,.admin-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.admin-dashboard,.admin-summary{grid-template-columns:1fr}.admin-tool{min-height:auto}}
+</style>
+
+</head><body>
+<div class="top"><div class="row"><button class="btn alt" onclick="backToAdmin()">← 返回 2BL 後台</button><b>寄賣檔期與商品管理</b></div><div class="row"><button class="btn alt" onclick="showTab('apply')">檔期申請</button><button class="btn alt" onclick="showTab('products')">商品建檔</button><button class="btn alt adminOnly hidden" onclick="showTab('admin')">後台管理</button></div></div>
 <div class="wrap"><div id="msg"></div><section id="login" class="card"><h2>會員登入</h2><div class="grid"><label class="field">Email<input id="loginEmail" type="email"></label><label class="field">手機<input id="loginPhone"></label></div><button class="btn" onclick="memberLogin()">登入／驗證會員</button><p class="muted">也支援原系統 Google 會員登入後自動帶入。</p></section>
 <section id="apply" class="tabPage hidden"><h2>可申請寄賣檔期</h2><div id="sessionList"></div><h2>我的申請</h2><div id="myApps"></div></section>
 <section id="products" class="tabPage hidden"><h2>錄取後商品建檔</h2><div id="productApps"></div><div id="productEditor" class="card hidden"><h3 id="productEditorTitle">新增商品</h3><label class="field">商品名稱<input id="pName"></label><div class="grid"><label class="field">分類<input id="pCategory"></label><label class="field">商品照片網址<input id="pImage"></label></div><label class="field">商品說明<textarea id="pDesc"></textarea></label><div id="variants"></div><button class="btn alt" onclick="addVariant()">＋新增規格</button> <button class="btn" onclick="saveProduct()">儲存商品</button></div><div id="myProducts"></div></section>
-<section id="admin" class="tabPage hidden"><h2>寄賣後台</h2><div class="card"><div class="row"><select id="adminSession" onchange="adminLoadSession()"></select><button class="btn" onclick="openSettings()">檔期設定</button><button class="btn alt" onclick="adminLoadApplications()">申請審核</button><button class="btn alt" onclick="adminLoadProducts()">商品審核／條碼</button><button class="btn alt" onclick="location.href='pos.html?tenant='+encodeURIComponent(TENANT)">開啟 POS</button></div></div><div id="adminBody"></div></section></div>
+<section id="admin" class="tabPage hidden">
+<h2>寄賣後台</h2>
+<div class="card">
+  <div class="admin-headbar">
+    <button class="btn back-main" onclick="backToAdmin()">← 返回 2BL 後台</button>
+    <label class="field" style="margin:0;min-width:280px;flex:1">
+      <span>目前管理檔期</span>
+      <select id="adminSession" onchange="adminLoadSession()"></select>
+    </label>
+    <button class="btn alt" onclick="adminLoadSession()">重新整理</button>
+  </div>
+  <div class="muted">先選擇檔期，再從下方直接進入設定、申請審核、商品管理或 POS。</div>
+</div>
+<div id="adminBody"><div class="card admin-empty">載入寄賣檔期中…</div></div>
+<div class="admin-bottom-back">
+  <button class="btn alt" onclick="adminLoadSession()">← 返回本檔期總覽</button>
+  <button class="btn alt" onclick="backToAdmin()">返回 2BL 後台</button>
+</div>
+</section></div>
 <script>
 'use strict'; const API='https://2bl-v7.ndiangrace.workers.dev'; const Q=new URLSearchParams(location.search); const TENANT=Q.get('tenant')||sessionStorage.getItem('2bl_tenant')||''; let memberToken=sessionStorage.getItem('2bl_member_token')||Q.get('member_token')||''; let memberEmail=''; let apps=[],currentReg='',adminSessionData=[],adminSettings={}; const adminSession=(()=>{try{return JSON.parse(localStorage.getItem('tb_v3')||'null')}catch{return null}})();
+
+function backToAdmin(){location.href='admin.html?tenant='+encodeURIComponent(TENANT)}
+function adminSubnav(title){
+  return `<div class="admin-subnav">
+    <button class="btn alt" onclick="adminLoadSession()">← 檔期總覽</button>
+    <b>${esc(title||'')}</b>
+    <span class="right"></span>
+    <button class="btn alt" onclick="backToAdmin()">返回 2BL 後台</button>
+  </div>`;
+}
+function consignmentStatusLabel(v){
+  const m={draft:'草稿',open:'開放',closed:'關閉',archived:'封存'};
+  return m[String(v||'')]||String(v||'未設定');
+}
+
 const $=id=>document.getElementById(id); const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); function tell(s,ok=false){$('msg').innerHTML='<div class="notice '+(ok?'ok':'bad')+'">'+esc(s)+'</div>';scrollTo(0,0)}
 async function post(action,data={}){const body={action,tenant:TENANT,memberToken,...data};if(adminSession)Object.assign(body,{email:adminSession.email,token:adminSession.token});const res=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const r=await res.json().catch(()=>({error:'後端回傳格式錯誤'}));if(!res.ok||r.error)throw Error(r.error||('連線失敗 '+res.status));return r}
 async function get(action,data={}){const u=new URL(API);u.searchParams.set('action',action);u.searchParams.set('tenant',TENANT);if(memberToken)u.searchParams.set('memberToken',memberToken);if(adminSession){u.searchParams.set('email',adminSession.email);u.searchParams.set('token',adminSession.token)}Object.entries(data).forEach(([k,v])=>u.searchParams.set(k,v));const res=await fetch(u);const r=await res.json().catch(()=>({error:'後端回傳格式錯誤'}));if(!res.ok||r.error)throw Error(r.error||('連線失敗 '+res.status));return r}
@@ -24,14 +78,145 @@ async function saveProduct(){try{const variants=[...document.querySelectorAll('.
 function renderBarcodes(root=document){root.querySelectorAll('svg[data-barcode]').forEach(el=>{try{if(typeof JsBarcode!=='function')throw Error('條碼元件未載入');JsBarcode(el,el.dataset.barcode,{format:'CODE128',height:42,displayValue:true,margin:6})}catch(e){el.outerHTML='<div class="notice bad">條碼無法顯示：'+esc(el.dataset.barcode||'')+'</div>'}})}
 async function loadProducts(){if(!currentReg)return;const r=await get('consignmentMyProducts',{registrationId:currentReg});$('myProducts').innerHTML='<div class="card"><button class="btn" onclick="submitProducts()">商品清單全部完成，送出確認</button></div>'+r.products.map(p=>`<div class="card"><h3>${esc(p.product_name)} <span class="pill">${esc(p.status)}</span></h3>${p.variants.map(v=>`<div class="product"><b>${esc(v.variant_name)}</b>｜NT$ ${Number(v.price).toLocaleString()}｜申報 ${v.declared_qty} 件<br><svg id="bc_${v.id}" data-barcode="${esc(v.barcode)}"></svg></div>`).join('')}</div>`).join('');renderBarcodes($('myProducts'))}
 async function submitProducts(){if(!confirm('送出後由後台確認商品，確定？'))return;try{await post('consignmentSubmitProducts',{registrationId:currentReg});tell('商品清單已送出',true);loadProducts()}catch(e){tell(e.message)}}
-async function adminBoot(){if(!adminSession)return tell('請先從後台登入');const r=await get('consignmentAdminBootstrap');adminSessionData=r.sessions||[];adminSettings=Object.fromEntries((r.settings||[]).map(x=>[x.session_id,x]));$('adminSession').innerHTML=adminSessionData.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');adminLoadSession()}
-function adminLoadSession(){$('adminBody').innerHTML='<div class="card">選擇上方功能管理本檔期。</div>'}
-async function openSettings(){const sid=$('adminSession').value,cfg=adminSettings[sid]||{};let slots=[];try{slots=(await get('consignmentSlotsPublic',{sessionId:sid})).slots||[]}catch(e){}$('adminBody').innerHTML=`<div class="card"><h3>檔期設定</h3><div class="grid"><label class="field">開始日<input id="sStart" type="date" value="${esc(cfg.period_start||'')}"></label><label class="field">結束日<input id="sEnd" type="date" value="${esc(cfg.period_end||'')}"></label><label class="field">報名截止<input id="sDeadline" type="datetime-local"></label><label class="field">商品建檔截止<input id="sProductDeadline" type="datetime-local"></label><label class="field">基本抽成％<input id="sRate" type="number" value="${Number(cfg.base_commission_rate??30)}"></label><label class="field">無法開票加成％<input id="sSurcharge" type="number" value="${Number(cfg.no_invoice_surcharge_rate??5)}"></label><label class="field">整檔固定費<input id="sFixed" type="number" value="${Number(cfg.fixed_fee||0)}"></label><label class="field">代上架費<input id="sListing" type="number" value="${Number(cfg.listing_service_fee||0)}"></label><label class="field">代撤場費<input id="sTeardown" type="number" value="${Number(cfg.teardown_service_fee||0)}"></label><label class="field">品牌名額<input id="sMax" type="number" value="${cfg.max_brands??''}"></label></div><label class="field">合約標題<input id="sContractTitle" value="${esc(cfg.contract_title||'')}"></label><label class="field">合約內容<textarea id="sContract">${esc(cfg.contract_content||'')}</textarea></label><label class="field">狀態<select id="sStatus"><option value="draft">草稿</option><option value="open">開放</option><option value="closed">關閉</option><option value="archived">封存</option></select></label><button class="btn" onclick="saveSettings('${sid}')">儲存檔期設定</button></div><div class="card"><h3>現有進／撤場時段</h3>${slots.map(x=>`<div class="product">${esc(x.label)}｜${esc(x.slot_type)}／${esc(x.service_mode)}｜${new Date(x.start_at).toLocaleString('zh-TW')}～${new Date(x.end_at).toLocaleString('zh-TW')}｜名額 ${x.capacity??'不限'}</div>`).join('')||'<p class="muted">尚未建立時段</p>'}</div><div class="card"><h3>新增進／撤場時段</h3><div class="grid"><label class="field">類型<select id="slType"><option value="entry">進場</option><option value="exit">撤場</option></select></label><label class="field">方式<select id="slMode"><option value="self">自行</option><option value="service">代辦服務</option></select></label><label class="field">名稱<input id="slLabel"></label><label class="field">開始<input id="slStart" type="datetime-local"></label><label class="field">結束<input id="slEnd" type="datetime-local"></label><label class="field">名額<input id="slCap" type="number"></label></div><button class="btn" onclick="saveSlot('${sid}')">新增時段</button></div>`;$('sStatus').value=cfg.status||'draft';const local=v=>v?new Date(new Date(v).getTime()-new Date(v).getTimezoneOffset()*60000).toISOString().slice(0,16):'';$('sDeadline').value=local(cfg.application_deadline);$('sProductDeadline').value=local(cfg.product_entry_deadline)}
-async function saveSettings(sid){try{await post('consignmentSaveSettings',{sessionId:sid,periodStart:$('sStart').value,periodEnd:$('sEnd').value,applicationDeadline:$('sDeadline').value||null,productEntryDeadline:$('sProductDeadline').value||null,baseCommissionRate:$('sRate').value,noInvoiceSurchargeRate:$('sSurcharge').value,fixedFee:$('sFixed').value,listingServiceFee:$('sListing').value,teardownServiceFee:$('sTeardown').value,maxBrands:$('sMax').value,contractTitle:$('sContractTitle').value,contractContent:$('sContract').value,status:$('sStatus').value});tell('檔期設定已儲存',true);await adminBoot()}catch(e){tell(e.message)}}
+async function adminBoot(){
+  if(!adminSession)return tell('請先從 2BL 後台登入');
+  try{
+    const r=await get('consignmentAdminBootstrap');
+    adminSessionData=r.sessions||[];
+    adminSettings=Object.fromEntries((r.settings||[]).map(x=>[x.session_id,x]));
+    $('adminSession').innerHTML=adminSessionData.length
+      ? adminSessionData.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')
+      : '<option value="">目前沒有寄賣檔期</option>';
+    await adminLoadSession();
+  }catch(e){tell(e.message)}
+}
+async function adminLoadSession(){
+  const sid=$('adminSession')?.value||'';
+  if(!sid){$('adminBody').innerHTML='<div class="card admin-empty">目前沒有可管理的寄賣檔期。</div>';return;}
+  $('adminBody').innerHTML='<div class="card admin-empty">載入檔期總覽…</div>';
+  const ses=adminSessionData.find(x=>String(x.id)===String(sid))||{};
+  const cfg=adminSettings[sid]||{};
+  let applications=[],products=[];
+  try{
+    const [ar,pr]=await Promise.all([
+      get('consignmentAdminApplications',{sessionId:sid}).catch(()=>({applications:[]})),
+      get('consignmentAdminProducts',{sessionId:sid}).catch(()=>({products:[]}))
+    ]);
+    applications=ar.applications||[];
+    products=pr.products||[];
+  }catch(e){}
+  const pendingApps=applications.filter(x=>!['已錄取','不錄取','候補'].includes(String(x.review_status||x.status||x.registration?.review_status||''))).length;
+  const pendingProducts=products.filter(x=>!['已核准','核准','approved'].includes(String(x.status||''))).length;
+  const approvedApps=applications.filter(x=>String(x.review_status||x.status||x.registration?.review_status||'')==='已錄取').length;
+
+  $('adminBody').innerHTML=`
+    <div class="card">
+      <div class="row">
+        <div>
+          <h3 style="margin:0 0 6px">${esc(ses.name||'寄賣檔期')}</h3>
+          <div class="muted">${esc(cfg.period_start||'未設定開始日')} ～ ${esc(cfg.period_end||'未設定結束日')}</div>
+        </div>
+        <span class="right pill">${esc(consignmentStatusLabel(cfg.status))}</span>
+      </div>
+      <div class="admin-summary" style="margin-top:12px">
+        <div class="sum"><span>申請總數</span><b>${applications.length}</b></div>
+        <div class="sum"><span>待處理申請</span><b>${pendingApps}</b></div>
+        <div class="sum"><span>已錄取品牌</span><b>${approvedApps}</b></div>
+        <div class="sum"><span>商品數</span><b>${products.length}</b></div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard">
+      <div class="admin-tool" onclick="openSettings()">
+        <b>⚙️ 檔期設定</b>
+        <div class="muted">日期、截止時間、抽成、費用、合約、進撤場時段。</div>
+      </div>
+      <div class="admin-tool" onclick="adminLoadApplications()">
+        <b>📋 申請審核</b>
+        <div class="muted">查看品牌申請，直接錄取、候補或不錄取。</div>
+        <div class="n">${pendingApps}</div>
+      </div>
+      <div class="admin-tool" onclick="adminLoadProducts()">
+        <b>🏷️ 商品／條碼</b>
+        <div class="muted">審核寄賣商品、查看規格、數量與條碼。</div>
+        <div class="n">${pendingProducts}</div>
+      </div>
+      <div class="admin-tool" onclick="location.href='pos.html?tenant='+encodeURIComponent(TENANT)">
+        <b>🧾 開啟 POS</b>
+        <div class="muted">進入寄賣現場銷售、掃碼、結帳與交易管理。</div>
+      </div>
+    </div>
+  `;
+}
+async function openSettings(){const sid=$('adminSession').value,cfg=adminSettings[sid]||{};let slots=[];try{slots=(await get('consignmentSlotsPublic',{sessionId:sid})).slots||[]}catch(e){}$('adminBody').innerHTML=adminSubnav('檔期設定')+`<div class="card"><h3>檔期設定</h3><div class="grid"><label class="field">開始日<input id="sStart" type="date" value="${esc(cfg.period_start||'')}"></label><label class="field">結束日<input id="sEnd" type="date" value="${esc(cfg.period_end||'')}"></label><label class="field">報名截止<input id="sDeadline" type="datetime-local"></label><label class="field">商品建檔截止<input id="sProductDeadline" type="datetime-local"></label><label class="field">基本抽成％<input id="sRate" type="number" value="${Number(cfg.base_commission_rate??30)}"></label><label class="field">無法開票加成％<input id="sSurcharge" type="number" value="${Number(cfg.no_invoice_surcharge_rate??5)}"></label><label class="field">整檔固定費<input id="sFixed" type="number" value="${Number(cfg.fixed_fee||0)}"></label><label class="field">代上架費<input id="sListing" type="number" value="${Number(cfg.listing_service_fee||0)}"></label><label class="field">代撤場費<input id="sTeardown" type="number" value="${Number(cfg.teardown_service_fee||0)}"></label><label class="field">品牌名額<input id="sMax" type="number" value="${cfg.max_brands??''}"></label></div><label class="field">合約標題<input id="sContractTitle" value="${esc(cfg.contract_title||'')}"></label><label class="field">合約內容<textarea id="sContract">${esc(cfg.contract_content||'')}</textarea></label><label class="field">狀態<select id="sStatus"><option value="draft">草稿</option><option value="open">開放</option><option value="closed">關閉</option><option value="archived">封存</option></select></label><button class="btn" onclick="saveSettings('${sid}')">儲存檔期設定</button></div><div class="card"><h3>現有進／撤場時段</h3>${slots.map(x=>`<div class="product">${esc(x.label)}｜${esc(x.slot_type)}／${esc(x.service_mode)}｜${new Date(x.start_at).toLocaleString('zh-TW')}～${new Date(x.end_at).toLocaleString('zh-TW')}｜名額 ${x.capacity??'不限'}</div>`).join('')||'<p class="muted">尚未建立時段</p>'}</div><div class="card"><h3>新增進／撤場時段</h3><div class="grid"><label class="field">類型<select id="slType"><option value="entry">進場</option><option value="exit">撤場</option></select></label><label class="field">方式<select id="slMode"><option value="self">自行</option><option value="service">代辦服務</option></select></label><label class="field">名稱<input id="slLabel"></label><label class="field">開始<input id="slStart" type="datetime-local"></label><label class="field">結束<input id="slEnd" type="datetime-local"></label><label class="field">名額<input id="slCap" type="number"></label></div><button class="btn" onclick="saveSlot('${sid}')">新增時段</button></div>`+'<div class="admin-bottom-back"><button class="btn alt" onclick="adminLoadSession()">← 返回檔期總覽</button></div>';$('sStatus').value=cfg.status||'draft';const local=v=>v?new Date(new Date(v).getTime()-new Date(v).getTimezoneOffset()*60000).toISOString().slice(0,16):'';$('sDeadline').value=local(cfg.application_deadline);$('sProductDeadline').value=local(cfg.product_entry_deadline)}
+async function saveSettings(sid){try{await post('consignmentSaveSettings',{sessionId:sid,periodStart:$('sStart').value,periodEnd:$('sEnd').value,applicationDeadline:$('sDeadline').value||null,productEntryDeadline:$('sProductDeadline').value||null,baseCommissionRate:$('sRate').value,noInvoiceSurchargeRate:$('sSurcharge').value,fixedFee:$('sFixed').value,listingServiceFee:$('sListing').value,teardownServiceFee:$('sTeardown').value,maxBrands:$('sMax').value,contractTitle:$('sContractTitle').value,contractContent:$('sContract').value,status:$('sStatus').value});tell('檔期設定已儲存',true);await adminBoot();}catch(e){tell(e.message)}}
 async function saveSlot(sid){try{await post('consignmentSaveSlot',{sessionId:sid,slotType:$('slType').value,serviceMode:$('slMode').value,label:$('slLabel').value,startAt:$('slStart').value,endAt:$('slEnd').value,capacity:$('slCap').value});tell('時段已新增',true);await openSettings()}catch(e){tell(e.message)}}
-async function adminLoadApplications(){try{const r=await get('consignmentAdminApplications',{sessionId:$('adminSession').value});$('adminBody').innerHTML=(r.applications||[]).map(a=>`<div class="card"><h3>${esc(a.registration.brand_name)}｜${esc(a.registration.name)}</h3><p>${esc(a.registration.brand_intro||'')}</p><p>開票：${a.can_issue_invoice?'可以':'無法'}｜抽成 ${a.final_commission_rate}%｜進場 ${esc(a.entry_mode)}｜撤場 ${esc(a.exit_mode)}</p><div class="row"><button class="btn" onclick="review('${a.registration_id}','已錄取')">錄取</button><button class="btn alt" onclick="review('${a.registration_id}','候補')">候補</button><button class="btn danger" onclick="review('${a.registration_id}','不錄取')">不錄取</button></div></div>`).join('')||'<div class="card">沒有申請</div>'}catch(e){tell(e.message)}}
-async function review(rid,status){try{await post('consignmentReviewApplication',{registrationId:rid,status});adminLoadApplications()}catch(e){tell(e.message)}}
-async function adminLoadProducts(){try{const r=await get('consignmentAdminProducts',{sessionId:$('adminSession').value});$('adminBody').innerHTML=(r.products||[]).map(p=>`<div class="card"><h3>${esc(p.brand_name)}｜${esc(p.product_name)} <span class="pill">${esc(p.status)}</span></h3>${p.variants.map(v=>`<div class="product">${esc(v.variant_name)}｜NT$ ${Number(v.price).toLocaleString()}｜申報 ${v.declared_qty}｜入庫 ${v.received_qty}｜可售 ${v.available_qty}<br><svg id="ab_${v.id}" data-barcode="${esc(v.barcode)}"></svg></div>`).join('')}<button class="btn" onclick="approveProduct('${p.id}',true)">核准商品</button> <button class="btn danger" onclick="approveProduct('${p.id}',false)">退回</button></div>`).join('')||'<div class="card">尚無商品</div>';renderBarcodes($('adminBody'))}catch(e){tell(e.message)}}
-async function approveProduct(id,approved){try{await post('consignmentApproveProduct',{productId:id,approved});adminLoadProducts()}catch(e){tell(e.message)}}
+async function adminLoadApplications(){
+  try{
+    const sid=$('adminSession').value;
+    $('adminBody').innerHTML=adminSubnav('申請審核')+'<div class="card admin-empty">載入申請…</div>';
+    const r=await get('consignmentAdminApplications',{sessionId:sid});
+    const list=r.applications||[];
+    $('adminBody').innerHTML=adminSubnav('申請審核')+
+      (list.length?list.map(a=>{
+        const reg=a.registration||{};
+        const status=String(a.review_status||a.status||reg.review_status||'待審核');
+        return `<div class="card admin-app-card">
+          <div class="row"><h3 style="margin:0">${esc(reg.brand_name||'未填品牌')}｜${esc(reg.name||'')}</h3><span class="right pill">${esc(status)}</span></div>
+          <p>${esc(reg.brand_intro||'尚未填品牌介紹')}</p>
+          <div class="grid">
+            <div><b>開票</b><br>${a.can_issue_invoice?'可以':'無法'}</div>
+            <div><b>抽成</b><br>${Number(a.final_commission_rate||0)}%</div>
+            <div><b>進場</b><br>${esc(a.entry_mode||'未選')}</div>
+            <div><b>撤場</b><br>${esc(a.exit_mode||'未選')}</div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn" onclick="review('${a.registration_id}','已錄取')">錄取</button>
+            <button class="btn alt" onclick="review('${a.registration_id}','候補')">候補</button>
+            <button class="btn danger" onclick="review('${a.registration_id}','不錄取')">不錄取</button>
+          </div>
+        </div>`;
+      }).join(''):'<div class="card admin-empty">目前沒有寄賣申請。</div>')+
+      '<div class="admin-bottom-back"><button class="btn alt" onclick="adminLoadSession()">← 返回檔期總覽</button></div>';
+  }catch(e){tell(e.message)}
+}
+async function review(rid,status){
+  try{
+    await post('consignmentReviewApplication',{registrationId:rid,status});
+    tell('申請狀態已更新：'+status,true);
+    await adminLoadApplications();
+  }catch(e){tell(e.message)}
+}
+async function adminLoadProducts(){
+  try{
+    const sid=$('adminSession').value;
+    $('adminBody').innerHTML=adminSubnav('商品／條碼管理')+'<div class="card admin-empty">載入商品…</div>';
+    const r=await get('consignmentAdminProducts',{sessionId:sid});
+    const list=r.products||[];
+    $('adminBody').innerHTML=adminSubnav('商品／條碼管理')+
+      (list.length?list.map(p=>`<div class="card admin-product-card">
+        <div class="row"><h3 style="margin:0">${esc(p.brand_name||'')}｜${esc(p.product_name||'')}</h3><span class="right pill">${esc(p.status||'待審核')}</span></div>
+        ${(p.variants||[]).map(v=>`<div class="product">
+          <div class="row"><b>${esc(v.variant_name||'單一規格')}</b><span class="right price">NT$ ${Number(v.price||0).toLocaleString()}</span></div>
+          <div class="muted">申報 ${Number(v.declared_qty||0)}｜入庫 ${Number(v.received_qty||0)}｜可售 ${Number(v.available_qty||0)}</div>
+          <div class="muted">條碼：${esc(v.barcode||'尚未建立')}</div>
+          <svg id="ab_${v.id}" data-barcode="${esc(v.barcode||'')}"></svg>
+        </div>`).join('')}
+        <div class="row">
+          <button class="btn" onclick="approveProduct('${p.id}',true)">核准商品</button>
+          <button class="btn danger" onclick="approveProduct('${p.id}',false)">退回修改</button>
+        </div>
+      </div>`).join(''):'<div class="card admin-empty">目前尚無寄賣商品。</div>')+
+      '<div class="admin-bottom-back"><button class="btn alt" onclick="adminLoadSession()">← 返回檔期總覽</button></div>';
+    renderBarcodes($('adminBody'));
+  }catch(e){tell(e.message)}
+}
+async function approveProduct(id,ok){
+  try{
+    await post('consignmentApproveProduct',{productId:id,approved:ok});
+    tell(ok?'商品已核准':'商品已退回修改',true);
+    await adminLoadProducts();
+  }catch(e){tell(e.message)}
+}
 init();
 </script></body></html>
