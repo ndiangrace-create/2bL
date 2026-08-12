@@ -1084,36 +1084,20 @@
 
 /* SEAT_OPS_UX_20260807：排位營運視覺化／小卡／互動位置圖 */
 .seatops-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 12px}.seatops-toolbar input,.seatops-toolbar select{min-height:42px;border:1px solid #dedede;border-radius:12px;padding:8px 10px;font-size:16px;background:#fff}.seatops-toolbar input{flex:1;min-width:220px}.seatops-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}.seatops-card{border:1px solid #e6e1d8;background:#fff;border-radius:14px;padding:10px;min-width:0;box-shadow:0 2px 8px rgba(0,0,0,.035)}.seatops-card.selected{outline:3px solid #82aba3}.seatops-card .seat-no{font-size:23px;font-weight:950;line-height:1.1}.seatops-card .brand{font-size:17px;font-weight:900;margin:5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatops-meta{font-size:14px;color:#686868;line-height:1.55}.seatops-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.seatops-actions button{padding:7px 10px;font-size:14px}.seatops-map-wrap{background:#fff;border:1px solid #e6e1d8;border-radius:16px;padding:10px;margin:10px 0}.seatops-map-head{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:8px}.seatops-map-stage{position:relative;width:100%;min-height:240px;background:#f3f3f3;border-radius:12px;overflow:hidden;touch-action:none}.seatops-map-stage img{display:block;width:100%;height:auto;max-height:none;object-fit:contain;margin:auto}.seatops-marker{position:absolute;transform:translate(-50%,-50%);min-width:46px;min-height:34px;border-radius:10px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.22);font-weight:950;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px 6px;cursor:pointer;z-index:2;user-select:none;line-height:1.05}.seatops-marker small{font-size:9px;font-weight:800;max-width:92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.seatops-marker.free{background:#dcebd5;color:#244}.seatops-marker.used{background:#28302f;color:#fff}.seatops-marker.paid{background:#f8df9c;color:#6e4e00}.seatops-marker.service{background:#d9e5ee;color:#244}.seatops-marker.closed{background:#e4e4e4;color:#777}.seatops-marker.match{outline:4px solid rgba(255,134,0,.45)}.seatops-marker.dragging{z-index:8;opacity:.8}.seatops-map-empty{padding:28px;text-align:center;color:#777}.seatops-unplaced{font-size:14px;padding:8px;background:#fff8e6;border-radius:10px;margin-top:8px}.seatops-help{font-size:14px;line-height:1.65;color:#666}.seatops-counts{display:flex;gap:6px;flex-wrap:wrap}.seatops-chip{display:inline-flex;border-radius:10px;padding:5px 10px;font-size:15px;font-weight:900;background:#eef;margin:0 4px 4px 0}.seatops-mobile-move{display:none}.onsite-position-big{font-size:26px;font-weight:950}
-/* BLANK_SEAT_BOARD_20260807 */
-.seatblank-wrap{background:#fff;border:1px solid #e6e1d8;border-radius:16px;padding:12px;margin:10px 0}.seatblank-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.seatblank-note{width:100%;min-height:58px;border:1px solid #dedede;border-radius:12px;padding:9px 10px;font-size:15px;margin:8px 0;background:#fff}.seatblank-row{margin:12px 0}.seatblank-row-head{display:flex;gap:8px;align-items:center;margin-bottom:6px}.seatblank-row-head b{min-width:34px;font-size:18px}.seatblank-row-head input{flex:1;min-width:180px;border:1px solid #dedede;border-radius:10px;padding:7px 9px;font-size:14px}.seatblank-grid{display:grid;gap:7px;overflow-x:auto}.seatblank-cell{min-height:82px;border:2px solid #dedede;border-radius:12px;background:#f8faf9;padding:7px;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}.seatblank-cell.free{background:#eef7ef;border-color:#cfe3d2}.seatblank-cell.used{background:#273231;color:#fff;border-color:#273231}.seatblank-cell.paid{background:#fff2cf;border-color:#e5c46f;color:#5f4800}.seatblank-cell.service,.seatblank-cell.closed{background:#eee;color:#777}.seatblank-cell.special{background:#e9eef7;color:#26324a;border-color:#b9c9e6}.seat-special-toolbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;border:1px dashed #c9c4bb;border-radius:12px;background:#fbfaf7;margin:10px 0}.seat-special-chip{border:1px solid #c9c4bb;background:#fff;border-radius:999px;padding:7px 11px;font-weight:850;cursor:grab}.seat-special-chip:active{cursor:grabbing}.seat-special-toolbox input{min-width:190px;flex:1;border:1px solid #ddd;border-radius:10px;padding:8px 10px}.seatblank-cell .special-x{font-size:11px;opacity:.72;margin-top:4px}.seatblank-cell .code{font-size:18px;font-weight:950}.seatblank-cell .who{font-size:13px;font-weight:850;line-height:1.25;word-break:break-word}.seatblank-cell .equip{font-size:11px;line-height:1.25;opacity:.92;margin-top:4px;word-break:break-word}.seatblank-cell.used .equip{color:#dff1ea}.seatblank-cell.match{outline:4px solid rgba(255,134,0,.42)}.seatblank-cell.drop-target{outline:4px solid rgba(75,150,130,.35)}.seatblank-tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.seatblank-help{font-size:13px;color:#666;line-height:1.55;margin-top:6px}
-.seatcanvas-object{position:absolute;transform:translate(-50%,-50%);z-index:7;min-width:108px;max-width:240px;min-height:46px;padding:10px 14px;border:2px dashed #86a6a0;border-radius:13px;background:#eef7f5;color:#24413d;font-weight:950;display:flex;align-items:center;justify-content:center;text-align:center;cursor:grab;user-select:none;touch-action:none;box-shadow:0 4px 12px rgba(0,0,0,.10)}.seatcanvas-object.blocked{background:#f2ecec;border-color:#b98b8b;color:#713f3f}.seatcanvas-object.dragging{cursor:grabbing;opacity:.82;z-index:20;box-shadow:0 10px 24px rgba(0,0,0,.18)}.seatcanvas-object{overflow:visible!important}
-
 @media(max-width:720px){.seatops-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.seatops-card{padding:9px}.seatops-card .seat-no{font-size:20px}.seatops-card .brand{font-size:15px}.seatops-meta{font-size:13px}.seatops-map-stage{min-height:180px}.seatops-marker{min-width:30px;height:30px;font-size:11px}.seatops-toolbar input{min-width:100%;}.seatops-mobile-move{display:inline-flex}}
 
-
-/* FREE_SEAT_CANVAS_20260807 */
 .panel-body:has(#seatOpsBox){max-width:none!important;width:calc(100vw - 24px)!important;padding-left:8px!important;padding-right:8px!important}
-.seatcanvas-wrap{background:#fff;border:1px solid #e6e1d8;border-radius:16px;padding:10px;margin:10px 0}.seatcanvas-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}.seatcanvas-stage{position:relative;width:100%;height:min(68vh,760px);min-height:520px;background-color:#fbfbf8;background-image:linear-gradient(#ece9e2 1px,transparent 1px),linear-gradient(90deg,#ece9e2 1px,transparent 1px);background-size:24px 24px;border:1px solid #ddd8cf;border-radius:14px;overflow:hidden;touch-action:none}.seatcanvas-marker{position:absolute;transform:translate(-50%,-50%);width:112px;min-height:72px;border:2px solid #fff;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;cursor:grab;user-select:none;touch-action:none;z-index:2;line-height:1.15}.seatcanvas-marker:active{cursor:grabbing}.seatcanvas-marker.used{background:#26312f;color:#fff}.seatcanvas-marker.free{background:#eef7ef;color:#26312f;border-color:#c7deca}.seatcanvas-marker.paid{background:#fff0c2;color:#684d00}.seatcanvas-marker.special{background:#e9eef7;color:#26324a;border-color:#b9c9e6}.seatcanvas-marker .code{font-size:18px;font-weight:950}.seatcanvas-marker .who{font-size:12px;font-weight:900;margin-top:3px;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker .equip{font-size:10px;margin-top:3px;opacity:.9;max-width:98px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seatcanvas-marker.match{outline:4px solid rgba(255,134,0,.5)}.seatcanvas-note{padding:8px 10px;border:1px solid #e6dfd4;border-radius:10px;background:#fff9e9;font-weight:800;margin:6px 0}@media(max-width:720px){.panel-body:has(#seatOpsBox){width:100%!important;padding-left:8px!important;padding-right:8px!important}.seatcanvas-stage{height:62vh;min-height:420px;overflow:auto}.seatcanvas-marker{width:92px;min-height:64px}.seatcanvas-marker .code{font-size:16px}}
+@media(max-width:720px){.panel-body:has(#seatOpsBox){width:100%!important;padding-left:8px!important;padding-right:8px!important}}
 
-
-/* SEAT_FREE_CANVAS_MULTI_20260807：自由畫布多選／批次排列／雙擊選單 */
-.seatcanvas-instruction{margin:7px 0 10px;padding:8px 10px;border:1px solid #d9e8e4;border-radius:10px;background:#f2faf8;font-size:14px;font-weight:900;color:#315c54}
-.seatcanvas-multi-tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:8px;border:1px dashed #c8d9d5;border-radius:11px;background:#fbfefd}
-.seatcanvas-multi-count{font-weight:950;color:#315c54;padding:0 4px}
-.seatcanvas-marker.multi-selected,.seatcanvas-object.multi-selected{outline:4px solid #f0a22e!important;outline-offset:3px;z-index:25!important;cursor:move!important}.seatcanvas-marker.group-dragging,.seatcanvas-object.group-dragging{opacity:.82;z-index:40!important;box-shadow:0 10px 24px rgba(0,0,0,.22)!important}.seatcanvas-multi-hint{font-size:13px;font-weight:850;color:#805500;background:#fff6da;border:1px solid #efd38d;border-radius:10px;padding:7px 10px}
-.seatcanvas-object-menu{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);display:flex;gap:5px;align-items:center;padding:6px;background:#fff;border:1px solid #d7d2ca;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.18);z-index:60;white-space:nowrap}
-.seatcanvas-object-menu button{border:1px solid #d8d3cc;background:#fff;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:900;cursor:pointer;color:#333}
-.seatcanvas-object-menu button.danger{color:#9a2b2b;background:#fff5f5;border-color:#ecc}
-.seatobject-action-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;padding:18px}
-.seatobject-action-box{width:min(360px,92vw);background:#fff;border:1px solid #ddd6cc;border-radius:16px;box-shadow:0 18px 60px rgba(0,0,0,.25);padding:16px}
-.seatobject-action-title{font-size:18px;font-weight:950;margin-bottom:4px;word-break:break-word}
-.seatobject-action-help{font-size:13px;color:#6b6b6b;margin-bottom:12px}
-.seatobject-action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.seatobject-action-buttons button{min-height:42px;border-radius:11px;border:1px solid #d8d3cc;background:#fff;font-size:15px;font-weight:900;cursor:pointer}
-.seatobject-action-buttons button.danger{color:#9a2b2b;background:#fff5f5;border-color:#ecc}
-.seatobject-action-buttons button.wide{grid-column:1/-1}
-
-.seat-special-toolbox .sub{flex-basis:100%}
+/* SEAT_POINT_MAP_20260812：地圖只顯示方向小點與正式排號，完整資料放在圖下 */
+.seatops-map-stage .seatops-marker{width:44px;height:44px;min-width:44px;min-height:44px;border-radius:50%;padding:2px;background:#213d38;color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.28);font-size:11px;line-height:1;gap:1px}
+.seatops-map-stage .seatops-marker .point-arrow{font-size:13px;line-height:1;font-weight:950}
+.seatops-map-stage .seatops-marker .point-no{font-size:10px;line-height:1;font-weight:950;white-space:nowrap}
+.seatops-map-stage .seatops-marker small,.seatops-map-stage .seatops-marker .brand,.seatops-map-stage .seatops-marker .equip{display:none!important}
+.seatops-map-stage .seatops-marker.free{background:#8aa39e}.seatops-map-stage .seatops-marker.paid{background:#b88920}.seatops-map-stage .seatops-marker.service{background:#6689a1}.seatops-map-stage .seatops-marker.closed{background:#888}
+.seatops-next{padding:9px 11px;border-radius:12px;background:#eef7f5;border:1px solid #c9ded9;font-weight:900;margin:8px 0}
+.seatops-roster-title{font-weight:950;font-size:18px;margin:16px 0 7px}.seatops-card .roster-no{font-size:23px;font-weight:950;line-height:1.1;color:#24413d}
+@media(max-width:720px){.seatops-map-stage .seatops-marker{width:38px;height:38px;min-width:38px;min-height:38px}.seatops-map-stage .seatops-marker .point-arrow{font-size:12px}.seatops-map-stage .seatops-marker .point-no{font-size:9px}}
 
 
 /* MEMBER_COMPACT_MOBILE_20260809 */
@@ -2453,8 +2437,25 @@ function renderRegistrationCards(){
 }
 function statusTags(r){ const review=r.reviewStatus||r.status||'待審核'; const pay=r.paymentStatus||r.payStatus||'未繳費'; const check=r.checkinStatus||r.checkin||'未報到'; return '<span class="tag '+(String(review).includes('錄取')?'ok':String(review).includes('待')?'warn':'info')+'">審核：'+safe(review)+'</span><span class="tag '+(String(pay).includes('已繳')||String(pay).includes('免費')?'ok':String(pay).includes('回報')||String(pay).includes('待確認')?'warn':'bad')+'">付款：'+safe(pay)+'</span><span class="tag '+(String(check).includes('已報到')?'ok':'purple')+'">報到：'+safe(check)+'</span>'; }
 function socialLinks(r){ let out=''; if(r.fb) out+='<a class="tag info" href="'+attr(r.fb)+'" target="_blank">FB</a>'; if(r.ig) out+='<a class="tag bad" href="'+attr(r.ig)+'" target="_blank">IG</a>'; return out || '<span class="tag">未填社群</span>'; }
-function actionButtons(r){ const id=r.id||r.regId||r.registrationId||r.registration_id||''; const sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||''; if(Array.isArray(r.availableActions)){ let out=''; for(const a of r.availableActions) out += actionButton(id,a,sid); return out || '<span class="tag">目前無可操作動作</span>'; } return '<span class="tag">目前無可操作動作</span>'; }
-function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'取消／退費'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||a)+'</button>'; }
+function actionButtons(r){
+  const id=r.id||r.regId||r.registrationId||r.registration_id||'',sid=regSessionId(r)||r.sessionId||r.session_id||AdminState.currentSessionId||'';
+  if(!Array.isArray(r.availableActions))return '<span class="tag">目前無可操作動作</span>';
+  let out='',canResolve=r.availableActions.includes('refund');
+  for(const a of r.availableActions){
+    if(a==='partialDayRefund'){
+      const ds=r.selectedDates||r.selected_dates||r.selectedDatesJson||r.selected_dates_json||[];
+      const arr=Array.isArray(ds)?ds:(()=>{try{return JSON.parse(ds||'[]')}catch(e){return[]}})();
+      if(arr.length<=1)continue;
+    }
+    out+=actionButton(id,a,sid);
+  }
+  if(canResolve){
+    out+='<button class="btn small" onclick="openRegistrationTransferPanel(\''+attr(id)+'\',\''+attr(sid)+'\')">轉場</button>';
+    out+='<button class="btn small secondary" onclick="confirmRegistrationCredit(\''+attr(id)+'\',\''+attr(sid)+'\')">轉活動金</button>';
+  }
+  return out||'<span class="tag">目前無可操作動作</span>';
+}
+function actionButton(id,a,sid=''){ const m={approve:'錄取',reject:'不錄取',waitlist:'備取',markPaymentReported:'已回報',confirmPayment:'確認付款',markUnpaid:'未繳費',cancelUnpaid:'未繳費取消',checkin:'報到',undoCheckin:'取消報到',refund:'取消／退費',partialDayRefund:'調整日期／單日退費'}; return '<button class="btn small secondary" onclick="runRegAction(\''+attr(id)+'\',\''+attr(a)+'\',this,\''+attr(sid)+'\')">'+safe(m[a]||'操作')+'</button>'; }
 function dayOpsHtml(r){
   const rows=Array.isArray(r&&r.dayOps)?r.dayOps:[];
   if(!rows.length)return '';
@@ -2532,6 +2533,10 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
     const transferFee=Number(sug.refundTransferFee||0)||0;
     const refund=Math.max(0, paid-adminFee-transferFee);
     const html='<div class="readable-detail">'
+      +'<div class="report-card"><div class="report-title">這筆報名要怎麼處理？</div><div class="card-actions">'
+      +'<button class="btn" onclick="openRegistrationTransferPanel(\''+attr(regId)+'\',\''+attr(sid)+'\')">延期／轉移場次</button>'
+      +'<button class="btn secondary" onclick="confirmRegistrationCredit(\''+attr(regId)+'\',\''+attr(sid)+'\')">暫存為活動金</button>'
+      +'</div><div class="sub" style="margin-top:8px">轉場會保留原紀錄並建立新場報名；活動金以新臺幣計，不包含押金。</div></div>'
       +'<div class="report-card"><div class="report-title">退費處理</div>'
       +'<div class="kv"><div class="k">已繳金額</div><div id="refundPaidText">'+money(paid)+'</div>'
       +'<div class="k">處理範圍</div><div>'+(Number(sug.bundleCount||1)>1?'連動場次整組 '+num(sug.bundleCount)+' 場':'單一場次')+'</div>'
@@ -2552,6 +2557,39 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
     calcRefundAmount();
   }catch(e){ const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
   finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
+}
+async function openRegistrationTransferPanel(regId,sid){
+  try{
+    const p=await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid});
+    const opts=(p.targetSessions||[]).map(s=>'<option value="'+attr(s.id)+'">'+safe(s.name)+'｜'+safe(s.dateText||'')+'</option>').join('');
+    if(!opts){toast('目前沒有可轉入的有效場次',6000);return;}
+    const html='<div class="readable-detail"><div class="report-card"><div class="report-title">原報名款項</div><div class="kv">'
+      +'<div class="k">已繳總額</div><div>'+money(p.paidAmount||0)+'</div><div class="k">可轉活動費</div><div>'+money(p.activityPaid||0)+'</div><div class="k">押金（獨立處理）</div><div>'+money(p.depositPaid||0)+'</div><div class="k">攤位數</div><div>'+num(p.stallCount||1)+' 攤</div></div></div>'
+      +'<div class="report-card"><div class="form-grid"><div class="form-field full"><label>轉入場次</label><select id="resolutionTarget" onchange="refreshTransferPreview(\''+attr(regId)+'\',\''+attr(sid)+'\')"><option value="">請選擇</option>'+opts+'</select></div></div>'
+      +'<div id="resolutionCalc" class="notice">選擇場次後，由系統計算應補差額、活動金及押金。</div>'
+      +'<div class="form-field full" style="margin-top:12px"><label>處理備註</label><textarea id="resolutionNote" placeholder="例如：攤商來訊希望延期"></textarea></div>'
+      +'<div class="card-actions"><button id="resolutionSubmit" class="btn" disabled onclick="confirmRegistrationTransfer(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認轉移場次</button><button class="btn secondary" onclick="panelBack()">返回</button></div></div></div>';
+    openPanel('延期／轉移場次','原報名保留，新場另建報名；設備須於新場重新確認',html);
+  }catch(e){toast('轉場資料載入失敗：'+(e.message||e),7000);}
+}
+async function refreshTransferPreview(regId,sid){
+  const targetSessionId=$('resolutionTarget')?.value||''; if(!targetSessionId)return;
+  try{
+    const p=await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid,targetSessionId});
+    $('resolutionCalc').innerHTML='<b>新場應繳：</b>'+money(p.targetTotal||0)+'（活動費 '+money(p.targetActivityFee||0)+'＋押金 '+money(p.targetDeposit||0)+'）<br>'
+      +'<b>已轉入：</b>'+money(p.appliedTotal||0)+'｜<b>應補差額：</b>'+money(p.dueAmount||0)+'<br>'
+      +'<b>轉後活動金：</b>'+money(p.creditCreated||0)+'｜<b>待退押金：</b>'+money(p.depositRefundDue||0)+'<br><span class="sub">設備不沿用，會員可在新場報名紀錄看到完整計算。</span>';
+    $('resolutionSubmit').disabled=false;
+  }catch(e){$('resolutionSubmit').disabled=true;toast('計算失敗：'+(e.message||e),7000);}
+}
+async function confirmRegistrationTransfer(regId,sid){
+  const targetSessionId=$('resolutionTarget')?.value||''; if(!targetSessionId){toast('請選擇轉入場次');return;}
+  if(!await uiConfirm('確定轉移到所選場次？原場名額與排位會釋出，新場設備需重新確認。'))return;
+  try{const r=await apiPost({action:'resolveRegistration',mode:'transfer',regId,sessionId:sid,targetSessionId,note:$('resolutionNote')?.value||''});toast('已完成轉場；應補 '+money(r.dueAmount||0)+'，活動金 '+money(r.creditCreated||0),7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('轉場失敗：'+(e.message||e),8000);}
+}
+async function confirmRegistrationCredit(regId,sid){
+  if(!await uiConfirm('確定把這筆已繳活動費暫存為活動金？押金會獨立列為待退，不會轉成活動金。'))return;
+  try{const r=await apiPost({action:'resolveRegistration',mode:'credit',regId,sessionId:sid,note:'主辦改存活動金'});toast('已存入活動金 '+money(r.creditCreated||0)+'；待退押金 '+money(r.depositRefundDue||0),7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('活動金處理失敗：'+(e.message||e),8000);}
 }
 function calcRefundAmount(){
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
@@ -2656,9 +2694,9 @@ async function openFinancePanel(sid){
     const stat=(label,val,cls)=>'<div class="mini-stat"'+(cls?' style="background:'+cls+'"':'')+'><b>'+money(val||0)+'</b><span>'+safe(label)+'</span></div>';
     const financeSummary='<div class="report-card"><div class="report-title">正式損益計算</div><div class="sub" style="margin-bottom:8px">收入以已確認收款為準；退款以已完成退款為準；支出以已登錄的正式支出為準。</div><div class="mini-stat-row">'
       +stat('已確認收入',r.confirmedRevenue,'#eef7ee')+stat('已完成退款',r.refundAmount,'#fff0ee')+stat('退款後淨收入',r.netRevenue,'#eef5fb')+stat('本場總支出',r.totalExpense,'#fff8ed')
-      +stat('其中場地稅5%',r.venueTax,'#f6f1ff')+stat('可分配盈餘',r.distributableProfit,(Number(r.distributableProfit)||0)>=0?'#eef7ee':'#fff0ee')+stat('公司分潤',r.companyShare,'#eef5fb')+stat('合作方分潤',r.partnerShare,'#fff8ed')+'</div></div>';
+      +stat('攤位費開票稅5%',r.stallInvoiceTax??r.invoiceTaxAmount??0,'#f6f1ff')+stat('可分配盈餘',r.distributableProfit,(Number(r.distributableProfit)||0)>=0?'#eef7ee':'#fff0ee')+stat('公司分潤',r.companyShare,'#eef5fb')+stat('合作方分潤',r.partnerShare,'#fff8ed')+'</div></div>';
     const expenseRows=expenseTableHtml(sid,expenseItems,locked);
-    const expenseForm=locked?'':'<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費（自動加5%稅額）</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="人事費">人事費</option><option value="行銷費">行銷費</option><option value="物流費">物流費</option><option value="清潔費">清潔費</option><option value="保險費">保險費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">登錄場地費後，系統會自動計入 5% 場地稅額。</div></div>';
+    const expenseForm=locked?'':'<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費（主辦實際支付）</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="人事費">人事費</option><option value="行銷費">行銷費</option><option value="物流費">物流費</option><option value="清潔費">清潔費</option><option value="保險費">保險費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">場地費照主辦實際支付金額登錄，不會自動加稅；5% 稅額只套用於攤友繳交、需開立發票的攤位費。</div></div>';
     const shareCard='<div class="report-card"><div class="report-title">本場分潤設定</div><div class="sub" style="margin-bottom:8px">目前來源：'+safe(r.shareSource==='session'?'本場設定':r.shareSource==='event'?'系列設定':'系統預設 50/50')+'</div><div class="form-grid"><div class="form-field full"><label>合作方名稱</label><input id="share_partner" value="'+attr(r.partnerName||'')+'" '+(locked?'disabled':'')+' placeholder="例如：合作主辦方"></div><div class="form-field"><label>公司 %</label><input id="share_company" type="number" min="0" max="100" step="0.01" value="'+attr(r.companyRatio??50)+'" '+(locked?'disabled':'')+'></div><div class="form-field"><label>合作方 %</label><input id="share_partner_ratio" type="number" min="0" max="100" step="0.01" value="'+attr(r.partnerRatio??50)+'" '+(locked?'disabled':'')+'></div></div>'+(locked?'':'<div class="card-actions"><button class="btn secondary" onclick="saveFinanceShare(\''+attr(sid)+'\',this)">儲存本場分潤比例</button></div>')+'</div>';
     const settleCard=locked?'<div class="report-card"><div class="report-title">🔒 已正式結算</div><div class="sub">鎖定時間：'+safe(r.settlement?.lockedAt||'—')+'<br>鎖定人：'+safe(r.settlement?.lockedBy||'—')+'</div><div class="card-actions"><button class="btn danger" onclick="unlockFinanceSettlement(\''+attr(sid)+'\',this)">解除結算鎖定（僅平台超管）</button></div></div>':'<div class="report-card"><div class="report-title">正式結算</div><div class="sub">鎖定後會保存本次收入／退款／支出／分潤快照，並禁止修改支出與比例。</div><div class="card-actions"><button class="btn" onclick="lockFinanceSettlement(\''+attr(sid)+'\',this)">🔒 確認並鎖定本場結算</button></div></div>';
     $('panelBody').innerHTML='<div class="readable-detail">'+warn+financeSummary+'<div class="detail-grid"><div>'+expenseForm+'<div style="height:14px"></div><div class="report-card"><div class="report-title">本場支出明細</div><div class="info-line"><span>正式支出總額</span><span>'+money(r.totalExpense||0)+'</span></div>'+expenseRows+'</div><div style="height:14px"></div><div class="card-actions"><button type="button" class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載全場完整資料</button><button type="button" class="btn secondary" onclick="shareFinanceReconciliation(\''+attr(sid)+'\')">分享財報給夥伴對帳</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>報名金流項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side">'+shareCard+'<div style="height:14px"></div>'+settleCard+'<div style="height:14px"></div><div class="report-card"><div class="report-title">口徑提醒</div><div class="sub">押金不列入營收；未確認收款不列入收入；退款完成後才會扣回，結案前請確認所有收支已登錄完成。</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div></div>';
@@ -2688,7 +2726,7 @@ async function editSessionExpense(sid,id,type,name,amount){
   try{await apiPost({action:'saveFinanceItem',id,sessionId:sid,type,name:String(n||'').trim()||type,amount:v});toast('支出已更新並重新計算');await openFinancePanel(sid);}catch(e){toast('更新失敗：'+e.message,6000);}
 }
 async function deleteSessionExpense(sid,id){
-  if(!confirm('確定刪除此支出？若為場地費，其5%自動稅額也會一起移除。'))return;
+  if(!confirm('確定刪除此支出？'))return;
   try{await apiPost({action:'deleteFinanceItem',id,sessionId:sid});toast('支出已刪除並重新計算');await openFinancePanel(sid);}catch(e){toast('刪除失敗：'+e.message,6000);}
 }
 async function shareFinanceReconciliation(sid){
@@ -2998,101 +3036,6 @@ function collectSessionDates(){
 
 
 
-function normalizeAdminSeatItem(x={},i=0){
-  const rawType=String(x.type||x.seatType||x.seat_type||'auto').trim();
-  const legacyInactive=(x.active===false||x.active==='false'||x.is_active===false||x.is_active==='false');
-  let kind=(rawType==='service')?'service':(rawType==='closed'||legacyInactive)?'closed':'fixed';
-  let price=Math.max(0,Number(x.price||x.priceDelta||x.price_delta||0)||0);
-  const type=kind==='service'?'service':kind==='closed'?'closed':(price>0?'paid':'auto');
-  if(type==='service'||type==='closed') price=0;
-  return {code:String(x.code||x.seatCode||x.seat_code||x.stallNo||x.stall_no||'').trim(),type,price,note:String(x.note||''),order:Number(x.order||x.mapOrder||x.map_order||i+1)||i+1};
-}
-function adminSeatKind(type){ return type==='service'?'service':type==='closed'?'closed':'fixed'; }
-function seatTypeSelectHtml(type,idx){
-  const kind=adminSeatKind(type);
-  const opts=[['fixed','攤位（固定）'],['service','服務台'],['closed','禁用']];
-  return '<select onchange="updateSessionSeatRow('+idx+',\'kind\',this.value)" title="分類">'+opts.map(o=>'<option value="'+o[0]+'" '+(o[0]===kind?'selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
-}
-function moveSessionSeatRow(i,dir){ const a=AdminSessionSeatItems; const j=i+dir; if(j<0||j>=a.length) return; const t=a[i]; a[i]=a[j]; a[j]=t; AdminSessionSeatListDirty=true; renderSessionSeatRows(a); }
-function expandStallCodes(input){ const out=[]; const seen=new Set(); String(input||'').split(/[,\s，、]+/).forEach(function(raw){ const tok=raw.trim(); if(!tok) return; const m=tok.match(/^([^\d]*?)(\d+)\s*[-~～]\s*([^\d]*?)(\d+)$/); if(m && (m[1]===m[3]||m[3]==='')){ const pf=m[1]; const a=parseInt(m[2],10),b=parseInt(m[4],10); const lo=Math.min(a,b),hi=Math.max(a,b); if(hi-lo>500){ if(!seen.has(tok)){seen.add(tok);out.push(tok);} return; } for(let k=lo;k<=hi;k++){ const c=pf+k; if(!seen.has(c)){seen.add(c);out.push(c);} } } else { if(!seen.has(tok)){seen.add(tok);out.push(tok);} } }); return out; }
-function addSeatsByRange(){ const raw=String(($('set_seatRange')||{}).value||'').trim(); if(!raw){ toast('請輸入範圍，例如 A1-A5,B1-B5,D1-D6'); return; } const codes=expandStallCodes(raw); if(!codes.length){ toast('無法解析範圍'); return; } let added=0; codes.forEach(function(code){ if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code:code,type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); added++; } }); if(added) AdminSessionSeatListDirty=true; renderSessionSeatRows(AdminSessionSeatItems); if($('set_seatRange')) $('set_seatRange').value=''; toast('已建立 '+added+' 個號碼'); }
-function currentSeatSid(){ return String(($('set_sessionId')||{}).value||'').trim(); }
-async function loadVenueMapList(){ try{ const r=await apiPost({action:'listVenueMaps'}); const maps=(r&&r.maps)||[]; const sel=$('set_venueMapSel'); if(sel){ sel.innerHTML='<option value="">— 選擇常用圖 —</option>'+maps.map(m=>`<option value="${attr(m.id)}">${safe(m.name)}</option>`).join(''); } }catch(e){} }
-async function applyVenueMapNow(){ const sid=currentSeatSid(); const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇常用圖'); return; } if(!await uiConfirm('套用後會以常用圖的圖片與位置設定覆蓋本場目前設定，確定？')) return; try{ const res=await apiPost({action:'applyVenueMap',sessionId:sid,mapId,enabled:!!$('set_seatPricingEnabled')?.checked,holdHours:Number(($('set_seatHoldHours')||{}).value||24)||24,assignDaysBefore:Number(($('set_seatAssignDays')||{}).value||7)||7}); await loadSessionSeatSettings(sid, (typeof sessionById==='function'?sessionById(sid):null)||{}); toast(res&&res.warning?('已套用常用圖；'+res.warning):'已套用常用圖',9000); }catch(e){ toast('套用失敗：'+e.message,9000); } }
-async function saveVenueMapNow(){ if(!AdminSessionSeatLoaded){ toast('位置清單尚未成功載入，已阻止存成常用圖，避免把空資料覆蓋範本',8000); return; } const name=prompt('把目前的場地圖與位置設定存成常用圖，請命名（例如：高雄美麗島 A區）'); if(!name) return; const mapUrl=String(($('set_seatMapUrl')||{}).value||'').trim(); const seats=collectSessionSeatItems(); if(!mapUrl && !seats.length){ toast('目前沒有地圖或位置可存'); return; } try{ await apiPost({action:'saveVenueMap',name:name,mapUrl:mapUrl,seats:seats}); toast('已存成常用圖：'+name); await loadVenueMapList(); }catch(e){ toast('儲存失敗：'+e.message,7000); } }
-async function deleteVenueMapNow(){ const mapId=String(($('set_venueMapSel')||{}).value||''); if(!mapId){ toast('請先選擇要刪除的常用圖'); return; } if(!await uiConfirm('確定刪除這張常用圖？（不影響已套用的場次）')) return; try{ await apiPost({action:'deleteVenueMap',mapId:mapId}); toast('已刪除'); await loadVenueMapList(); }catch(e){ toast('刪除失敗：'+e.message,7000); } }
-function renderSessionSeatRows(items){
-  AdminSessionSeatItems=(Array.isArray(items)?items:[]).map((x,i)=>normalizeAdminSeatItem(x,i)).filter(x=>x.code);
-  const box=$('set_seatRows'); if(!box) return;
-  if(!AdminSessionSeatItems.length){ box.innerHTML='<div class="sub">尚未建立號碼。可用批次建立，例如 A 起始 1 數量 40。</div>'; updateSeatMiniSummary(); return; }
-  box.innerHTML=AdminSessionSeatItems.map((s,i)=>{ const fixed=adminSeatKind(s.type)==='fixed'; return '<div class="seat-line-row">'
-    +'<input value="'+attr(s.code)+'" onchange="updateSessionSeatRow('+i+',\'code\',this.value)" title="號碼">'
-    +seatTypeSelectHtml(s.type,i)
-    +'<input type="number" min="0" value="'+attr(s.price)+'" onchange="updateSessionSeatRow('+i+',\'price\',this.value)" placeholder="0＝一般" title="加價金額" '+(fixed?'':'disabled')+'>'
-    +'<input value="'+attr(s.note)+'" onchange="updateSessionSeatRow('+i+',\'note\',this.value)" placeholder="備註" title="備註">'
-    +'<span class="seat-row-actions"><button type="button" class="btn secondary small" onclick="moveSessionSeatRow('+i+',-1)" title="上移">▲</button><button type="button" class="btn secondary small" onclick="moveSessionSeatRow('+i+',1)" title="下移">▼</button><button type="button" class="btn secondary small" onclick="removeSessionSeatRow('+i+')">刪</button></span>'
-    +'</div>'; }).join('');
-  updateSeatMiniSummary();
-}
-// 批次設定加價金額：0＝系統自動排位（攤友不能選）；>0＝開放攤友加價自選
-function bulkSetSeatPrice(){
-  const list=AdminSessionSeatItems||[];
-  if(!list.length){ toast('尚未建立攤位號碼'); return; }
-  const v=prompt('批次設定「加價金額」\n\n0＝系統依繳費順序自動排位（攤友不能自己選）\n大於 0＝開放攤友加價自選這些位置\n\n請輸入金額：','100');
-  if(v===null) return;
-  const n=Math.max(0, Number(String(v).trim())||0);
-  let cnt=0;
-  list.forEach(function(x){ if(adminSeatKind(x.type)==='fixed'){ x.price=n; x.type=(n>0?'paid':'auto'); cnt++; } });
-  renderSessionSeatRows(list);
-  AdminSessionSeatMapDirty=true;
-  toast(n>0?('已將 '+cnt+' 個攤位設為可自選（加價 '+n+' 元），記得按儲存'):('已將 '+cnt+' 個攤位設為系統自動排位，記得按儲存'));
-}
-function updateSeatMiniSummary(){
-  const el=$('set_seatSummary'); if(!el) return;
-  const total=AdminSessionSeatItems.length;
-  const fixed=AdminSessionSeatItems.filter(x=>adminSeatKind(x.type)==='fixed').length;
-  const paid=AdminSessionSeatItems.filter(x=>x.type==='paid'||(adminSeatKind(x.type)==='fixed'&&Number(x.price)>0)).length;
-  const service=AdminSessionSeatItems.filter(x=>x.type==='service').length;
-  const closed=AdminSessionSeatItems.filter(x=>x.type==='closed').length;
-  el.textContent='號碼 '+total+'｜攤位（固定） '+fixed+'（其中加價 '+paid+'）｜服務台 '+service+'｜禁用 '+closed;
-}
-function updateSessionSeatRow(i,key,val){
-  const row=AdminSessionSeatItems[i]; if(!row) return;
-  if(key==='kind'){
-    if(val==='service'){ row.type='service'; row.price=0; }
-    else if(val==='closed'){ row.type='closed'; row.price=0; }
-    else row.type=Number(row.price)>0?'paid':'auto';
-  }else if(key==='price'){
-    row.price=Math.max(0,Number(val||0)||0);
-    if(adminSeatKind(row.type)==='fixed') row.type=row.price>0?'paid':'auto';
-  }else row[key]=String(val||'').trim();
-  AdminSessionSeatListDirty=true;
-  renderSessionSeatRows(AdminSessionSeatItems);
-}
-function removeSessionSeatRow(i){ AdminSessionSeatItems.splice(i,1); AdminSessionSeatListDirty=true; renderSessionSeatRows(AdminSessionSeatItems); }
-function addSessionSeatRow(){ AdminSessionSeatItems.push({code:'',type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); AdminSessionSeatListDirty=true; renderSessionSeatRows(AdminSessionSeatItems); }
-function batchCreateSessionSeats(){
-  const prefix=String($('set_seatPrefix')?.value||'').trim().toUpperCase();
-  const start=Math.max(1,Number($('set_seatStart')?.value||1)||1);
-  const count=Number($('set_seatCount')?.value||0)||0;
-  if(count<=0){ toast('請先輸入要建立的號碼數量'); return; }
-  let added=0;
-  for(let i=0;i<count;i++){
-    const code=prefix+String(start+i);
-    if(!AdminSessionSeatItems.some(x=>x.code===code)){ AdminSessionSeatItems.push({code,type:'auto',price:0,note:'',order:AdminSessionSeatItems.length+1}); added++; }
-  }
-  if(added) AdminSessionSeatListDirty=true;
-  renderSessionSeatRows(AdminSessionSeatItems);
-  toast('已建立 '+added+' 個號碼；場地圖可稍後上傳，號碼仍會獨立存入資料庫');
-}
-function collectSessionSeatItems(){
-  return AdminSessionSeatItems.map((x,i)=>{
-    const s=normalizeAdminSeatItem(x,i);
-    const kind=adminSeatKind(s.type);
-    const price=kind==='fixed'?Math.max(0,Number(s.price)||0):0;
-    return {code:s.code,type:kind==='service'?'service':kind==='closed'?'closed':(price>0?'paid':'auto'),price,note:s.note||'',order:i+1};
-  }).filter(x=>x.code);
-}
 function toggleSessionFeatureSections(){
   ['equipment','addons','agreement','seats','invoice'].forEach(key=>{
     const chk=$('mod_'+key);
@@ -3101,109 +3044,11 @@ function toggleSessionFeatureSections(){
   });
   toggleSessionSeatSettings();
 }
-function toggleSessionSeatSettings(){
-  const moduleOn = $('mod_seats') ? !!$('mod_seats').checked : true;
-  const enabled = !!$('set_seatPricingEnabled')?.checked;
-  const on=moduleOn && enabled;
-  const box=$('set_seatTools');
-  if(box) box.style.display=on?'block':'none';
-  const batch=$('set_seatBatchBox');
-  if(batch) batch.classList.remove('session-seat-disabled');
-  const note=$('set_seatMapNote');
-  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
-  if(note){
-    if(!on) note.textContent='選位功能未啟用。';
-    else if(AdminSessionSeatMapDirty) note.textContent='新地圖尚未儲存；既有攤位號碼仍保留，可一併儲存。';
-    else if(!mapUrl) note.textContent='尚未上傳場地圖；可先建立攤位號碼，號碼會獨立存入資料庫。';
-    else note.textContent='場地圖與攤位號碼均由資料庫載入，可分別編輯後儲存。';
-  }
-  // 不再用「沒有地圖」覆蓋號碼清單；stalls 資料即使沒有圖片也必須顯示。
-  if(on) renderSessionSeatRows(AdminSessionSeatItems);
-}
-async function loadSessionSeatMapFile(input){
-  const file=input && input.files && input.files[0];
-  if(!file) return;
-  if(!/^image\//.test(file.type||'')){ toast('請選擇圖片檔'); input.value=''; return; }
-  if(file.size>5*1024*1024){ toast('圖片請小於 5MB'); input.value=''; return; }
-  // 統一走「上傳到儲存空間、資料庫只存網址」這一套。
-  // 舊做法是把整張圖轉成 base64 塞進資料庫欄位，圖一大就會存不進去（存檔失敗的主因）。
-  try{
-    toast('場地圖上傳中…');
-    const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('讀取失敗')); r.readAsDataURL(file); });
-    const up=await apiPost({action:'uploadCover', image:dataUrl});
-    if(!up || !up.url) throw new Error((up&&up.error)||'上傳失敗');
-    if($('set_seatMapUrl')) $('set_seatMapUrl').value=up.url;
-    AdminSessionSeatMapDirty=true;
-    toggleSessionSeatSettings();
-    toast('場地圖已上傳，請按「儲存地圖」套用到本場次');
-  }catch(e){
-    toast('場地圖上傳失敗：'+((e&&e.message)?e.message:e),8000);
-  }finally{ input.value=''; }
-}
-
-
-async function loadSessionSeatSettings(sid,s){
-  AdminSessionSeatMapDirty=false;
-  AdminSessionSeatLoaded=false;
-  AdminSessionSeatListDirty=false;
-  try{ loadVenueMapList(); }catch(e){}
-  try{
-    const data=await api({action:'getSeatMap',sessionId:sid});
-    if(data && !data.error){
-      const dbMapUrl=String(data.mapUrl||'').trim();
-      if($('set_seatMapUrl')) $('set_seatMapUrl').value=dbMapUrl;
-      if($('set_seatHoldHours') && data.holdHours) $('set_seatHoldHours').value=data.holdHours;
-      renderSessionSeatRows(Array.isArray(data.seats)?data.seats:[]);
-      AdminSessionSeatLoaded=true;
-      AdminSessionSeatListDirty=false;
-      toggleSessionSeatSettings();
-      // ADMIN_SEAT_OPS_20260725：掛上「選位營運」入口（一鍵配位／換位／名單）
-      try{ const _h=$('set_seatSummary'); if(_h){ let _w=document.getElementById('seatOpsBtnWrap'); if(!_w){ _h.insertAdjacentHTML('afterend','<div id="seatOpsBtnWrap" style="margin:10px 0"></div>'); _w=document.getElementById('seatOpsBtnWrap'); } _w.innerHTML='<button type="button" class="btn small" onclick="openSeatOps(\''+sid+'\')">🪑 選位營運（一鍵配位／換位／名單）</button>'; } }catch(e){}
-      return;
-    }
-    throw new Error((data&&data.error)||'位置清單載入失敗');
-  }catch(e){
-    AdminSessionSeatItems=[];
-    const box=$('set_seatRows');
-    if(box) box.innerHTML='<div class="empty" style="color:#8b1c1c">位置清單載入失敗，系統已阻止儲存，避免把原資料覆蓋成空白。<div class="sub" style="margin-top:6px">原因：'+safe(e&&e.message?e.message:String(e))+'</div></div>';
-    const note=$('set_seatMapNote'); if(note) note.textContent='位置資料尚未載入成功，請重新開啟場次設定後再儲存。';
-  }
-}
-async function saveSessionSeatSettings(sid){
-  if(!$('set_seatPricingEnabled')) return;
-  if(!AdminSessionSeatLoaded) throw new Error('選位位置清單尚未成功載入，已阻止儲存，避免覆蓋原有位置');
-  const moduleOn = $('mod_seats') ? !!$('mod_seats').checked : true;
-  const enabled=moduleOn && !!$('set_seatPricingEnabled').checked;
-  const seats=collectSessionSeatItems();
-  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
-  const holdHours=Number($('set_seatHoldHours')?.value||24)||24;
-  await apiPost({action:'saveSeatMap',sessionId:sid,enabled,mapUrl,holdHours,seats,assignDaysBefore:Number(($('set_seatAssignDays')||{}).value||7)||7});
-  AdminSessionSeatLoaded=true;
-  AdminSessionSeatListDirty=false;
-}
-
-async function saveSessionSeatMapOnly(sid,btn){
-  const mapUrl=String($('set_seatMapUrl')?.value||'').trim();
-  if(!mapUrl){ toast('請先上傳或貼上已編號場地圖'); return; }
-  if(/^data:/i.test(mapUrl) && mapUrl.length>200000){
-    toast('這張圖是內嵌資料且過大，請改用上方「選擇檔案」重新上傳，系統會自動轉成網址',9000); return;
-  }
-  const old=btn?btn.textContent:'';
-  if(btn){ btn.disabled=true; btn.textContent='儲存地圖中…'; }
-  try{
-    await apiPost({action:'saveSeatMapImage',sessionId:sid,mapUrl});
-    AdminSessionSeatMapDirty=false;
-    toast('已儲存場地圖；位置清單沒有被修改');
-    await loadSessionSeatSettings(sid, sessionById(sid)||{});
-  }catch(e){ toast('儲存地圖失敗：'+e.message,8000); }
-  finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
-}
-
-// ── 選位營運（SEAT_OPS_UX_20260807）：互動位置圖／小卡／增量補排／換位／下載 ──
+// ── 排位營運：底圖點位／方向／名單／分享圖 ──
 
 async function openSeatOps(sid){
   const s=sessionById(sid)||{};
-  openPanel('排位營運', safe((s.name||s.title||'場次'))+'｜位置圖・排位・補排・換位', '<div id="seatOpsBox" class="sub">載入中…</div>');
+  openPanel('排位營運', safe((s.name||s.title||'場次'))+'｜底圖點位・方向・名單・分享圖', '<div id="seatOpsBox" class="sub">載入中…</div>');
   await loadSeatOps(sid);
 }
 async function loadSeatOps(sid,activityDate){
@@ -3213,7 +3058,7 @@ async function loadSeatOps(sid,activityDate){
     const d=await api({action:'adminSeatBoard',sessionId:sid,activityDate:activityDate||SeatOps.activityDate||''});
     if(!d || d.error) throw new Error((d&&d.error)||'載入失敗');
     const prev=SeatOps||{};
-    SeatOps={sid:sid,activityDate:String(d.activityDate||activityDate||prev.activityDate||''),availableDates:Array.isArray(d.availableDates)?d.availableDates:[],seats:Array.isArray(d.seats)?d.seats:[],regs:Array.isArray(d.regs)?d.regs:[],summary:d.summary||{},session:d.session||{},query:prev.query||'',filter:prev.filter||'all',moveRegId:'',markerMode:false,markerCode:'',boardEdit:prev.boardEdit||false,customSpecials:Array.isArray(prev.customSpecials)?prev.customSpecials:[],multiSelect:!!prev.multiSelect,selectedCanvasItems:Array.isArray(prev.selectedCanvasItems)?prev.selectedCanvasItems:[],objectMenuId:''};
+    SeatOps={sid:sid,activityDate:String(d.activityDate||activityDate||prev.activityDate||''),availableDates:Array.isArray(d.availableDates)?d.availableDates:[],seats:Array.isArray(d.seats)?d.seats:[],regs:Array.isArray(d.regs)?d.regs:[],summary:d.summary||{},session:d.session||{},query:prev.query||'',filter:prev.filter||'all',moveRegId:'',markerMode:!!prev.markerMode,markerCode:'',repositionCode:'',boardEdit:prev.boardEdit||false,customSpecials:Array.isArray(prev.customSpecials)?prev.customSpecials:[],multiSelect:!!prev.multiSelect,selectedCanvasItems:Array.isArray(prev.selectedCanvasItems)?prev.selectedCanvasItems:[],objectMenuId:''};
     renderSeatOps();
   }catch(e){ box.innerHTML='<div class="empty" style="color:#8b1c1c">載入失敗：'+safe(e&&e.message?e.message:String(e))+'</div>'; }
 }
@@ -3233,84 +3078,93 @@ function seatOpsDayTabsHtml(){
 
 function seatOpsSeatByCode(code){const all=(SeatOps.seats||[]).filter(x=>String(x.code)===String(code));return all.find(x=>x.active)||all[0];}
 function seatOpsRegById(id){return (SeatOps.regs||[]).find(x=>String(x.regId)===String(id));}
+function seatOpsRosterNo(r){return String((r&&((r.rosterNumber||r.roster_number)))||'').trim();}
+function seatOpsRosterForSeat(seat){return seat&&seat.occupantRegId?seatOpsRegById(seat.occupantRegId):null;}
+function seatOpsPublicNoForSeat(seat){
+  if(!seat)return '';
+  if(seat.type==='service'||seat.type==='closed')return seat.specialLabel||'';
+  // 地圖上一個實際攤位就是一個唯一排號；租 2 攤會有 2 個點。
+  // 不讀 equipmentText，桌椅數永遠不得變成位置。
+  const m=String(seat.code||'').toUpperCase().match(/^([A-Z]+)0*(\d+)$/);
+  return m?(m[1]+String(Number(m[2])).padStart(2,'0')):String(seat.code||'');
+}
+function seatOpsRosterSort(a,b){return Number(a.rosterSequence||0)-Number(b.rosterSequence||0)||seatOpsRosterNo(a).localeCompare(seatOpsRosterNo(b),undefined,{numeric:true})||String(a.paidAt||'').localeCompare(String(b.paidAt||''));}
 function seatOpsEmptyCodes(){ return (SeatOps.seats||[]).filter(x=>(x.type==='auto'||x.type==='paid')&&x.active&&!x.occupied).map(x=>x.code); }
 function seatOpsCardMatches(r){
   const q=String(SeatOps.query||'').trim().toLowerCase();
-  if(q){const hay=[r.brand,r.name,r.phone,r.stallNumber,r.equipmentText].join(' ').toLowerCase(); if(!hay.includes(q)) return false;}
+  if(q){const hay=[seatOpsRosterNo(r),r.brand,r.name,r.phone,r.stallNumber,r.equipmentText].join(' ').toLowerCase(); if(!hay.includes(q)) return false;}
   const f=SeatOps.filter||'all';
-  if(f==='assigned'&&!String(r.stallNumber||'').trim()) return false;
-  if(f==='waiting'&&!(r.confirmedPaid&&!String(r.stallNumber||'').trim()&&r.intent!=='paid')) return false;
-  if(f==='auto'&&r.intent==='paid') return false;
-  if(f==='paid'&&r.intent!=='paid') return false;
+  const own=(SeatOps.seats||[]).filter(s=>String(s.occupantRegId||'')===String(r.regId||''));
+  const placed=own.length>0&&own.every(s=>Number(s.x)>0||Number(s.y)>0);
+  if(f==='assigned'&&!placed) return false;
+  if(f==='waiting'&&(!r.confirmedPaid||placed)) return false;
   if(f==='refund'&&!String(r.transferStatus||'').includes('退費')) return false;
   return true;
 }
 
 function seatOpsBoardCfg(){
   const raw=(SeatOps.session&&SeatOps.session.seatBoard)||{};
-  return {mode:String(raw.mode||'blank'),columnsPerRow:Math.max(3,Math.min(12,Number(raw.columnsPerRow)||9)),topNote:String(raw.topNote||''),rowLabels:(raw.rowLabels&&typeof raw.rowLabels==='object'&&!Array.isArray(raw.rowLabels))?raw.rowLabels:{},freeObjects:Array.isArray(raw.freeObjects)?raw.freeObjects:[]};
+  return {mode:'map',mapDirections:(raw.mapDirections&&typeof raw.mapDirections==='object'&&!Array.isArray(raw.mapDirections))?raw.mapDirections:{}};
 }
-function seatOpsRowLetters(){
-  const letters=new Set();
-  (SeatOps.seats||[]).filter(x=>x.active).forEach(x=>{const m=String(x.code||'').toUpperCase().match(/^([A-Z])(\d+)$/);if(m)letters.add(m[1]);});
-  return [...letters].sort();
-}
-function seatOpsCanvasXY(seat){
-  const cfg=seatOpsBoardCfg(), cols=cfg.columnsPerRow||9;
-  const x=Number(seat&&seat.x)||0,y=Number(seat&&seat.y)||0;
-  if(x>0||y>0)return {x:Math.max(2,Math.min(98,x)),y:Math.max(3,Math.min(97,y))};
-  const m=String((seat&&seat.code)||'').toUpperCase().match(/^([A-Z])(\d+)$/);
-  if(!m)return {x:8,y:10};
-  const row=Math.max(0,m[1].charCodeAt(0)-65), col=Math.max(0,Number(m[2])-1);
-  return {x:7.5+(col%cols)*(85/Math.max(1,cols-1)),y:14+row*18};
-}
-function seatOpsCanvasKey(type,id){return (type==='object'?'O:':'S:')+String(id||'');}
-function seatOpsCanvasIsSelected(type,id){return (SeatOps.selectedCanvasItems||[]).includes(seatOpsCanvasKey(type,id));}
-function seatOpsToggleCanvasSelection(type,id){
-  const k=seatOpsCanvasKey(type,id), arr=Array.isArray(SeatOps.selectedCanvasItems)?SeatOps.selectedCanvasItems.slice():[];
-  const i=arr.indexOf(k); if(i>=0)arr.splice(i,1); else arr.push(k); SeatOps.selectedCanvasItems=arr; renderSeatOps();
-}
-function seatOpsToggleMultiSelect(){SeatOps.multiSelect=!SeatOps.multiSelect;SeatOps.objectMenuId='';if(!SeatOps.multiSelect)SeatOps.selectedCanvasItems=[];renderSeatOps();}
-function seatOpsClearMultiSelection(){SeatOps.selectedCanvasItems=[];renderSeatOps();}
-function seatOpsSelectAllVendors(){SeatOps.multiSelect=true;SeatOps.selectedCanvasItems=(SeatOps.seats||[]).filter(s=>s.active&&s.occupied).map(s=>seatOpsCanvasKey('seat',s.code));renderSeatOps();}
-function seatOpsBlankBoardHtml(){
-  const esc=safe,cfg=seatOpsBoardCfg(),seats=(SeatOps.seats||[]).filter(x=>x.active);
-  if(!seats.length)return '<div class="seatcanvas-wrap"><div class="seatops-map-empty"><b>還沒有位置。</b><br>先按「依付款順序重建位置編號」。位置編號會依付款確認順序產生，再由你自由拖成任何場地形狀。</div></div>';
-  const markers=seats.map(seat=>{const p=seatOpsCanvasXY(seat),isSpecial=seat.type==='service'||seat.type==='closed',cls=isSpecial?'special':seat.occupied?'used':seat.type==='paid'?'paid':'free';const label=isSpecial?(seat.specialLabel||'自訂區塊'):(seat.occupantName||'空位');const eq=seat.occupantName?(seat.occupantEquipmentText||'設備自備'):'';const sel=seatOpsCanvasIsSelected('seat',seat.code)?' multi-selected':'';return '<button type="button" class="seatcanvas-marker '+cls+sel+'" data-seat="'+esc(seat.code)+'" style="left:'+p.x+'%;top:'+p.y+'%" title="'+esc(seat.code+'｜'+label+(eq?'｜'+eq:''))+'" onclick="seatOpsMarkerClick(event,\''+esc(seat.code)+'\')" onpointerdown="seatOpsMarkerPointerDown(event,\''+esc(seat.code)+'\')" ondragover="event.preventDefault()" ondrop="seatOpsMarkerDrop(event,\''+esc(seat.code)+'\')"><span class="code">'+esc(seat.code)+'</span><span class="who">'+esc(label)+'</span>'+(eq?'<span class="equip">'+esc(eq)+'</span>':'')+'</button>';}).join('');
-  // 工具列只保留固定快捷；已建立的自訂名稱不再回灌到上方造成越加越長。
-  const specials=['服務台','禁用'];
-  const freeObjects=(cfg.freeObjects||[]).map(o=>{const sel=seatOpsCanvasIsSelected('object',o.id)?' multi-selected':'';return '<div class="seatcanvas-object '+(String(o.kind||'')==='blocked'?'blocked':'')+sel+'" data-obj="'+esc(o.id||'')+'" style="left:'+Math.max(2,Math.min(98,Number(o.x)||50))+'%;top:'+Math.max(3,Math.min(97,Number(o.y)||50))+'%" onpointerdown="seatOpsObjectPointerDown(event,\''+esc(o.id||'')+'\')" onclick="seatOpsObjectClick(event,\''+esc(o.id||'')+'\')" ondblclick="seatOpsOpenObjectActionMenu(event,\''+esc(o.id||'')+'\')" title="單擊／拖曳＝移動｜雙擊＝開啟操作選單"><span>'+esc(o.label||'自訂區塊')+'</span></div>';}).join('');
-  let h='<div class="seatcanvas-wrap"><div class="seatcanvas-head"><div><b>自由排位畫布</b><div class="seatops-help">A1、A2…只是位置編號，不代表固定列。位置與自訂區塊都能自由拖曳，畫布可以排成 L 型、ㄇ字型、島型或任何現場形狀。</div></div><div class="seatblank-tools"><button type="button" class="btn secondary small" onclick="seatOpsToggleBoardEdit()">'+(SeatOps.boardEdit?'完成文字設定':'✎ 編輯方向文字')+'</button><button type="button" class="btn '+(SeatOps.multiSelect?'':'secondary')+' small" onclick="seatOpsToggleMultiSelect()">'+(SeatOps.multiSelect?'✓ 多選中':'☑ 多選排列')+'</button></div></div>';
-  h+='<div class="seatcanvas-instruction">操作方式：單擊／拖曳＝移動｜雙擊自訂物件＝開啟「複製／重新命名／刪除」選單｜多選後：拖任一已選方塊＝整組移動，或一鍵緊密排列</div>';
-  if(SeatOps.multiSelect){const n=(SeatOps.selectedCanvasItems||[]).length;h+='<div class="seatcanvas-multi-tools"><span class="seatcanvas-multi-count">已選 '+n+' 個</span><span class="seatcanvas-multi-hint">選好後，直接拖任一已選方塊＝整組一起移動</span><button type="button" class="btn secondary small" onclick="seatOpsSelectAllVendors()">全選已排位攤商</button><button type="button" class="btn small" '+(n<2?'disabled':'')+' onclick="seatOpsArrangeSelected(\'row\')">↔ 緊密排成橫列</button><button type="button" class="btn small" '+(n<2?'disabled':'')+' onclick="seatOpsArrangeSelected(\'column\')">↕ 緊密排成直列</button><button type="button" class="btn secondary small" onclick="seatOpsClearMultiSelection()">清除選取</button></div>';}
-  h+='<div class="seat-special-toolbox"><b>自訂區塊：</b>'+specials.map(v=>'<span class="seat-special-chip" role="button" tabindex="0" draggable="true" onclick="seatOpsAddFreeObject(\''+attr(v)+'\')" ondragstart="seatOpsSpecialDragStart(event,\''+attr(v)+'\')">＋ '+esc(v)+'</span>').join('')+'<input id="seatSpecialCustomName" placeholder="自訂名稱，例如：幻日祭舞台、報到處、攝影區"><button type="button" class="btn secondary small" onclick="seatOpsAddCustomSpecial()">＋ 加入畫布</button><span class="sub">新增後只存在畫布；雙擊該物件可複製、重新命名或刪除。</span></div>';
-  if(SeatOps.boardEdit)h+='<textarea id="seatBoardTopNote" class="seatblank-note" placeholder="方向／說明，例如：↑ 舞台｜入口在右側｜中間主要走道">'+esc(cfg.topNote)+'</textarea><div><button type="button" class="btn small" onclick="seatOpsSaveBoardLabels()">儲存方向文字</button></div>';
-  else if(cfg.topNote)h+='<div class="seatcanvas-note">'+esc(cfg.topNote).replace(/\n/g,'<br>')+'</div>';
-  h+='<div id="seatOpsMapStage" class="seatcanvas-stage" ondragover="event.preventDefault()" ondrop="seatOpsCanvasDrop(event)">'+markers+freeObjects+'</div></div>';return h;
-}
-function seatOpsBoardHtml(){const cfg=seatOpsBoardCfg();return cfg.mode==='map'?seatOpsMapHtml():seatOpsBlankBoardHtml();}
-function seatOpsToggleBoardEdit(){SeatOps.boardEdit=!SeatOps.boardEdit;renderSeatOps();}
-async function seatOpsSaveBoardLabels(){
-  const cfg=seatOpsBoardCfg(),labels={};document.querySelectorAll('.seat-row-label').forEach(el=>{const k=String(el.dataset.row||'').toUpperCase(),v=String(el.value||'').trim();if(k&&v)labels[k]=v;});const top=String($('seatBoardTopNote')?.value||'').trim();
-  try{const r=await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'blank',columnsPerRow:cfg.columnsPerRow,topNote:top,rowLabels:labels});if(r&&r.error)throw new Error(r.error);SeatOps.boardEdit=false;toast('方向標示已儲存');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('儲存方向標示失敗：'+e.message,8000);}
-}
-async function seatOpsRebuildBlankBoard(){
-  toast('名單編號已改由正式付款順序自動產生；排位工作台只安排底圖位置，不再人工重編號。',9000);
+function seatOpsDirection(code){return Number((seatOpsBoardCfg().mapDirections||{})[String(code)]||0);}
+function seatOpsFormatCode(code){const m=String(code||'').toUpperCase().match(/^([A-Z]+)0*(\d+)$/);return m?(m[1]+String(Number(m[2])).padStart(2,'0')):String(code||'');}
+function seatOpsPositionNosForReg(r){return String((r&&r.stallNumber)||'').split(/[,\uff0c\s]+/).map(seatOpsFormatCode).filter(Boolean);}
+function seatOpsBoardHtml(){return seatOpsMapHtml();}
+async function seatOpsSyncStallCount(){
+  if(!await uiConfirm('建立本場位置並自動排位？\n\n系統會依每日實際參加、已錄取且正式付款已確認／免費的名單建立位置，再依付款順序排位。'))return;
+  try{
+    const r=await apiPost({action:'syncSeatRoster',sessionId:SeatOps.sid,force:true});
+    if(r&&r.error)throw new Error(r.error);
+    toast('排位完成：已建立 '+Number(r.createdSeats||0)+' 個位置，新排 '+Number(r.assigned||0)+' 筆，待人工 '+Number(r.waiting||0)+' 筆。',10000);
+    await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
+  }catch(e){toast('建立位置並排位失敗：'+(e&&e.message?e.message:e),10000);}
 }
 async function seatOpsExpandBlankBoard(){toast('不需要先建空位；新增已繳費攤商會自動取得下一個連號。',7000);}
 
+async function seatOpsUploadMapFile(input){
+  const file=input&&input.files&&input.files[0]; if(!file)return;
+  if(!/^image\//.test(file.type||'')){toast('請選擇 PNG、JPG 或 WebP 圖片');input.value='';return;}
+  if(file.size>5*1024*1024){toast('底圖請小於 5MB');input.value='';return;}
+  try{
+    toast('場地底圖上傳中…');
+    const image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('圖片讀取失敗'));reader.readAsDataURL(file);});
+    const up=await apiPost({action:'uploadCover',image});
+    if(!up||!up.url)throw new Error((up&&up.error)||'圖片上傳失敗');
+    await apiPost({action:'saveSeatMapImage',sessionId:SeatOps.sid,mapUrl:up.url});
+    const cfg=seatOpsBoardCfg();
+    await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'map'});
+    SeatOps.markerMode=true;
+    toast('底圖已套用。請直接點圖，系統會按 A01、A02…順序放入。',9000);
+    await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
+  }catch(e){toast('底圖上傳失敗：'+(e&&e.message?e.message:e),9000);}
+  finally{input.value='';}
+}
+async function seatOpsRemoveMap(){
+  if(!await uiConfirm('移除本場場地底圖？\n\n只移除圖片；位置編號、排位名單與既有標點座標都會保留。'))return;
+  try{
+    await apiPost({action:'saveSeatMapImage',sessionId:SeatOps.sid,mapUrl:''});
+    const cfg=seatOpsBoardCfg();
+    await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'map'});
+    toast('底圖已移除，排位與位置編號均保留');
+    await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
+  }catch(e){toast('移除底圖失敗：'+e.message,9000);}
+}
+
 function seatOpsMapHtml(){
   const esc=safe, seats=SeatOps.seats||[], mapUrl=String((SeatOps.session||{}).seatMapUrl||'').trim();
-  if(!mapUrl) return '<div class="seatops-map-wrap"><div class="seatops-map-empty">此場尚未設定位置圖。仍可使用下方排位卡；若要視覺化，請到場次設定上傳位置圖。</div></div>';
-  const placed=seats.filter(x=>Number(x.x)>0||Number(x.y)>0);
-  const unplaced=seats.filter(x=>!(Number(x.x)>0||Number(x.y)>0));
+  if(!mapUrl) return '<div class="seatops-map-wrap"><div class="seatops-map-empty">此場尚未上傳場地底圖。請使用上方「上傳場地底圖」，上傳後即可依 A01、A02…順序點圖放置。</div></div>';
+  const assigned=seats.filter(x=>x.occupied||x.type==='service'||x.type==='closed');
+  const placed=assigned.filter(x=>Number(x.x)>0||Number(x.y)>0);
+  const unplaced=assigned.filter(x=>!(Number(x.x)>0||Number(x.y)>0)).sort((a,b)=>seatOpsRosterSort(seatOpsRosterForSeat(a)||{},seatOpsRosterForSeat(b)||{})||Number(a.order||0)-Number(b.order||0));
   const markers=placed.map(x=>{
     let cls=x.type==='service'?'service':x.type==='closed'?'closed':x.occupied?'used':x.type==='paid'?'paid':'free';
-    const occ=x.occupantName?('｜'+x.occupantName):'',eq=x.occupantEquipmentText?('｜'+x.occupantEquipmentText):'';
-    return '<button type="button" class="seatops-marker '+cls+'" data-seat="'+esc(x.code)+'" title="'+esc(x.code+occ+eq)+'" style="left:'+Math.max(0,Math.min(100,Number(x.x)||0))+'%;top:'+Math.max(0,Math.min(100,Number(x.y)||0))+'%" onclick="seatOpsMarkerClick(event,\''+esc(x.code)+'\')" onpointerdown="seatOpsMarkerPointerDown(event,\''+esc(x.code)+'\')" ondragover="event.preventDefault()" ondrop="seatOpsMarkerDrop(event,\''+esc(x.code)+'\')"><span>'+esc(x.code)+'</span>'+(x.occupantName?'<small>'+esc(x.occupantEquipmentText||'設備自備')+'</small>':'')+'</button>';
+    const no=seatOpsPublicNoForSeat(x)||'•',r=seatOpsRosterForSeat(x),title=[no,r&&(r.brand||r.name),r&&r.name,r&&r.phone].filter(Boolean).join('｜');
+    return '<button type="button" class="seatops-marker '+cls+'" data-seat="'+esc(x.code)+'" title="'+esc(title)+'" aria-label="'+esc(title)+'" style="left:'+Math.max(0,Math.min(100,Number(x.x)||0))+'%;top:'+Math.max(0,Math.min(100,Number(x.y)||0))+'%" onclick="seatOpsMarkerClick(event,\''+esc(x.code)+'\')"><span class="point-arrow" style="display:inline-block;transform:rotate('+seatOpsDirection(x.code)+'deg)">↑</span><span class="point-no">'+esc(no)+'</span></button>';
   }).join('');
-  const select='<select id="seatMarkerSelect" onchange="SeatOps.markerCode=this.value"><option value="">— 選位置號碼 —</option>'+seats.filter(x=>x.type!=='closed'&&x.type!=='service').map(x=>'<option value="'+esc(x.code)+'" '+(SeatOps.markerCode===x.code?'selected':'')+'>'+esc(x.code)+(x.x||x.y?'（已標）':'（未標）')+'</option>').join('')+'</select>';
-  return '<div class="seatops-map-wrap"><div class="seatops-map-head"><div><b>互動位置圖</b><div class="seatops-help">點有人的位置可定位名單；先按攤商「移動」再點空位即可換位。管理員也可開啟標點模式，把位置號碼拖到圖上正確位置。</div></div><div class="seatops-toolbar" style="margin:0">'+select+'<button type="button" class="btn secondary small" onclick="seatOpsToggleMarkerMode()">'+(SeatOps.markerMode?'結束標點':'位置圖標點')+'</button></div></div><div id="seatOpsMapStage" class="seatops-map-stage" onclick="seatOpsMapClick(event)"><img src="'+esc(mapUrl)+'" alt="本場位置圖">'+markers+'</div>'+(unplaced.length?'<div class="seatops-unplaced"><b>尚未標到圖上的位置：</b> '+unplaced.map(x=>esc(x.code)).join('、')+'<br>選上方位置號碼 → 按「位置圖標點」→ 點圖即可標定；已標的位置可直接拖曳微調。</div>':'')+'</div>';
+  const next=SeatOps.repositionCode?seatOpsSeatByCode(SeatOps.repositionCode):unplaced[0],nextNo=next?seatOpsPublicNoForSeat(next):'';
+  const selected=SeatOps.repositionCode?seatOpsSeatByCode(SeatOps.repositionCode):null;
+  const editTools=selected?'<div class="seatops-toolbar" style="margin:8px 0"><b>已選 '+esc(seatOpsPublicNoForSeat(selected))+'</b><button type="button" class="btn secondary small" onclick="seatOpsRotateSelected(-45)">↺ 左轉</button><button type="button" class="btn secondary small" onclick="seatOpsRotateSelected(45)">↻ 右轉</button><button type="button" class="btn secondary small" onclick="seatOpsReturnSelectedToWaiting()">退回待放</button><button type="button" class="btn secondary small" onclick="SeatOps.repositionCode=\'\';renderSeatOps()">取消選取</button></div>':'';
+  return '<div class="seatops-map-wrap"><div class="seatops-map-head"><div><b>場地排位圖</b><div class="seatops-help">直接點底圖依序放入實際攤位。位置數只依攤商租用的攤位數：租 1 攤是 1 個點，租 2 攤是 2 個點；桌椅與其他設備不計入位置。點小點可重新定位、調整方向或退回待放。</div></div></div>'+editTools+(next?'<div class="seatops-next"><b>'+(SeatOps.repositionCode?'重新定位':'下一位')+'：</b>'+esc(nextNo)+'｜'+esc((seatOpsRosterForSeat(next)||{}).brand||(seatOpsRosterForSeat(next)||{}).name||'')+'</div>':'<div class="seatops-next">本日已排完所有實際攤位。</div>')+'<div id="seatOpsMapStage" class="seatops-map-stage" onclick="seatOpsMapClick(event)"><img src="'+esc(mapUrl)+'" alt="本場位置圖">'+markers+'</div>'+(unplaced.length?'<div class="seatops-unplaced"><b>待放實際攤位：</b> '+unplaced.map(x=>esc(seatOpsPublicNoForSeat(x))).filter(Boolean).join('、')+'</div>':'')+'</div>';
 }
 function renderSeatOps(){
   const box=$('seatOpsBox'); if(!box) return;
@@ -3322,21 +3176,23 @@ function renderSeatOps(){
   let h=seatOpsDayTabsHtml();
   if(SeatOps.activityDate) h+='<div class="notice" style="margin:0 0 8px"><b>目前排位日期：</b>'+safe(SeatOps.activityDate)+'</div>';
   const chip=(t,n,c)=>'<span class="seatops-chip" style="background:'+c+'">'+t+'：'+Number(n||0)+'</span>';
-  h+='<div class="seatops-counts">'+chip('已排位',sum.assignedRegs,'#e8f5ec')+chip('已繳費待補位',sum.waitingPaid,Number(sum.waitingPaid)>0?'#fff4dd':'#eef')+chip('剩餘自動位',sum.autoFree!=null?sum.autoFree:autoFree,'#eef')+chip('加價可選',paidFree,'#fff4dd')+'</div>';
+  h+='<div class="seatops-counts">'+chip('實際應排攤位',sum.requiredStalls,'#e8f5ec')+chip('已取得位置',sum.assignedStalls,'#e8f5ec')+chip('已繳費待補位',sum.waitingPaid,Number(sum.waitingPaid)>0?'#fff4dd':'#eef')+chip('多餘空位',sum.autoFree!=null?sum.autoFree:autoFree,'#eef')+'</div>';
   const eqText=String(sum.equipmentTotalText||'').trim();if(eqText&&eqText!=='無')h+='<div class="notice" style="margin:7px 0"><b>本場設備總計：</b>'+esc(eqText)+'</div>';
-  if(sum.firstAssignedAt||sum.runCount) h+='<div class="sub" style="margin:4px 0 8px">第一次正式排位：'+esc(sum.firstAssignedAt||'—')+'｜最近補排：'+esc(sum.lastAssignedAt||sum.firstAssignedAt||'—')+'｜補排執行次數：'+Number(sum.runCount||0)+'</div>';
-  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋品牌、姓名、電話、位置號碼" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已排位</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待補位</option><option value="auto" '+(SeatOps.filter==='auto'?'selected':'')+'>自動位</option><option value="paid" '+(SeatOps.filter==='paid'?'selected':'')+'>加價自選</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsBatch(\''+SeatOps.sid+'\')">＋ 補排已繳費未排位</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 發布版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版 PNG</button><button type="button" class="btn secondary" onclick="downloadSeatRoster()">⬇ 排位名單</button><button type="button" class="btn secondary" onclick="seatOpsRebuildBlankBoard()">▦ 依付款順序重建位置編號</button><button type="button" class="btn secondary" onclick="seatOpsExpandBlankBoard()">＋ 擴充一列</button></div>';
-  if(SeatOps.moveRegId){const mr=seatOpsRegById(SeatOps.moveRegId);h+='<div class="notice warn"><b>換位模式：</b> '+esc(mr?(mr.brand||mr.name):SeatOps.moveRegId)+'。請直接點排位板／位置圖上的<b>空位</b>；若點到另一位單攤攤商，可確認交換位置。 <button type="button" class="btn secondary small" onclick="seatOpsCancelMove()">取消</button></div>';}
+  if(sum.firstAssignedAt) h+='<div class="sub" style="margin:4px 0 8px">位置編號建立時間：'+esc(sum.firstAssignedAt)+'</div>';
+  const published=String((SeatOps.session||{}).seatLayoutPublishedAt||'');
+  const hasMap=!!String((SeatOps.session||{}).seatMapUrl||'').trim();
+  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋排號、品牌、姓名、電話" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已放上底圖</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待放上底圖</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsSyncStallCount()">✓ 同步實際攤位數</button><label class="btn secondary" style="cursor:pointer">🗺 '+(hasMap?'更換場地底圖':'上傳場地底圖')+'<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="seatOpsUploadMapFile(this)"></label>'+(hasMap?'<button type="button" class="btn secondary" onclick="seatOpsRemoveMap()">移除底圖</button>':'')+'<button type="button" class="btn" onclick="seatOpsPublish()">📣 '+(published?'重新發布排位':'發布排位')+'</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 完整分享圖</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版</button></div>';
+  h+='<div class="sub" style="margin:4px 0 9px">'+(published?'已發布：'+esc(published):'尚未發布；攤商端不會顯示未完成的排位。')+'</div>';
   h+=seatOpsBoardHtml();
-  h+='<div style="font-weight:900;margin:12px 0 6px">排位名單（'+list.length+'）</div>';
+  h+='<div class="seatops-roster-title">攤商完整資料（'+list.length+'）</div>';
   if(!list.length) h+='<div class="sub">沒有符合條件的名單。</div>';
   else h+='<div class="seatops-grid">'+list.map(r=>{
-    const cur=String(r.stallNumber||'').trim()||'未排'; const need=r.stallCount||1; const isSel=String(SeatOps.moveRegId)===String(r.regId);
+    const actualNos=seatOpsPositionNosForReg(r),cur=actualNos.join('、')||seatOpsRosterNo(r)||'未排位'; const need=r.stallCount||1; const isSel=String(SeatOps.moveRegId)===String(r.regId);
     const status=r.confirmedPaid?'已繳費':'未確認付款';
-    const type=r.intent==='paid'?'加價自選':'自動配位';
-    return '<div class="seatops-card '+(isSel?'selected':'')+'" id="seatCard_'+esc(r.regId)+'" draggable="true" ondragstart="seatOpsCardDragStart(event,\''+esc(r.regId)+'\')"><div class="seat-no">'+esc(cur)+'</div><div class="brand">'+esc(r.brand||r.name||'—')+'</div><div class="seatops-meta">'+esc(r.name||'')+(r.phone?'｜'+esc(r.phone):'')+'<br>'+need+' 攤｜'+esc(type)+'｜'+esc(status)+'<br><b>設備：</b>'+esc(r.equipmentText||'設備自備')+(r.transferStatus?'<br><b>'+esc(r.transferStatus)+'</b>':'')+'</div><div class="seatops-actions"><button type="button" class="btn secondary small" onclick="seatOpsStartMove(\''+esc(r.regId)+'\')">移動／換位</button>'+(need===1?'<button type="button" class="btn secondary small" onclick="seatOpsManualPick(\''+esc(r.regId)+'\')">指定</button>':'<button type="button" class="btn secondary small" onclick="seatOpsManualPick(\''+esc(r.regId)+'\')">指定 '+need+' 位</button>')+'</div></div>';
+    const type='付款順序';
+    return '<div class="seatops-card '+(isSel?'selected':'')+'" id="seatCard_'+esc(r.regId)+'"><div class="roster-no">'+esc(cur)+'</div><div class="brand">'+esc(r.brand||r.name||'—')+'</div><div class="seatops-meta"><b>聯絡人：</b>'+esc(r.name||'—')+(r.phone?'｜'+esc(r.phone):'')+'<br><b>租用攤位：</b>'+need+' 攤｜<b>實際位置：</b>'+esc(actualNos.join('、')||'待放')+'<br><b>配位：</b>'+esc(type)+'｜'+esc(status)+'<br><b>設備（不計入位置）：</b>'+esc(r.equipmentText||'設備自備')+(r.transferStatus?'<br><b>'+esc(r.transferStatus)+'</b>':'')+'</div></div>';
   }).join('')+'</div>';
-  h+='<div class="seatops-help" style="margin-top:12px"><b>安全規則：</b>既有位置不會因補排重新洗牌；只有管理員明確執行「移動／換位」才會改位置。多攤報名必須一次指定完整數量。退費中位置暫不自動釋放。</div>';
+  h+='<div class="seatops-help" style="margin-top:12px"><b>安全規則：</b>實際點位數只依「租用攤位數」；椅子、桌子、帳篷、電力及其他設備均不計入。點擊底圖會依付款排號順序放入下一個實際攤位；點錯可點選小點後重新定位或退回待放。</div>';
   box.innerHTML=h;
   setTimeout(seatOpsApplySearchHighlight,0);
 }
@@ -3344,379 +3200,96 @@ function seatOpsApplySearchHighlight(){
   const q=String(SeatOps.query||'').trim().toLowerCase();
   document.querySelectorAll('.seatops-marker').forEach(el=>el.classList.remove('match'));
   if(!q) return;
-  (SeatOps.regs||[]).filter(r=>[r.brand,r.name,r.phone,r.stallNumber].join(' ').toLowerCase().includes(q)).forEach(r=>String(r.stallNumber||'').split(',').map(x=>x.trim()).filter(Boolean).forEach(c=>{const el=document.querySelector('.seatops-marker[data-seat="'+CSS.escape(c)+'"]');if(el)el.classList.add('match');}));
+  (SeatOps.regs||[]).filter(r=>[seatOpsRosterNo(r),r.brand,r.name,r.phone].join(' ').toLowerCase().includes(q)).forEach(r=>(SeatOps.seats||[]).filter(s=>String(s.occupantRegId)===String(r.regId)).forEach(s=>{const el=document.querySelector('.seatops-marker[data-seat="'+CSS.escape(String(s.code))+'"]');if(el)el.classList.add('match');}));
 }
-function seatOpsStartMove(regId){SeatOps.moveRegId=String(regId||'');renderSeatOps();}
-function seatOpsCancelMove(){SeatOps.moveRegId='';renderSeatOps();}
-function seatOpsCardDragStart(ev,regId){SeatOps.moveRegId=String(regId||'');try{ev.dataTransfer.setData('text/plain','REG:'+SeatOps.moveRegId);ev.dataTransfer.effectAllowed='move';}catch(e){} setTimeout(renderSeatOps,0);}
-function seatOpsSpecialDragStart(ev,label){try{ev.dataTransfer.setData('text/plain','SPECIAL:'+JSON.stringify({label:String(label||''),sourceCode:''}));ev.dataTransfer.effectAllowed='move';}catch(e){}}
-function seatOpsSpecialCellDragStart(ev,sourceCode,label){try{ev.dataTransfer.setData('text/plain','SPECIAL:'+JSON.stringify({label:String(label||''),sourceCode:String(sourceCode||'')}));ev.dataTransfer.effectAllowed='move';}catch(e){}}
-function seatOpsAddCustomSpecial(){const el=$('seatSpecialCustomName'),v=String(el?.value||'').trim();if(!v)return toast('請輸入自訂名稱');if(el)el.value='';seatOpsAddFreeObject(v);}
-async function seatOpsSaveFreeObjects(objects){const cfg=seatOpsBoardCfg();try{const r=await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'blank',columnsPerRow:cfg.columnsPerRow,topNote:cfg.topNote,rowLabels:cfg.rowLabels,freeObjects:objects});if(r&&r.error)throw new Error(r.error);if(SeatOps.session)SeatOps.session.seatBoard=r.seatBoard||{...cfg,freeObjects:objects};return true;}catch(e){toast('自訂區塊儲存失敗：'+e.message,8000);return false;}}
-async function seatOpsAddFreeObject(label,x=50,y=50,kind='label'){label=String(label||'').trim();if(!label)return;const cfg=seatOpsBoardCfg(),list=(cfg.freeObjects||[]).map(o=>({...o}));const off=(list.length%7)*2.2;list.push({id:'OBJ_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),label:label.slice(0,80),kind:(label==='禁用'?'blocked':kind),x:Math.max(2,Math.min(98,(Number(x)||50)+off)),y:Math.max(3,Math.min(97,(Number(y)||50)+off))});if(await seatOpsSaveFreeObjects(list)){toast('已加入「'+label+'」');renderSeatOps();}}
-async function seatOpsCanvasDrop(ev){if(!ev)return;ev.preventDefault();let raw='';try{raw=ev.dataTransfer.getData('text/plain')||'';}catch(e){}if(!raw.startsWith('SPECIAL:'))return;let d;try{d=JSON.parse(raw.slice(8));}catch(e){return;}const stage=$('seatOpsMapStage');if(!stage)return;const r=stage.getBoundingClientRect();const x=(ev.clientX-r.left)/r.width*100,y=(ev.clientY-r.top)/r.height*100;await seatOpsAddFreeObject(d.label||'自訂區塊',x,y,d.label==='禁用'?'blocked':'label');}
-let SeatObjectDrag=null;
-
-let SeatCanvasGroupDrag=null;
-function seatOpsSelectedCanvasPositions(){
-  return (SeatOps.selectedCanvasItems||[]).map(seatOpsCanvasItemPosition).filter(Boolean);
-}
-function seatOpsCanvasElementForItem(it){
-  if(!it)return null;
-  if(it.type==='seat')return document.querySelector('.seatcanvas-marker[data-seat="'+CSS.escape(String(it.id))+'"]');
-  return document.querySelector('.seatcanvas-object[data-obj="'+CSS.escape(String(it.id))+'"]');
-}
-async function seatOpsPersistCanvasPositions(items){
-  const seats=(items||[]).filter(x=>x.type==='seat');
-  const objects=(items||[]).filter(x=>x.type==='object');
-  for(const u of seats){
-    const r=await apiPost({action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:u.id,x:Number(u.x.toFixed(3)),y:Number(u.y.toFixed(3))});
-    if(r&&r.error)throw new Error(r.error);
-    const st=seatOpsSeatByCode(u.id);if(st){st.x=Number(u.x.toFixed(3));st.y=Number(u.y.toFixed(3));}
-  }
-  if(objects.length){
-    const map=new Map(objects.map(x=>[String(x.id),x]));
-    const list=(seatOpsBoardCfg().freeObjects||[]).map(o=>{const u=map.get(String(o.id));return u?{...o,x:Number(u.x.toFixed(3)),y:Number(u.y.toFixed(3))}:o;});
-    if(!await seatOpsSaveFreeObjects(list))throw new Error('自訂區塊位置儲存失敗');
-  }
-}
-function seatOpsStartGroupDrag(ev,type,id){
-  if(!SeatOps.multiSelect||!seatOpsCanvasIsSelected(type,id))return false;
-  if(ev.button!=null&&ev.button!==0)return true;
-  ev.stopPropagation();
-  const stage=$('seatOpsMapStage');if(!stage)return true;
-  const sr=stage.getBoundingClientRect(),startX=ev.clientX,startY=ev.clientY;
-  const items=seatOpsSelectedCanvasPositions();
-  if(items.length<2)return true;
-  SeatCanvasGroupDrag={items:items.map(x=>({...x})),startX,startY,moved:false,stageRect:sr};
-  const source=ev.currentTarget;
-  try{source.setPointerCapture&&source.setPointerCapture(ev.pointerId);}catch(_e){}
-  const move=e=>{
-    const d=SeatCanvasGroupDrag;if(!d)return;
-    const dxPx=e.clientX-d.startX,dyPx=e.clientY-d.startY;
-    if(!d.moved&&Math.hypot(dxPx,dyPx)<4)return;
-    d.moved=true;e.preventDefault();
-    let dx=dxPx/d.stageRect.width*100,dy=dyPx/d.stageRect.height*100;
-    let minDx=-999,maxDx=999,minDy=-999,maxDy=999;
-    d.items.forEach(it=>{minDx=Math.max(minDx,4-it.x);maxDx=Math.min(maxDx,96-it.x);minDy=Math.max(minDy,6-it.y);maxDy=Math.min(maxDy,94-it.y);});
-    dx=Math.max(minDx,Math.min(maxDx,dx));dy=Math.max(minDy,Math.min(maxDy,dy));d.dx=dx;d.dy=dy;
-    d.items.forEach(it=>{const el=seatOpsCanvasElementForItem(it);if(!el)return;el.classList.add('group-dragging');el.style.left=(it.x+dx)+'%';el.style.top=(it.y+dy)+'%';});
-  };
-  const finish=async()=>{
-    const d=SeatCanvasGroupDrag;SeatCanvasGroupDrag=null;
-    source.removeEventListener('pointermove',move);source.removeEventListener('pointerup',up);source.removeEventListener('pointercancel',cancel);
-    (d?.items||[]).forEach(it=>{const el=seatOpsCanvasElementForItem(it);if(el)el.classList.remove('group-dragging');});
-    if(!d||!d.moved)return;
-    SeatOps.suppressMarkerClickUntil=Date.now()+550;SeatOps.suppressObjectClickUntil=Date.now()+550;
-    const updates=d.items.map(it=>({...it,x:Math.max(4,Math.min(96,it.x+(d.dx||0))),y:Math.max(6,Math.min(94,it.y+(d.dy||0)))}));
-    try{await seatOpsPersistCanvasPositions(updates);toast('已一起移動 '+updates.length+' 個方塊');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}
-    catch(e){toast('群組移動失敗：'+e.message,9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}
-  };
-  const up=async()=>{await finish();},cancel=async()=>{await finish();};
-  source.addEventListener('pointermove',move);source.addEventListener('pointerup',up);source.addEventListener('pointercancel',cancel);
-  return true;
-}
-function seatOpsObjectPointerDown(ev,id){
-  if(SeatOps.multiSelect){
-    if(seatOpsCanvasIsSelected('object',id))seatOpsStartGroupDrag(ev,'object',id);
-    return;
-  }
-  if(ev.button!=null&&ev.button!==0)return;
-  ev.stopPropagation();
-  SeatOps.objectMenuId='';
-  const el=ev.currentTarget,stage=$('seatOpsMapStage'); if(!el||!stage)return;
-  const cfg=seatOpsBoardCfg(),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===String(id)); if(!obj)return;
-  const sr=stage.getBoundingClientRect(), sx=ev.clientX, sy=ev.clientY;
-  SeatObjectDrag={id,el,x:Number(obj.x)||50,y:Number(obj.y)||50,moved:false,startX:sx,startY:sy};
-  el.setPointerCapture&&el.setPointerCapture(ev.pointerId);
-  const move=e=>{
-    const d=SeatObjectDrag;if(!d)return;
-    const dx=e.clientX-d.startX,dy=e.clientY-d.startY;
-    if(!d.moved && Math.hypot(dx,dy)<5)return;
-    d.moved=true; e.preventDefault(); el.classList.add('dragging');
-    const x=Math.max(1,Math.min(99,(e.clientX-sr.left)/sr.width*100)),y=Math.max(2,Math.min(98,(e.clientY-sr.top)/sr.height*100));
-    d.x=x;d.y=y;el.style.left=x+'%';el.style.top=y+'%';
-  };
-  const up=async()=>{
-    el.classList.remove('dragging');
-    el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
-    const d=SeatObjectDrag;SeatObjectDrag=null;
-    if(!d||!d.moved)return;
-    SeatOps.suppressObjectClickUntil=Date.now()+450;
-    const now=seatOpsBoardCfg(),list=(now.freeObjects||[]).map(o=>String(o.id)===String(id)?{...o,x:Number(d.x.toFixed(3)),y:Number(d.y.toFixed(3))}:o);
-    if(await seatOpsSaveFreeObjects(list))renderSeatOps();
-  };
-  el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
-}
-function seatOpsObjectClick(ev,id){if(ev){ev.preventDefault();ev.stopPropagation();}if(Number(SeatOps.suppressObjectClickUntil||0)>Date.now())return;if(SeatOps.multiSelect||ev?.shiftKey){seatOpsToggleCanvasSelection('object',id);return;}SeatOps.objectMenuId='';}
-function seatOpsCloseObjectActionMenu(){
-  const old=document.getElementById('seatObjectActionOverlay'); if(old)old.remove();
-}
-function seatOpsOpenObjectActionMenu(ev,id){
-  if(ev){ev.preventDefault();ev.stopPropagation();}
-  if(SeatOps.multiSelect)return;
-  const cfg=seatOpsBoardCfg(),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===String(id)); if(!obj)return;
-  seatOpsCloseObjectActionMenu();
-  const overlay=document.createElement('div');overlay.id='seatObjectActionOverlay';overlay.className='seatobject-action-overlay';
-  overlay.innerHTML='<div class="seatobject-action-box" onclick="event.stopPropagation()"><div class="seatobject-action-title">'+safe(obj.label||'自訂區塊')+'</div><div class="seatobject-action-help">選擇要對這個物件執行的操作</div><div class="seatobject-action-buttons"><button type="button" onclick="seatOpsCloseObjectActionMenu();seatOpsDuplicateFreeObject(\''+attr(id)+'\')">複製</button><button type="button" onclick="seatOpsCloseObjectActionMenu();seatOpsRenameFreeObject(\''+attr(id)+'\')">重新命名</button><button type="button" class="danger" onclick="seatOpsCloseObjectActionMenu();seatOpsDeleteFreeObject(\''+attr(id)+'\')">刪除</button><button type="button" class="wide" onclick="seatOpsCloseObjectActionMenu()">取消</button></div></div>';
-  overlay.addEventListener('click',seatOpsCloseObjectActionMenu); document.body.appendChild(overlay);
-}
-async function seatOpsDuplicateFreeObject(id){const cfg=seatOpsBoardCfg(),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===String(id));if(!obj)return;SeatOps.objectMenuId='';const list=(cfg.freeObjects||[]).map(o=>({...o}));list.push({...obj,id:'OBJ_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),x:Math.max(2,Math.min(98,(Number(obj.x)||50)+3)),y:Math.max(3,Math.min(97,(Number(obj.y)||50)+3))});if(await seatOpsSaveFreeObjects(list)){toast('已複製「'+String(obj.label||'自訂區塊')+'」');renderSeatOps();}}
-async function seatOpsRenameFreeObject(id){const cfg=seatOpsBoardCfg(),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===String(id));if(!obj)return;const v=prompt('重新命名',String(obj.label||''));if(v===null)return;const label=String(v||'').trim().slice(0,80);if(!label)return toast('名稱不可空白');SeatOps.objectMenuId='';const list=(cfg.freeObjects||[]).map(o=>String(o.id)===String(id)?{...o,label,kind:label==='禁用'?'blocked':(o.kind||'label')}:o);if(await seatOpsSaveFreeObjects(list)){toast('名稱已更新');renderSeatOps();}}
-async function seatOpsDeleteFreeObject(id){const cfg=seatOpsBoardCfg(),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===String(id));if(!obj)return;if(!await uiConfirm('刪除自訂區塊「'+String(obj.label||'')+'」？'))return;SeatOps.objectMenuId='';SeatOps.selectedCanvasItems=(SeatOps.selectedCanvasItems||[]).filter(k=>k!==seatOpsCanvasKey('object',id));const list=(cfg.freeObjects||[]).filter(o=>String(o.id)!==String(id));if(await seatOpsSaveFreeObjects(list)){toast('已刪除自訂區塊');renderSeatOps();}}
-function seatOpsCanvasItemPosition(key){if(String(key).startsWith('S:')){const st=seatOpsSeatByCode(String(key).slice(2));if(!st)return null;const p=seatOpsCanvasXY(st);return {key,type:'seat',id:st.code,x:p.x,y:p.y};}if(String(key).startsWith('O:')){const id=String(key).slice(2),o=(seatOpsBoardCfg().freeObjects||[]).find(x=>String(x.id)===id);if(!o)return null;return {key,type:'object',id:o.id,x:Number(o.x)||50,y:Number(o.y)||50};}return null;}
-async function seatOpsArrangeSelected(axis){
-  const keys=(SeatOps.selectedCanvasItems||[]).slice(),items=keys.map(seatOpsCanvasItemPosition).filter(Boolean);
-  if(items.length<2)return toast('請至少選2個方塊');
-  const horizontal=axis!=='column';
-  const sorted=items.slice().sort((a,b)=>{
-    const primary=horizontal?(a.x-b.x):(a.y-b.y);
-    if(Math.abs(primary)>.5)return primary;
-    const secondary=horizontal?(a.y-b.y):(a.x-b.x);
-    if(Math.abs(secondary)>.5)return secondary;
-    if(a.type==='seat'&&b.type==='seat'){
-      const sa=(SeatOps.seats||[]).find(x=>x.code===a.id),sb=(SeatOps.seats||[]).find(x=>x.code===b.id);
-      return Number(sa?.order||0)-Number(sb?.order||0)||String(a.id).localeCompare(String(b.id),undefined,{numeric:true});
-    }
-    return keys.indexOf(a.key)-keys.indexOf(b.key);
-  });
-  const stage=$('seatOpsMapStage'),sr=stage?stage.getBoundingClientRect():{width:1400,height:700};
-  const sample=sorted.map(seatOpsCanvasElementForItem).find(Boolean);
-  const er=sample?sample.getBoundingClientRect():{width:92,height:64};
-  const stepX=Math.max(4.2,Math.min(12,(er.width+10)/Math.max(1,sr.width)*100));
-  const stepY=Math.max(5.5,Math.min(16,(er.height+10)/Math.max(1,sr.height)*100));
-  let startX=Math.max(5,Math.min(...sorted.map(x=>x.x))),startY=Math.max(7,Math.min(...sorted.map(x=>x.y)));
-  if(horizontal){const total=(sorted.length-1)*stepX;if(startX+total>95)startX=Math.max(5,95-total);}
-  else{const total=(sorted.length-1)*stepY;if(startY+total>93)startY=Math.max(7,93-total);}
-  const updates=sorted.map((it,i)=>({...it,x:horizontal?startX+i*stepX:startX,y:horizontal?startY:startY+i*stepY}));
-  try{
-    await seatOpsPersistCanvasPositions(updates);
-    toast('已將 '+updates.length+' 個方塊緊密'+(horizontal?'排成橫列':'排成直列'));
-    await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
-  }catch(e){toast('批次排列失敗：'+e.message,9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}
-}
-
-async function seatOpsSetSpecial(code,label,sourceCode=''){try{const r=await apiPost({action:'setSeatSpecial',sessionId:SeatOps.sid,seatCode:code,label,sourceCode});if(r&&r.error)throw new Error(r.error);toast('已放置「'+label+'」到 '+code);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('放置失敗：'+e.message,8000);}}
-async function seatOpsClearSpecial(code){if(!await uiConfirm('將 '+code+' 的自訂區塊恢復為一般空位？'))return;try{const r=await apiPost({action:'setSeatSpecial',sessionId:SeatOps.sid,seatCode:code,clear:true});if(r&&r.error)throw new Error(r.error);toast(code+' 已恢復空位');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('恢復失敗：'+e.message,8000);}}
-function seatOpsMarkerDrop(ev,code){if(ev){ev.preventDefault();ev.stopPropagation();}let raw='';try{raw=ev.dataTransfer.getData('text/plain')||'';}catch(e){}if(raw.startsWith('SPECIAL:')){try{const x=JSON.parse(raw.slice(8));return seatOpsSetSpecial(code,x.label||'',x.sourceCode||'');}catch(e){return toast('自訂區塊資料錯誤');}}const rid=raw.startsWith('REG:')?raw.slice(4):raw;if(rid)SeatOps.moveRegId=rid;seatOpsMarkerClick(ev,code);}
 async function seatOpsMarkerClick(ev,code){
   if(ev){ev.preventDefault();ev.stopPropagation();}
-  if(SeatOps.multiSelect||ev?.shiftKey){seatOpsToggleCanvasSelection('seat',code);return;}
-  // 自由畫布拖曳放開時會產生 click；短時間內抑制，避免拖完又誤觸換位/定位。
-  if(Number(SeatOps.suppressMarkerClickUntil||0) > Date.now()) return;
-  if(SeatOps.markerMode) return;
-  const seat=seatOpsSeatByCode(code); if(!seat) return;
-  if(SeatOps.moveRegId){
-    const moving=seatOpsRegById(SeatOps.moveRegId); if(!moving) return seatOpsCancelMove();
-    if((moving.stallCount||1)!==1){toast('此報名有 '+(moving.stallCount||1)+' 攤，請使用「指定 '+(moving.stallCount||1)+' 位」一次選完整位置');return;}
-    if(!seat.occupied){
-      if(!await uiConfirm('將「'+(moving.brand||moving.name)+'」從 '+(moving.stallNumber||'未排')+' 移到 '+code+'？')) return;
-      await seatOpsAssignDirect(moving.regId,[code]); return;
-    }
-    if(String(seat.occupantRegId)===String(moving.regId)) return;
-    const other=seatOpsRegById(seat.occupantRegId);
-    if(!other){toast('此位置已有占用資料，請重新整理');return;}
-    if((other.stallCount||1)!==1){toast('對方為多攤報名，為避免破壞整組位置，不能直接交換；請使用「指定」功能調整');return;}
-    if(!await uiConfirm('交換位置？\n\n'+(moving.brand||moving.name)+'：'+(moving.stallNumber||'未排')+'\n'+(other.brand||other.name)+'：'+(other.stallNumber||code))) return;
-    toast('每日排位不直接互換兩筆資料；請先用「指定」替其中一位安排空位，再調整另一位，避免當日位置衝突。',9000); return;
-  }
-  if(seat.occupantRegId){
-    const card=$('seatCard_'+seat.occupantRegId); if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.classList.add('selected');setTimeout(()=>card.classList.remove('selected'),1800);}
-  }
+  SeatOps.repositionCode=String(code||'');
+  const st=seatOpsSeatByCode(code),no=seatOpsPublicNoForSeat(st)||code;
+  toast('已選 '+no+'：請再點底圖上的新位置');
+  renderSeatOps();
 }
-async function seatOpsManualPick(regId){
-  const r=seatOpsRegById(regId); if(!r) return;
-  const need=r.stallCount||1; const empty=seatOpsEmptyCodes();
-  const current=String(r.stallNumber||'').split(',').map(x=>x.trim()).filter(Boolean);
-  const raw=prompt('請輸入 '+need+' 個位置號碼（用逗號分隔）\n\n目前：'+(current.join(',')||'未排')+'\n可用空位：'+empty.join('、'),current.join(','));
-  if(raw===null) return; const codes=String(raw).split(/[,，\s]+/).map(x=>x.trim()).filter(Boolean);
-  await seatOpsAssignDirect(regId,codes);
+async function seatOpsPublish(){
+  if(!await uiConfirm('發布本場全部活動日的排位？\n\n發布後攤商可在「我的紀錄」查看各日位置，系統也會建立排位通知。'))return;
+  try{const r=await apiPost({action:'publishSeatLayout',sessionId:SeatOps.sid});if(r&&r.error)throw new Error(r.error);toast('排位已發布，通知 '+Number(r.notified||0)+' 位攤商',9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('發布失敗：'+e.message,9000);}
 }
-async function seatOpsAssignDirect(regId,codes){
-  try{const r=await apiPost({action:'adminAssignSeat',regId:regId,seats:codes,activityDate:SeatOps.activityDate});if(r&&r.error)throw new Error(r.error);toast('已安排位置：'+codes.join('、'));await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('安排失敗：'+(e&&e.message?e.message:e),8000);}
-}
-async function seatOpsBatch(sid){
-  if(!await uiConfirm('補排 '+(SeatOps.activityDate||'本日')+' 已繳費未排位攤商？\n\n只處理「該日參加＋正式付款已確認／免費＋已錄取＋尚未有當日位置」的攤商。其他日期與既有位置完全不動。')) return;
-  try{const r=await apiPost({action:'runBatchAssign',sessionId:sid,activityDate:SeatOps.activityDate});if(r&&r.error)throw new Error(r.error);toast((r.activityDate||SeatOps.activityDate)+' 補排完成：新排 '+((r&&r.assigned)||0)+'；保留既有 '+((r&&r.preserved)||0)+'；待人工 '+((r&&r.waiting)||0),9000);await loadSeatOps(sid);}catch(e){toast('補排失敗：'+(e&&e.message?e.message:e),8000);}
-}
-function seatOpsToggleMarkerMode(){SeatOps.markerMode=!SeatOps.markerMode;SeatOps.moveRegId='';renderSeatOps();toast(SeatOps.markerMode?'位置圖標點已開啟：選位置號碼後點圖；已標位置可拖曳':'已結束標點模式');}
 async function seatOpsMapClick(ev){
-  if(!SeatOps.markerMode) return;
   if(ev.target&&ev.target.closest&&ev.target.closest('.seatops-marker')) return;
-  const code=String(SeatOps.markerCode||$('seatMarkerSelect')?.value||'').trim(); if(!code){toast('請先選擇要標到圖上的位置號碼');return;}
+  const unplaced=(SeatOps.seats||[]).filter(x=>(x.occupied||x.type==='service'||x.type==='closed')&&!(Number(x.x)>0||Number(x.y)>0)).sort((a,b)=>seatOpsRosterSort(seatOpsRosterForSeat(a)||{},seatOpsRosterForSeat(b)||{})||Number(a.order||0)-Number(b.order||0));
+  const code=String(SeatOps.repositionCode||(unplaced[0]&&unplaced[0].code)||'').trim();
+  if(!code){toast('本日已排完所有點位');return;}
   const stage=$('seatOpsMapStage'); if(!stage) return; const r=stage.getBoundingClientRect();
   const x=Math.max(0,Math.min(100,(ev.clientX-r.left)/r.width*100)); const y=Math.max(0,Math.min(100,(ev.clientY-r.top)/r.height*100));
-  await seatOpsSaveMarker(code,x,y);
+  SeatOps.repositionCode='';await seatOpsSaveMarker(code,x,y);
+}
+async function seatOpsSaveMapDirections(next){
+  const cfg=seatOpsBoardCfg();
+  const r=await apiPost({action:'saveSeatBoardConfig',sessionId:SeatOps.sid,mode:'map',mapDirections:next});
+  if(r&&r.error)throw new Error(r.error);
+  if(SeatOps.session)SeatOps.session.seatBoard=r.seatBoard||{...cfg,mapDirections:next};
+}
+async function seatOpsRotateSelected(delta){
+  const code=String(SeatOps.repositionCode||'');if(!code)return toast('請先點選地圖上的位置點');
+  const cfg=seatOpsBoardCfg(),dirs={...(cfg.mapDirections||{})};dirs[code]=(Number(dirs[code]||0)+Number(delta||0)+360)%360;
+  try{await seatOpsSaveMapDirections(dirs);toast(seatOpsPublicNoForSeat(seatOpsSeatByCode(code))+' 方向已更新');renderSeatOps();}catch(e){toast('方向儲存失敗：'+e.message,8000);}
+}
+async function seatOpsReturnSelectedToWaiting(){
+  const code=String(SeatOps.repositionCode||'');if(!code)return;
+  const no=seatOpsPublicNoForSeat(seatOpsSeatByCode(code))||code;
+  if(!await uiConfirm('將 '+no+' 退回待放區？\n\n只會清除地圖座標，不會刪除攤商排位或付款資料。'))return;
+  try{await seatOpsSaveMarker(code,0,0);SeatOps.repositionCode='';toast(no+' 已退回待放區');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('退回待放失敗：'+e.message,8000);}
 }
 let SeatMarkerDrag=null;
-function seatOpsMarkerPointerDown(ev,code){
-  if(SeatOps.multiSelect){
-    if(seatOpsCanvasIsSelected('seat',code))seatOpsStartGroupDrag(ev,'seat',code);
-    return;
-  }
-  const cfg=seatOpsBoardCfg();
-  const freeCanvas=String(cfg.mode||'blank')==='blank';
-  // 圖片場地圖仍需進入「標點模式」才可移動標記；自由畫布則永遠可直接拖曳。
-  if(!freeCanvas && !SeatOps.markerMode) return;
-  if(ev.button!=null && ev.button!==0) return;
-  ev.preventDefault();ev.stopPropagation();
-  const el=ev.currentTarget; if(!el)return;
-  const stage=$('seatOpsMapStage'); if(!stage)return;
-  const sr=stage.getBoundingClientRect();
-  const startX=ev.clientX,startY=ev.clientY;
-  SeatMarkerDrag={code,el,x:null,y:null,moved:false,startX,startY};
-  try{ el.setPointerCapture&&el.setPointerCapture(ev.pointerId); }catch(_e){}
-  el.classList.add('dragging');
-  const move=(e)=>{
-    const dx=e.clientX-startX,dy=e.clientY-startY;
-    if(Math.hypot(dx,dy)<3 && !SeatMarkerDrag.moved) return;
-    SeatMarkerDrag.moved=true;
-    // 留出卡片半寬/半高，避免拖到畫布邊緣後看不到。
-    const x=Math.max(4,Math.min(96,(e.clientX-sr.left)/sr.width*100));
-    const y=Math.max(6,Math.min(94,(e.clientY-sr.top)/sr.height*100));
-    el.style.left=x+'%';el.style.top=y+'%';
-    SeatMarkerDrag.x=x;SeatMarkerDrag.y=y;
-  };
-  const finish=async()=>{
-    const drag=SeatMarkerDrag;
-    el.classList.remove('dragging');
-    el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',cancel);
-    SeatMarkerDrag=null;
-    if(drag&&drag.moved&&drag.x!=null&&drag.y!=null){
-      SeatOps.suppressMarkerClickUntil=Date.now()+500;
-      await seatOpsSaveMarker(code,drag.x,drag.y);
-    }
-  };
-  const up=async()=>{await finish();};
-  const cancel=async()=>{await finish();};
-  el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',cancel);
-}
 async function seatOpsSaveMarker(code,x,y){
   try{const r=await apiPost({action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:code,x:Number(x.toFixed(3)),y:Number(y.toFixed(3))});if(r&&r.error)throw new Error(r.error);const st=seatOpsSeatByCode(code);if(st){st.x=Number(x.toFixed(3));st.y=Number(y.toFixed(3));}toast(code+' 位置已儲存');renderSeatOps();}catch(e){toast('標點儲存失敗：'+e.message,8000);}
 }
-function downloadSeatBoardPng(mode='public'){
-  const s=SeatOps.session||{},stage=$('seatOpsMapStage');
-  if(!stage){toast('找不到目前排位畫布');return;}
-
-  const stageRect=stage.getBoundingClientRect();
-  if(!stageRect.width||!stageRect.height){toast('排位畫布尚未完成載入');return;}
-
-  // 下載圖採「所見即所得」：直接依目前畫布實際像素位置輸出，
-  // 不再把百分比重新塞進固定 1800x1050，避免位置被壓縮／拉散。
-  const markerEls=[...stage.querySelectorAll('.seatcanvas-marker')].filter(el=>{
-    const code=String(el.dataset.seat||'');
-    const seat=seatOpsSeatByCode(code);
-    if(!seat||!seat.active)return false;
-    // 發布圖／工作人員圖都不輸出純空白 auto 位，避免多餘 B7/B8/B9 污染成品。
-    if(!seat.occupantName && !seat.specialLabel && seat.type==='auto')return false;
-    return true;
-  });
-  const objectEls=[...stage.querySelectorAll('.seatcanvas-object')];
-
-  const items=[...markerEls,...objectEls];
-  if(!items.length){toast('目前沒有可輸出的排位內容');return;}
-
-  // 只截取實際有內容的區域，保留適度留白；避免整張圖上下大片空白。
-  const boxes=items.map(el=>{
-    const r=el.getBoundingClientRect();
-    return {el,left:r.left-stageRect.left,top:r.top-stageRect.top,right:r.right-stageRect.left,bottom:r.bottom-stageRect.top,width:r.width,height:r.height};
-  });
-  let minX=Math.min(...boxes.map(b=>b.left)), minY=Math.min(...boxes.map(b=>b.top));
-  let maxX=Math.max(...boxes.map(b=>b.right)),maxY=Math.max(...boxes.map(b=>b.bottom));
-  const pad=42;
-  minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);
-  maxX=Math.min(stageRect.width,maxX+pad);maxY=Math.min(stageRect.height,maxY+pad);
-
-  const contentW=Math.max(320,maxX-minX),contentH=Math.max(220,maxY-minY);
-  const headerH=145;
-  const scale=2; // 高解析 PNG
-  const cv=document.createElement('canvas');
-  cv.width=Math.ceil(contentW*scale);
-  cv.height=Math.ceil((contentH+headerH)*scale);
-  const ctx=cv.getContext('2d');
-  ctx.scale(scale,scale);
-
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,contentW,contentH+headerH);
-  ctx.fillStyle='#1f2928';ctx.font='bold 30px Arial,"Noto Sans TC",sans-serif';
-  ctx.fillText(String(s.name||'本場排位圖'),22,38);
-  const cfg=seatOpsBoardCfg(),note=String(cfg.topNote||'').trim().replace(/\n/g,' ｜ ');
-  ctx.font='15px Arial,"Noto Sans TC",sans-serif';ctx.fillStyle='#52605e';
-  if(note)ctx.fillText(note.slice(0,120),22,67);
-  ctx.fillText('產生時間：'+new Date().toLocaleString('zh-TW',{hour12:false})+(mode==='staff'?'｜工作人員版':'｜發布版'),22,94);
-  ctx.fillStyle='#7b8583';ctx.font='13px Arial,"Noto Sans TC",sans-serif';
-  ctx.fillText('圖面依目前後台自由畫布位置輸出',22,118);
-
-  // 畫布底稿，保持與後台一致的淡格線。
-  const ox=0,oy=headerH;
-  ctx.fillStyle='#fbfbf8';ctx.fillRect(ox,oy,contentW,contentH);
-  ctx.strokeStyle='#ece9e2';ctx.lineWidth=1;
-  for(let x=((24-(minX%24))%24);x<contentW;x+=24){ctx.beginPath();ctx.moveTo(x,oy);ctx.lineTo(x,oy+contentH);ctx.stroke();}
-  for(let y=((24-(minY%24))%24);y<contentH;y+=24){ctx.beginPath();ctx.moveTo(0,oy+y);ctx.lineTo(contentW,oy+y);ctx.stroke();}
-
-  const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
-  const fitText=(str,maxChars=16)=>{str=String(str||'');return str.length>maxChars?str.slice(0,maxChars-1)+'…':str;};
-
-  // 依 DOM 真實位置／尺寸繪製位置卡。
-  markerEls.forEach(el=>{
-    const code=String(el.dataset.seat||''),seat=seatOpsSeatByCode(code);if(!seat)return;
-    const r=el.getBoundingClientRect();
-    const x=r.left-stageRect.left-minX,y=r.top-stageRect.top-minY+oy,w=r.width,h=r.height;
-    const special=seat.type==='service'||seat.type==='closed',who=special?(seat.specialLabel||'自訂區塊'):(seat.occupantName||'空位');
-
-    ctx.fillStyle=special?'#e9eef7':seat.occupantName?'#26312f':seat.type==='paid'?'#fff0c2':'#eef7ef';
-    rr(x,y,w,h,11);ctx.fill();
-    ctx.strokeStyle=special?'#b9c9e6':seat.occupantName?'#26312f':'#c7deca';ctx.lineWidth=1.5;ctx.stroke();
-
-    ctx.fillStyle=seat.occupantName&&!special?'#fff':'#26312f';
-    ctx.font='bold 16px Arial,"Noto Sans TC",sans-serif';ctx.fillText(code,x+7,y+19);
-    ctx.font='bold 11px Arial,"Noto Sans TC",sans-serif';ctx.fillText(fitText(who,14),x+7,y+37);
-
-    if(seat.occupantName&&!special){
-      ctx.font='9px Arial,"Noto Sans TC",sans-serif';
-      ctx.fillText(fitText('設備：'+String(seat.occupantEquipmentText||'設備自備'),22),x+7,y+53);
-      if(mode==='staff'&&seat.occupantPhone){
-        ctx.font='9px Arial,"Noto Sans TC",sans-serif';
-        ctx.fillText(String(seat.occupantPhone||''),x+7,Math.min(y+h-6,y+67));
-      }
-    }
-  });
-
-  // 自訂物件也完全照後台位置與實際尺寸輸出。
-  objectEls.forEach(el=>{
-    const id=String(el.dataset.obj||''),obj=(cfg.freeObjects||[]).find(o=>String(o.id)===id);if(!obj)return;
-    const r=el.getBoundingClientRect();
-    const x=r.left-stageRect.left-minX,y=r.top-stageRect.top-minY+oy,w=r.width,h=r.height;
-    const blocked=String(obj.kind||'')==='blocked';
-    ctx.fillStyle=blocked?'#f2ecec':'#eef7f5';rr(x,y,w,h,11);ctx.fill();
-    ctx.strokeStyle=blocked?'#b98b8b':'#86a6a0';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle=blocked?'#713f3f':'#24413d';ctx.font='bold 12px Arial,"Noto Sans TC",sans-serif';ctx.textAlign='center';
-    ctx.fillText(fitText(obj.label||'自訂區塊',20),x+w/2,y+h/2+4);ctx.textAlign='left';
-  });
-
-  cv.toBlob(blob=>{
-    if(!blob)return toast('圖片產生失敗');
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=(s.name||'本場')+'_'+(mode==='staff'?'工作人員':'發布')+'_排位圖.png';
-    a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1200);
-    toast('已下載 '+(mode==='staff'?'工作人員版':'發布版')+' PNG');
-  },'image/png');
-}
-
-function downloadSeatRoster(){
-  const s=SeatOps.session||{},cfg=seatOpsBoardCfg(),escHtml=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const regs=(SeatOps.regs||[]).slice().sort((a,b)=>{const pa=String(a.officialPaidAt||''),pb=String(b.officialPaidAt||'');if(pa&&pb&&pa!==pb)return pa.localeCompare(pb);if(pa&&!pb)return -1;if(!pa&&pb)return 1;return String(a.regId||'').localeCompare(String(b.regId||''));});
-  const rows=regs.map(r=>'<tr><td><b>'+escHtml(r.stallNumber||'未排')+'</b></td><td>'+escHtml(r.brand||'')+'</td><td>'+escHtml(r.name||'')+'</td><td>'+escHtml(r.phone||'')+'</td><td>'+Number(r.stallCount||1)+'</td><td>'+escHtml(r.equipmentText||'設備自備')+'</td><td>'+escHtml(r.intent==='paid'?'加價自選':'自動配位')+'</td><td>'+escHtml(r.confirmedPaid?'已確認付款':r.payStatus||'')+'</td><td>'+escHtml(r.transferStatus||'')+'</td></tr>').join('');
-  let board='';
-  if(cfg.mode==='blank'){
-    board='<h2>空白排位板</h2>'+(cfg.topNote?'<div class="note"><b>方向：</b>'+escHtml(cfg.topNote).replace(/\n/g,'<br>')+'</div>':'');
-    seatOpsRowLetters().forEach(letter=>{board+='<div class="rowhead"><b>'+escHtml(letter)+'列</b> '+escHtml(cfg.rowLabels[letter]||'')+'</div><div class="grid" style="grid-template-columns:repeat('+cfg.columnsPerRow+',1fr)">';for(let n=1;n<=cfg.columnsPerRow;n++){const code=letter+n,seat=seatOpsSeatByCode(code);board+=seat?'<div class="cell '+(seat.occupied?'used':'')+'"><b>'+escHtml(code)+'</b><small>'+escHtml(seat.specialLabel||seat.occupantName||'空位')+'</small>'+(seat.occupantName?'<small>設備：'+escHtml(seat.occupantEquipmentText||'設備自備')+'</small>':'')+'</div>':'<div></div>';}board+='</div>';});
-  }else if(s.seatMapUrl){board='<h2>位置圖</h2><img class="map" src="'+escHtml(s.seatMapUrl)+'" alt="位置圖">';}else board='<p>本場未設定位置圖</p>';
-  const html='<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>'+escHtml(s.name||'排位名單')+'</title><style>body{font-family:Arial,"Noto Sans TC",sans-serif;margin:24px;color:#222}h1{font-size:22px}.map{max-width:100%;max-height:680px;display:block;margin:12px auto;border:1px solid #ddd}.note{padding:10px;border:1px solid #ddd;border-radius:10px;margin:8px 0}.rowhead{font-size:16px;margin:12px 0 5px}.grid{display:grid;gap:5px;margin-bottom:10px}.cell{min-height:55px;border:1px solid #bbb;border-radius:7px;padding:5px;display:flex;flex-direction:column}.cell.used{background:#263130;color:#fff}.cell small{margin-top:4px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#f4f4f4}@media print{button{display:none}}</style></head><body><button onclick="print()">列印／另存PDF</button><h1>'+escHtml(s.name||'本場排位名單')+'</h1><div>產生時間：'+escHtml(new Date().toLocaleString('zh-TW',{hour12:false}))+'｜已排位 '+Number((SeatOps.summary||{}).assignedRegs||0)+'｜待補位 '+Number((SeatOps.summary||{}).waitingPaid||0)+'</div>'+board+'<h2>排位名單</h2><table><thead><tr><th>位置</th><th>品牌</th><th>聯絡人</th><th>電話</th><th>攤位數</th><th>設備</th><th>配位方式</th><th>付款</th><th>備註狀態</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>';
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(s.name||'本場')+'_排位名單_含排位板.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('已下載排位名單＋排位板');
+async function downloadSeatBoardPng(mode='public'){
+  const s=SeatOps.session||{},mapUrl=String(s.seatMapUrl||'').trim();
+  if(!mapUrl){toast('請先上傳場地底圖');return;}
+  const regs=(SeatOps.regs||[]).slice().filter(r=>r.confirmedPaid).sort(seatOpsRosterSort);
+  const points=(SeatOps.seats||[]).filter(x=>x.occupied&&(Number(x.x)>0||Number(x.y)>0));
+  if(!points.length){toast('尚未在地圖上完成排位');return;}
+  toast('正在產生完整分享圖…');
+  try{
+    const res=await fetch(mapUrl);if(!res.ok)throw new Error('底圖讀取失敗');
+    const bmp=await createImageBitmap(await res.blob());
+    const W=1800,headerH=150,mapH=Math.round(W*bmp.height/bmp.width),rowH=74,tableHeadH=64,pad=56;
+    const list=regs.filter(r=>seatOpsRosterNo(r));
+    const H=headerH+mapH+56+tableHeadH+Math.max(1,list.length)*rowH+pad;
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#173d37';ctx.font='900 48px Arial,"Noto Sans TC",sans-serif';ctx.fillText(String(s.name||'本場排位圖'),pad,65);
+    ctx.fillStyle='#596763';ctx.font='28px Arial,"Noto Sans TC",sans-serif';ctx.fillText(String(SeatOps.activityDate||'')+'｜排位圖與攤商對照表',pad,112);
+    ctx.drawImage(bmp,0,headerH,W,mapH);
+    points.forEach(st=>{
+      const no=seatOpsPublicNoForSeat(st);if(!no)return;
+      const x=Number(st.x)/100*W,y=headerH+Number(st.y)/100*mapH,r=30;
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle='#173d37';ctx.fill();ctx.lineWidth=5;ctx.strokeStyle='#fff';ctx.stroke();
+      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.save();ctx.translate(x,y-6);ctx.rotate(seatOpsDirection(st)*Math.PI/180);ctx.font='900 22px Arial,"Noto Sans TC",sans-serif';ctx.fillText('↑',0,0);ctx.restore();ctx.font='900 17px Arial,"Noto Sans TC",sans-serif';ctx.fillText(no,x,y+17);ctx.textAlign='left';
+    });
+    let y=headerH+mapH+52;
+    ctx.fillStyle='#173d37';ctx.font='900 36px Arial,"Noto Sans TC",sans-serif';ctx.fillText('攤商完整資料',pad,y);y+=30;
+    const cols=mode==='staff'?[pad,220,650,1010,1300]:[pad,230,800,1190];
+    ctx.fillStyle='#e8f1ee';ctx.fillRect(pad,y,W-pad*2,tableHeadH);ctx.fillStyle='#173d37';ctx.font='900 24px Arial,"Noto Sans TC",sans-serif';
+    const heads=mode==='staff'?['排號','品牌','聯絡人／電話','攤位','設備']:['排號','品牌','攤位','設備'];heads.forEach((t,i)=>ctx.fillText(t,cols[i],y+40));y+=tableHeadH;
+    const cut=(v,n)=>{v=String(v||'—');return v.length>n?v.slice(0,n-1)+'…':v;};
+    list.forEach((r,i)=>{
+      if(i%2===1){ctx.fillStyle='#f7faf9';ctx.fillRect(pad,y,W-pad*2,rowH);}
+      ctx.strokeStyle='#dbe5e2';ctx.beginPath();ctx.moveTo(pad,y+rowH);ctx.lineTo(W-pad,y+rowH);ctx.stroke();
+      ctx.fillStyle='#202826';ctx.font='700 23px Arial,"Noto Sans TC",sans-serif';
+      const pos=seatOpsPositionNosForReg(r).join('、')||seatOpsRosterNo(r)||'待放';
+      const vals=mode==='staff'?[pos,cut(r.brand||r.name,24),cut((r.name||'')+(r.phone?'｜'+r.phone:''),26),String(r.stallCount||1)+' 攤',cut(r.equipmentText||'設備自備',28)]:[pos,cut(r.brand||r.name,28),String(r.stallCount||1)+' 攤',cut(r.equipmentText||'設備自備',34)];
+      vals.forEach((t,j)=>ctx.fillText(t,cols[j],y+45));y+=rowH;
+    });
+    ctx.fillStyle='#697572';ctx.font='20px Arial,"Noto Sans TC",sans-serif';ctx.fillText('產生時間：'+new Date().toLocaleString('zh-TW',{hour12:false})+(mode==='staff'?'｜工作人員版':'｜對外分享版'),pad,H-20);
+    cv.toBlob(blob=>{if(!blob)return toast('圖片產生失敗');const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(s.name||'本場')+'_'+(SeatOps.activityDate||'')+'_'+(mode==='staff'?'工作人員完整圖':'完整分享圖')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);toast('已下載完整圖片');},'image/png');
+  }catch(e){toast('完整圖片產生失敗：'+(e&&e.message?e.message:e),9000);}
 }
 
 async function openSessionSettings(sid){
-  AdminState.currentSessionId=sid; AdminState.currentLayer='sessionSettings'; const s=sessionById(sid);
+  AdminState.currentSessionId=sid;
+  AdminState.currentLayer='sessionSettings';
+  const s=sessionById(sid);
   openPanel(sessionName(s)+'｜場次設定','','<div class="loading">設定載入中…</div>');
   try{
     const rows=await api({action:'getSession',sessionId:sid}).catch(()=>null);
@@ -3730,7 +3303,7 @@ async function openSessionSettings(sid){
     renderSessionDateRows(sessionDates(d));
     renderSessionAddonRows(sessionAddons(d));
     toggleSessionFeatureSections();
-    await loadSessionSeatSettings(sid,d); try{ await loadSessionBundleInfo(sid); }catch(_e){}
+    try{ await loadSessionBundleInfo(sid); }catch(_e){}
     await loadSessionVisualAssets(sid).catch(()=>{});
   }catch(e){
     AdminState.events=Array.isArray(AdminState.events)?AdminState.events:[];
@@ -3739,7 +3312,6 @@ async function openSessionSettings(sid){
     renderSessionDateRows(sessionDates(s));
     renderSessionAddonRows(sessionAddons(s));
     toggleSessionFeatureSections();
-    await loadSessionSeatSettings(sid,s).catch(()=>{ renderSessionSeatRows([]); toggleSessionSeatSettings(); });
     await loadSessionVisualAssets(sid).catch(()=>{});
   }
 }
@@ -3953,7 +3525,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   const addonsBody = sessionAddonsFormHtml(addons);
   const invoiceBody = sessionInvoiceFormHtml(tax);
   const agreementBody = '<div class="form-grid"><div class="form-field"><label>選擇合約</label><select id="set_agreementTemplate" onchange="syncAgreementTemplateSelection()">'+agreementTemplateOptionsHtml(agreementTemplates,s)+'</select><div class="sub">目前版本：<span id="agreementVersionPreview">'+safe(currentAgreementVersion || '請選擇版本')+'</span></div></div><div class="form-field"><label>合約同意</label><label class="tight-check"><input type="checkbox" id="set_agreementRequired" '+(sessionBool(agreementRequired,true)?'checked':'')+'> 報名時要求同意合約</label></div><input type="hidden" id="set_agreementTitle" value="'+attr(s.agreementTitle||s.agreement_title||'報名合約／活動細則與攤商規範')+'"><input type="hidden" id="set_agreementVersion" value="'+attr(currentAgreementVersion)+'"></div><div class="compact-actions"><button type="button" class="btn secondary small" onclick="openInlineAgreementCreate()">＋ 新增本場次合約</button></div><div class="notice">合約正文在「後台設定 → 合約管理」新增或修改；場次設定只選套用版本。</div>';
-  const seatsBody = '<div class="form-grid"><div class="form-field"><label>加價選位</label><label class="tight-check"><input type="checkbox" id="set_seatPricingEnabled" onchange="toggleSessionSeatSettings()" '+(sessionBool(seatPricing,false)?'checked':'')+'> 啟用加價選位</label></div><div class="form-field"><label>選位保留時間（小時）</label><input id="set_seatHoldHours" type="number" min="1" value="'+attr(s.seatHoldHours||s.seat_hold_hours||24)+'"></div><div class="form-field"><label>活動前幾天自動排位</label><input id="set_seatAssignDays" type="number" min="3" value="'+attr(s.seatAssignDaysBefore||s.seat_assign_days_before||7)+'"><div class="sub">依繳費順序批次排位，預設 7 天（不小於 3）。</div></div><div class="form-field full"><label>已編號場地圖</label><div class="session-upload-line"><input id="set_seatMapUrl" value="'+attr(s.seatMapUrl||s.seat_map_url||'')+'" placeholder="請上傳或貼上已編號場地圖 URL"><input type="file" accept="image/png,image/jpeg,image/webp" onchange="loadSessionSeatMapFile(this)"></div><div class="seat-map-save-inline"><button type="button" class="btn secondary small" onclick="saveSessionSeatMapOnly(\''+attr(sid)+'\',this)">儲存地圖</button><span class="sub">地圖儲存後，才建立或修改號碼清單。</span></div></div></div><div class="form-field full"><label>常用場地圖</label><div class="session-upload-line"><select id="set_venueMapSel"><option value="">— 選擇常用圖 —</option></select><button type="button" class="btn secondary small" onclick="applyVenueMapNow()">套用</button><button type="button" class="btn secondary small" onclick="saveVenueMapNow()">存成常用圖</button><button type="button" class="btn secondary small" onclick="deleteVenueMapNow()">刪除</button></div><div class="sub">挑一次把「圖＋整份位置設定（分類、加價、備註、排序）」一起帶入；套用會覆蓋本場目前設定。</div></div><div id="set_seatTools" style="display:none"><div class="seat-map-save-note" id="set_seatMapNote"></div><div class="seat-batch-inline" id="set_seatBatchBox"><input id="set_seatPrefix" placeholder="區碼 A"><input id="set_seatStart" type="number" value="1" placeholder="起始"><input id="set_seatCount" type="number" value="" placeholder="數量"><button type="button" class="btn small" onclick="batchCreateSessionSeats()">批次建立號碼</button><button type="button" class="btn secondary small" onclick="addSessionSeatRow()">新增單號</button><button type="button" class="btn secondary small" onclick="bulkSetSeatPrice()">批次設定加價金額</button></div><div class="sub" style="margin-top:6px;line-height:1.7"><b>加價金額怎麼填？</b><br>・填 <b>0</b>＝系統依<b>繳費順序自動排位</b>，攤友<b>不能</b>自己選位置。<br>・填 <b>大於 0</b>＝<b>開放攤友加價自選</b>這個位置，前台才會出現可選的位置。</div><div class="seat-batch-inline"><input id="set_seatRange" placeholder="範圍快速輸入 例：A1-A5,B1-B5,D1-D6"><button type="button" class="btn small" onclick="addSeatsByRange()">依範圍建立</button></div><div id="set_seatSummary" class="sub"></div><div class="seat-head-row"><span>號碼</span><span>分類</span><span>加價金額</span><span>備註</span><span>排序</span></div><div id="set_seatRows"><div class="sub">尚未讀取號碼清單。</div></div></div><div class="sub">選位使用「已編號場地圖＋位置設定清單」，分類只有攤位（固定）、服務台、禁用。</div>';
+  const seatsBody = '<div class="notice"><b>正式排位只在「排位營運」操作。</b><br>系統依付款順序與實際租用攤位數建立排號；請在排位營運上傳場地底圖，再依序點圖放位。桌椅、帳篷、電力及其他設備不會增加位置數。</div><button type="button" class="btn" onclick="openSeatOps(\''+attr(sid)+'\')">開啟排位營運</button>';
   return '<div class="readable-detail tight-session-settings">'
   +'<div class="report-card"><div class="report-title">基本資料</div><div class="session-basic-grid">'
   +'<div class="form-field manual-field"><label>場次名稱</label><input id="set_name" value="'+attr(sessionName(s))+'"></div>'
@@ -4004,8 +3576,6 @@ async function saveSessionSettings(sid,btn){
     if(modules.addons) body.addons=collectSessionAddons();
     if(modules.invoice) body.invoiceTax=collectSessionInvoiceTax();
     await apiPost(body);
-    if(modules.seats || $('set_seatPricingEnabled')) await saveSessionSeatSettings(sid);
-    AdminSessionSeatMapDirty=false;
     toast('已儲存場次設定'); await refreshCurrentSessionOnly();
     closeAllPanels();   // 儲存成功後自動回場次總覽，不必再手動「返回上一頁」
     renderSessions();
