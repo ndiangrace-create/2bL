@@ -4325,10 +4325,14 @@ function renderDynFormFull(s, isNew=false){
         <span>${d.date||''} ${d.start||''}${d.end?'～'+d.end:''} <strong style="color:#2a6a10">${d.fee?'NT$'+d.fee:''}</strong></span>
       </label>`;
     });
-    if(s.fee>0){
+    const multiDayTiers=Array.isArray(s.multiDayTiers)?s.multiDayTiers:(Array.isArray(dates[0]&&dates[0].multiDayTiers)?dates[0].multiDayTiers:[]);
+    if(s.fee>0||multiDayTiers.length){
       html+=`<div id="fullPkgHint" style="display:none;background:var(--c-green);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:16px;font-weight:700;color:#111">
-        🎉 全程參加優惠 NT$${s.fee}／攤
+        ${s.fee>0?`🎉 全程參加優惠 NT$${s.fee}／攤`:'已套用多日報名優惠'}
       </div>`;
+    }
+    if(multiDayTiers.length){
+      html+=`<div style="background:#fff7e7;border:1px solid #e6c77a;border-radius:10px;padding:10px 14px;margin-top:8px;font-size:15px;line-height:1.6"><b>🎉 多日報名優惠</b><br>${multiDayTiers.map(t=>Number(t.maxDays)>0?`選 ${Number(t.minDays)||0}～${Number(t.maxDays)} 天：每攤每日 NT$${Number(t.dailyFee||0).toLocaleString()}`:`選 ${Number(t.minDays)||0} 天以上：每攤每日 NT$${Number(t.dailyFee||0).toLocaleString()}`).join('<br>')}</div>`;
     }
     html+=`</div>`;
   }
@@ -5268,12 +5272,17 @@ function updateFee(){
   if(dates.length>1){
     // 多日場次：依勾選日期計算
     const selectedDates=dates.filter((_,i)=>document.getElementById('dp_'+i)?.checked);
+    const tiers=Array.isArray(s.multiDayTiers)?s.multiDayTiers:(Array.isArray(dates[0]&&dates[0].multiDayTiers)?dates[0].multiDayTiers:[]),dayCount=selectedDates.length;
+    const tier=tiers.filter(t=>t&&t.enabled!==false&&Number(t.minDays)>0&&dayCount>=Number(t.minDays)&&(Number(t.maxDays)<=0||dayCount<=Number(t.maxDays))).sort((a,b)=>Number(b.minDays)-Number(a.minDays))[0];
     const allSelected=selectedDates.length===dates.length;
-    if(allSelected && Number(s.fee)>0){
+    if(tier){
+      fee=Number(tier.dailyFee||0)*dayCount*stalls;
+      const disc=document.getElementById('fullPkgHint');if(disc){disc.style.display='block';disc.textContent=`🎉 已套用 ${dayCount} 天優惠：每攤每日 NT$${Number(tier.dailyFee||0).toLocaleString()}`;}
+    } else if(allSelected && Number(s.fee)>0){
       fee=Number(s.fee)*stalls;
       // 顯示全報優惠提示
       const disc=document.getElementById('fullPkgHint');
-      if(disc) disc.style.display='block';
+      if(disc){disc.style.display='block';disc.textContent=`🎉 全程參加優惠 NT$${Number(s.fee).toLocaleString()}／攤`;}
     } else {
       fee=selectedDates.reduce((sum,d)=>sum+(Number(d.fee)||0),0)*stalls;
       const disc=document.getElementById('fullPkgHint');
@@ -6073,6 +6082,8 @@ function mReviewPill(r){
   const st=String(r.status||r.reviewStatus||'待審核').trim();
   const ps=String(r.payStatus||'').trim();
   const ts=String(r.transferStatus||'').trim();
+  if(ts==='已轉場') return {text:'已轉場',icon:'→',bg:'#e8f7ee',color:'#2a6a10',border:'#b9d3a5',note:'原場紀錄已保留，請查看新的場次報名'};
+  if(ts==='已轉活動金') return {text:'已轉活動金',icon:'＄',bg:'#eef6ff',color:'#24638a',border:'#b7d8ea',note:'活動費已存入活動金，押金另行處理'};
   if(['已退費','refunded'].includes(ts) || ['已退費','已退款'].includes(ps)) return {text:'已退費',icon:'✓',bg:'#f3f4f6',color:'#777',border:'#e5e7eb',note:'本筆退費已完成'};
   if(['申請退費','退費中','refund_pending'].includes(ts)) return {text:'退費中',icon:'⏱',bg:'#fdecea',color:'#c0392b',border:'#f3b5b5',note:'主辦正在處理退費'};
   const total=Number(r.total||0)||0, paid=Number(r.paid||0)||0;
@@ -6128,13 +6139,15 @@ function renderMyRegs(regs){
     const canCancel=legs.every(x=>canDirectCancelReg(x));
     const refundTarget=legs.find(x=>canRefundReg(x))||r;
     const canRefund=legs.some(x=>canRefundReg(x)), canPreNotice=legs.some(x=>canViewPreNoticeReg(x));
-    const statusMsg = isCancelledReg(r)
+    const resolution=r.resolution||null;
+    const resolutionMsg=resolution?`<div class="m-record-alert ${String(resolution.mode||'')==='transfer'?'':'muted'}"><b>${String(resolution.mode||'')==='transfer'?'已轉移至其他場次':'已轉為活動金'}</b><br>${Number(resolution.credit_created||0)>0?'活動金增加 NT$ '+Number(resolution.credit_created).toLocaleString()+'<br>':''}${Number(resolution.due_amount||0)>0?'新場待補 NT$ '+Number(resolution.due_amount).toLocaleString()+'<br>':''}${Number(resolution.deposit_refund_due||0)>0?'待退押金 NT$ '+Number(resolution.deposit_refund_due).toLocaleString()+'<br>':''}<span style="font-size:13px">目前活動金餘額：NT$ ${Number(r.activityCreditBalance||0).toLocaleString()}</span></div>`:'';
+    const statusMsg = resolutionMsg || (isCancelledReg(r)
       ? `<div class="m-record-alert muted">已取消，報名紀錄保留</div>`
       : (isRefundingReg(r)
           ? `<div class="m-record-alert warn">退費處理中，等待主辦確認退款${legs.length>1?'（組合套組整組一起退）':''}。名額已釋出，無需再操作。</div>`
           : (isPendingPayText(r.payStatus)
               ? `<div class="m-record-alert warn">已回報，等待主辦確認<div style="margin-top:8px"><button type="button" onclick="undoPaymentReport('${r.id}')" style="font-size:16px;font-weight:800;padding:10px 14px;border:0;border-radius:12px;background:#FAE1DD;cursor:pointer">付款失敗？撤回重新付款</button></div></div>`
-              : ''));
+              : '')));
 
     let actions='';
     if(canPay){
