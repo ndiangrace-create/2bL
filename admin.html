@@ -3077,7 +3077,6 @@ function toggleSessionFeatureSections(){
     const body=$('sec_'+key+'_body');
     if(body) body.classList.toggle('off', !(chk&&chk.checked));
   });
-  toggleSessionSeatSettings();
 }
 // ── 排位營運：底圖點位／方向／名單／分享圖 ──
 
@@ -4884,6 +4883,34 @@ async function uploadVenueMapImg(input){
       toast('圖片已上傳');
     }else{ toast('上傳失敗'+(res&&res.error?('：'+res.error):''),6000); }
   }catch(e){ toast('上傳失敗：'+(e&&e.message?e.message:e),6000); }
+}
+function expandStallCodes(input){
+  const out=[];
+  const seen=new Set();
+  const add=code=>{
+    const value=String(code||'').trim();
+    if(value&&!seen.has(value)){seen.add(value);out.push(value);}
+  };
+  for(const rawPart of String(input||'').split(/[,\n，、]+/)){
+    const part=rawPart.trim();
+    if(!part) continue;
+    const match=part.match(/^([^0-9]*)(\d+)\s*[-~～–—]\s*([^0-9]*)(\d+)$/);
+    if(!match){add(part);continue;}
+    const startPrefix=match[1].trim();
+    const endPrefix=match[3].trim()||startPrefix;
+    const start=Number(match[2]),end=Number(match[4]);
+    if(startPrefix!==endPrefix||!Number.isInteger(start)||!Number.isInteger(end)||Math.abs(end-start)>999){
+      add(part);
+      continue;
+    }
+    const step=start<=end?1:-1;
+    const width=Math.max(match[2].length,match[4].length);
+    for(let n=start;;n+=step){
+      add(startPrefix+String(n).padStart(width,'0'));
+      if(n===end) break;
+    }
+  }
+  return out;
 }
 async function saveVenueMapForm(){
   const id=String(($('vm_id')||{}).value||'');
