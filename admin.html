@@ -1862,7 +1862,8 @@ function renderOnsiteList(){
 
   if($('onsiteSummary'))$('onsiteSummary').innerHTML=`
     <div class="ops-summary">
-      <button class="ops-stat clickable" onclick="onsiteSetFilter('all',null)"><span>應報到</span><b>${num(total)}</b></button>
+      <button class="ops-stat clickable" onclick="onsiteSetFilter('all',null)"><span>應報到品牌</span><b>${num(a.totalBrands??total)}</b></button>
+      <button class="ops-stat clickable" onclick="onsiteSetFilter('all',null)"><span>當日攤位</span><b>${num(a.totalStalls??total)}</b></button>
       <button class="ops-stat ok clickable" onclick="onsiteSetFilter('checked',null)"><span>已報到</span><b>${num(checked)}</b></button>
       <button class="ops-stat warn clickable" onclick="onsiteSetFilter('unchecked',null)"><span>未報到</span><b>${num(unchecked)}</b></button>
       <button class="ops-stat clickable" onclick="onsiteSetFilter('notTeardown',null)"><span>未撤場</span><b>${num(notTeardown)}</b></button>
@@ -2032,19 +2033,10 @@ function setThemeFilter(id){ AdminState.themeFilter=String(id||''); renderThemeF
 
 function sessionDaySyncHtml(s){
   const sid=sessionId(s),x=OpsDashboardCache[String(sid)];
-  if(!x)return '<div class="session-day-sync"><div class="sub">現場進度載入中…</div></div>';
-  const day=x.activityDate||'',a=x.attendance||{},t=x.teardown||{},d=x.deposit||{},days=Array.isArray(x.availableDates)?x.availableDates:[];
-  const regTotal=Number(x.registrationTotal??a.total??0)||0,excluded=Number(x.excludedCount||0)||0;
+  if(!x)return '<div class="session-day-sync"><div class="sub">日期統計載入中…</div></div>';
+  const day=x.activityDate||'',days=Array.isArray(x.availableDates)?x.availableDates:[];
   return `<div class="session-day-sync">
     <div class="quick-scroll">${days.map(dd=>`<button class="quick-chip ${dd===day?'active':''}" onclick="event.stopPropagation();loadSessionOpsOne('${attr(sid)}','${attr(dd)}')">${safe(dd.replace(/^\d{4}-/,''))}</button>`).join('')}</div>
-    <div class="session-day-mini">
-      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','all')">應報到 <b>${num(a.total||0)}</b></button>
-      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','checked')">已報到 <b>${num(a.checked||0)}</b></button>
-      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','unchecked')">未報到 <b>${num(a.unchecked||0)}</b></button>
-      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','notTeardown')">未撤場 <b>${num(t.pending||0)}</b></button>
-      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','refundedDeposit')">已退 <b>${num(d.refundedCount||0)} / ${money(d.refundedAmount||0)}</b></button>
-      <button class="mini" onclick="openOpsFromSessionCard('${attr(sid)}','${attr(day)}','notDeposit')">待退 <b>${num(d.pendingCount||0)} / ${money(d.pendingAmount||0)}</b></button>
-    </div>
   </div>`;
 }
 async function queueOpsForSessions(list){
@@ -2271,9 +2263,10 @@ function adminDefaultOpsDay(s){
 
 function renderSessionCard(s){
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
+  const dayOps=OpsDashboardCache[String(sid)]||{},dayAttendance=dayOps.attendance||{};
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
   const financeMetric=(cls,label,value,filter)=>'<button type="button" class="chip '+cls+' click" onclick="drillList(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(label)+'明細\')" title="查看'+safe(label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
-  const equipmentTotal='<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="查看整場設備總表"><span class="m-label">設備總計</span><b>'+safe(e.total||e.need||'無')+'</b></button>';
+  const equipmentTotal='<button type="button" class="chip purple click" onclick="openEquipmentPanel(\''+attr(sid)+'\')" title="各日需求最高值；設備可跨日沿用"><span class="m-label">應租設備（單日峰值）</span><b>'+safe(e.total||e.need||'無')+'</b></button>';
   const dateEquip=sessionDateEquipHtml(s,e,sid);
   const themeCls=sessionThemeClass(s);
   const themeTitle=sessionThemeTitle(s);
@@ -2296,10 +2289,10 @@ function renderSessionCard(s){
           +metric('yellow','待審核',num(st.pending),'pending','待審核')
           +metric('blue','已錄取',num(st.approved),'approved','已錄取')
           +metric('green','已繳費',num(st.paid),'paid','已繳費')
-          +metric('green','免費',num(st.free),'free','免費錄取')
+          +metric('blue','應報到攤位',num(dayAttendance.totalStalls??dayAttendance.total??0),'all','應報到攤位')
           +metric('yellow','待確認',num(st.paymentPending),'paymentPending','付款待確認')
           +metric('pink','未繳費',num(st.unpaid),'unpaid','未繳費')
-          +metric('blue','已報到',num(st.checked),'checked','已報到')
+          +metric('blue','已報到攤位',num(dayAttendance.checkedStalls??dayAttendance.checked??st.checked??0),'checked','已報到攤位')
         +'</div>'
         +'<div class="session3-finance">'
           +metric('pink','退款',num(st.refund),'refund','退款')
@@ -2348,7 +2341,7 @@ async function openSessionList(sid,filter,label){ AdminState.currentSessionId=si
 async function openEquipmentPanel(sid,dateKey='',dateLabel=''){
   AdminState.currentSessionId=sid; AdminState.currentLayer='equipment'; AdminState._navDateKey=dateKey||''; AdminState._navDateLabel=dateLabel||''; const s=sessionById(sid);
   const titleDate=dateKey ? ('｜'+(dateLabel||dateKey)) : '';
-  openPanel(sessionName(s)+'｜設備總表 / 名單'+titleDate, dateKey?'只顯示指定日期的設備名單':'整場設備總計與每日設備；點每日可只看該日名單','<div class="loading">設備報表載入中…</div>',{replace:true});
+  openPanel(sessionName(s)+'｜設備總表 / 名單'+titleDate, dateKey?'只顯示指定日期的設備名單':'應租量取各日設備需求最高值；每日需求依當日有效攤位計算','<div class="loading">設備報表載入中…</div>',{replace:true});
   try{
     const data=await api({action:'getSessionEquipmentDetails',sessionId:sid});
     const summary=data.summary||{}; let rows=Array.isArray(data.rows)?data.rows:[];
@@ -2357,7 +2350,7 @@ async function openEquipmentPanel(sid,dateKey='',dateLabel=''){
     if(dateKey){ rows=rows.filter(r=>regMatchesEquipmentDate(r,dateKey,dateLabel)); }
     const totalText=dateKey ? (selectedDailyRows[0] ? selectedDailyRows[0].equipmentText : '無') : (summary.totalText||summary.neededText||'無');
     const dailyText=dateKey ? (selectedDailyRows[0] ? ((selectedDailyRows[0].label||dateLabel||dateKey)+'：攤數 '+(selectedDailyRows[0].stallCount||0)+'，'+(selectedDailyRows[0].equipmentText||'無')) : '無') : (summary.dailyText||'無');
-    let html='<div class="compact-grid"><div class="info-box"><div class="section-label" style="margin-top:0">'+(dateKey?'單日設備統計':'整場設備統計')+'</div><button type="button" class="info-line click" onclick="openEquipmentPanel(\''+attr(sid)+'\')"><span>整場設備總計</span><span>'+safe(summary.totalText||summary.neededText||'無')+'</span></button><div class="info-line"><span>'+(dateKey?'本日設備':'每日資料')+'</span><span>'+ (dateKey?safe(dailyText):dailyChipHtml(allDailyRows,summary.dailyText,sid)) +'</span></div><button type="button" class="info-line click" onclick="openEquipmentPanel(\''+attr(sid)+'\',\''+(dateKey?attr(dateKey):'')+'\',\''+(dateKey?attr(dateLabel):'')+'\')"><span class="metric-click">'+(dateKey?'本日累積':'全部活動日期設備累積')+'</span><span>'+safe(totalText)+'</span></button></div></div><div style="height:14px"></div>';
+    let html='<div class="compact-grid"><div class="info-box"><div class="section-label" style="margin-top:0">'+(dateKey?'單日設備需求':'整場設備需求')+'</div><button type="button" class="info-line click" onclick="openEquipmentPanel(\''+attr(sid)+'\')"><span>應租／準備設備（單日峰值）</span><span>'+safe(summary.totalText||summary.neededText||'無')+'</span></button><div class="info-line"><span>'+(dateKey?'本日實際需求':'各日攤位／設備需求')+'</span><span>'+ (dateKey?safe(dailyText):dailyChipHtml(allDailyRows,summary.dailyText,sid)) +'</span></div><button type="button" class="info-line click" onclick="openEquipmentPanel(\''+attr(sid)+'\',\''+(dateKey?attr(dateKey):'')+'\',\''+(dateKey?attr(dateLabel):'')+'\')"><span class="metric-click">'+(dateKey?'本日設備需求':'各設備單日最高需求')+'</span><span>'+safe(totalText)+'</span></button></div></div><div style="height:14px"></div>';
     if(!rows.length){ html+='<div class="empty">沒有符合此口徑的設備名單</div>'; } else { html+='<div class="cards">'; for(const r of rows){ html+='<article class="reg-card"><div><div class="reg-title">'+safe(r.brand||'未填品牌')+'</div><div class="reg-sub">'+safe(r.reviewStatus||'')+'｜'+safe(r.paymentStatus||'')+'｜'+safe(r.selectedDatesText||'')+'</div><div class="kv"><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div></article>'; } html+='</div>'; }
     $('panelBody').innerHTML=html;
   }catch(e){ $('panelBody').innerHTML='<div class="empty">設備報表載入失敗：'+safe(e.message)+'</div>'; }
@@ -2421,12 +2414,16 @@ function adminRegFixedBlockHtml(r){
   const equip=regEquipText(r)||'無';
   const addon=regAddonText(r)||'無';
   const pay=adminPaymentText(r);
+  const gross=Number(r.totalAmount??r.total_amount??r.amount??0)||0;
+  const credit=Math.max(0,Number(r.activityCreditApplied??r.activity_credit_applied??0)||0);
+  const cashReceived=Math.max(0,Number(r.receivedAmount??r.paidAmount??r.paid_amount??0)||0);
+  const cashDue=Math.max(0,Number(r.unreceivedAmount??(gross-credit-cashReceived))||0);
   return '<div class="card-fixed-block">'
     +'<div class="fixed-row fixed-main"><span>'+safe(date)+'</span><span>'+safe(stalls)+'</span></div>'
     +'<div class="fixed-row"><span><b>名單編號：</b>'+safe(rosterNo||'付款確認後產生')+'</span><span></span></div>'
     +'<div class="fixed-row"><span><b>位置號碼：</b>'+safe(seatNo||'尚未排位')+'</span><span title="'+attr(equip)+'">設備：'+safe(equip)+'</span></div>'
     +'<div class="fixed-row"><span title="'+attr(addon)+'">加購：'+safe(addon)+'</span><span></span></div>'
-    +'<div class="fixed-pay">繳費(含押金)：<b>'+safe(pay)+'</b></div>'
+    +'<div class="fixed-pay">原應繳：<b>'+money(gross)+'</b>｜活動金：<b>-'+money(credit)+'</b><br>現金已收：<b>'+money(cashReceived)+'</b>｜現金待繳：<b>'+money(cashDue)+'</b></div>'
   +'</div>';
 }
 
@@ -2613,7 +2610,9 @@ async function confirmRegistrationTransfer(regId,sid){
   try{const r=await apiPost({action:'resolveRegistration',mode:'transfer',regId,sessionId:sid,targetSessionId,note:$('resolutionNote')?.value||''});toast('已完成轉場；應補 '+money(r.dueAmount||0)+'，活動金 '+money(r.creditCreated||0),7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('轉場失敗：'+(e.message||e),8000);}
 }
 async function confirmRegistrationCredit(regId,sid){
-  if(!await uiConfirm('確定把這筆「已確認收款總額」轉為活動金？\n\n包含押金；轉入後押金不會再另外列為待退。未收或應收金額不會建立活動金。'))return;
+  let p;try{p=await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid});}catch(e){toast('無法取得正式金額與攤位數，已阻斷操作：'+(e.message||e),8000);return;}
+  const stalls=Math.max(1,Number(p.stallCount||1));
+  if(!await uiConfirm('確定把這筆「已確認收款總額」轉為活動金？\n\n本次轉入：'+money(p.creditCreated||0)+'\n原場將減少：1 個應報到品牌、'+stalls+' 攤\n\n包含押金；轉入後押金不會再另外列為待退。未收或應收金額不會建立活動金。'))return;
   try{const r=await apiPost({action:'resolveRegistration',mode:'credit',regId,sessionId:sid,note:'已確認收款總額（含押金）轉活動金'});toast('已將含押金的已收款總額 '+money(r.creditCreated||0)+' 存入活動金',7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('活動金處理失敗：'+(e.message||e),8000);}
 }
 function calcRefundAmount(){
@@ -2726,7 +2725,7 @@ async function refreshCurrentSessionOnly(){ const sid=AdminState.currentSessionI
 function openRegDetail(id){
   let r=null; for(const x of AdminState.currentList){ if(String(x.id||x.regId)===String(id)) r=x; }
   if(!r){toast('找不到資料');return;}
-  const html='<div class="readable-detail">'+qualityHtml(r)+'<div class="report-card"><div class="report-title">基本資料</div><div class="kv"><div class="k">品牌</div><div>'+safe(r.brand||r.brandName||r.brand_name||'—')+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">FB / IG</div><div>'+safe(r.fb||'—')+'｜'+safe(r.ig||'—')+'</div></div></div><div class="report-card"><div class="report-title">報名內容</div><div class="kv"><div class="k">場次</div><div>'+safe(r.sessionName||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(r.createdAt||r.created_at||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div><div class="report-card"><div class="report-title">金流與狀態</div><div class="kv"><div class="k">審核</div><div>'+safe(r.reviewStatus||r.status||'—')+'</div><div class="k">付款</div><div>'+safe(r.paymentStatus||r.payStatus||'—')+'</div><div class="k">報到</div><div>'+safe(r.checkinStatus||r.checkin||'—')+'</div><div class="k">退費 / 取消</div><div>'+safe(r.transferStatus||'—')+'</div><div class="k">應繳</div><div>'+money(r.amount||r.totalAmount||0)+'</div><div class="k">已收 / 未收</div><div>'+money(r.receivedAmount||0)+' / '+money(r.unreceivedAmount||0)+'</div><div class="k">發票金額</div><div>'+money(r.invoiceAmount||0)+'</div><div class="k">資料來源</div><div>'+safe(r.financeSource||'DB')+'</div></div></div><div class="report-card"><div class="report-title">備註</div><div>'+safe(r.adminNote||r.note||'—')+'</div></div></div>';
+  const html='<div class="readable-detail">'+qualityHtml(r)+'<div class="report-card"><div class="report-title">基本資料</div><div class="kv"><div class="k">品牌</div><div>'+safe(r.brand||r.brandName||r.brand_name||'—')+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">FB / IG</div><div>'+safe(r.fb||'—')+'｜'+safe(r.ig||'—')+'</div></div></div><div class="report-card"><div class="report-title">報名內容</div><div class="kv"><div class="k">場次</div><div>'+safe(r.sessionName||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(r.createdAt||r.created_at||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div><div class="report-card"><div class="report-title">金流與狀態</div><div class="kv"><div class="k">審核</div><div>'+safe(r.reviewStatus||r.status||'—')+'</div><div class="k">付款</div><div>'+safe(r.paymentStatus||r.payStatus||'—')+'</div><div class="k">報到</div><div>'+safe(r.checkinStatus||r.checkin||'—')+'</div><div class="k">退費 / 取消</div><div>'+safe(r.transferStatus||'—')+'</div><div class="k">原應繳</div><div>'+money(r.amount||r.totalAmount||0)+'</div><div class="k">活動金扣抵</div><div>-'+money(r.activityCreditApplied||0)+'</div><div class="k">現金已收</div><div>'+money(r.receivedAmount||0)+'</div><div class="k">現金待繳</div><div>'+money(r.unreceivedAmount||0)+'</div><div class="k">發票金額</div><div>'+money(r.invoiceAmount||0)+'</div><div class="k">資料來源</div><div>'+safe(r.financeSource||'DB')+'</div></div></div><div class="report-card"><div class="report-title">備註</div><div>'+safe(r.adminNote||r.note||'—')+'</div></div></div>';
   openPanel('完整資料｜'+safe(r.brand||r.brandName||r.brand_name||'品牌'),'已改為可讀資料，不顯示工程 JSON',html);
 }
 
@@ -4167,6 +4166,13 @@ function openMemberDetail(email){
       +row('品牌介紹', m.intro||m.brandIntro||m.brand_intro)
       +row('最後更新', m.updatedAt||m.updated_at)
     +'</div>'
+    +'<div class="report-card" style="margin-top:12px;background:#eef6ff">'
+      +'<b style="font-size:16px">活動金人工調整</b>'
+      +'<div class="sub" style="margin:4px 0 8px">不直接覆寫餘額；每次調整都會建立帳本紀錄並保存操作者。</div>'
+      +'<div style="display:grid;grid-template-columns:130px 1fr;gap:8px"><select id="mc_direction"><option value="credit">人工增加</option><option value="debit">人工扣除</option></select><input id="mc_amount" type="number" min="1" step="1" placeholder="金額"></div>'
+      +'<textarea id="mc_note" style="width:100%;min-height:72px;margin-top:8px;padding:9px;border:1px solid #b7d8ea;border-radius:10px" placeholder="必填原因，例如：客服補償、錯帳更正"></textarea>'
+      +'<button class="btn" style="margin-top:8px" onclick="adjustMemberCredit(\''+attr(m.email||'')+'\',this)">確認建立活動金紀錄</button>'
+    +'</div>'
     +'<div class="report-card" style="margin-top:12px;background:#FAEEC7">'
       +'<b style="font-size:16px">管理者備註</b>'
       +'<div class="sub" style="margin:4px 0 8px">只有主辦與工作人員看得到，攤商在前台<b>完全看不到</b>。</div>'
@@ -4178,6 +4184,21 @@ function openMemberDetail(email){
       +'</div>'
     +'</div>';
   openPanel(memberBrand(m)||'會員詳情','資料與管理者備註',html);
+}
+async function adjustMemberCredit(email,btn){
+  const direction=String(($('mc_direction')||{}).value||''),amount=Number(($('mc_amount')||{}).value||0),note=String(($('mc_note')||{}).value||'').trim();
+  if(!(amount>0)){toast('請輸入大於 0 的活動金金額');return;}if(note.length<2){toast('請填寫調整原因');return;}
+  const label=direction==='debit'?'扣除':'增加';
+  if(!await uiConfirm('確定為 '+email+' 人工'+label+'活動金 '+money(amount)+'？\n\n原因：'+note))return;
+  const old=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='處理中…';}
+  try{const r=await apiPost({action:'adjustMemberCredit',memberEmail:email,direction,amount,note});toast('活動金已'+label+'，目前餘額 '+money(r.balance||0),7000);await loadMembers();openMemberDetail(email);}
+  catch(e){toast('活動金調整失敗：'+(e.message||e),8000);if(btn){btn.disabled=false;btn.textContent=old;}}
+}
+async function voidMemberCredit(ledgerId,email){
+  const note=String(prompt('請輸入作廢原因（必填）','')||'').trim();if(note.length<2){toast('已取消：必須填寫作廢原因');return;}
+  if(!await uiConfirm('確定作廢這筆人工活動金紀錄？\n\n作廢後餘額會立即重新計算。'))return;
+  try{const r=await apiPost({action:'voidMemberCredit',ledgerId,note});toast('人工活動金紀錄已作廢，目前餘額 '+money(r.balance||0),7000);await loadMembers();await openMemberHistory(email);}
+  catch(e){toast('作廢失敗：'+(e.message||e),8000);}
 }
 async function saveMemberCategory(email){
   const category=String(($('mn_category')||{}).value||'').trim();
@@ -4478,7 +4499,7 @@ async function openMemberHistory(key){
     const list=Array.isArray(data)?data:(Array.isArray(data&&data.registrations)?data.registrations:[]);
     const ledger=Array.isArray(data&&data.activityCreditLedger)?data.activityCreditLedger:[];
     const balance=Number(data&&data.activityCreditBalance||0);
-    const creditHtml='<div class="report-card" style="margin-bottom:12px"><div class="report-title">活動金可用餘額：'+money(balance)+'</div>'+(ledger.length?ledger.map(x=>'<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed #ddd"><span>'+safe(x.note||(x.direction==='debit'?'活動金扣抵':'活動金轉入'))+'<br><span class="sub">'+safe(adminShortDateRange(x.createdAt||''))+'｜'+safe(x.status||'')+'</span></span><b style="color:'+(x.direction==='debit'?'#b4413c':'#28765d')+'">'+(x.direction==='debit'?'-':'+')+money(x.amount||0)+'</b></div>').join(''):'<div class="sub">目前沒有活動金異動紀錄</div>')+'</div>';
+    const creditHtml='<div class="report-card" style="margin-bottom:12px"><div class="report-title">活動金可用餘額：'+money(balance)+'</div>'+(ledger.length?ledger.map(x=>'<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed #ddd"><span>'+safe(x.note||(x.direction==='debit'?'活動金扣抵':'活動金轉入'))+'<br><span class="sub">'+safe(adminShortDateRange(x.createdAt||''))+'｜'+safe(x.status||'')+(x.actorEmail?'｜操作者：'+safe(x.actorEmail):'')+'</span>'+(x.manual&&x.status==='有效'?'<br><button class="btn small danger" style="margin-top:5px" onclick="voidMemberCredit(\''+attr(x.id)+'\',\''+attr(k)+'\')">作廢此人工紀錄</button>':'')+'</span><b style="color:'+(x.direction==='debit'?'#b4413c':'#28765d')+'">'+(x.direction==='debit'?'-':'+')+money(x.amount||0)+'</b></div>').join(''):'<div class="sub">目前沒有活動金異動紀錄</div>')+'</div>';
     if(!list.length){ $('panelBody').innerHTML=creditHtml+'<div class="empty">查無歷史報名紀錄</div>'; return; }
     $('panelBody').innerHTML=creditHtml+'<div class="cards">'+list.map(r=>'<div class="history-direct-item">'+renderRegCard(r)+memberDayOpsSyncHtml(r)+'<div class="direct-actions" style="margin-top:5px"><button class="btn secondary small" onclick="jumpMemberHistoryToOnsite(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">現場</button><button class="btn secondary small" onclick="openSessionDetail(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">場次</button></div></div>').join('')+'</div>';
   }catch(e){

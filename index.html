@@ -6582,7 +6582,13 @@ function showPayPage(regId, sesName, amount, opts){
   ST_currentPayAmount = merged ? (Number(amount)||0) : (outstanding>0?outstanding:(Number(amount)||0));
   ST_currentPaymentInfo = reg.paymentProfile || null;
   $('payModalTitle').textContent = merged ? `合併繳費（共 ${ST_mergedPayIds.length} 場）` : '前往繳費';
-  $('payModalInfo').innerHTML = `<div><strong>${escHtml(sesName)}</strong></div><div style="font-size:20px;font-weight:900;color:var(--g);margin-top:2px">應繳金額：NT$ ${ST_currentPayAmount.toLocaleString()}</div>`;
+  const creditBalance=Math.max(0,Number(reg.activityCreditBalance||0)||0);
+  const creditApplied=Math.max(0,Number(reg.activityCreditApplied||0)||0);
+  const creditCanUse=!merged&&creditBalance>0&&ST_currentPayAmount>0;
+  $('payModalInfo').innerHTML = `<div><strong>${escHtml(sesName)}</strong></div>
+    <div style="font-size:14px;color:#666;margin-top:5px">原應繳：NT$ ${Number(reg.total||reg.totalAmount||0).toLocaleString()}${creditApplied>0?`｜已扣活動金：NT$ ${creditApplied.toLocaleString()}`:''}</div>
+    <div style="font-size:20px;font-weight:900;color:var(--g);margin-top:2px">${creditApplied>0?'扣抵後待繳餘額':'目前待繳'}：NT$ ${ST_currentPayAmount.toLocaleString()}</div>
+    ${creditCanUse?`<div style="margin-top:10px;padding:12px;background:#eef6ff;border:1px solid #b7d8ea;border-radius:12px"><b>可用活動金：NT$ ${creditBalance.toLocaleString()}</b><br><span style="font-size:13px;color:#527087">系統會先扣活動金，再只收剩餘金額。</span><button type="button" onclick="applyActivityCreditForCurrent(this)" style="width:100%;margin-top:8px;border:0;border-radius:10px;padding:11px;background:#24638a;color:#fff;font-weight:900;font-size:16px">先使用活動金扣抵</button></div>`:''}`;
   const bankEl=$('bankInfoDisplay'); if(bankEl) bankEl.innerHTML=bankInfoHtmlFromPayment(reg);
   const payLastEl = $('payLastFive');
   const methodEl = $('payMethod');
@@ -6596,6 +6602,22 @@ function showPayPage(regId, sesName, amount, opts){
   if(typeof clearPayFormError==='function') clearPayFormError();
   onPayMethodChange();
   $('payModal').classList.add('show');
+}
+async function applyActivityCreditForCurrent(btn){
+  const reg=findMyRegById(ST_currentPayRegId);if(!reg){toast('找不到報名資料');return;}
+  if(btn){btn.disabled=true;btn.textContent='活動金扣抵中…';}
+  try{
+    const preview=await apiPost({action:'activityCreditCheckout',regId:reg.id,email:getMemberEmail(),phone:getMemberPhone(),preview:true});
+    if(!(Number(preview.canApply||0)>0)){toast('目前沒有可扣抵的活動金');return;}
+    if(!await uiConfirm('本次使用活動金 '+Number(preview.canApply).toLocaleString()+' 元\n扣抵後待繳 '+Number(preview.remaining||0).toLocaleString()+' 元\n\n確定使用？'))return;
+    const r=await apiPost({action:'activityCreditCheckout',regId:reg.id,email:getMemberEmail(),phone:getMemberPhone()});
+    toast('已扣抵活動金 NT$ '+Number(r.applied||0).toLocaleString(),6000);
+    await safeGetMyRegs(getMemberEmail(),getMemberPhone());
+    const updated=findMyRegById(reg.id);
+    if(r.fullyPaid||!updated||regOutstandingAmount(updated)<=0){$('payModal').classList.remove('show');toast('活動金已全額付清，本筆不需再匯款',7000);}
+    else showPayPage(updated.id,updated.sessionName||updated.sesName||'場次',regOutstandingAmount(updated));
+  }catch(e){showPayFormError('活動金扣抵失敗：'+(e.message||e));}
+  finally{if(btn){btn.disabled=false;btn.textContent='先使用活動金扣抵';}}
 }
 function getPayLink(method){
   const reg=findMyRegById(ST_currentPayRegId)||{};
