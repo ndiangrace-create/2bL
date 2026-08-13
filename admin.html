@@ -4112,6 +4112,7 @@ function memberName(m){ return m.name||m.displayName||m.contactName||m.contact_n
 function memberKey(m){ return String(m.id||m.email||m.phone||memberBrand(m)||'').trim(); }
 function memberOfficialUrl(m){ return m.website||m.websiteUrl||m.website_url||m.officialUrl||m.official_url||m.url||m.web||m.homepage||''; }
 function memberSearchText(m){ return [m.brandName,m.brand_name,m.brand,m.storeName,m.name,m.displayName,m.phone,m.email,m.fb,m.fbUrl,m.fb_url,m.facebook,m.ig,m.igUrl,m.ig_url,m.instagram,memberOfficialUrl(m),m.intro,m.description,m.category,m.saleCategory].join(' ').toLowerCase(); }
+function memberCreditBalance(m){return Math.max(0,Number(m.activityCreditBalance||m.activity_credit_balance||0)||0);}
 function memberIconLinks(m){
   const fb=normalizeMemberFb(m.fb||m.fbUrl||m.fb_url||m.facebook||m.facebook_url);
   const ig=normalizeMemberIg(m.ig||m.igUrl||m.ig_url||m.instagram||m.instagram_url);
@@ -4161,6 +4162,7 @@ function openMemberDetail(email){
       +row('聯絡人', memberName(m))
       +row('電話', m.phone||m.mobile)
       +row('Email', m.email)
+      +row('活動金可用餘額', money(memberCreditBalance(m)))
       +'<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed #eee;align-items:center"><div style="min-width:92px;color:#777">販售類別</div><div style="flex:1;display:flex;gap:8px"><input id="mn_category" value="'+attr(m.category||m.sellCategory||m.sell_category||'')+'" placeholder="例：文創／美食／二手／其他" style="flex:1;min-width:0;border:1px solid #ddd;border-radius:10px;padding:8px 10px"><button class="btn small secondary" onclick="saveMemberCategory(\''+attr(m.email||'')+'\')">儲存類別</button></div></div>'
       +row('品牌介紹', m.intro||m.brandIntro||m.brand_intro)
       +row('最後更新', m.updatedAt||m.updated_at)
@@ -4221,11 +4223,12 @@ function renderMembers(){
     const intro=m.intro||m.brandIntro||m.description||m.brand_intro||'—';
     const updated=m.updatedAt||m.updated_at||m.joinedAt||m.joined_at||m.createdAt||m.created_at||'—';
     const fp=(m.fastPass===true||m.fast_pass===true||m.fastPass==='true'||m.fast_pass==='true');
+    const credit=memberCreditBalance(m);
     html+='<article class="member-card-v3">'
       +'<div class="member-v3-head"><div class="member-title" title="點擊查看詳情與備註" style="cursor:pointer" onclick="openMemberDetail(\''+attr(email)+'\')">'+safe(brand)+(fp?' <span class="tag green" style="font-size:10px">免審核</span>':'')+((m.adminNote||m.admin_note)?' <span class="tag purple" style="font-size:10px">備註</span>':'')+'</div><div class="member-icons">'+memberIconLinks(m)+'</div></div>'
       +'<div class="member-sub">'+safe(name)+'｜'+safe(phone)+'</div>'
       +'<div class="member-email" title="'+attr(email)+'">'+safe(email)+'</div>'
-      +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span></div>'
+      +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span><span class="tag '+(credit>0?'ok':'')+'">活動金：'+money(credit)+'</span></div>'
       +'<div class="member-note">'+safe(intro)+'</div>'
       +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
       +'<button class="btn secondary small" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
@@ -4471,10 +4474,13 @@ async function openMemberHistory(key){
   if(!k){toast('缺少會員查詢關鍵字');return;}
   openPanel('會員歷史｜'+safe(k),'顯示此品牌 / 會員所有歷史報名紀錄','<div class="loading">載入歷史報名中…</div>');
   try{
-    const rows=await api({action:'getMemberHistory',memberKey:k});
-    const list=Array.isArray(rows)?rows:[];
-    if(!list.length){ $('panelBody').innerHTML='<div class="empty">查無歷史報名紀錄</div>'; return; }
-    $('panelBody').innerHTML='<div class="cards">'+list.map(r=>'<div class="history-direct-item">'+renderRegCard(r)+memberDayOpsSyncHtml(r)+'<div class="direct-actions" style="margin-top:5px"><button class="btn secondary small" onclick="jumpMemberHistoryToOnsite(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">現場</button><button class="btn secondary small" onclick="openSessionDetail(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">場次</button></div></div>').join('')+'</div>';
+    const data=await api({action:'getMemberHistory',memberKey:k});
+    const list=Array.isArray(data)?data:(Array.isArray(data&&data.registrations)?data.registrations:[]);
+    const ledger=Array.isArray(data&&data.activityCreditLedger)?data.activityCreditLedger:[];
+    const balance=Number(data&&data.activityCreditBalance||0);
+    const creditHtml='<div class="report-card" style="margin-bottom:12px"><div class="report-title">活動金可用餘額：'+money(balance)+'</div>'+(ledger.length?ledger.map(x=>'<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed #ddd"><span>'+safe(x.note||(x.direction==='debit'?'活動金扣抵':'活動金轉入'))+'<br><span class="sub">'+safe(adminShortDateRange(x.createdAt||''))+'｜'+safe(x.status||'')+'</span></span><b style="color:'+(x.direction==='debit'?'#b4413c':'#28765d')+'">'+(x.direction==='debit'?'-':'+')+money(x.amount||0)+'</b></div>').join(''):'<div class="sub">目前沒有活動金異動紀錄</div>')+'</div>';
+    if(!list.length){ $('panelBody').innerHTML=creditHtml+'<div class="empty">查無歷史報名紀錄</div>'; return; }
+    $('panelBody').innerHTML=creditHtml+'<div class="cards">'+list.map(r=>'<div class="history-direct-item">'+renderRegCard(r)+memberDayOpsSyncHtml(r)+'<div class="direct-actions" style="margin-top:5px"><button class="btn secondary small" onclick="jumpMemberHistoryToOnsite(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">現場</button><button class="btn secondary small" onclick="openSessionDetail(\\\''+attr(r.sessionId||r.session_id||'')+'\\\')">場次</button></div></div>').join('')+'</div>';
   }catch(e){
     $('panelBody').innerHTML='<div class="empty">歷史報名載入失敗：'+safe(e.message)+'</div>';
   }

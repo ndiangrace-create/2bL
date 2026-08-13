@@ -6083,7 +6083,7 @@ function mReviewPill(r){
   const ps=String(r.payStatus||'').trim();
   const ts=String(r.transferStatus||'').trim();
   if(ts==='已轉場') return {text:'已轉場',icon:'→',bg:'#e8f7ee',color:'#2a6a10',border:'#b9d3a5',note:'原場紀錄已保留，請查看新的場次報名'};
-  if(ts==='已轉活動金') return {text:'已轉活動金',icon:'＄',bg:'#eef6ff',color:'#24638a',border:'#b7d8ea',note:'活動費已存入活動金，押金另行處理'};
+  if(ts==='已轉活動金') return {text:'已轉活動金',icon:'＄',bg:'#eef6ff',color:'#24638a',border:'#b7d8ea',note:'資料庫已確認收款總額（包含押金）已轉入活動金'};
   if(['已退費','refunded'].includes(ts) || ['已退費','已退款'].includes(ps)) return {text:'已退費',icon:'✓',bg:'#f3f4f6',color:'#777',border:'#e5e7eb',note:'本筆退費已完成'};
   if(['申請退費','退費中','refund_pending'].includes(ts)) return {text:'退費中',icon:'⏱',bg:'#fdecea',color:'#c0392b',border:'#f3b5b5',note:'主辦正在處理退費'};
   const total=Number(r.total||0)||0, paid=Number(r.paid||0)||0;
@@ -6108,6 +6108,9 @@ function renderMyRegs(regs){
     return;
   }
   if(helper) helper.classList.add('show');
+  const creditBalance=Math.max(0,Number(ST.regs[0]&&ST.regs[0].activityCreditBalance||0)||0);
+  const creditLedger=Array.isArray(ST.regs[0]&&ST.regs[0].activityCreditLedger)?ST.regs[0].activityCreditLedger:[];
+  const creditSummary=`<div style="margin:0 16px 14px;background:#eef6ff;border:1.5px solid #b7d8ea;border-radius:18px;padding:16px"><div style="font-size:15px;color:#527087;font-weight:800">會員活動金</div><div style="font-size:27px;font-weight:1000;color:#24638a;margin:3px 0">可用餘額 NT$ ${creditBalance.toLocaleString()}</div>${creditLedger.length?`<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:900;color:#24638a">查看活動金明細</summary>${creditLedger.map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed #b7d8ea;font-size:14px"><span>${escHtml(x.note||(x.direction==='debit'?'活動金扣抵':'活動金轉入'))}<br><small>${escHtml(String(x.createdAt||'').replace('T',' ').slice(0,16))}｜${escHtml(x.status||'')}</small></span><b>${x.direction==='debit'?'-':'+'} NT$ ${Number(x.amount||0).toLocaleString()}</b></div>`).join('')}</details>`:'<div style="font-size:13px;color:#668096">目前沒有活動金異動紀錄</div>'}</div>`;
   // 組合套組（bundle_group_id 相同）在攤友端合併為「一張卡片」，卡內列出各場日期／地點／設備。
   // 拆帳、分場次名單、分別行前通知都是後台的事；攤友看到兩張卡會誤以為可以只退一場來省錢。
   const _shown = new Set();
@@ -6124,7 +6127,7 @@ function renderMyRegs(regs){
     }
   }
 
-  el.innerHTML=_units.map(u=>{
+  el.innerHTML=creditSummary+_units.map(u=>{
     const r=u.head;
     const legs=u.bundle?u.legs:[r];
     const pill=mReviewPill(r);
