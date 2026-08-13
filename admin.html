@@ -2289,10 +2289,10 @@ function renderSessionCard(s){
           +metric('yellow','待審核',num(st.pending),'pending','待審核')
           +metric('blue','已錄取',num(st.approved),'approved','已錄取')
           +metric('green','已繳費',num(st.paid),'paid','已繳費')
-          +metric('blue','應報到攤位',num(dayAttendance.totalStalls??dayAttendance.total??0),'all','應報到攤位')
+          +metric('blue','應報到品牌',num(dayAttendance.totalBrands??dayAttendance.total??0),'all','應報到品牌')
           +metric('yellow','待確認',num(st.paymentPending),'paymentPending','付款待確認')
           +metric('pink','未繳費',num(st.unpaid),'unpaid','未繳費')
-          +metric('blue','已報到攤位',num(dayAttendance.checkedStalls??dayAttendance.checked??st.checked??0),'checked','已報到攤位')
+          +metric('blue','已報到品牌',num(dayAttendance.checkedBrands??dayAttendance.checked??st.checked??0),'checked','已報到品牌')
         +'</div>'
         +'<div class="session3-finance">'
           +metric('pink','退款',num(st.refund),'refund','退款')
