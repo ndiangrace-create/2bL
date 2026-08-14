@@ -1575,6 +1575,7 @@
   font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Microsoft JhengHei",sans-serif;
   padding:20px;box-sizing:border-box;
 }
+.finance-share-mode #loginPage,.finance-share-mode #adminPage{display:none!important}
 .finance-share-shell{width:min(1180px,100%);margin:0 auto;}
 .finance-share-loading,.finance-share-error{
   min-height:220px;display:grid;place-items:center;text-align:center;
@@ -2828,7 +2829,7 @@ async function shareFinanceReconciliation(sid){
   }catch(e){toast('建立財報分享連結失敗：'+e.message,8000);}
 }
 function financeShareMoney(v){return 'NT$ '+Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2});}
-async function renderPublicFinanceShare(token){
+async function renderPublicFinanceShare({token='',code=''}={}){
   const tenant=new URLSearchParams(location.search).get('tenant')||'';
   const money=v=>'NT$ '+Number(v||0).toLocaleString('zh-TW',{maximumFractionDigits:2});
 
@@ -2845,7 +2846,7 @@ async function renderPublicFinanceShare(token){
   root.innerHTML='<div class="finance-share-shell"><div class="finance-share-loading">載入財報對帳資料…</div></div>';
 
   try{
-    const r=await api({action:'publicFinanceShare',tenant,shareToken:token,email:'_',token:''});
+    const r=await api({action:'publicFinanceShare',tenant,shareToken:token,shareCode:code,email:'_',token:''});
     const s=r.session||{},f=r.finance||{},expenses=Array.isArray(f.expenseItems)?f.expenseItems:[];
     const stat=(label,value,cls='')=>`<div class="finance-share-stat ${cls}"><span>${safe(label)}</span><b>${money(value)}</b></div>`;
     const expRows=expenses.length
@@ -5453,7 +5454,7 @@ async function deleteFeatEvent(id, btn){
 async function applyTenantLogo(){ try{ const c=await api({action:'getSiteConfig'}); if(c && c.logoUrl){ document.querySelectorAll('.login-mark, .logo').forEach(img=>{ img.src=c.logoUrl; }); } }catch(e){} }
 document.addEventListener('DOMContentLoaded', applyTenantLogo);
 async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; const val=id=>($(id)?$(id).value:''); try{ await apiPost({action:'saveSiteConfig',heroImg:val('home_hero'),infoText:val('home_info'),logoUrl:val('home_logo'),mascotHome:val('home_mascotHome'),mascotPortal:val('home_mascotPortal'),mascotMember:val('home_mascotMember'),mascotSupport:val('home_mascotSupport'),mascotProfile:val('home_mascotProfile'),mascotModal:val('home_mascotModal')}); toast('首頁顯示已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
-(async function boot(){ const financeShare=new URLSearchParams(location.search).get('financeShare'); if(financeShare){await renderPublicFinanceShare(financeShare);return;} const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ saveSession(s); enterAdmin(); } })();
+(async function boot(){ const q=new URLSearchParams(location.search),financeShare=q.get('financeShare')||'',financeShareCode=q.get('fs')||''; if(financeShare||financeShareCode){document.documentElement.classList.add('finance-share-mode');document.title='2BL｜合作夥伴財報對帳';await renderPublicFinanceShare({token:financeShare,code:financeShareCode});return;} const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ saveSession(s); enterAdmin(); } })();
 </script>
 </body>
 </html>
