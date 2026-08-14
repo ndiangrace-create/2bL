@@ -1856,7 +1856,7 @@ function jumpMemberHistoryToOnsite(sessionIdValue){
   setTimeout(()=>{const sel=$('onsiteSession');if(!sel)return;sel.value=sid;if(sel.value)loadOnsiteList(sid);},40);
 }
 function jumpFinanceToSession(sessionIdValue){
-  const sid=String(sessionIdValue||'').trim();if(!sid)return;switchPage('sessions');setTimeout(()=>openSessionDetail(sid),30);
+  const sid=String(sessionIdValue||'').trim();if(!sid)return;switchPage('sessions');setTimeout(()=>openFinancePanel(sid),30);
 }
 
 function renderOnsiteList(){
@@ -2311,7 +2311,7 @@ function renderSessionCard(s){
           +'<button type="button" class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
           +'<button type="button" class="btn secondary small" onclick="openSeatOps(\''+attr(sid)+'\')">🪑 排位結果</button>'
           +'<button type="button" class="btn small" onclick="openAdminManualRegistrationForSession(\''+attr(sid)+'\')">＋ 代報名</button>'
-          +'<button type="button" class="btn secondary small" onclick="openSessionDetail(\''+attr(sid)+'\')">看明細</button>'
+          +'<button type="button" class="btn secondary small" onclick="openFinancePanel(\''+attr(sid)+'\')">本場財報</button>'
           +'<button type="button" class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
           +'<button type="button" class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
           +'<button type="button" class="btn small" onclick="openShortLink(\''+attr(sid)+'\')">短網址</button>'
@@ -2328,8 +2328,9 @@ function renderSessionCard(s){
 
 async function copySessionAction(sid){ if(!await uiConfirm('要複製這個場次嗎？會建立一個「（複製）」的新場次，內容全帶、名額歸零，之後改日期名稱即可。')) return; try{ await apiPost({action:'copySession', id:sid}); toast('已複製，請在列表編輯新場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('複製失敗：'+e.message,6000); } }
 async function setSessionStatus(sid, status){ const label={'報名中':'開放報名','關閉':'關閉報名','封存':'封存（移到過往場次）'}[status]||status; if(!await uiConfirm('確定「'+label+'」？')) return; try{ await apiPost({action:'toggleSessionStatus', sessionId:sid, status}); toast('已'+label); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('失敗：'+e.message,6000); } }
-function openPanel(title,sub,html,opts={}){ const p=$('panel'); if(p.classList.contains('show')&&!opts.replace){ AdminState.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,layer:AdminState.currentLayer,sessionId:AdminState.currentSessionId,filter:AdminState.currentFilter}); } $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; $('panelRootBtn').classList.toggle('hidden',AdminState.currentLayer==='root'); p.classList.add('show'); document.body.style.overflow='hidden'; history.pushState({panel:true},''); saveAdminPageState(); }
-function panelBack(){ const prev=AdminState.panelStack.pop(); if(prev){ $('panelTitle').textContent=prev.title; $('panelSub').textContent=prev.sub; $('panelBody').innerHTML=prev.html; AdminState.currentLayer=prev.layer; AdminState.currentSessionId=prev.sessionId; AdminState.currentFilter=prev.filter; saveAdminPageState(); return; } closeAllPanels(); }
+function syncPanelNav(){ const hasPrev=AdminState.panelStack.length>0; const backBtn=document.querySelector('#panel .panel-bottom button[onclick="panelBack()"]'); if(backBtn)backBtn.textContent=hasPrev?'← 返回上一頁':'← 回場次總覽'; $('panelRootBtn')?.classList.toggle('hidden',!hasPrev); }
+function openPanel(title,sub,html,opts={}){ const p=$('panel'); if(p.classList.contains('show')&&!opts.replace){ AdminState.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,layer:AdminState.currentLayer,sessionId:AdminState.currentSessionId,filter:AdminState.currentFilter}); } $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; p.classList.add('show'); document.body.style.overflow='hidden'; syncPanelNav(); history.pushState({panel:true},''); saveAdminPageState(); }
+function panelBack(){ const prev=AdminState.panelStack.pop(); if(prev){ $('panelTitle').textContent=prev.title; $('panelSub').textContent=prev.sub; $('panelBody').innerHTML=prev.html; AdminState.currentLayer=prev.layer; AdminState.currentSessionId=prev.sessionId; AdminState.currentFilter=prev.filter; syncPanelNav(); saveAdminPageState(); return; } closeAllPanels(); }
 function closeAllPanels(){ $('panel').classList.remove('show'); $('panelBody').innerHTML=''; document.body.style.overflow=''; AdminState.panelStack=[]; AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; saveAdminPageState(); }
 window.addEventListener('popstate',()=>{ if($('panel').classList.contains('show')) panelBack(); });
 function isRefundLikeText(v){ const s=String(v||''); return s.includes('退費')||s.includes('退款')||s.includes('refund'); }
@@ -2772,19 +2773,20 @@ async function openSessionDetail(sid){
 
 async function openFinancePanel(sid){
   AdminState.currentSessionId=sid; AdminState.currentLayer='finance'; const s=sessionById(sid);
-  openPanel(sessionName(s)+'｜本場財報','本場收入、退款、支出與分潤會依最新紀錄即時更新。','<div class="loading">財務載入中…</div>');
+  openPanel(sessionName(s)+'｜本場財報','本場收入、押金、退款、支出與分潤會依最新紀錄即時更新。','<div class="loading">財務載入中…</div>',{replace:true});
   try{
-    const [report,finance,invoices,paymentGroups]=await Promise.all([
+    const [report,finance,invoices,paymentGroups,dashboardRows]=await Promise.all([
       api({action:'getSessionFinanceReport',sessionId:sid}),
       api({action:'getFinance',sessionId:sid}).catch(()=>[]),
       api({action:'getInvoiceList',sessionId:sid}).catch(()=>[]),
-      api({action:'getFinancePaymentGroups',sessionId:sid}).catch(()=>[])
+      api({action:'getFinancePaymentGroups',sessionId:sid}).catch(()=>[]),
+      api({action:'getSessionDashboard',sessionId:sid})
     ]);
-    const r=report||{}; const locked=!!r.settlementLocked; const expenseItems=Array.isArray(r.expenseItems)?r.expenseItems:[];
+    const r=report||{}; const dashboard=Array.isArray(dashboardRows)?dashboardRows[0]:dashboardRows; const depositTotal=getFinance(dashboard||{}).deposit; const locked=!!r.settlementLocked; const expenseItems=Array.isArray(r.expenseItems)?r.expenseItems:[];
     const warn=(r.warnings||[]).map(x=>'<div class="quality-warn">⚠ '+safe(x)+'</div>').join('');
     const stat=(label,val,cls)=>'<div class="mini-stat"'+(cls?' style="background:'+cls+'"':'')+'><b>'+money(val||0)+'</b><span>'+safe(label)+'</span></div>';
-    const financeSummary='<div class="report-card"><div class="report-title">正式損益計算</div><div class="sub" style="margin-bottom:8px">收入以已確認收款為準；退款以已完成退款為準；支出以已登錄的正式支出為準。</div><div class="mini-stat-row">'
-      +stat('已確認收入',r.confirmedRevenue,'#eef7ee')+stat('已完成退款',r.refundAmount,'#fff0ee')+stat('退款後淨收入',r.netRevenue,'#eef5fb')+stat('本場總支出',r.totalExpense,'#fff8ed')
+    const financeSummary='<div class="report-card"><div class="report-title">正式損益計算</div><div class="sub" style="margin-bottom:8px">收入以已確認收款為準；押金獨立顯示且不列入營收與分潤；退款以已完成退款為準；支出以已登錄的正式支出為準。</div><div class="mini-stat-row">'
+      +stat('已確認收入',r.confirmedRevenue,'#eef7ee')+stat('已收押金（不列入營收）',depositTotal,'#fffbe8')+stat('已完成退款',r.refundAmount,'#fff0ee')+stat('退款後淨收入',r.netRevenue,'#eef5fb')+stat('本場總支出',r.totalExpense,'#fff8ed')
       +stat('攤位費開票稅5%',r.stallInvoiceTax??r.invoiceTaxAmount??0,'#f6f1ff')+stat('可分配盈餘',r.distributableProfit,(Number(r.distributableProfit)||0)>=0?'#eef7ee':'#fff0ee')+stat('公司分潤',r.companyShare,'#eef5fb')+stat('合作方分潤',r.partnerShare,'#fff8ed')+'</div></div>';
     const expenseRows=expenseTableHtml(sid,expenseItems,locked);
     const expenseForm=locked?'':'<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費（主辦實際支付）</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="人事費">人事費</option><option value="行銷費">行銷費</option><option value="物流費">物流費</option><option value="清潔費">清潔費</option><option value="保險費">保險費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">場地費照主辦實際支付金額登錄，不會自動加稅；5% 稅額只套用於攤友繳交、需開立發票的攤位費。</div></div>';
