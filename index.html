@@ -6102,7 +6102,6 @@ async function markAllMemberNotificationsRead(){
 }
 
 function mReviewPill(r){
-  if(isCancelledReg(r)) return {text:'已取消', icon:'✕', bg:'#f3f4f6', color:'#777', border:'#e5e7eb', note:'此筆報名已取消'};
   const st=String(r.status||r.reviewStatus||'待審核').trim();
   const ps=String(r.payStatus||'').trim();
   const ts=String(r.transferStatus||'').trim();
@@ -6110,6 +6109,7 @@ function mReviewPill(r){
   if(ts==='已轉活動金') return {text:'已轉活動金',icon:'＄',bg:'#eef6ff',color:'#24638a',border:'#b7d8ea',note:'資料庫已確認收款總額（包含押金）已轉入活動金'};
   if(['已退費','refunded'].includes(ts) || ['已退費','已退款'].includes(ps)) return {text:'已退費',icon:'✓',bg:'#f3f4f6',color:'#777',border:'#e5e7eb',note:'本筆退費已完成'};
   if(['申請退費','退費中','refund_pending'].includes(ts)) return {text:'退費中',icon:'⏱',bg:'#fdecea',color:'#c0392b',border:'#f3b5b5',note:'主辦正在處理退費'};
+  if(isCancelledReg(r)) return {text:'已取消', icon:'✕', bg:'#f3f4f6', color:'#777', border:'#e5e7eb', note:'此筆報名已取消'};
   const total=Number(r.total||0)||0, paid=Number(r.paid||0)||0;
   const due=Number.isFinite(Number(r.due))?Math.max(0,Number(r.due)):Math.max(0,total-paid);
   if(paid>0 && due>0) return {text:'待補款',icon:'＄',bg:'#fff8ed',color:'#d97706',border:'#f5d7a1',note:'尚需補繳 NT$ '+due.toLocaleString()};
@@ -7010,4 +7010,3 @@ function scrollToSection(id){
 
 </body>
 </html>
-
