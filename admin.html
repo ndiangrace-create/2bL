@@ -2585,9 +2585,28 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
   }catch(e){ const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
   finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
 }
+function normalizedResolutionPreview(p,regId){
+  p=p||{};
+  const reg=(AdminState.currentList||[]).find(r=>String(r.id||r.regId||r.registrationId||r.registration_id||'')===String(regId||''))||{};
+  const paidAmount=Math.max(0,Number(p.paidAmount??reg.receivedAmount??reg.paidAmount??reg.paid_amount??0)||0);
+  const activityCreditApplied=Math.max(0,Number(p.activityCreditApplied??reg.activityCreditApplied??reg.activity_credit_applied??0)||0);
+  const fundedAmount=Math.max(0,Number(p.fundedAmount??(paidAmount+activityCreditApplied))||0);
+  const sourceDeposit=Math.max(0,Number(reg.depositAmount??reg.deposit??p.depositPaid??0)||0);
+  const depositPaid=Math.min(fundedAmount,sourceDeposit);
+  const activityPaid=Math.max(0,fundedAmount-depositPaid);
+  const out=Object.assign({},p,{paidAmount,activityCreditApplied,fundedAmount,depositPaid,activityPaid});
+  if(p.targetActivityFee!==undefined||p.targetDeposit!==undefined){
+    const targetActivityFee=Math.max(0,Number(p.targetActivityFee||0)||0),targetDeposit=Math.max(0,Number(p.targetDeposit||0)||0);
+    out.appliedTotal=Math.min(activityPaid,targetActivityFee)+Math.min(depositPaid,targetDeposit);
+    out.dueAmount=Math.max(0,targetActivityFee-activityPaid)+Math.max(0,targetDeposit-depositPaid);
+    out.creditCreated=Math.max(0,activityPaid-targetActivityFee);
+    out.depositRefundDue=Math.max(0,depositPaid-targetDeposit);
+  }else out.creditCreated=fundedAmount;
+  return out;
+}
 async function openRegistrationTransferPanel(regId,sid){
   try{
-    const p=await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid});
+    const p=normalizedResolutionPreview(await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid}),regId);
     const opts=(p.targetSessions||[]).map(s=>'<option value="'+attr(s.id)+'">'+safe(s.name)+'｜'+safe(s.dateText||'')+'</option>').join('');
     if(!opts){toast('目前沒有可轉入的有效場次',6000);return;}
     const html='<div class="readable-detail"><div class="report-card"><div class="report-title">原報名款項</div><div class="kv">'
@@ -2602,7 +2621,7 @@ async function openRegistrationTransferPanel(regId,sid){
 async function refreshTransferPreview(regId,sid){
   const targetSessionId=$('resolutionTarget')?.value||''; if(!targetSessionId)return;
   try{
-    const p=await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid,targetSessionId});
+    const p=normalizedResolutionPreview(await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid,targetSessionId}),regId);
     $('resolutionCalc').innerHTML='<b>新場應繳：</b>'+money(p.targetTotal||0)+'（活動費 '+money(p.targetActivityFee||0)+'＋押金 '+money(p.targetDeposit||0)+'）<br>'
       +'<b>已轉入：</b>'+money(p.appliedTotal||0)+'｜<b>應補差額：</b>'+money(p.dueAmount||0)+'<br>'
       +'<b>轉後活動金：</b>'+money(p.creditCreated||0)+'｜<b>待退押金：</b>'+money(p.depositRefundDue||0)+'<br><span class="sub">設備不沿用，會員可在新場報名紀錄看到完整計算。</span>';
@@ -2615,7 +2634,7 @@ async function confirmRegistrationTransfer(regId,sid){
   try{const r=await apiPost({action:'resolveRegistration',mode:'transfer',regId,sessionId:sid,targetSessionId,note:$('resolutionNote')?.value||''});toast('已完成轉場；應補 '+money(r.dueAmount||0)+'，活動金 '+money(r.creditCreated||0),7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('轉場失敗：'+(e.message||e),8000);}
 }
 async function confirmRegistrationCredit(regId,sid){
-  let p;try{p=await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid});}catch(e){toast('無法取得正式金額與攤位數，已阻斷操作：'+(e.message||e),8000);return;}
+  let p;try{p=normalizedResolutionPreview(await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid}),regId);}catch(e){toast('無法取得正式金額與攤位數，已阻斷操作：'+(e.message||e),8000);return;}
   const stalls=Math.max(1,Number(p.stallCount||1));
   if(!await uiConfirm('確定把這筆已投入的資金完整轉回活動金？\n\n已確認現金：'+money(p.paidAmount||0)+'\n原已使用活動金：'+money(p.activityCreditApplied||0)+'\n本次轉回合計：'+money(p.creditCreated||0)+'\n原場將減少：1 個應報到品牌、'+stalls+' 攤\n\n包含押金；完成後會同步退出名單、桌數、報到、每日營運與排位。未收或應收金額不會建立活動金。'))return;
   try{const r=await apiPost({action:'resolveRegistration',mode:'credit',regId,sessionId:sid,note:'已投入資金（含押金）完整轉回活動金'});toast('已完整轉回活動金 '+money(r.creditCreated||0)+'，原場營運資料已同步結束',7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('活動金處理失敗：'+(e.message||e),8000);}
