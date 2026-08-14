@@ -3909,7 +3909,8 @@ function preferredActivityView(){
   try{ return localStorage.getItem('2bl_activity_view')==='calendar'?'calendar':'list'; }catch(e){ return 'list'; }
 }
 function setActivitySessions(scope,sessions){
-  activityViewState()[scope]=sortSessionsByUpcoming(uniqueSessions(Array.isArray(sessions)?sessions:[]));
+  const deduped=[...new Map((Array.isArray(sessions)?sessions:[]).filter(Boolean).map((s,i)=>[String(s.id||s.sessionId||s.name||i),s])).values()];
+  activityViewState()[scope]=sortSessionsByUpcoming(deduped);
   renderActivitySessions(scope);
 }
 function switchActivityView(scope,mode){
