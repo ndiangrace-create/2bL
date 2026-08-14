@@ -738,6 +738,95 @@ input, select, textarea, .f-input{
   }
 }
 
+/* 場次列表／日曆切換 */
+.activity-view-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0 0 12px;
+}
+.activity-view-toggle,.activity-month-nav{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.activity-view-btn,.activity-month-btn{
+  min-height:40px;
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:999px;
+  background:#fff;
+  color:#333;
+  padding:8px 14px;
+  font:800 16px/1.2 inherit;
+  cursor:pointer;
+}
+.activity-view-btn.active{background:#222;color:#fff;border-color:#222}
+.activity-month-title{min-width:106px;text-align:center;font-size:17px;font-weight:900;color:#222}
+.activity-calendar{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  border:1px solid #ded8d2;
+  border-radius:18px;
+  overflow:hidden;
+  background:#fff;
+}
+.activity-calendar-weekday{
+  padding:9px 4px;
+  text-align:center;
+  background:#f5f2ed;
+  color:#555;
+  font-size:14px;
+  font-weight:900;
+  border-right:1px solid #e7e1db;
+}
+.activity-calendar-weekday:nth-child(7){border-right:0}
+.activity-calendar-day{
+  min-height:116px;
+  padding:7px;
+  border:0;
+  border-top:1px solid #ebe5de;
+  border-right:1px solid #ebe5de;
+  background:#fff;
+  text-align:left;
+  overflow:hidden;
+}
+.activity-calendar-day:nth-child(7n){border-right:0}
+.activity-calendar-day.is-other{background:#faf9f7;color:#aaa}
+.activity-calendar-day.is-today{box-shadow:inset 0 0 0 2px #82b6aa}
+.activity-calendar-day.is-selected{background:#eef7f4}
+.activity-calendar-date{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:900;margin-bottom:5px}
+.activity-calendar-count{font-size:12px;color:#5d837b}
+.activity-calendar-events{display:flex;flex-direction:column;gap:4px;max-height:82px;overflow:auto;scrollbar-width:thin}
+.activity-calendar-event{
+  width:100%;
+  border:0;
+  border-left:4px solid var(--theme-accent,#82b6aa);
+  border-radius:7px;
+  background:var(--theme-bg,#eef7f4);
+  color:#222;
+  padding:4px 5px;
+  font:800 12px/1.3 inherit;
+  text-align:left;
+  cursor:pointer;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.activity-day-detail{margin-top:12px;padding:14px;border:1px solid #ded8d2;border-radius:16px;background:#fff}
+.activity-day-detail-title{font-size:18px;font-weight:900;margin-bottom:9px}
+.activity-day-detail-list{display:grid;gap:8px}
+.activity-day-detail-item{width:100%;border:1px solid #e3ddd7;border-left:6px solid var(--theme-accent,#82b6aa);border-radius:12px;background:var(--theme-bg,#fff);padding:11px 12px;text-align:left;cursor:pointer;font:inherit}
+.activity-day-detail-name{font-size:16px;font-weight:900;color:#222}
+.activity-day-detail-meta{font-size:14px;color:#666;margin-top:3px}
+.activity-calendar-empty{grid-column:1/-1;padding:30px;text-align:center;color:#888}
+.activity-list-host.calendar-mode{display:block!important}
+@media (max-width:699px){
+  .activity-view-bar{align-items:flex-start;flex-direction:column}
+  .activity-month-nav{width:100%;justify-content:space-between}
+  .activity-month-btn{min-width:42px;padding:8px 11px}
+  .activity-calendar-day{min-height:68px;padding:5px;cursor:pointer}
+  .activity-calendar-date{margin:0;font-size:13px}
+  .activity-calendar-events{display:none}
+  .activity-calendar-count{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;border-radius:999px;background:#82b6aa;color:#fff;padding:0 5px;font-size:11px}
+}
+
 
 
 
@@ -1611,6 +1700,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:20px;font-weight:900;color:#111">近期場次</div>
     </div>
+    <div id="homeActivityViewBar" class="activity-view-bar"></div>
     <div id="eventsList">
       <div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>
     </div>
@@ -1625,8 +1715,11 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <span class="arrow">←</span>
     <span class="title" id="portalTitle">場次列表</span>
   </div>
-  <div style="padding:0 16px 100px" id="portalSessionList">
-    <div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>
+  <div style="padding:0 16px 100px">
+    <div id="portalActivityViewBar" class="activity-view-bar"></div>
+    <div id="portalSessionList">
+      <div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>
+    </div>
   </div>
 </div>
 <!-- ══ 報名表 Modal ══ -->
@@ -3748,15 +3841,173 @@ function sortSessionsByUpcoming(list){
     return bm-am;
   });
 }
+
+// ── 場次列表／日曆模式（只使用場次正式日期，不自行推算）──
+function activityViewState(){
+  if(!ST.activityViewData) ST.activityViewData={home:[],portal:[]};
+  if(!ST.activityCalendarMonth) ST.activityCalendarMonth={home:'',portal:''};
+  if(!ST.activityCalendarSelected) ST.activityCalendarSelected={home:'',portal:''};
+  return ST.activityViewData;
+}
+function normalizeActivityDate(value){
+  const raw=String(value||'').trim().replace(/[./]/g,'-');
+  const m=raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(!m) return '';
+  const mo=String(Number(m[2])).padStart(2,'0');
+  const da=String(Number(m[3])).padStart(2,'0');
+  const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+  if(d.getFullYear()!==Number(m[1])||d.getMonth()!==Number(m[2])-1||d.getDate()!==Number(m[3])) return '';
+  return `${m[1]}-${mo}-${da}`;
+}
+function sessionActivityDateRows(s){
+  let rows=Array.isArray(s&&s.dates)?s.dates:null;
+  if(!rows){
+    const raw=s&&(s.dates_json!=null?s.dates_json:s.datesJson);
+    if(Array.isArray(raw)) rows=raw;
+    else if(typeof raw==='string'&&raw.trim()){
+      try{ const parsed=JSON.parse(raw); if(Array.isArray(parsed)) rows=parsed; }catch(e){}
+    }
+  }
+  if(!Array.isArray(rows)||!rows.length){
+    const date=normalizeActivityDate(s&&(s.date||s.startDate||s.eventDate||s.sessionDate));
+    return date?[{date,time:String((s&&(s.startTime||s.time))||'').trim()}]:[];
+  }
+  const found=new Map();
+  rows.forEach(row=>{
+    const obj=(row&&typeof row==='object')?row:{date:row};
+    const date=normalizeActivityDate(obj.date||obj.startDate||obj.day);
+    if(!date) return;
+    const time=String(obj.start||obj.startTime||obj.time||s.startTime||s.time||'').trim();
+    if(!found.has(date)) found.set(date,{date,time});
+  });
+  return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+}
+function activityCalendarEntries(sessions){
+  const entries=[];
+  const seen=new Set();
+  (Array.isArray(sessions)?sessions:[]).forEach(s=>{
+    sessionActivityDateRows(s).forEach(row=>{
+      const key=String(s.id||s.name||'')+'|'+row.date;
+      if(seen.has(key)) return;
+      seen.add(key);
+      entries.push({date:row.date,time:row.time||'',session:s});
+    });
+  });
+  return entries.sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)||String(a.session.name||'').localeCompare(String(b.session.name||''),'zh-Hant'));
+}
+function currentLocalDateKey(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function activityMonthKeyFromDate(date){ return String(date||'').slice(0,7); }
+function activityScopeElements(scope){
+  return scope==='portal'
+    ? {host:$('portalSessionList'),bar:$('portalActivityViewBar')}
+    : {host:$('eventsList'),bar:$('homeActivityViewBar')};
+}
+function preferredActivityView(){
+  try{ return localStorage.getItem('2bl_activity_view')==='calendar'?'calendar':'list'; }catch(e){ return 'list'; }
+}
+function setActivitySessions(scope,sessions){
+  activityViewState()[scope]=sortSessionsByUpcoming(uniqueSessions(Array.isArray(sessions)?sessions:[]));
+  renderActivitySessions(scope);
+}
+function switchActivityView(scope,mode){
+  const next=mode==='calendar'?'calendar':'list';
+  try{ localStorage.setItem('2bl_activity_view',next); }catch(e){}
+  renderActivitySessions(scope,next);
+}
+function moveActivityCalendarMonth(scope,delta){
+  activityViewState();
+  const key=ST.activityCalendarMonth[scope]||activityMonthKeyFromDate(currentLocalDateKey());
+  const m=key.match(/^(\d{4})-(\d{2})$/);
+  const d=m?new Date(Number(m[1]),Number(m[2])-1+Number(delta||0),1):new Date();
+  ST.activityCalendarMonth[scope]=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  ST.activityCalendarSelected[scope]='';
+  renderActivitySessions(scope,'calendar');
+}
+function goActivityCalendarToday(scope){
+  activityViewState();
+  const today=currentLocalDateKey();
+  ST.activityCalendarMonth[scope]=activityMonthKeyFromDate(today);
+  ST.activityCalendarSelected[scope]=today;
+  renderActivitySessions(scope,'calendar');
+}
+function selectActivityCalendarDate(scope,date){
+  activityViewState();
+  ST.activityCalendarMonth[scope]=activityMonthKeyFromDate(date);
+  ST.activityCalendarSelected[scope]=date;
+  renderActivitySessions(scope,'calendar');
+}
+function activityCalendarEventHtml(entry,detail){
+  const s=entry.session||{};
+  const theme=(typeof getFrontSessionThemeInfo==='function'?getFrontSessionThemeInfo(s):{cls:'theme-none'});
+  const time=String(entry.time||'').match(/\d{1,2}:\d{2}/)?.[0]||'';
+  if(detail){
+    const location=s.location||s.venue||s.place||'';
+    return `<button type="button" class="activity-day-detail-item ${theme.cls||'theme-none'}" data-session-id="${esc(s.id||'')}" onclick="openSession(this.dataset.sessionId)"><div class="activity-day-detail-name">${esc(s.name||s.title||'未命名活動')}</div><div class="activity-day-detail-meta">${time?esc(time)+'　':''}${location?'📍 '+esc(location):''}</div></button>`;
+  }
+  return `<button type="button" class="activity-calendar-event ${theme.cls||'theme-none'}" title="${esc(s.name||s.title||'')}" data-session-id="${esc(s.id||'')}" onclick="event.stopPropagation();openSession(this.dataset.sessionId)">${time?esc(time)+' ':''}${esc(s.name||s.title||'未命名活動')}</button>`;
+}
+function renderActivityCalendar(scope,sessions){
+  activityViewState();
+  const entries=activityCalendarEntries(sessions);
+  const today=currentLocalDateKey();
+  let monthKey=ST.activityCalendarMonth[scope];
+  if(!/^\d{4}-\d{2}$/.test(monthKey||'')){
+    const firstUpcoming=entries.find(x=>x.date>=today)||entries[0];
+    monthKey=activityMonthKeyFromDate(firstUpcoming?firstUpcoming.date:today);
+    ST.activityCalendarMonth[scope]=monthKey;
+  }
+  const [year,month]=monthKey.split('-').map(Number);
+  const first=new Date(year,month-1,1);
+  const start=new Date(year,month-1,1-first.getDay());
+  const byDate=new Map();
+  entries.forEach(entry=>{ if(!byDate.has(entry.date)) byDate.set(entry.date,[]); byDate.get(entry.date).push(entry); });
+  let selected=ST.activityCalendarSelected[scope];
+  if(!selected||activityMonthKeyFromDate(selected)!==monthKey){
+    selected=(byDate.has(today)&&activityMonthKeyFromDate(today)===monthKey)?today:((entries.find(x=>activityMonthKeyFromDate(x.date)===monthKey)||{}).date||'');
+    ST.activityCalendarSelected[scope]=selected;
+  }
+  const weekdays=['日','一','二','三','四','五','六'].map(x=>`<div class="activity-calendar-weekday">週${x}</div>`).join('');
+  let days='';
+  for(let i=0;i<42;i++){
+    const d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const dayEntries=byDate.get(key)||[];
+    const cls=['activity-calendar-day',d.getMonth()!==month-1?'is-other':'',key===today?'is-today':'',key===selected?'is-selected':''].filter(Boolean).join(' ');
+    days+=`<div class="${cls}" onclick="selectActivityCalendarDate('${scope}','${key}')"><div class="activity-calendar-date"><span>${d.getDate()}</span>${dayEntries.length?`<span class="activity-calendar-count">${dayEntries.length}場</span>`:''}</div><div class="activity-calendar-events">${dayEntries.map(x=>activityCalendarEventHtml(x,false)).join('')}</div></div>`;
+  }
+  const selectedEntries=selected?(byDate.get(selected)||[]):[];
+  const detail=selected?`<div class="activity-day-detail"><div class="activity-day-detail-title">${selected.replace(/-/g,'/')} · ${selectedEntries.length}場活動</div><div class="activity-day-detail-list">${selectedEntries.length?selectedEntries.map(x=>activityCalendarEventHtml(x,true)).join(''):'<div style="color:#888;font-size:15px">當天沒有開放報名的活動</div>'}</div></div>`:'';
+  return `<div class="activity-calendar" aria-label="${year}年${month}月活動日曆">${weekdays}${days}</div>${detail}`;
+}
+function renderActivitySessions(scope,forcedMode){
+  const data=activityViewState()[scope]||[];
+  const mode=forcedMode||preferredActivityView();
+  const els=activityScopeElements(scope);
+  if(!els.host||!els.bar) return;
+  els.host.classList.add('activity-list-host');
+  els.host.classList.toggle('calendar-mode',mode==='calendar');
+  const calendarHtml=mode==='calendar'?renderActivityCalendar(scope,data):'';
+  const monthKey=ST.activityCalendarMonth[scope]||activityMonthKeyFromDate(currentLocalDateKey());
+  const monthText=monthKey.replace('-', '年')+'月';
+  els.bar.innerHTML=`<div class="activity-view-toggle"><button type="button" class="activity-view-btn ${mode==='list'?'active':''}" onclick="switchActivityView('${scope}','list')">☰ 列表</button><button type="button" class="activity-view-btn ${mode==='calendar'?'active':''}" onclick="switchActivityView('${scope}','calendar')">📅 日曆</button></div>${mode==='calendar'?`<div class="activity-month-nav"><button type="button" class="activity-month-btn" onclick="moveActivityCalendarMonth('${scope}',-1)" aria-label="上個月">‹</button><span class="activity-month-title">${monthText}</span><button type="button" class="activity-month-btn" onclick="goActivityCalendarToday('${scope}')">今天</button><button type="button" class="activity-month-btn" onclick="moveActivityCalendarMonth('${scope}',1)" aria-label="下個月">›</button></div>`:''}`;
+  if(mode==='calendar'){
+    els.host.innerHTML=calendarHtml;
+  }else{
+    els.host.innerHTML=data.length?data.map(s=>renderSessionCard(s)).join(''):'<div style="padding:30px;text-align:center;color:#aaa;font-size:16px">目前尚無開放報名</div>';
+  }
+}
+window.switchActivityView=switchActivityView;
+window.moveActivityCalendarMonth=moveActivityCalendarMonth;
+window.goActivityCalendarToday=goActivityCalendarToday;
+window.selectActivityCalendarDate=selectActivityCalendarDate;
 function renderHomeFallbackSessions(){
   const el=$('eventsList');
   if(!el) return;
   const open=sortSessionsByUpcoming((ST.allSessionsData||[]).filter(isOpenSession));
-  if(!open.length){
-    el.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前沒有開放報名場次<br><span onclick="loadHome()" style="color:var(--g);font-weight:800;cursor:pointer">重新載入</span></div>';
-    return;
-  }
-  el.innerHTML=open.map(s=>renderSessionCard(s)).join('');
+  setActivitySessions('home',open);
 }
 async function filterCat(type, el){
   ST.currentCatFilter = type;
@@ -3786,12 +4037,8 @@ async function filterCat(type, el){
     });
   }
   if(!list) return;
-  if(!data.length){
-    list.innerHTML='<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前無開放場次<br><button type="button" onclick="loadHome().then(()=>filterCat(ST.currentCatFilter))" style="margin-top:10px;border:none;border-radius:10px;background:var(--g);color:#fff;padding:9px 14px;font-weight:800;font-size:16px">重新載入</button></div>';
-    return;
-  }
   data=sortSessionsByUpcoming(data);
-  list.innerHTML = data.map(s=>renderSessionCard(s)).join('');
+  setActivitySessions('portal',data);
 }
 async function openEvent(eventId){
   const evt=(ST.events||[]).find(e=>String(e.id)===String(eventId));
@@ -3819,11 +4066,7 @@ async function openEvent(eventId){
   ST.sessions=sortSessionsByUpcoming(sessions);
   sessions=ST.sessions;
   if(!list) return;
-  if(!sessions.length){
-    list.innerHTML='<div style="padding:20px;text-align:center;color:#aaa;font-size:16px">目前無開放場次</div>';
-    return;
-  }
-  list.innerHTML=sessions.map(s=>renderSessionCard(s)).join('');
+  setActivitySessions('portal',sessions);
 }
 function myRegForSession(s){
   if(!ST.memberEmail || !Array.isArray(ST.regs) || !ST.regs.length) return null;
@@ -4982,11 +5225,7 @@ function closeRegFormToSessionListAfterSubmit(sessionSnapshot, email){
     sessions = (Array.isArray(ST.sessions) && ST.sessions.length ? ST.sessions : all).filter(item=>typeof isOpenSession === 'function' ? isOpenSession(item) : true);
   }
   if(typeof sortSessionsByUpcoming === 'function') sessions = sortSessionsByUpcoming(sessions);
-  if(listEl && sessions.length){
-    listEl.innerHTML = sessions.map(renderSessionCard).join('');
-  } else if(listEl && !(listEl.innerHTML || '').trim()){
-    listEl.innerHTML = '<div style="padding:20px;color:#aaa;font-size:16px;text-align:center;line-height:1.7">目前無開放場次</div>';
-  }
+  if(listEl) setActivitySessions('portal',sessions);
 
   ST.currentSession = null;
   ST._regFormReturnState = null;
@@ -6911,17 +7150,13 @@ if(document.readyState==='loading'){
     const el=$('eventsList');
     if(el){
       const sessions=sortSessionsByUpcoming(uniqueSessions(ST.allSessionsData).filter(openSess));
-      if(sessions.length){
-        el.innerHTML=sessions.map(s=>renderSessionCard(s)).join('');
-      } else {
-        el.innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:16px">目前尚無開放報名<br><span onclick="loadHome()" style="color:#2a6a10;font-weight:800;cursor:pointer">重新載入</span></div>';
-      }
+      setActivitySessions('home',sessions);
     }
     setTimeout(enableDragScroll,100);
   };
   window.openSessionFromCard=function(ev,sessionId){ if(ev){ev.preventDefault();ev.stopPropagation();} openSession(sessionId); }; window.handleSessionTap=window.openSessionFromCard;
-  window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
-  window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } data=sortSessionsByUpcoming(data); if(list) list.innerHTML=data.length?data.map(renderSessionCard).join(''):'<div style="padding:20px;color:#aaa;text-align:center">目前無開放場次</div>'; };
+  window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } setActivitySessions('portal',data); };
+  window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } setActivitySessions('portal',data); };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
   // 前台已改為 Email＋手機會員查詢；不再恢復第三方登入 token
