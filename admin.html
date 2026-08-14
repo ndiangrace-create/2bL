@@ -1118,6 +1118,11 @@
 .seatops-roster-title{font-weight:950;font-size:18px;margin:16px 0 7px}.seatops-card .roster-no{font-size:23px;font-weight:950;line-height:1.1;color:#24413d}
 @media(max-width:720px){.seatops-map-stage .seatops-marker{width:38px;height:38px;min-width:38px;min-height:38px}.seatops-map-stage .seatops-marker .point-no{font-size:9px}.seatops-editor{grid-template-columns:1fr}.seatops-side{position:static;order:-1}.seatops-place-banner{align-items:flex-start;flex-direction:column}.seatops-line-settings{grid-template-columns:auto 1fr}}
 
+/* SEAT_MOBILE_CANVAS_20260814：手機橫向底圖不可硬縮；以可滑動畫布精準拖曳 */
+.seatops-map-viewport{width:100%;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:12px;background:#f3f3f3;overscroll-behavior:contain}.seatops-map-viewport .seatops-map-stage{touch-action:pan-x pan-y}.seatops-map-viewport .seatops-marker{touch-action:none}.seatops-zoom-tools{display:flex;gap:6px;flex-wrap:wrap}.seatops-zoom-label{display:inline-flex;align-items:center;justify-content:center;min-width:64px;font-weight:900;color:#456}
+.seatops-mobile-picker{display:none}.seatops-nudge{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,42px);gap:5px;justify-content:center;margin:8px 0}.seatops-nudge button{border:1px solid #cfc7bb;border-radius:9px;background:#fff;font-size:20px;font-weight:950}.seatops-nudge .blank{visibility:hidden}.seatops-rotate-nudge{display:flex;gap:6px}.seatops-rotate-nudge .btn{flex:1}
+@media(max-width:720px){.seatops-map-viewport{max-height:56vh;border:1px solid #ddd}.seatops-map-stage .seatops-marker{width:30px;height:30px;min-width:30px;min-height:30px;border-width:2px}.seatops-map-stage .seatops-marker .point-no{font-size:8px}.seatops-map-stage .seatops-marker .point-direction::after{left:-5px;top:-24px;border-left-width:5px;border-right-width:5px;border-bottom-width:10px}.seatops-mode-tools,.seatops-zoom-tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.seatops-mode-tools .btn,.seatops-zoom-tools .btn{padding:10px 4px}.seatops-zoom-label{min-height:42px;border:1px solid #ddd;border-radius:11px;background:#fff}.seatops-mobile-picker{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;width:100%;padding:9px;border:1px solid #d9d2c6;border-radius:12px;background:#fff8e9}.seatops-mobile-picker label{font-weight:950}.seatops-mobile-picker select{width:100%;min-height:44px;border:1px solid #bbb;border-radius:10px;background:#fff;padding:7px;font-size:16px;font-weight:900}.seatops-side{padding:10px}.seatops-nudge{grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,46px)}}
+
 
 /* MEMBER_COMPACT_MOBILE_20260809 */
 @media (max-width:760px){
@@ -3142,7 +3147,7 @@ async function loadSeatOps(sid,activityDate){
     if(!d || d.error) throw new Error((d&&d.error)||'載入失敗');
     const prev=SeatOps||{};
     const selectedStillExists=(d.seats||[]).some(x=>String(x.code)===String(prev.selectedCode||''));
-    SeatOps={sid:sid,activityDate:String(d.activityDate||activityDate||prev.activityDate||''),availableDates:Array.isArray(d.availableDates)?d.availableDates:[],seats:Array.isArray(d.seats)?d.seats:[],regs:Array.isArray(d.regs)?d.regs:[],summary:d.summary||{},session:d.session||{},query:prev.query||'',filter:prev.filter||'all',selectedCode:selectedStillExists?String(prev.selectedCode):'',placingCode:'',savingCode:'',directionSaving:false,toolMode:'move',lineStartPoint:null,lineRangeStart:'',lineRangeEnd:''};
+    SeatOps={sid:sid,activityDate:String(d.activityDate||activityDate||prev.activityDate||''),availableDates:Array.isArray(d.availableDates)?d.availableDates:[],seats:Array.isArray(d.seats)?d.seats:[],regs:Array.isArray(d.regs)?d.regs:[],summary:d.summary||{},session:d.session||{},query:prev.query||'',filter:prev.filter||'all',selectedCode:selectedStillExists?String(prev.selectedCode):'',placingCode:'',savingCode:'',directionSaving:false,toolMode:'move',zoom:Number(prev.zoom)||((window.innerWidth||999)<=720?2.4:1),lineStartPoint:null,lineRangeStart:'',lineRangeEnd:''};
     saveAdminPageState();
     renderSeatOps();
   }catch(e){ box.innerHTML='<div class="empty" style="color:#8b1c1c">載入失敗：'+safe(e&&e.message?e.message:String(e))+'</div>'; }
@@ -3192,10 +3197,29 @@ function seatOpsBoardCfg(){
   const raw=(SeatOps.session&&SeatOps.session.seatBoard)||{};
   return {mode:'map',mapDirections:(raw.mapDirections&&typeof raw.mapDirections==='object'&&!Array.isArray(raw.mapDirections))?raw.mapDirections:{}};
 }
-function seatOpsDirection(code){return Number((seatOpsBoardCfg().mapDirections||{})[String(code)]||0);}
+function seatOpsDirection(code){const s=seatOpsSeatByCode(code);return s&&s.isCustom?Number(s.direction||0):Number((seatOpsBoardCfg().mapDirections||{})[String(code)]||0);}
 function seatOpsFormatCode(code){const m=String(code||'').toUpperCase().match(/^([A-Z]+)0*(\d+)$/);return m?(m[1]+String(Number(m[2])).padStart(2,'0')):String(code||'');}
 function seatOpsPositionNosForReg(r){return String((r&&r.stallNumber)||'').split(/[,\uff0c\s]+/).map(seatOpsFormatCode).filter(Boolean);}
 function seatOpsBoardHtml(){return seatOpsMapHtml();}
+function seatOpsSetZoom(next){
+  const vp=$('seatOpsMapViewport'),old=Math.max(1,Math.min(4,Number(SeatOps.zoom)||1));
+  const cx=vp?(vp.scrollLeft+vp.clientWidth/2)/(vp.scrollWidth||1):.5,cy=vp?(vp.scrollTop+vp.clientHeight/2)/(vp.scrollHeight||1):.5;
+  SeatOps.zoom=Math.max(1,Math.min(4,Number(next)||1));renderSeatOps();
+  requestAnimationFrame(()=>{const nv=$('seatOpsMapViewport');if(nv){nv.scrollLeft=Math.max(0,cx*nv.scrollWidth-nv.clientWidth/2);nv.scrollTop=Math.max(0,cy*nv.scrollHeight-nv.clientHeight/2);}});
+}
+function seatOpsFocusCode(code){
+  SeatOps.selectedCode=String(code||'');SeatOps.placingCode='';renderSeatOps();
+  requestAnimationFrame(()=>{const vp=$('seatOpsMapViewport'),el=document.querySelector('.seatops-marker[data-seat="'+CSS.escape(String(code||''))+'"]');if(vp&&el){const vr=vp.getBoundingClientRect(),er=el.getBoundingClientRect();vp.scrollLeft+=er.left+er.width/2-(vr.left+vr.width/2);vp.scrollTop+=er.top+er.height/2-(vr.top+vr.height/2);}});
+}
+async function seatOpsNudgeSelected(dx,dy){
+  const s=seatOpsSeatByCode(SeatOps.selectedCode);if(!s)return;
+  const x=Math.max(0,Math.min(100,(Number(s.x)||0)+Number(dx||0))),y=Math.max(0,Math.min(100,(Number(s.y)||0)+Number(dy||0)));
+  await seatOpsSaveMarker(s.code,x,y);
+}
+async function seatOpsRotateSelected(delta){
+  const s=seatOpsSeatByCode(SeatOps.selectedCode);if(!s)return;
+  await seatOpsDirectionCommit((seatOpsDirection(s.code)+Number(delta||0)+360)%360);
+}
 async function seatOpsSyncStallCount(){
   if(!await uiConfirm('建立本場位置並自動排位？\n\n系統會依每日實際參加、已錄取且正式付款已確認／免費的名單建立位置，再依付款順序排位。'))return;
   try{
@@ -3205,7 +3229,33 @@ async function seatOpsSyncStallCount(){
     await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
   }catch(e){toast('建立位置並排位失敗：'+(e&&e.message?e.message:e),10000);}
 }
+async function seatOpsAutoArrangeMap(){
+  const seats=(SeatOps.seats||[]).filter(x=>!x.isCustom&&x.occupied).slice().sort((a,b)=>Number(a.order||0)-Number(b.order||0)||seatOpsFormatCode(a.code).localeCompare(seatOpsFormatCode(b.code),undefined,{numeric:true}));
+  if(!String((SeatOps.session||{}).seatMapUrl||'').trim()){toast('請先上傳場地底圖');return;}
+  if(!seats.length){toast('目前沒有可排列的已繳費攤位，請先執行「建立位置並自動排位」');return;}
+  if(!await uiConfirm('將本日 '+seats.length+' 個實際攤位自動平均鋪到地圖？\n\n既有點位也會重新排列，完成後仍可逐一拖曳微調。'))return;
+  const cols=Math.max(2,Math.ceil(Math.sqrt(seats.length*1.8))),rows=Math.ceil(seats.length/cols),left=10,right=90,top=20,bottom=80;
+  const positions=seats.map((seat,i)=>{const row=Math.floor(i/cols),col=i%cols,count=Math.min(cols,seats.length-row*cols),x=count===1?50:left+(right-left)*col/(count-1),y=rows===1?50:top+(bottom-top)*row/(rows-1);return {seatCode:String(seat.code),x:Number(x.toFixed(3)),y:Number(y.toFixed(3))};});
+  try{
+    const r=await apiPost({action:'saveSeatMarkerPositions',sessionId:SeatOps.sid,positions});if(r&&r.error)throw new Error(r.error);
+    positions.forEach(p=>{const s=seatOpsSeatByCode(p.seatCode);if(s){s.x=p.x;s.y=p.y;}});toast('已自動排列 '+positions.length+' 個攤位，可直接拖曳微調',9000);renderSeatOps();
+  }catch(e){toast('自動鋪排失敗，位置未變更：'+e.message,9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}
+}
 async function seatOpsExpandBlankBoard(){toast('不需要先建空位；新增已繳費攤商會自動取得下一個連號。',7000);}
+async function seatOpsAddCustomMarker(){
+  if(!String((SeatOps.session||{}).seatMapUrl||'').trim()){toast('請先上傳場地底圖');return;}
+  const label=String(prompt('自訂位置名稱（例如：入口、服務台、舞台、柱子、禁擺區）','')||'').trim();if(!label)return;
+  const closed=confirm('這個位置是否為「禁擺／障礙區」？\n\n確定＝灰色禁擺區；取消＝藍色一般標示');
+  try{const r=await apiPost({action:'saveSeatCustomMarker',sessionId:SeatOps.sid,label,markerType:closed?'closed':'service',x:50,y:50,direction:0,showPublic:true});if(r&&r.error)throw new Error(r.error);toast('已新增「'+label+'」，可直接拖曳到正確位置');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);SeatOps.selectedCode='CUSTOM:'+r.marker.id;renderSeatOps();}catch(e){toast('新增自訂位置失敗：'+e.message,8000);}
+}
+async function seatOpsRenameCustomMarker(){
+  const s=seatOpsSeatByCode(SeatOps.selectedCode);if(!s||!s.isCustom)return;const label=String(prompt('修改自訂位置名稱：',s.specialLabel||'')||'').trim();if(!label)return;
+  try{await apiPost({action:'saveSeatCustomMarker',sessionId:SeatOps.sid,markerId:s.id,label,markerType:s.type,x:s.x,y:s.y,direction:seatOpsDirection(s.code),showPublic:s.showPublic!==false});toast('自訂位置名稱已更新');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('修改失敗：'+e.message,8000);}
+}
+async function seatOpsDeleteCustomMarker(){
+  const s=seatOpsSeatByCode(SeatOps.selectedCode);if(!s||!s.isCustom)return;if(!await uiConfirm('刪除自訂位置「'+(s.specialLabel||'')+'」？\n\n不會影響攤商排位與名額。'))return;
+  try{await apiPost({action:'deleteSeatCustomMarker',sessionId:SeatOps.sid,markerId:s.id});SeatOps.selectedCode='';toast('自訂位置已刪除');await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('刪除失敗：'+e.message,8000);}
+}
 
 async function seatOpsUploadMapFile(input){
   const file=input&&input.files&&input.files[0]; if(!file)return;
@@ -3248,14 +3298,19 @@ function seatOpsMapHtml(){
   const selected=SeatOps.selectedCode?seatOpsSeatByCode(SeatOps.selectedCode):null,r=seatOpsRosterForSeat(selected)||{};
   const deg=selected?seatOpsDirection(selected.code):0;
   const isSaving=selected&&String(SeatOps.savingCode||'')===String(selected.code);
-  const side=selected?'<aside class="seatops-side" data-selected-seat="'+esc(selected.code)+'"><div class="seatops-side-title">正在調整 '+esc(seatOpsPublicNoForSeat(selected))+'</div><div class="seatops-side-brand">'+esc(r.brand||r.name||'特殊點位')+'</div><div class="seatops-side-actions"><div class="seatops-help">'+(SeatOps.toolMode==='rotate'?'直接按住整顆攤位拖曳方向，橘色箭頭會跟著旋轉，放開後自動儲存。':'直接按住整顆攤位拖動位置，放開後自動儲存。')+'</div>'+(SeatOps.toolMode==='rotate'?'<div id="seatOpsDirectionValue" class="seatops-direction-value">目前朝向 '+deg+'°</div>':'')+'<div id="seatOpsSaveState" class="seatops-save-state">'+(isSaving?'儲存中…':'放開後自動儲存')+'</div><button type="button" class="btn secondary small" onclick="seatOpsReturnSelectedToWaiting()">退回待放</button><button type="button" class="btn secondary small" onclick="SeatOps.selectedCode=\'\';renderSeatOps()">完成調整</button></div></aside>':'<aside class="seatops-side"><b>操作方式</b><div class="seatops-help" style="margin-top:6px">先選上方的移動或旋轉模式，再直接按住攤位本體操作。</div></aside>';
+  const customActions=selected&&selected.isCustom?'<button type="button" class="btn secondary small" onclick="seatOpsRenameCustomMarker()">修改名稱</button><button type="button" class="btn danger small" onclick="seatOpsDeleteCustomMarker()">刪除自訂位置</button>':'<button type="button" class="btn secondary small" onclick="seatOpsReturnSelectedToWaiting()">退回待放</button>';
+  const nudge='<div class="seatops-nudge" aria-label="位置微調"><span class="blank"></span><button type="button" onclick="seatOpsNudgeSelected(0,-1)" aria-label="向上">↑</button><span class="blank"></span><button type="button" onclick="seatOpsNudgeSelected(-1,0)" aria-label="向左">←</button><button type="button" onclick="seatOpsNudgeSelected(0,1)" aria-label="向下">↓</button><button type="button" onclick="seatOpsNudgeSelected(1,0)" aria-label="向右">→</button></div><div class="seatops-rotate-nudge"><button type="button" class="btn secondary small" onclick="seatOpsRotateSelected(-15)">↶ 左轉15°</button><button type="button" class="btn secondary small" onclick="seatOpsRotateSelected(15)">右轉15° ↷</button></div>';
+  const side=selected?'<aside class="seatops-side" data-selected-seat="'+esc(selected.code)+'"><div class="seatops-side-title">正在調整 '+esc(seatOpsPublicNoForSeat(selected))+'</div><div class="seatops-side-brand">'+esc(r.brand||r.name||(selected.isCustom?'自訂位置':'特殊點位'))+'</div><div class="seatops-side-actions"><div class="seatops-help">可拖曳圓點；手機也可用下方方向鍵逐格微調。</div>'+nudge+'<div id="seatOpsDirectionValue" class="seatops-direction-value">目前朝向 '+Math.round(deg)+'°</div><div id="seatOpsSaveState" class="seatops-save-state">'+(isSaving?'儲存中…':'每次操作自動儲存')+'</div>'+customActions+'<button type="button" class="btn secondary small" onclick="seatOpsAddCustomMarker()">＋ 新增自訂位置</button><button type="button" class="btn secondary small" onclick="SeatOps.selectedCode=\'\';renderSeatOps()">完成調整</button></div></aside>':'<aside class="seatops-side"><b>操作方式</b><div class="seatops-help" style="margin-top:6px">手機請先從「選擇排號」選定攤位，再拖曳或使用方向鍵微調。</div><button type="button" class="btn secondary" style="width:100%;margin-top:10px" onclick="seatOpsAddCustomMarker()">＋ 新增自訂位置</button></aside>';
   const placing=SeatOps.placingCode?seatOpsSeatByCode(SeatOps.placingCode):null;
   const lineSeats=seatOpsLineCandidateSeats(),lineBanner=SeatOps.toolMode==='line'?'<div class="seatops-place-banner"><div class="seatops-line-settings"><b>要排的攤位</b><select onchange="SeatOps.lineRangeStart=this.value;SeatOps.lineStartPoint=null;renderSeatOps()">'+lineSeats.map(x=>'<option value="'+esc(x.code)+'" '+(String(x.code)===String(SeatOps.lineRangeStart)?'selected':'')+'>'+esc(seatOpsPublicNoForSeat(x))+'</option>').join('')+'</select><b>到</b><select onchange="SeatOps.lineRangeEnd=this.value;SeatOps.lineStartPoint=null;renderSeatOps()">'+lineSeats.map(x=>'<option value="'+esc(x.code)+'" '+(String(x.code)===String(SeatOps.lineRangeEnd)?'selected':'')+'>'+esc(seatOpsPublicNoForSeat(x))+'</option>').join('')+'</select></div><span>'+(SeatOps.lineStartPoint?'起點已設定，請在底圖點第二下設定終點':'請直接在底圖點第一下設定起點，再點第二下設定終點')+'</span><button type="button" class="btn secondary small" onclick="seatOpsCancelLineArrange()">取消</button></div>':'';
   const banner=placing?'<div class="seatops-place-banner"><span>正在放置 '+esc(seatOpsPublicNoForSeat(placing))+'，請點底圖位置</span><button type="button" class="btn secondary small" onclick="SeatOps.placingCode=\'\';renderSeatOps()">取消</button></div>':'';
   const waiting=unplaced.length?'<div class="seatops-unplaced"><b>待放位置：</b><div class="seatops-waiting-list">'+unplaced.map(x=>'<button type="button" class="seatops-waiting-btn '+(String(SeatOps.placingCode)===String(x.code)?'active':'')+'" onclick="seatOpsChooseWaiting(\''+esc(x.code)+'\')">'+esc(seatOpsPublicNoForSeat(x))+'</button>').join('')+'</div></div>':'';
-  const modeTools='<div class="seatops-mode-tools"><button type="button" class="btn small '+(SeatOps.toolMode==='move'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'move\')">移動</button><button type="button" class="btn small '+(SeatOps.toolMode==='rotate'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'rotate\')">旋轉</button><button type="button" class="btn small '+(SeatOps.toolMode==='line'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'line\')">線性排列</button></div>';
+  const modeTools='<div class="seatops-mode-tools"><button type="button" class="btn small '+(SeatOps.toolMode==='move'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'move\')">移動</button><button type="button" class="btn small '+(SeatOps.toolMode==='rotate'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'rotate\')">旋轉</button><button type="button" class="btn small '+(SeatOps.toolMode==='line'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'line\')">線性排列</button><button type="button" class="btn secondary small" onclick="seatOpsAutoArrangeMap()">一鍵自動鋪排</button></div>';
+  const zoom=Math.max(1,Math.min(4,Number(SeatOps.zoom)||1)),zoomTools='<div class="seatops-zoom-tools"><button type="button" class="btn secondary small" onclick="seatOpsSetZoom((SeatOps.zoom||1)-.4)">－ 縮小</button><span class="seatops-zoom-label">'+Math.round(zoom*100)+'%</span><button type="button" class="btn secondary small" onclick="seatOpsSetZoom((SeatOps.zoom||1)+.4)">＋ 放大</button></div>';
+  const selectable=assigned.slice().sort((a,b)=>Number(a.order||0)-Number(b.order||0)||seatOpsFormatCode(a.code).localeCompare(seatOpsFormatCode(b.code),undefined,{numeric:true}));
+  const mobilePicker='<div class="seatops-mobile-picker"><label for="seatOpsMobileSelect">選擇排號</label><select id="seatOpsMobileSelect" onchange="if(this.value)seatOpsFocusCode(this.value)"><option value="">請選擇要調整的位置</option>'+selectable.map(x=>'<option value="'+esc(x.code)+'" '+(String(x.code)===String(SeatOps.selectedCode)?'selected':'')+'>'+esc(seatOpsPublicNoForSeat(x))+'｜'+esc((seatOpsRosterForSeat(x)||{}).brand||x.specialLabel||'待放位置')+'</option>').join('')+'</select></div>';
   const startDot=SeatOps.toolMode==='line'&&SeatOps.lineStartPoint?'<span class="seatops-line-start-dot" style="left:'+SeatOps.lineStartPoint.x+'%;top:'+SeatOps.lineStartPoint.y+'%"></span>':'';
-  return '<div class="seatops-map-wrap"><div class="seatops-map-head"><div><b>場地排位圖</b><div class="seatops-help">選擇模式後，直接按住攤位本體移動或旋轉。線性排列是在底圖點起點與終點。</div></div>'+modeTools+'</div>'+lineBanner+banner+'<div class="seatops-editor"><div id="seatOpsMapStage" class="seatops-map-stage '+(placing?'is-placing ':'')+(SeatOps.toolMode==='rotate'?'rotate-mode ':SeatOps.toolMode==='line'?'line-mode ':'')+'" onclick="seatOpsMapClick(event)"><img src="'+esc(mapUrl)+'" alt="本場位置圖" draggable="false">'+markers+startDot+'</div>'+side+'</div>'+waiting+'</div>';
+  return '<div class="seatops-map-wrap"><div class="seatops-map-head"><div><b>場地排位圖</b><div class="seatops-help">空白處滑動底圖；先選排號，再拖曳圓點或使用方向鍵微調。</div></div><button type="button" class="btn secondary" onclick="seatOpsAddCustomMarker()">＋ 自訂位置</button>'+modeTools+zoomTools+mobilePicker+'</div>'+lineBanner+banner+'<div class="seatops-editor"><div id="seatOpsMapViewport" class="seatops-map-viewport"><div id="seatOpsMapStage" class="seatops-map-stage '+(placing?'is-placing ':'')+(SeatOps.toolMode==='rotate'?'rotate-mode ':SeatOps.toolMode==='line'?'line-mode ':'')+'" style="width:'+Math.round(zoom*100)+'%" onclick="seatOpsMapClick(event)"><img src="'+esc(mapUrl)+'" alt="本場位置圖" draggable="false">'+markers+startDot+'</div></div>'+side+'</div>'+waiting+'</div>';
 }
 function renderSeatOps(){
   const box=$('seatOpsBox'); if(!box) return;
@@ -3272,7 +3327,7 @@ function renderSeatOps(){
   if(sum.firstAssignedAt) h+='<div class="sub" style="margin:4px 0 8px">位置編號建立時間：'+esc(sum.firstAssignedAt)+'</div>';
   const published=String((SeatOps.session||{}).seatLayoutPublishedAt||'');
   const hasMap=!!String((SeatOps.session||{}).seatMapUrl||'').trim();
-  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋排號、品牌、姓名、電話" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已放上底圖</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待放上底圖</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsSyncStallCount()">✓ 同步實際攤位數</button><label class="btn secondary" style="cursor:pointer">🗺 '+(hasMap?'更換場地底圖':'上傳場地底圖')+'<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="seatOpsUploadMapFile(this)"></label>'+(hasMap?'<button type="button" class="btn secondary" onclick="seatOpsRemoveMap()">移除底圖</button>':'')+'<button type="button" class="btn" onclick="seatOpsPublish()">📣 '+(published?'重新發布排位':'發布排位')+'</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 完整分享圖</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版</button></div>';
+  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋排號、品牌、姓名、電話" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已放上底圖</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待放上底圖</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsSyncStallCount()">✓ 同步實際攤位數</button><button type="button" class="btn secondary" onclick="seatOpsAddCustomMarker()">＋ 自訂位置</button><label class="btn secondary" style="cursor:pointer">🗺 '+(hasMap?'更換場地底圖':'上傳場地底圖')+'<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="seatOpsUploadMapFile(this)"></label>'+(hasMap?'<button type="button" class="btn secondary" onclick="seatOpsRemoveMap()">移除底圖</button>':'')+'<button type="button" class="btn" onclick="seatOpsPublish()">📣 '+(published?'重新發布排位':'發布排位')+'</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 完整分享圖</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版</button></div>';
   h+='<div class="sub" style="margin:4px 0 9px">'+(published?'已發布：'+esc(published):'尚未發布；攤商端不會顯示未完成的排位。')+'</div>';
   h+=seatOpsBoardHtml();
   h+='<div class="seatops-roster-title">攤商完整資料（'+list.length+'）</div>';
@@ -3300,7 +3355,7 @@ async function seatOpsMarkerClick(ev,code){
   SeatOps.selectedCode=String(code||'');
   renderSeatOps();
 }
-function seatOpsLineCandidateSeats(){return (SeatOps.seats||[]).filter(x=>x.occupied||x.type==='service'||x.type==='closed').slice().sort((a,b)=>Number(a.order||a.mapOrder||0)-Number(b.order||b.mapOrder||0)||seatOpsFormatCode(a.code).localeCompare(seatOpsFormatCode(b.code),undefined,{numeric:true}));}
+function seatOpsLineCandidateSeats(){return (SeatOps.seats||[]).filter(x=>!x.isCustom&&(x.occupied||x.type==='service'||x.type==='closed')).slice().sort((a,b)=>Number(a.order||a.mapOrder||0)-Number(b.order||b.mapOrder||0)||seatOpsFormatCode(a.code).localeCompare(seatOpsFormatCode(b.code),undefined,{numeric:true}));}
 function seatOpsSetToolMode(mode){
   SeatOps.toolMode=['move','rotate','line'].includes(mode)?mode:'move';SeatOps.placingCode='';SeatOps.selectedCode='';SeatOps.lineStartPoint=null;
   if(SeatOps.toolMode==='line'){
@@ -3389,6 +3444,7 @@ function seatOpsRotateDragCancel(ev){
 }
 async function seatOpsDirectionCommit(value){
   const code=String(SeatOps.selectedCode||'');if(!code)return;
+  const custom=seatOpsSeatByCode(code);if(custom&&custom.isCustom){try{await apiPost({action:'saveSeatCustomMarker',sessionId:SeatOps.sid,markerId:custom.id,label:custom.specialLabel,markerType:custom.type,x:custom.x,y:custom.y,direction:value,showPublic:custom.showPublic!==false});custom.direction=(Number(value)||0)%360;seatOpsSetSaveState('方向已儲存');toast(custom.specialLabel+' 方向已儲存');}catch(e){toast('朝向儲存失敗：'+e.message,8000);renderSeatOps();}return;}
   const cfg=seatOpsBoardCfg(),dirs={...(cfg.mapDirections||{})};dirs[code]=(Number(value)||0)%360;
   SeatOps.directionSaving=true;seatOpsSetSaveState('方向儲存中…');
   try{await seatOpsSaveMapDirections(dirs);seatOpsSetSaveState('方向已儲存');toast(seatOpsPublicNoForSeat(seatOpsSeatByCode(code))+' 方向已儲存');}
@@ -3430,7 +3486,7 @@ async function seatOpsDragEnd(ev){
 function seatOpsDragCancel(ev){const d=SeatMarkerDrag;if(!d)return;d.marker.style.left=d.oldX+'%';d.marker.style.top=d.oldY+'%';d.marker.classList.remove('moving');SeatMarkerDrag=null;}
 async function seatOpsSaveMarker(code,x,y,opts={}){
   SeatOps.selectedCode=String(code);SeatOps.savingCode=String(code);seatOpsSetSaveState('位置儲存中…');
-  try{const r=await apiPost({action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:code,x:Number(x.toFixed(3)),y:Number(y.toFixed(3))});if(r&&r.error)throw new Error(r.error);const st=seatOpsSeatByCode(code);if(st){st.x=Number(x.toFixed(3));st.y=Number(y.toFixed(3));}toast(code+' 位置已儲存');}
+  try{const st=seatOpsSeatByCode(code);const payload=st&&st.isCustom?{action:'saveSeatCustomMarker',sessionId:SeatOps.sid,markerId:st.id,label:st.specialLabel,markerType:st.type,x:Number(x.toFixed(3)),y:Number(y.toFixed(3)),direction:seatOpsDirection(code),showPublic:st.showPublic!==false}:{action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:code,x:Number(x.toFixed(3)),y:Number(y.toFixed(3))};const r=await apiPost(payload);if(r&&r.error)throw new Error(r.error);if(st){st.x=Number(x.toFixed(3));st.y=Number(y.toFixed(3));}toast((st&&st.isCustom?st.specialLabel:code)+' 位置已儲存');}
   catch(e){if(opts.marker){opts.marker.style.left=Number(opts.oldX||0)+'%';opts.marker.style.top=Number(opts.oldY||0)+'%';}const st=seatOpsSeatByCode(code);if(st&&Number.isFinite(Number(opts.oldX))&&Number.isFinite(Number(opts.oldY))){st.x=Number(opts.oldX);st.y=Number(opts.oldY);}toast('位置儲存失敗，已回到原位：'+e.message,8000);return false;}
   finally{SeatOps.savingCode='';if(!opts.noRender)renderSeatOps();}
   return true;
@@ -3439,7 +3495,7 @@ async function downloadSeatBoardPng(mode='public'){
   const s=SeatOps.session||{},mapUrl=String(s.seatMapUrl||'').trim();
   if(!mapUrl){toast('請先上傳場地底圖');return;}
   const regs=(SeatOps.regs||[]).slice().filter(r=>r.confirmedPaid).sort(seatOpsRosterSort);
-  const points=(SeatOps.seats||[]).filter(x=>x.occupied&&(Number(x.x)>0||Number(x.y)>0));
+  const points=(SeatOps.seats||[]).filter(x=>(x.occupied||(x.isCustom&&(mode==='staff'||x.showPublic!==false)))&&(Number(x.x)>0||Number(x.y)>0));
   if(!points.length){toast('尚未在地圖上完成排位');return;}
   toast('正在產生完整分享圖…');
   try{
