@@ -2552,7 +2552,7 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
     const deposit=Number(sug.depositAmount||0)||0;
     const adminFee=Number(sug.refundAdminFee||0)||0;
     const transferFee=Number(sug.refundTransferFee||0)||0;
-    const refund=Math.max(0, paid-deposit-adminFee-transferFee);
+    const refund=Math.max(0, paid-adminFee-transferFee);
     const html='<div class="readable-detail">'
       +'<div class="report-card"><div class="report-title">這筆報名要怎麼處理？</div><div class="card-actions">'
       +'<button class="btn" onclick="openRegistrationTransferPanel(\''+attr(regId)+'\',\''+attr(sid)+'\')">延期／轉移場次</button>'
@@ -2563,23 +2563,24 @@ async function openRefundPanel(regId, btn=null, sidOverride=''){
       +'<div class="k">其中押金</div><div id="refundDepositText">'+money(deposit)+'</div>'
       +'<div class="k">處理範圍</div><div>'+(Number(sug.bundleCount||1)>1?'連動場次整組 '+num(sug.bundleCount)+' 場':'單一場次')+'</div>'
       +'<div class="k">活動日期</div><div>'+safe(sug.eventDate||'日期異常')+'</div>'
-      +'<div class="k">退費規則</div><div>'+safe(sug.refundRuleLabel||'主辦手動確認')+'</div>'
+      +'<div class="k">規則提示</div><div>'+safe(sug.refundRuleLabel||'主辦手動確認')+'（僅提示，不會覆蓋你填寫的扣項）</div>'
       +'<div class="k">距活動日</div><div>'+(sug.daysBefore===null||sug.daysBefore===undefined?'無法判斷':safe(sug.daysBefore)+' 天')+'</div></div>'
       +'</div>'
-      +'<div class="report-card"><div class="report-title">退費扣項</div>'
+      +'<div class="report-card"><div class="report-title">本次實際扣項（以你填寫為準）</div>'
       +'<div class="form-grid">'
       +'<div class="form-field"><label>行政費</label><input id="refundAdminFeeInput" type="number" min="0" value="'+attr(adminFee)+'" oninput="calcRefundAmount()"></div>'
       +'<div class="form-field"><label>轉帳手續費</label><input id="refundTransferFeeInput" type="number" min="0" value="'+attr(transferFee)+'" oninput="calcRefundAmount()"></div>'
       +'<div class="form-field"><label>退款日期</label><input id="refundDateInput" type="date" value="'+attr(new Date(Date.now()+28800000).toISOString().slice(0,10))+'"></div>'
       +'<div class="form-field"><label>退款方式</label><select id="refundMethodInput"><option value="">請選擇</option><option value="銀行轉帳">銀行轉帳</option><option value="原付款方式退回">原付款方式退回</option><option value="現金">現金</option><option value="其他">其他</option></select></div>'
       +'<div class="form-field full"><label>退款參考編號／帳號末碼</label><input id="refundReferenceInput" maxlength="100" placeholder="例如：匯款末五碼或交易編號"></div>'
-      +'<div class="form-field full"><label style="display:flex;align-items:center;gap:8px"><input id="refundDepositIncludedInput" type="checkbox" onchange="calcRefundAmount()" style="width:auto"> 本次退款包含已繳押金（未勾選時押金保留待退）</label></div>'
+      +'<div class="form-field full"><label style="display:flex;align-items:center;gap:8px"><input id="refundDepositHeldInput" type="checkbox" onchange="calcRefundAmount()" style="width:auto"> 保留押金，本次不退（只有勾選時才會從退款扣除押金）</label></div>'
       +'<div class="form-field full"><label>退費備註</label><textarea id="refundNoteInput" placeholder="可填寫匯款帳號、處理備註或內部紀錄"></textarea></div>'
       +'</div>'
-      +'<div class="notice" style="margin-top:12px"><b>實退金額：</b><span id="refundAmountText">'+money(refund)+'</span><br><span class="sub">公式：已繳金額－行政費－轉帳手續費。確認後會改為已退費、釋出名額與攤位。</span></div>'
+      +'<input id="refundAmountInput" type="hidden" value="'+attr(refund)+'">'
+      +'<div class="notice" style="margin-top:12px"><b>實退金額：</b><span id="refundAmountText">'+money(refund)+'</span><br><span class="sub">公式：已繳金額－你填寫的行政費－你填寫的轉帳手續費。押金預設一併退還；只有勾選保留押金時才扣除。確認後會改為已退費、釋出名額與攤位。</span></div>'
       +'<div class="card-actions"><button class="btn danger" onclick="confirmAdminRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認完成退費</button><button class="btn secondary" onclick="panelBack()">取消</button></div>'
       +'</div></div>';
-    openPanel('取消／退費','下方金額可自行修改；要全退、部分退或不退（填 0）都由你決定',html);
+    openPanel('取消／退費','行政費與轉帳手續費都填 0，即全額退款；系統不會自行增加扣款',html);
     calcRefundAmount();
   }catch(e){ const msg=String(e.message||e); toast('退費資料載入失敗：'+msg,7000); if(msg.includes('已完成退費')||msg.includes('已退費')){ try{ await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); }catch(_e){} } }
   finally{ if(btn){ btn.disabled=false; btn.textContent=old; } }
@@ -2626,9 +2627,12 @@ function calcRefundAmount(){
   const deposit=Number(depositTxt)||0;
   const admin=Number($('refundAdminFeeInput')?.value||0)||0;
   const transfer=Number($('refundTransferFeeInput')?.value||0)||0;
-  const refund=Math.max(0, paid-($('refundDepositIncludedInput')?.checked?0:deposit)-admin-transfer);
+  const depositHeld=!!$('refundDepositHeldInput')?.checked;
+  const refund=Math.max(0, paid-(depositHeld?deposit:0)-admin-transfer);
   const out=$('refundAmountText');
   if(out) out.textContent=money(refund);
+  const valueInput=$('refundAmountInput');
+  if(valueInput) valueInput.value=String(refund);
 }
 async function confirmAdminRefund(regId,sid){
   const paidTxt=($('refundPaidText')?.textContent||'').replace(/[^0-9.-]/g,'');
@@ -2640,16 +2644,20 @@ async function confirmAdminRefund(regId,sid){
   const refundedAt=$('refundDateInput')?.value||'';
   const refundMethod=$('refundMethodInput')?.value||'';
   const refundReference=$('refundReferenceInput')?.value||'';
-  const depositIncluded=!!$('refundDepositIncludedInput')?.checked;
+  const depositHeld=!!$('refundDepositHeldInput')?.checked;
+  const depositIncluded=!depositHeld;
+  const refundAmount=Number($('refundAmountInput')?.value||0)||0;
   if(refundAdminFee<0||refundTransferFee<0){ toast('扣項不可小於 0',5000); return; }
-  if(refundAdminFee+refundTransferFee>paid-(depositIncluded?0:deposit)){ toast('扣項不可大於本次可退金額',5000); return; }
+  const expectedRefund=Math.max(0,paid-(depositHeld?deposit:0)-refundAdminFee-refundTransferFee);
+  if(refundAdminFee+refundTransferFee>paid-(depositHeld?deposit:0)){ toast('扣項不可大於本次可退金額',5000); return; }
+  if(refundAmount!==expectedRefund){ toast('畫面退款金額與輸入扣項不一致，請重新開啟退費畫面',6000); return; }
   if(!refundedAt){ toast('請選擇退款日期',5000); return; }
   if(!refundMethod){ toast('請選擇退款方式',5000); return; }
   const refundNote=$('refundNoteInput')?.value||'';
   // 移除原生 confirm()：LINE 內建瀏覽器會吞掉原生彈窗導致按鈕無反應；
   // 紅色「確認完成退費」按鈕本身即為確認步驟（面板已顯示實退金額與後果）。
   try{
-    const res=await apiPost({action:'confirmRefund',regId,sessionId:sid,refundAdminFee,refundTransferFee,refundNote,refundedAt:refundedAt+'T12:00:00+08:00',refundMethod,refundReference,depositIncluded});
+    const res=await apiPost({action:'confirmRefund',regId,sessionId:sid,refundAmount,refundAdminFee,refundTransferFee,refundNote,refundedAt:refundedAt+'T12:00:00+08:00',refundMethod,refundReference,depositIncluded});
     toast('退費已完成，實退 '+money(res.refundAmount||0),5000);
     closeAllPanels();
     await refreshSessionsOverview();
