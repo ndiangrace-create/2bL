@@ -28,6 +28,10 @@ ok(onsite.includes("openSession('${esc(s.id)}','${esc(x.activityDate||'')}')"),'
 ok(admin.includes('const sessionChanged=!!AdminState.onsite.sid'),'後台切換場次時仍可能沿用上一場日期狀態');
 ok(admin.includes('不同場次絕不共用名單'),'後台未清楚標示場次隔離');
 ok(onsite.includes('報到 ${x.checkedIn||0}/${x.payable||0}'),'手機現場入口未清楚標示每日報到數字');
+ok(onsite.includes('grid-template-columns:repeat(6,minmax(0,1fr))'),'電腦版現場操作未改成整齊小格按鈕');
+ok(onsite.includes('grid-template-columns:repeat(2,minmax(0,1fr))!important'),'手機現場操作未改成兩欄大按鈕');
+ok(!onsite.includes('grid-template-columns:1fr 110px'),'現場卡片仍把操作塞在狹窄右欄');
+ok(admin.includes('ACTION_LAYOUT_GUARD_20260816'),'後台缺少全系統操作按鈕防擠壓規則');
 ok(worker.includes("兩天／多天報名只能在最後一個參加日退押金"),'缺少最後一天退押金阻擋');
 ok(worker.includes("請先完成當日撤場，再退押金"),'缺少撤場後才能退押金阻擋');
 ok(worker.includes("complete_deposit_refund_atomic"),'退押金未使用正式原子金流');
