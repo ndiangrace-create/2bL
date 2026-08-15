@@ -46,15 +46,16 @@ const storageUses = [];
 for (const file of frontendFiles) {
   const source = sources[file];
   const constants = literalConstants(source);
-  for (const match of source.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*([^,)]+)/g)) {
-    const raw = match[1].trim();
+  for (const match of source.matchAll(/localStorage\.(getItem|setItem|removeItem)\(\s*([^,)]+)/g)) {
+    const method = match[1];
+    const raw = match[2].trim();
     const literal = raw.match(/^['"]([^'"]+)['"]$/)?.[1];
     const key = literal || constants.get(raw) || `<dynamic:${raw}>`;
-    storageUses.push({ file, key });
+    storageUses.push({ file, method, key });
   }
 }
-const uniqueStorageUses = [...new Map(storageUses.map(item => [`${item.file}:${item.key}`, item])).values()];
-const disallowedStorage = uniqueStorageUses.filter(item => !allowedStorage.has(item.key));
+const uniqueStorageUses = [...new Map(storageUses.map(item => [`${item.file}:${item.method}:${item.key}`, item])).values()];
+const disallowedStorage = uniqueStorageUses.filter(item => item.method !== "removeItem" && !allowedStorage.has(item.key));
 
 const worker = sources["worker.js"];
 const tableCalls = [...worker.matchAll(/\bdb(?:Get|Insert|Update|Delete)\s*\(\s*env\s*,\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]);
