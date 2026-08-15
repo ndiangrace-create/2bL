@@ -68,6 +68,9 @@ const migrationDir = path.join(root, "supabase");
 if (fs.existsSync(migrationDir)) {
   for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith(".sql"))) {
     const sql = fs.readFileSync(path.join(migrationDir, file), "utf8");
+    for (const match of sql.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?([a-z0-9_]+)\s*\(/gi)) {
+      knownTables.add(match[1].toLowerCase());
+    }
     for (const match of sql.matchAll(/create\s+or\s+replace\s+function\s+(?:public\.)?([a-z0-9_]+)\s*\(/gi)) {
       knownRoutines.add(match[1].toLowerCase());
     }

@@ -2223,7 +2223,8 @@ async function hGetMyRegs(env, p) {
       id:r.id, sessionId:r.session_id, sessionName:s.name||r.session_id,
       eventId:r.event_id||s.event_id||'', status:r.review_status, payStatus:r.payment_status,
       amount:Number(r.amount||0), total:Number(r.total_amount||r.amount||0), paid:Number(r.paid_amount||0),
-      due:Math.max(0, Number(r.total_amount||r.amount||0) - Number(r.paid_amount||0)), deposit:Number(r.deposit||0),
+      due:Math.max(0, Number(r.total_amount||r.amount||0) - Number(r.paid_amount||0) - Number(r.activity_credit_applied||0)), deposit:Number(r.deposit||0),
+      activityCreditApplied:safeNum(r.activity_credit_applied),
       stallCount:Number(r.stall_count||1), selectedDates:safeJson(r.selected_dates_json,[]), equip:safeJson(r.equipment_json,{}),
       totalEquipmentText:_equipmentTextFromMap(_effectiveEquipmentMapForReg(r, s)), preNoticeEquipmentText:_equipmentTextFromMap(_effectiveEquipmentMapForReg(r, s)),
       addonQty:safeJson(r.addon_qty_json,{}), participants:safeJson(r.participants_json,{}), stallNumber:r.stall_number||'',
@@ -3368,6 +3369,13 @@ function _sumCash(regs, s, itemMap){
 function _sumDeposit(regs, s, itemMap){
   return (regs || []).reduce((sum,r)=>sum+_regFinanceAmounts(r, s, itemMap && itemMap[r.id]).depositTotal,0);
 }
+function _sumConfirmedCash(regs,s,itemMap){
+  return (regs||[]).reduce((sum,r)=>{
+    if(r.paid_amount!==null&&r.paid_amount!==undefined&&r.paid_amount!=='')return sum+safeNum(r.paid_amount);
+    return sum+_regFinanceAmounts(r,s,itemMap&&itemMap[r.id]).cashTotal;
+  },0);
+}
+function _sumActivityCredit(regs){return (regs||[]).reduce((sum,r)=>sum+safeNum(r.activity_credit_applied),0);}
 function _buildAdminSessionRow(s, list, evt, itemMap = {}) {
   const activeList = (list || []).filter(_isActiveFinanceReg);
   const paidRegs = activeList.filter(_isPaidReg);                 // 流程完成數：含免費
@@ -3378,7 +3386,9 @@ function _buildAdminSessionRow(s, list, evt, itemMap = {}) {
   const unpaidRegs = activeList.filter(r => _isApprovedReg(r) && (!_payStatus(r) || _payStatus(r)==='未繳費'));
   const refundRegs = (list || []).filter(r => isCapacityInactiveTransferStatus(_transferStatus(r)) || ['已退費','已退款'].includes(_payStatus(r)));
 
-  const received = _sumCash(receivedRegs, s, itemMap);
+  const received = _sumConfirmedCash(receivedRegs, s, itemMap);
+  const activityCredit = _sumActivityCredit(receivedRegs);
+  const funded = received + activityCredit;
   const receivable = _sumCash(receivableRegs, s, itemMap);
   const depositTotal = _sumDeposit(receivedRegs, s, itemMap);
 
@@ -3399,7 +3409,8 @@ function _buildAdminSessionRow(s, list, evt, itemMap = {}) {
     return { date:dk, key:dk, label:dk, stallCount, equipmentText:_equipmentTextFromMap(dayMap) };
   }).filter(x => x.equipmentText && x.equipmentText !== '無');
   const dailyText = dailyRows.length ? dailyRows.map(x=> x.label + '：' + x.equipmentText).join('｜') : '無';
-  const invoiceTotal = Math.max(0, received - depositTotal); // 與發票清單同算法：已收－押金
+  // 現金、活動金、押金分開。營業收入＝已投入資金－仍應返還的押金。
+  const invoiceTotal = Math.max(0, funded - depositTotal);
   const fmt = formatSession(s);
   // COUNT_LIST_ALIGN_20260726：狀態徽章計數與「點進去的名單」同口徑。
   // 名單會排除退費／轉場中的報名(isRegActiveForList)，卡片計數也要一致，
@@ -3420,7 +3431,10 @@ function _buildAdminSessionRow(s, list, evt, itemMap = {}) {
     depositTotal: Math.max(0, depositTotal),
     receivableTotal: Math.max(0, receivable),
     receivedTotal: Math.max(0, received),
-    unreceivedTotal: Math.max(0, receivable - received),
+    activityCreditTotal: Math.max(0, activityCredit),
+    fundedTotal: Math.max(0, funded),
+    revenueTotal: invoiceTotal,
+    unreceivedTotal: Math.max(0, receivable - funded),
     invoiceTotal: invoiceTotal,
   };
   const equipment = {
@@ -3803,7 +3817,29 @@ function onsitePaymentText(r) {
   if (status === '免費') return '免費';
   return status || '未繳費';
 }
-function formatOnsiteReg(r) {
+function _registrationDates(r) {
+  return (safeJson(r && r.selected_dates_json, []) || [])
+    .map(x => String((x && typeof x === 'object') ? (x.date || x.value || x.key || '') : (x || '')).slice(0,10))
+    .filter(Boolean)
+    .filter((x,i,a)=>a.indexOf(x)===i)
+    .sort();
+}
+function _sessionDates(s) {
+  return (safeJson(s && s.dates_json, []) || [])
+    .map(x => String((x && typeof x === 'object') ? (x.date || x.value || x.key || '') : (x || '')).slice(0,10))
+    .filter(Boolean)
+    .filter((x,i,a)=>a.indexOf(x)===i)
+    .sort();
+}
+function _dayDepositEligible(r, activityDate) {
+  const dates=_registrationDates(r);
+  return !!activityDate && dates.length>0 && activityDate===dates[dates.length-1];
+}
+function formatOnsiteReg(r, dayOp, activityDate) {
+  const daily=dayOp||{};
+  const depositEligible=_dayDepositEligible(r,activityDate);
+  const globalDeposit=String(r.deposit_refunded||'');
+  const dayDeposit=String(daily.deposit_status||'');
   return {
     id: r.id,
     sessionId: r.session_id,
@@ -3823,14 +3859,21 @@ function formatOnsiteReg(r) {
     paidAt: r.paid_at || '',
     payMethod: r.payment_method || '',
     payLast5: r.payment_last5 || '',
-    checkin: r.checkin_status || '未報到',
-    checkinAt: r.checkin_at || '',
+    activityDate: activityDate || '',
+    checkin: daily.checkin_status || '未報到',
+    checkinAt: daily.checkin_at || '',
     clearStatus: r.clear_status || '',
-    depositRefunded: r.deposit_refunded || '',
-    teardown: r.teardown_status || '未撤場',
-    violation: r.violation_flags || '',
+    depositRefunded: globalDeposit || dayDeposit || (depositEligible ? '未退押金' : '非退押金日'),
+    depositEligible,
+    depositHint: depositEligible ? '完成撤場後可退押金' : '押金於最後參加日處理',
+    teardown: daily.teardown_status || '未撤場',
+    violation: daily.violation_flags || r.violation_flags || '',
     transferStatus: r.transfer_status || '',
-    adminNote: r.admin_note || '',
+    adminNote: daily.admin_note || r.admin_note || '',
+    stallNumber: daily.stall_number || r.stall_number || '',
+    equipmentText: _equipmentTextFromMap(safeJson(daily.equipment_json, safeJson(r.equipment_json,{}))),
+    pendingPartialRefund: safeNum(r.pending_partial_refund),
+    pendingPartialNote: r.pending_partial_note || '',
     createdAt: r.created_at || '',
   };
 }
@@ -3938,11 +3981,12 @@ async function hOnsiteSessions(env, p) {
   const allowedIds = await getFreshOnsiteAllowedSessionIds(env, TENANT, p.email, p.token);
   if (Array.isArray(allowedIds) && allowedIds.length === 0) return jsonOk([]);
 
-  const [sessions, regs, stalls, daySeats] = await Promise.all([
+  const [sessions, regs, stalls, daySeats, dayOps] = await Promise.all([
     dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&select=*`),
-    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=id,session_id,name,brand_name,equipment_json,review_status,payment_status,checkin_status,transfer_status,stall_count,amount,deposit`),
+    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=id,session_id,name,brand_name,equipment_json,selected_dates_json,review_status,payment_status,checkin_status,transfer_status,stall_count,amount,deposit`),
     dbGet(env, 'stalls', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
     dbGet(env, 'registration_day_seats', `tenant_id=eq.${TENANT}&select=session_id,activity_date,seat_code,registration_id`).catch(()=>[]),
+    dbGet(env, 'registration_day_ops', `tenant_id=eq.${TENANT}&select=session_id,registration_id,activity_date,checkin_status`).catch(()=>[]),
   ]);
   let list = sessions;
   if (Array.isArray(allowedIds)) list = sessions.filter(s => allowedIds.includes(String(s.id)));
@@ -3961,7 +4005,12 @@ async function hOnsiteSessions(env, p) {
     const rs = regs.filter(r => r.session_id === s.id);
     const approved = rs.filter(r => String(r.review_status || '') === '已錄取');
     const paid = approved.filter(r => isPaidStatus(r.payment_status) || String(r.payment_status || '') === '免費');
-    const checked = paid.filter(r => String(r.checkin_status || '') === '已報到');
+    const dates=_sessionDates(s);
+    const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const activityDate=dates.includes(today)?today:(dates.find(d=>d>=today)||dates[dates.length-1]||'');
+    const dayPaid=paid.filter(r=>!activityDate||_registrationDates(r).includes(activityDate));
+    const checkedIds=new Set(dayOps.filter(o=>String(o.session_id)===String(s.id)&&String(o.activity_date).slice(0,10)===activityDate&&String(o.checkin_status||'')==='已報到').map(o=>String(o.registration_id)));
+    const checked = dayPaid.filter(r => checkedIds.has(String(r.id)));
     const flagged = rs.filter(r => String(r.transfer_status || '').includes('退費') || String(r.transfer_status || '').includes('退款'));
     const fmt = formatSession(s);
     return {
@@ -3971,14 +4020,15 @@ async function hOnsiteSessions(env, p) {
       region: fmt.region || '',
       dates: fmt.dates || [],
       status: fmt.status || s.status || '',
-      total: rs.length,
-      approved: approved.length,
-      payable: paid.length,
+      activityDate,
+      total: dayPaid.length,
+      approved: dayPaid.length,
+      payable: dayPaid.length,
       checkedIn: checked.length,
       refundFlag: flagged.length,
-      stallCount: paid.reduce((sum,r)=>sum+(safeNum(r.stall_count)||1),0),
-      paidAmount: paid.reduce((sum,r)=>sum+safeNum(r.amount),0),
-      depositTotal: paid.reduce((sum,r)=>sum+safeNum(r.deposit),0),
+      stallCount: dayPaid.reduce((sum,r)=>sum+(safeNum(r.stall_count)||1),0),
+      paidAmount: dayPaid.reduce((sum,r)=>sum+safeNum(r.amount),0),
+      depositTotal: dayPaid.filter(r=>_dayDepositEligible(r,activityDate)).reduce((sum,r)=>sum+safeNum(r.deposit),0),
       seatMapUrl: s.seat_map_url||'',
       seatBoard: buildOnsiteSeatBoard(s,stalls.filter(x=>String(x.session_id)===String(s.id)),rs,daySeats.filter(x=>String(x.session_id)===String(s.id))),
     };
@@ -3991,11 +4041,142 @@ async function hOnsiteRegs(env, p) {
   if (!sId) return jsonErr('請提供 sessionId');
   const pcOk = p.passcode ? await verifyPasscode(env, TENANT, sId, String(p.passcode)) : null;
   if (!pcOk && !await verifyStaff(env, p.email, p.token, TENANT, 'checkin', sId)) return jsonErr('無權限');
-  const rows = await dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sId)}&select=*`);
+  const activityDate=String(p.activityDate||p.activity_date||'').slice(0,10);
+  const sessions=await dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(sId)}&select=id,dates_json`);
+  if(!sessions.length)return jsonErr('找不到場次');
+  const availableDates=_sessionDates(sessions[0]);
+  if(!activityDate||!availableDates.includes(activityDate))return jsonErr('請選擇正確的活動日期');
+  const [rows,dayOps] = await Promise.all([
+    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sId)}&select=*`),
+    dbGet(env, 'registration_day_ops', `tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sId)}&activity_date=eq.${encodeURIComponent(activityDate)}&select=*`).catch(()=>[]),
+  ]);
+  const dayMap={};for(const d of dayOps)dayMap[String(d.registration_id)]=d;
   // 現場名單：只出現「已錄取＋已繳費（含免費）＋非退費流程中」的攤友（與報到規則一致）
-  const onsiteRows = rows.filter(r => !checkinGuard(r, false));
-  return jsonOk(onsiteRows.map(formatOnsiteReg));
+  const onsiteRows = rows.filter(r => !checkinGuard(r, false) && _registrationDates(r).includes(activityDate));
+  return jsonOk(onsiteRows.map(r=>formatOnsiteReg(r,dayMap[String(r.id)],activityDate)));
 }
+
+function _addEquipment(total, raw){
+  const m=safeJson(raw,{})||{};
+  for(const [k,v] of Object.entries(m)){const n=safeNum(v);if(n>0)total[k]=(total[k]||0)+n;}
+}
+async function hOnsiteDaySummary(env,p){
+  const TENANT=p._tenantId,sId=String(p.sessionId||p.session_id||''),activityDate=String(p.activityDate||p.activity_date||'').slice(0,10);
+  if(!sId||!activityDate)return jsonErr('請選擇場次與活動日期');
+  const pcOk=p.passcode?await verifyPasscode(env,TENANT,sId,String(p.passcode)):null;
+  if(!pcOk&&!await verifyStaff(env,p.email,p.token,TENANT,'checkin',sId))return jsonErr('無權限');
+  const [sesRows,regs,ops]=await Promise.all([
+    dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(sId)}&select=id,dates_json`),
+    dbGet(env,'registrations',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sId)}&select=*`),
+    dbGet(env,'registration_day_ops',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sId)}&activity_date=eq.${encodeURIComponent(activityDate)}&select=*`).catch(()=>[]),
+  ]);
+  if(!sesRows.length)return jsonErr('找不到場次');
+  const availableDates=_sessionDates(sesRows[0]);
+  if(!availableDates.includes(activityDate))return jsonErr('活動日期不屬於本場');
+  const opMap={};for(const o of ops)opMap[String(o.registration_id)]=o;
+  const list=regs.filter(r=>!checkinGuard(r,false)&&_registrationDates(r).includes(activityDate));
+  let checked=0,teardownDone=0,totalStalls=0,depositTotal=0,depositRefunded=0,depositPending=0,depositTotalCount=0,depositRefundedCount=0,depositPendingCount=0;
+  const equipment={};
+  for(const r of list){
+    const o=opMap[String(r.id)]||{};
+    if(String(o.checkin_status||'')==='已報到')checked++;
+    if(String(o.teardown_status||'')==='已撤場')teardownDone++;
+    totalStalls+=Math.max(1,safeNum(r.stall_count)||1);
+    _addEquipment(equipment,o.equipment_json||r.equipment_json);
+    if(_dayDepositEligible(r,activityDate)&&safeNum(r.deposit)>0){
+      const amount=safeNum(r.deposit),status=String(r.deposit_refunded||o.deposit_status||'');
+      depositTotal+=amount;depositTotalCount++;
+      if(['已退押金','已轉活動金','押金沒收','已隨退款退還'].includes(status)){depositRefunded+=amount;depositRefundedCount++;}
+      else{depositPending+=amount;depositPendingCount++;}
+    }
+  }
+  return jsonOk({sessionId:sId,activityDate,availableDates,
+    attendance:{total:list.length,totalBrands:list.length,totalStalls,checked,checkedBrands:checked,unchecked:Math.max(0,list.length-checked)},
+    teardown:{completed:teardownDone,pending:Math.max(0,list.length-teardownDone)},
+    deposit:{totalAmount:depositTotal,totalCount:depositTotalCount,refundedAmount:depositRefunded,refundedCount:depositRefundedCount,pendingAmount:depositPending,pendingCount:depositPendingCount},
+    equipment:Object.entries(equipment).map(([name,qty])=>({name,qty})).sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant'))
+  });
+}
+async function hOpsDashboard(env,p){
+  const ids=String(p.sessionIds||p.session_ids||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,60);
+  if(!ids.length)return jsonOk([]);
+  const out=[];
+  for(const id of ids){
+    const ses=await dbGet(env,'sessions',`tenant_id=eq.${p._tenantId}&id=eq.${encodeURIComponent(id)}&select=id,dates_json`);
+    if(!ses.length)continue;
+    const dates=_sessionDates(ses[0]),today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),day=dates.includes(today)?today:(dates.find(d=>d>=today)||dates[dates.length-1]||'');
+    if(!day)continue;
+    const response=await hOnsiteDaySummary(env,{...p,sessionId:id,activityDate:day});
+    const body=await response.clone().json().catch(()=>null);
+    if(body&&body.ok!==false)out.push(body.data!==undefined?body.data:body);
+  }
+  return jsonOk(out);
+}
+
+async function _formalPaidAmount(env,tenantId,regId){
+  const rows=await dbGet(env,'payments',`tenant_id=eq.${tenantId}&or=(registration_id.eq.${encodeURIComponent(regId)},reg_id.eq.${encodeURIComponent(regId)})&status=eq.${encodeURIComponent('已確認')}&select=amount`).catch(()=>[]);
+  return rows.reduce((n,x)=>n+safeNum(x.amount),0);
+}
+async function hPreviewRegistrationResolution(env,b){
+  const T=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');
+  const rows=await dbGet(env,'registrations',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.regId||'')}&select=*`);if(!rows.length)return jsonErr('找不到報名');
+  const reg=rows[0],paidAmount=Math.max(await _formalPaidAmount(env,T,reg.id),safeNum(reg.paid_amount)),credit=safeNum(reg.activity_credit_applied),funded=paidAmount+credit,depositPaid=Math.min(funded,safeNum(reg.deposit)),activityPaid=Math.max(0,funded-depositPaid);
+  const sessions=await dbGet(env,'sessions',`tenant_id=eq.${T}&select=*`),targetSessions=sessions.filter(s=>String(s.id)!==String(reg.session_id)&&!['封存','已取消'].includes(String(s.status||''))).map(s=>({id:s.id,name:s.name||s.id,dateText:_sessionDateValue(s)}));
+  const out={regId:reg.id,stallCount:Math.max(1,safeNum(reg.stall_count)||1),paidAmount,activityCreditApplied:credit,fundedAmount:funded,activityPaid,depositPaid,creditCreated:funded,targetSessions};
+  const target=sessions.find(s=>String(s.id)===String(b.targetSessionId||''));
+  if(target){const dates=_sessionDates(target),activityFee=calcFee(target,dates,out.stallCount),targetDeposit=safeNum(target.deposit),targetTotal=activityFee+targetDeposit;Object.assign(out,{targetActivityFee:activityFee,targetDeposit,targetTotal,appliedTotal:Math.min(funded,targetTotal),creditCreated:Math.max(0,activityPaid-activityFee),depositRefundDue:Math.max(0,depositPaid-targetDeposit),dueAmount:Math.max(0,activityFee-activityPaid)+Math.max(0,targetDeposit-depositPaid),targetDates:dates});}
+  return jsonOk(out);
+}
+async function hResolveRegistration(env,b){
+  const T=b._tenantId,mode=String(b.mode||'');
+  if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');
+  const previewResponse=await hPreviewRegistrationResolution(env,b),previewBody=await previewResponse.clone().json();
+  if(previewBody.ok===false)return previewResponse;const p=previewBody.data||previewBody;
+  let target=null;if(mode==='transfer'){const rows=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.targetSessionId||'')}&select=*`);target=rows[0];if(!target)return jsonErr('找不到轉入場次');}
+  if(!['transfer','credit'].includes(mode))return jsonErr('請選擇轉場或轉活動金');
+  const targetDates=target?_sessionDates(target):[];
+  const result=await dbRpc(env,'resolve_registration_atomic',{
+    p_tenant_id:T,p_registration_id:String(b.regId),p_mode:mode,p_target_session_id:target?target.id:null,p_new_registration_id:target?genId('REG'):null,p_target_event_id:target?target.event_id:null,p_target_dates:targetDates,
+    p_target_activity_fee:target?calcFee(target,targetDates,p.stallCount):0,p_target_deposit:target?safeNum(target.deposit):0,p_paid_amount:p.paidAmount,p_activity_paid:p.activityPaid,p_deposit_paid:p.depositPaid,p_credit_created:p.creditCreated,p_deposit_refund_due:p.depositRefundDue||0,p_due_amount:p.dueAmount||0,p_note:String(b.note||''),p_actor_email:String(b.email||'')
+  });
+  return jsonOk(result||{success:true});
+}
+async function hPartialDayRefund(env,b){
+  const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');
+  const rows=await dbGet(env,'registrations',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.regId||'')}&select=*`);if(!rows.length)return jsonErr('找不到報名');
+  const reg=rows[0],all=_registrationDates(reg),remove=(Array.isArray(b.removeDates)?b.removeDates:[]).map(x=>String(x).slice(0,10)).filter(x=>all.includes(x));
+  if(!remove.length)return jsonErr('請選擇退款日期');if(remove.length>=all.length)return jsonErr('整筆退款請使用整筆退款功能');
+  const ses=(await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(reg.session_id)}&select=*`))[0]||{};
+  const suggested=remove.reduce((n,d)=>n+calcFee(ses,[d],Math.max(1,safeNum(reg.stall_count)||1)),0),kept=all.filter(x=>!remove.includes(x));
+  if(b.preview===true||b.preview==='true')return jsonOk({suggestedGrossRefund:suggested,deposit:safeNum(reg.deposit),removed:remove,kept});
+  if(b.depositIncluded===true||b.depositIncluded==='true')return jsonErr('仍保留其他參加日，押金不能提前退還');
+  const result=await dbRpc(env,'complete_partial_day_refund_atomic',{p_tenant_id:T,p_registration_id:reg.id,p_dates:remove,p_refund_amount:safeNum(b.refundAmount),p_admin_fee:safeNum(b.refundAdminFee),p_transfer_fee:safeNum(b.refundTransferFee),p_deposit_amount:0,p_deposit_included:false,p_refund_method:String(b.refundMethod||''),p_refund_reference:String(b.refundReference||''),p_refund_note:String(b.refundNote||''),p_refunded_at:b.refundedAt||nowIso(),p_actor_email:String(b.email||'')});
+  return jsonOk(result||{success:true});
+}
+async function hActivityCreditCheckout(env,b){
+  const T=b._tenantId,email=normEmail(b.email),phone=normPhone(b.phone);if(!email||!phone)return jsonErr('請提供 Email 與手機');
+  const member=await findVerifiedMemberByEmailPhone(env,T,email,phone);if(!member)return jsonErr('會員資料不符');
+  const rows=await dbGet(env,'registrations',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.regId||'')}&email=ilike.${encodeURIComponent(email)}&select=*`);if(!rows.length||!phoneMatches(rows[0].phone,phone))return jsonErr('找不到符合的報名');
+  const reg=rows[0],ledger=await dbGet(env,'member_credit_ledger',`tenant_id=eq.${T}&member_email=ilike.${encodeURIComponent(email)}&status=eq.${encodeURIComponent('有效')}&select=direction,amount`).catch(()=>[]),balance=ledger.reduce((n,x)=>n+(x.direction==='debit'?-safeNum(x.amount):safeNum(x.amount)),0),remaining=Math.max(0,safeNum(reg.total_amount||reg.amount)-safeNum(reg.paid_amount)-safeNum(reg.activity_credit_applied)),canApply=Math.min(Math.max(0,balance),remaining);
+  if(b.preview===true||b.preview==='true')return jsonOk({balance,canApply,remaining:Math.max(0,remaining-canApply)});
+  const result=await dbRpc(env,'apply_member_credit_atomic',{p_tenant_id:T,p_registration_id:reg.id,p_member_email:email});return jsonOk(result||{success:true});
+}
+async function hAdminManualSession(env,p){const T=p._tenantId;if(!await verifyStaff(env,p.email,p.token,T,'review',p.sessionId))return jsonErr('無權限');const rows=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(p.sessionId||'')}&select=*`);if(!rows.length)return jsonErr('找不到場次');const s=rows[0];return jsonOk({...formatSession(s),dates:safeJson(s.dates_json,[]),equip:safeJson(s.equip_json,{}),addons:safeJson(s.addons_json,[]),maxStalls:safeNum(s.max_stalls)||20,status:s.status||''});}
+async function _adminManualPreview(env,b){const T=b._tenantId,ses=(await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.sessionId||'')}&select=*`))[0];if(!ses)throw new Error('找不到場次');const dates=(Array.isArray(b.selectedDates)?b.selectedDates:[]).map(x=>String(x).slice(0,10)),valid=_sessionDates(ses);if(!dates.length||dates.some(x=>!valid.includes(x)))throw new Error('請選擇正確參加日期');const stalls=Math.max(1,safeNum(b.stallCount)||1),fee=calcFee(ses,dates,stalls),deposit=safeNum(ses.deposit),equipment=calcEquipTotal(b.equip||{},ses.equip_json,stalls,ses.basic_equip||''),defs=safeJson(ses.addons_json,[]),addon=defs.reduce((n,a,i)=>n+((a&&a.open===true)?safeNum(a.price)*safeNum((b.addonQty||{})[i]):0),0);return {ses,dates,stalls,fee,deposit,equipment,addon,total:fee+deposit+equipment+addon};}
+async function hAdminPreviewRegistration(env,b){if(!await verifyStaff(env,b.email,b.token,b._tenantId,'review',b.sessionId))return jsonErr('無權限');try{const p=await _adminManualPreview(env,b);return jsonOk({fee:p.fee,deposit:p.deposit,equipment:p.equipment,addon:p.addon,total:p.total});}catch(e){return jsonErr(e.message||String(e));}}
+async function hAdminCreateRegistration(env,b){
+  const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'review',b.sessionId))return jsonErr('無權限');let p;try{p=await _adminManualPreview(env,b);}catch(e){return jsonErr(e.message||String(e));}
+  const members=await dbGet(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(normEmail(b.memberEmail))}&select=*`);if(!members.length)return jsonErr('找不到會員');const m=members[0],historical=b.historicalBackfill===true||b.historicalBackfill==='true';
+  if(!historical){await dbRpc(env,'claim_session_slot',{p_tenant_id:T,p_session_id:p.ses.id,p_stall_count:p.stalls});}
+  const id=genId('REG'),mode=String(b.paymentMode||'unpaid'),paymentStatus=mode==='paid'?'已繳費':mode==='free'?'免費':'未繳費';if(mode==='free'&&p.total>0){if(!historical)await dbRpc(env,'release_session_slot',{p_tenant_id:T,p_session_id:p.ses.id,p_stall_count:p.stalls}).catch(()=>{});return jsonErr('應繳金額不為 0，不能標示免費');}
+  const now=nowIso(),row={id,tenant_id:T,session_id:p.ses.id,event_id:p.ses.event_id||null,email:normEmail(m.email),member_id:normEmail(m.email),name:m.name||m.display_name||'',phone:m.phone||'',brand_name:m.brand_name||m.brand||'',brand_intro:m.brand_intro||m.intro||'',sell_category:m.category||m.sell_category||'',fb_url:m.fb_url||'',ig_url:m.ig_url||'',stall_count:p.stalls,deposit:p.deposit,review_status:'已錄取',payment_status:paymentStatus,payment_method:mode==='paid'?String(b.paymentMethod||'主辦補登／手動確認'):'',amount:p.total,total_amount:p.total,paid_amount:mode==='paid'?p.total:0,paid_at:mode==='paid'?(b.paidAt||now):null,selected_dates_json:p.dates,equipment_json:b.equip||{},addon_qty_json:b.addonQty||{},addon_amount:p.addon,checkin_status:'未報到',clear_status:'未清場',teardown_status:'未撤場',deposit_refunded:'未退押金',admin_note:`[主辦代報] ${String(b.manualReason||'主辦代報名')}${historical?'｜歷史補登':''}`,created_at:now};
+  try{await dbInsert(env,'registrations',row);for(const d of p.dates)await dbUpsert(env,'registration_day_ops',{tenant_id:T,session_id:p.ses.id,registration_id:id,activity_date:d,participation_status:'參加',checkin_status:'未報到',teardown_status:'未撤場',deposit_status:_dayDepositEligible(row,d)?'未退押金':'不適用',equipment_json:b.equip||{},created_at:now,updated_at:now},'tenant_id,registration_id,activity_date');if(mode==='paid')await dbInsert(env,'payments',{id:genId('PAY'),tenant_id:T,reg_id:id,registration_id:id,session_id:p.ses.id,email:row.email,amount:p.total,method:row.payment_method,status:'已確認',paid_at:row.paid_at,created_at:now});}
+  catch(e){if(!historical)await dbRpc(env,'release_session_slot',{p_tenant_id:T,p_session_id:p.ses.id,p_stall_count:p.stalls}).catch(()=>{});throw e;}
+  return jsonOk({success:true,id,paymentStatus,financeLinked:mode==='paid',historicalBackfill:historical});
+}
+async function hMemberNotifications(env,p){const T=p._tenantId,email=normEmail(p.email),phone=normPhone(p.phone);if(!email||!phone)return jsonErr('請提供 Email 與手機');const member=await findVerifiedMemberByEmailPhone(env,T,email,phone);if(!member)return jsonErr('會員資料不符');const rows=await dbGet(env,'member_notifications',`tenant_id=eq.${T}&member_email=ilike.${encodeURIComponent(email)}&select=*&order=created_at.desc&limit=50`).catch(()=>[]);return jsonOk(rows.map(x=>({id:x.id,regId:x.registration_id||'',title:x.title||'系統通知',message:x.message||'',kind:x.kind||'',isRead:!!x.is_read,createdAt:x.created_at||''})));}
+async function hMarkMemberNotificationRead(env,b){const T=b._tenantId,email=normEmail(b.email),phone=normPhone(b.phone);if(!email||!phone)return jsonErr('請提供 Email 與手機');const member=await findVerifiedMemberByEmailPhone(env,T,email,phone);if(!member)return jsonErr('會員資料不符');let qs=`tenant_id=eq.${T}&member_email=ilike.${encodeURIComponent(email)}`;if(!(b.all===true||b.all==='true')){if(!b.id)return jsonErr('缺少通知編號');qs+=`&id=eq.${encodeURIComponent(b.id)}`;}await dbUpdate(env,'member_notifications',qs,{is_read:true,read_at:nowIso()});return jsonOk({success:true});}
 
 // ── 現場通行碼（4位數，一場一碼，限報到相關） ──
 async function verifyPasscode(env, tid, sessionId, code) {
@@ -4105,34 +4286,52 @@ async function hOnsiteMark(env, b) {
   }
 
   const now = nowIso();
+  const activityDate=String(b.activityDate||b.activity_date||'').slice(0,10);
+  const selectedDates=_registrationDates(reg);
+  if(!activityDate||!selectedDates.includes(activityDate))return jsonErr('請先選擇這位攤商實際參加的日期');
+  const existingOps=await dbGet(env,'registration_day_ops',`tenant_id=eq.${TENANT}&registration_id=eq.${encodeURIComponent(regId)}&activity_date=eq.${encodeURIComponent(activityDate)}&select=*`).catch(()=>[]);
+  const dayOp=existingOps[0]||{};
   const noteText = String(b.note || '').trim();
   const oldNote = String(reg.admin_note || '').trim();
   const appendNote = (label) => `${oldNote ? oldNote + ' ' : ''}[現場·${operator}] ${label} ${nowTaipeiText()}${noteText ? '｜' + noteText : ''}`;
   const data = {};
+  const dayData={tenant_id:TENANT,session_id:reg.session_id,registration_id:regId,activity_date:activityDate,participation_status:'參加',updated_at:now};
+  if(!existingOps.length)dayData.created_at=now;
 
   if (mode === 'checkin') {
     const err = checkinGuard(reg, false);
     if (err) return jsonErr(err);
     Object.assign(data, checkinData(false, now));
+    dayData.checkin_status='已報到';dayData.checkin_at=now;
     data.admin_note = appendNote('已報到');
   } else if (mode === 'undoCheckin') {
     Object.assign(data, checkinData(true, now));
+    dayData.checkin_status='未報到';dayData.checkin_at=null;
     data.admin_note = appendNote('取消報到');
   } else if (mode === 'noShow') {
     data.checkin_status = '未到';
+    dayData.checkin_status='未到';dayData.checkin_at=null;
     data.admin_note = appendNote('標記未到');
   } else if (mode === 'refundFlag') {
     data.transfer_status = '退費待處理';
     data.admin_note = appendNote('特殊／退費待處理');
   } else if (mode === 'depositRefund') {
-    // 正常退押金：押金歸還攤商，記錄退還時間
-    if (String(reg.deposit_refunded||'') === '已退押金') return jsonErr('此報名押金已退還');
-    data.deposit_refunded = '已退押金';
-    data.admin_note = appendNote('押金已退還攤商');
+    if(!_dayDepositEligible(reg,activityDate))return jsonErr('兩天／多天報名只能在最後一個參加日退押金');
+    if(String(dayOp.teardown_status||'')!=='已撤場')return jsonErr('請先完成當日撤場，再退押金');
+    if(String(reg.deposit_refunded||'')==='已退押金')return jsonErr('此報名押金已退還');
+    const refund=await dbRpc(env,'complete_deposit_refund_atomic',{
+      p_tenant_id:TENANT,p_registration_id:regId,p_activity_date:activityDate,
+      p_refund_method:String(b.refundMethod||'現場退還'),p_refund_reference:String(b.refundReference||''),
+      p_refund_note:noteText||'現場完成撤場後退押金',p_refunded_at:now,p_actor_email:String(b.email||operator||'')
+    });
+    await dbInsert(env,'seat_operation_logs',{id:genId('OPL'),tenant_id:TENANT,session_id:reg.session_id,registration_id:regId,stall_id:null,action:mode,operator_type:pc?'onsite_passcode':'admin',operator_id:operator,note:noteText||null,created_at:now}).catch(()=>{});
+    return jsonOk({success:true,mode,regId,activityDate,refundAmount:safeNum(refund&&refund.refund_amount)});
   } else if (mode === 'depositForfeited') {
     // 違約沒收押金：押金轉為主辦收入
     if (String(reg.deposit_refunded||'') === '押金沒收') return jsonErr('此報名押金已標記沒收');
     data.deposit_refunded = '押金沒收';
+    if(!_dayDepositEligible(reg,activityDate))return jsonErr('押金只能在最後一個參加日結案');
+    dayData.deposit_status='押金沒收';dayData.deposit_refunded_at=now;
     data.admin_note = appendNote('押金沒收（違約）');
   } else if (mode === 'lateFlag' || mode === 'ruleFlag' || mode === 'earlyFlag') {
     const labelMap = { lateFlag:'遲到', ruleFlag:'不遵守規定', earlyFlag:'早退' };
@@ -4140,22 +4339,27 @@ async function hOnsiteMark(env, b) {
     const cur = String(reg.violation_flags || '').split(',').map(s => s.trim()).filter(Boolean);
     if (!cur.includes(label)) cur.push(label);
     data.violation_flags = cur.join(',');
+    dayData.violation_flags=cur.join(',');
     data.admin_note = appendNote('違規標記：' + label);
   } else if (mode === 'teardownDone') {
     data.teardown_status = '已撤場';
+    dayData.teardown_status='已撤場';
     data.admin_note = appendNote('已撤場');
   } else if (mode === 'teardownUndo') {
     data.teardown_status = '未撤場';
+    dayData.teardown_status='未撤場';
     data.admin_note = appendNote('改為未撤場');
   } else if (mode === 'depositUnrefund') {
-    data.deposit_refunded = '未退押金';
-    data.admin_note = appendNote('押金改為未退');
+    return jsonErr('已完成的押金金流不可直接取消，請由財務更正並保留紀錄');
   } else if (mode === 'note') {
     data.admin_note = appendNote('現場備註');
+    dayData.admin_note=appendNote('現場備註');
   } else {
     return jsonErr('未知現場操作：' + mode);
   }
-  await dbUpdate(env,'registrations',`id=eq.${encodeURIComponent(regId)}&tenant_id=eq.${TENANT}`,data);
+  await dbUpsert(env,'registration_day_ops',dayData,'tenant_id,registration_id,activity_date');
+  // 舊欄位只保留整場相容狀態；每天畫面一律讀 registration_day_ops。
+  if(Object.keys(data).length)await dbUpdate(env,'registrations',`id=eq.${encodeURIComponent(regId)}&tenant_id=eq.${TENANT}`,data);
   await dbInsert(env,'seat_operation_logs',{ id: genId('OPL'), tenant_id: TENANT, session_id: reg.session_id, registration_id: regId, stall_id: null, action: mode, operator_type: pc ? 'onsite_passcode' : 'admin', operator_id: operator, note: noteText || null, created_at: now }).catch(()=>{});
   return jsonOk({success:true, mode, regId});
 }
@@ -6725,20 +6929,24 @@ async function hDeleteAnnouncement(env, b) {
 async function hSaveFinanceItem(env, b) {
   const TENANT = (b && b._tenantId) ;  // M-02：tenant 已由路由層驗證（見 routeGet/routePost）
   if (!await verifyStaff(env,b.email,b.token,TENANT,'finance')) return jsonErr('無權限');
-  const id=genId('FIN');
+  const id=String(b.id||genId('FIN'));
   const sessionId=String(b.sessionId||'').trim();
   if(!sessionId) return jsonErr('缺少場次');
-  const ses=await dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(sessionId)}&select=id,event_id`);
+  const ses=await dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(sessionId)}&select=id`);
   if(!ses.length) return jsonErr('找不到場次');
-  const direction=String(b.direction||b.type||'expense').toLowerCase()==='income'?'income':'expense';
-  const category=String(b.category||'other').trim()||'other';
-  await dbInsert(env,'finance_items',{id,tenant_id:TENANT,session_id:sessionId,event_id:ses[0].event_id||null,type:direction,name:String(b.name||category),amount:Math.max(0,Number(b.amount)||0),is_auto:false,category,direction,occurred_on:b.occurredOn||nowIso().slice(0,10),payment_status:b.paymentStatus||'paid',payee:b.payee||null,note:b.note||null,quantity:Number(b.quantity)||1,unit_amount:Number(b.unitAmount)||Number(b.amount)||0,created_by:b.email||null,updated_by:b.email||null,created_at:nowIso(),updated_at:nowIso()});
+  const locked=await dbGet(env,'operation_settlements',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&locked_at=not.is.null&select=id`).catch(()=>[]);if(locked.length)return jsonErr('本場已正式結算，不能修改支出');
+  const data={tenant_id:TENANT,session_id:sessionId,type:String(b.type||b.category||'其他支出'),name:String(b.name||b.type||'支出'),amount:Math.max(0,Number(b.amount)||0),is_auto:false};
+  if(!(data.amount>0))return jsonErr('支出金額必須大於 0');
+  const old=await dbGet(env,'finance_items',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(id)}&select=id`).catch(()=>[]);
+  if(old.length)await dbUpdate(env,'finance_items',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(id)}`,data);else await dbInsert(env,'finance_items',{id,...data,created_at:nowIso()});
   return jsonOk({success:true,id});
 }
 // deleteFinanceItem
 async function hDeleteFinanceItem(env, b) {
   const TENANT = (b && b._tenantId) ;  // M-02：tenant 已由路由層驗證（見 routeGet/routePost）
-  if (!await verifyPlatformSuperAdmin(env,b.email,b.token,TENANT)) return jsonErr('刪除財務項目僅限平台超級管理員');
+  if (!await verifyStaff(env,b.email,b.token,TENANT,'finance')) return jsonErr('無權限');
+  const rows=await dbGet(env,'finance_items',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.id)}&select=session_id,is_auto`);if(!rows.length)return jsonErr('找不到支出');if(rows[0].is_auto)return jsonErr('系統自動支出不可刪除');
+  const locked=await dbGet(env,'operation_settlements',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(rows[0].session_id)}&locked_at=not.is.null&select=id`).catch(()=>[]);if(locked.length)return jsonErr('本場已正式結算，不能刪除支出');
   await dbDelete(env,'finance_items',`id=eq.${encodeURIComponent(b.id)}&tenant_id=eq.${TENANT}`);
   return jsonOk({success:true});
 }
@@ -7146,8 +7354,21 @@ async function hSaveMemberNote(env, b) {
 async function hGetMembers(env, p) {
   const TENANT = (p && p._tenantId);
   if (!await verifyStaff(env,p.email,p.token,TENANT,'review')) return jsonErr('無權限');
-  const members=await dbGet(env,'members',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]);
-  return jsonOk(members.map(formatMemberRow));
+  const [members,ledger]=await Promise.all([dbGet(env,'members',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),dbGet(env,'member_credit_ledger',`tenant_id=eq.${TENANT}&status=eq.${encodeURIComponent('有效')}&select=member_email,direction,amount`).catch(()=>[])]);
+  const balances={};for(const x of ledger){const k=normEmail(x.member_email);balances[k]=(balances[k]||0)+(x.direction==='debit'?-safeNum(x.amount):safeNum(x.amount));}
+  return jsonOk(members.map(r=>({...formatMemberRow(r),activityCreditBalance:Math.max(0,balances[normEmail(r.email)]||0)})));
+}
+async function hAdjustMemberCredit(env,b){
+  const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance'))return jsonErr('無權限');
+  const result=await dbRpc(env,'adjust_member_credit_atomic',{p_tenant_id:T,p_member_email:normEmail(b.memberEmail),p_direction:String(b.direction||''),p_amount:safeNum(b.amount),p_note:String(b.note||''),p_actor_email:String(b.email||'')});return jsonOk(result||{success:true});
+}
+async function hVoidMemberCredit(env,b){
+  const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance'))return jsonErr('無權限');
+  const result=await dbRpc(env,'void_manual_member_credit_atomic',{p_tenant_id:T,p_ledger_id:String(b.ledgerId||''),p_note:String(b.note||''),p_actor_email:String(b.email||'')});return jsonOk(result||{success:true});
+}
+async function hSaveMemberCategory(env,b){
+  const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'members'))return jsonErr('無權限');const target=normEmail(b.memberEmail);if(!target)return jsonErr('缺少會員 Email');
+  await dbUpdate(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(target)}`,{category:String(b.category||'').slice(0,80),updated_at:nowIso()});return jsonOk({success:true,category:String(b.category||'')});
 }
 async function hGetMemberHistory(env, p) {
   const TENANT = (p && p._tenantId);
@@ -7754,7 +7975,8 @@ async function hGetOperationsReport(env,p){
     const sid=String(s.id), eid=String(s.event_id||'');
     const regs=allRegs.filter(r=>String(r.session_id)===sid);
     const summary=_buildAdminSessionRow(s,regs,eventMap[eid]||{},itemMap);
-    const confirmedRevenue=Number(summary?.finance?.receivedTotal)||0;
+    // 可分潤收入不得包含可退押金；活動金已實際扣抵時才算本場已投入收入。
+    const confirmedRevenue=Number(summary?.finance?.revenueTotal ?? summary?.finance?.invoiceTotal)||0;
     const refundAmount=refunds.filter(r=>String(r.session_id)===sid).reduce((n,r)=>n+(Number(r.refund_amount)||0),0);
     const expenseAmount=financeItems.filter(i=>String(i.session_id)===sid).reduce((n,i)=>n+(Number(i.amount)||0),0);
     const sessionSetting=shareSettings.find(x=>String(x.session_id||'')===sid);
@@ -7780,6 +8002,27 @@ async function hGetOperationsReport(env,p){
   const totals=rows.reduce((a,r)=>{a.confirmedRevenue+=r.confirmedRevenue;a.refundAmount+=r.refundAmount;a.expenseAmount+=r.expenseAmount;a.distributableProfit+=r.distributableProfit;a.companyShare+=r.companyShare;a.partnerShare+=r.partnerShare;return a;},{confirmedRevenue:0,refundAmount:0,expenseAmount:0,distributableProfit:0,companyShare:0,partnerShare:0});
   return jsonOk({rows,totals,scoped:!scope.all});
 }
+async function _sessionFinanceReportData(env,TENANT,sessionId){
+  const [sesRows,regs,events,items,refunds,settings,settlements]=await Promise.all([
+    dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(sessionId)}&select=*`),dbGet(env,'registrations',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&select=*`),dbGet(env,'events',`tenant_id=eq.${TENANT}&select=id,title,name`).catch(()=>[]),dbGet(env,'finance_items',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&select=*`).catch(()=>[]),dbGet(env,'refund_transactions',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&status=eq.${encodeURIComponent('已退款')}&select=refund_amount`).catch(()=>[]),dbGet(env,'operation_share_settings',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),dbGet(env,'operation_settlements',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&select=*`).catch(()=>[])
+  ]);if(!sesRows.length)throw new Error('找不到場次');
+  const s=sesRows[0],itemMap=await _getRegistrationItemsForRegs(env,regs),evt=events.find(x=>String(x.id)===String(s.event_id))||{},summary=_buildAdminSessionRow(s,regs,evt,itemMap),finance=summary.finance||{};
+  const confirmedRevenue=safeNum(finance.revenueTotal??finance.invoiceTotal),refundAmount=refunds.reduce((n,x)=>n+safeNum(x.refund_amount),0),netRevenue=confirmedRevenue-refundAmount,totalExpense=items.reduce((n,x)=>n+safeNum(x.amount),0),sessionSetting=settings.find(x=>String(x.session_id||'')===String(sessionId)),eventSetting=settings.find(x=>!x.session_id&&String(x.event_id||'')===String(s.event_id||'')),setting=sessionSetting||eventSetting||{},companyRatio=Number(setting.company_ratio??50),partnerRatio=Number(setting.partner_ratio??50),distributableProfit=netRevenue-totalExpense,companyShare=Math.floor(distributableProfit*companyRatio/100),partnerShare=distributableProfit-companyShare,settlement=settlements.find(x=>x.locked_at)||null;
+  return {session:{id:s.id,name:s.name||s.id,dates:_sessionDates(s),venue:s.venue||s.region||''},confirmedRevenue,cashReceived:safeNum(finance.receivedTotal),activityCreditApplied:safeNum(finance.activityCreditTotal),depositTotal:safeNum(finance.depositTotal),refundAmount,netRevenue,totalExpense,distributableProfit,companyRatio,partnerRatio,companyShare,partnerShare,partnerName:setting.partner_name||'',shareSource:sessionSetting?'session':eventSetting?'event':'default_50_50',settlementLocked:!!settlement,settlement:settlement?{lockedAt:settlement.locked_at,lockedBy:settlement.locked_by}:null,expenseItems:items.map(x=>({id:x.id,type:x.type,name:x.name,amount:safeNum(x.amount),isAuto:!!x.is_auto,createdAt:x.created_at})),warnings:[],generatedAt:nowIso()};
+}
+async function hGetSessionFinanceReport(env,p){const T=p._tenantId;if(!await verifyStaff(env,p.email,p.token,T,'finance',p.sessionId))return jsonErr('無權限');try{return jsonOk(await _sessionFinanceReportData(env,T,String(p.sessionId||'')));}catch(e){return jsonErr(e.message||String(e));}}
+async function hAccountingReport(env,p){
+  const T=p._tenantId;if(!await verifyStaff(env,p.email,p.token,T,'finance'))return jsonErr('無權限');
+  const mode=String(p.mode||'month'),anchorText=String(p.anchor||new Date().toISOString().slice(0,10)).slice(0,10),parts=anchorText.split('-').map(Number);let start,end,label='';
+  if(mode==='custom'){start=String(p.start||'');end=String(p.end||'');label=`${start}～${end}`;}else{const y=parts[0]||new Date().getUTCFullYear(),m=Math.max(0,(parts[1]||1)-1),fmt=d=>`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;if(mode==='year'){start=`${y}-01-01`;end=`${y}-12-31`;label=`${y} 年`;}else if(mode==='quarter'){const q=Math.floor(m/3)*3;start=fmt(new Date(Date.UTC(y,q,1)));end=fmt(new Date(Date.UTC(y,q+3,0)));label=`${y} 第 ${q/3+1} 季`;}else{start=fmt(new Date(Date.UTC(y,m,1)));end=fmt(new Date(Date.UTC(y,m+1,0)));label=`${y}/${String(m+1).padStart(2,'0')}`;}}
+  const response=await hGetOperationsReport(env,{...p,dateFrom:start,dateTo:end}),body=await response.clone().json();if(body.ok===false)return response;const data=body.data||body,rows=data.rows||[];
+  const sessions=rows.map(r=>({date:'',sessionId:r.sessionId,sessionName:r.sessionName,income:r.confirmedRevenue,refund:r.refundAmount,netIncome:r.confirmedRevenue-r.refundAmount,expense:r.expenseAmount,profit:r.distributableProfit,companyShare:r.companyShare,partnerShare:r.partnerShare})),totals=sessions.reduce((a,r)=>{a.income+=r.income;a.refund+=r.refund;a.expense+=r.expense;a.profit+=r.profit;return a;},{income:0,refund:0,expense:0,profit:0});totals.netIncome=totals.income-totals.refund;
+  return jsonOk({period:{start,end,label},basis:'正式已確認收入，不含押金；扣除已完成退款與正式支出。',totals,counts:{sessions:sessions.length,profitable:sessions.filter(x=>x.profit>=0).length,loss:sessions.filter(x=>x.profit<0).length},sessions,expenseBreakdown:[]});
+}
+async function hLockFinanceSettlement(env,b){const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');const report=await _sessionFinanceReportData(env,T,String(b.sessionId||''));if(report.settlementLocked)return jsonErr('本場已結算鎖定');const ses=(await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.sessionId)}&select=event_id`))[0]||{};await dbInsert(env,'operation_settlements',{id:crypto.randomUUID(),tenant_id:T,event_id:ses.event_id||null,session_id:String(b.sessionId),snapshot_json:report,locked_at:nowIso(),locked_by:String(b.email||''),updated_at:nowIso()});return jsonOk({success:true});}
+async function hUnlockFinanceSettlement(env,b){const T=b._tenantId;if(!await verifyPlatformSuperAdmin(env,b.email,b.token,T))return jsonErr('僅平台超級管理員可解除結算');await dbUpdate(env,'operation_settlements',`tenant_id=eq.${T}&session_id=eq.${encodeURIComponent(b.sessionId||'')}`,{locked_at:null,locked_by:null,updated_at:nowIso()});return jsonOk({success:true});}
+async function hCreateFinanceShare(env,b){const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');const sid=String(b.sessionId||''),ses=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(sid)}&select=id`);if(!ses.length)return jsonErr('找不到場次');const expiresAt=Date.now()+14*24*3600*1000,token=await signAdminJwt({iss:'2BL-FINANCE-SHARE',type:'finance_share',tenant_id:T,session_id:sid,expires_at:expiresAt},env),ctx=await getTenantCtx(env,T),url=new URL('admin.html',(ctx&&ctx.siteUrl)||FALLBACK_SITE_URL);url.searchParams.set('tenant',T);url.searchParams.set('financeShare',token);return jsonOk({url:url.toString(),expiresAt:new Date(expiresAt).toISOString()});}
+async function hPublicFinanceShare(env,p){const token=String(p.shareToken||'');if(!token)return jsonErr('財報分享連結不完整');const payload=await verifyAdminJwt(token,env);if(!payload||payload.type!=='finance_share'||String(payload.tenant_id)!==String(p._tenantId))return jsonErr('財報分享連結無效或已過期');const finance=await _sessionFinanceReportData(env,p._tenantId,String(payload.session_id));return jsonOk({session:finance.session,finance,expiresAt:new Date(payload.expires_at).toISOString()});}
 async function verifyPlatformOwner(env,email,token,tenantId){
   if(!await verifyPlatformSuperAdmin(env,email,token,tenantId)) return false;
   const rows=await dbGet(env,'staff',`tenant_id=eq.${tenantId}&email=eq.${encodeURIComponent(email)}&select=perms_json,active,is_active`).catch(()=>[]);
@@ -7796,10 +8039,10 @@ async function hSaveOperationShareSetting(env,b){
   let existing=[];
   if(sessionId) existing=await dbGet(env,'operation_share_settings',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&select=*`);
   else existing=await dbGet(env,'operation_share_settings',`tenant_id=eq.${TENANT}&event_id=eq.${encodeURIComponent(eventId)}&session_id=is.null&select=*`);
-  if(existing[0]?.is_locked) return jsonErr('此結算已鎖定，不能修改比例');
+  if(sessionId){const locked=await dbGet(env,'operation_settlements',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&locked_at=not.is.null&select=id`).catch(()=>[]);if(locked.length)return jsonErr('此結算已鎖定，不能修改比例');}
   const data={tenant_id:TENANT,event_id:eventId,session_id:sessionId,partner_name:b.partnerName||null,company_ratio:company,partner_ratio:partner,updated_by:b.email,updated_at:nowIso()};
   if(existing.length) await dbUpdate(env,'operation_share_settings',`id=eq.${existing[0].id}&tenant_id=eq.${TENANT}`,data);
-  else await dbInsert(env,'operation_share_settings',{...data,id:crypto.randomUUID(),created_by:b.email,created_at:nowIso(),is_locked:false});
+  else await dbInsert(env,'operation_share_settings',{...data,id:crypto.randomUUID(),created_by:b.email,created_at:nowIso()});
   return jsonOk({success:true});
 }
 // ── SECTION 14: Cron 定時任務 ───────────────────────────────────
@@ -8015,6 +8258,8 @@ async function routeGet(env, action, p, req) {
     case 'getRegsBySession':    return hGetRegsBySession(env,p);
     case 'onsiteSessions':      return hOnsiteSessions(env,p);
     case 'onsiteRegs':          return hOnsiteRegs(env,p);
+    case 'onsiteDaySummary':    return hOnsiteDaySummary(env,p);
+    case 'opsDashboard':        return hOpsDashboard(env,p);
     case 'onsitePasscodeVerify': return hOnsitePasscodeVerify(env,p);
     case 'onsitePasscodeList':   return hOnsitePasscodeList(env,p);
     case 'getStaff':            return hGetStaff(env,p);
@@ -8024,6 +8269,11 @@ async function routeGet(env, action, p, req) {
     case 'getSessionVisualJobs': return hGetSessionVisualJobs(env,p);
     case 'getPayments':         return hGetPayments(env,p);
     case 'getFinance':          return hGetFinance(env,p);
+    case 'getSessionFinanceReport': return hGetSessionFinanceReport(env,p);
+    case 'accountingReport':    return hAccountingReport(env,p);
+    case 'publicFinanceShare':  return hPublicFinanceShare(env,p);
+    case 'adminManualSession':  return hAdminManualSession(env,p);
+    case 'memberNotifications': return hMemberNotifications(env,p);
     case 'getInvoiceList':      return hGetInvoiceList(env,p);
     case 'getSiteConfig':       return hGetSiteConfig(env,p);
     case 'getAgreementTemplate': return hGetAgreementTemplate(env,p);
@@ -8085,6 +8335,9 @@ async function routePost(env, action, b, ctx, req) {
     case 'deleteBundle':        return hDeleteBundle(env,b);
     case 'saveMember':          return hSaveMember(env,b);
     case 'saveMemberNote':      return hSaveMemberNote(env,b);
+    case 'saveMemberCategory':  return hSaveMemberCategory(env,b);
+    case 'adjustMemberCredit':  return hAdjustMemberCredit(env,b);
+    case 'voidMemberCredit':    return hVoidMemberCredit(env,b);
     case 'cancelReg':           return hCancelReg(env,b);
     case 'selectStall':         return hSelectStall(env,b);
     case 'claimPaidSeat':       return hClaimPaidSeat(env,b);
@@ -8129,6 +8382,13 @@ async function routePost(env, action, b, ctx, req) {
     case 'refundDeposit':       return hRefundDeposit(env,b);
     case 'checkin':             return hCheckin(env,b);
     case 'onsiteMark':          return hOnsiteMark(env,b);
+    case 'previewRegistrationResolution': return hPreviewRegistrationResolution(env,b);
+    case 'resolveRegistration': return hResolveRegistration(env,b);
+    case 'partialDayRefund':    return hPartialDayRefund(env,b);
+    case 'activityCreditCheckout': return hActivityCreditCheckout(env,b);
+    case 'adminPreviewRegistration': return hAdminPreviewRegistration(env,b);
+    case 'adminCreateRegistration': return hAdminCreateRegistration(env,b);
+    case 'markMemberNotificationRead': return hMarkMemberNotificationRead(env,b);
     case 'onsitePasscodeVerify':   return hOnsitePasscodeVerify(env,b);
     case 'onsitePasscodeGenerate': return hOnsitePasscodeGenerate(env,b);
     case 'onsitePasscodeToggle':   return hOnsitePasscodeToggle(env,b);
@@ -8143,6 +8403,10 @@ async function routePost(env, action, b, ctx, req) {
     case 'saveAnnouncement':    return hSaveAnnouncement(env,b);
     case 'deleteAnnouncement':  return hDeleteAnnouncement(env,b);
     case 'saveOperationShareSetting': return hSaveOperationShareSetting(env,b);
+    case 'saveFinanceShare':    return hSaveOperationShareSetting(env,b);
+    case 'createFinanceShare':  return hCreateFinanceShare(env,b);
+    case 'lockFinanceSettlement': return hLockFinanceSettlement(env,b);
+    case 'unlockFinanceSettlement': return hUnlockFinanceSettlement(env,b);
     case 'saveFinanceItem':     return hSaveFinanceItem(env,b);
     case 'deleteFinanceItem':   return hDeleteFinanceItem(env,b);
     case 'updateInvoiceStatus': return hUpdateInvoiceStatus(env,b);

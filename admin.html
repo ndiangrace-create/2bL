@@ -1889,9 +1889,9 @@ function renderOnsiteList(){
   if(filter==='unchecked')rows=rows.filter(r=>!_onsiteIsChecked(r));
   else if(filter==='checked')rows=rows.filter(_onsiteIsChecked);
   else if(filter==='notTeardown')rows=rows.filter(r=>String(r.teardown||r.teardownStatus||'未撤場')!=='已撤場');
-  else if(filter==='allDeposit')rows=rows.filter(r=>(Number(r.deposit||0)||0)>0);
-  else if(filter==='refundedDeposit')rows=rows.filter(r=>(Number(r.deposit||0)||0)>0&&String(r.depositRefunded||'')==='已退押金');
-  else if(filter==='notDeposit')rows=rows.filter(r=>(Number(r.deposit||0)||0)>0&&!['已退押金','押金沒收'].includes(String(r.depositRefunded||'未退押金')));
+  else if(filter==='allDeposit')rows=rows.filter(r=>r.depositEligible&&(Number(r.deposit||0)||0)>0);
+  else if(filter==='refundedDeposit')rows=rows.filter(r=>r.depositEligible&&(Number(r.deposit||0)||0)>0&&String(r.depositRefunded||'')==='已退押金');
+  else if(filter==='notDeposit')rows=rows.filter(r=>r.depositEligible&&(Number(r.deposit||0)||0)>0&&!['已退押金','押金沒收'].includes(String(r.depositRefunded||'未退押金')));
   if(kw)rows=rows.filter(r=>((r.brand||'')+(r.name||'')+(r.phone||'')+(r.email||'')+(r.stallNumber||'')).toLowerCase().includes(kw));
 
   let cards='';
@@ -1899,7 +1899,7 @@ function renderOnsiteList(){
   else for(const r of rows){
     const id=attr(r.id||r.regId),ck=_onsiteIsChecked(r),teardown=String(r.teardown||r.teardownStatus||'未撤場'),dep=Number(r.deposit||0)||0,depStatus=String(r.depositRefunded||'未退押金'),seat=String(r.stallNumber||'未排位');
     const tags=`<span class="tag ${ck?'ok':''}">${safe(ck?'已報到':'未報到')}</span><span class="tag ${teardown==='已撤場'?'ok':''}">${safe(teardown)}</span>${dep>0?`<span class="tag ${depStatus==='已退押金'?'ok':depStatus==='押金沒收'?'bad':'warn'}">${safe(depStatus)} ${money(dep)}</span>`:''}`;
-    const actions=`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button><button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${depStatus==='已退押金'?'depositUnrefund':'depositRefund'}',this)">${depStatus==='已退押金'?'取消退押金':'退押金'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
+    const actions=`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button><button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','depositRefund',this)" ${r.depositEligible&&teardown==='已撤場'&&depStatus!=='已退押金'?'':'disabled'}>${depStatus==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
     cards+=`<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">${safe(r.brand||r.name||'未填品牌')}</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${tags}</div><div class="onsite-sub">${safe(r.name||'—')}｜${safe(r.phone||'—')}｜${safe(seat)}</div>${r.equipmentText?`<div class="onsite-sub">設備｜${safe(r.equipmentText)}</div>`:''}</div><div class="onsite-card-btn direct-actions">${actions}</div></article>`;
   }
   $('onsiteBody').innerHTML=`<div class="onsite-grid">${cards}</div>`;

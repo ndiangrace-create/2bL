@@ -309,7 +309,7 @@ async function enterByPasscode(){ const code=($('pcInput').value||'').trim(); if
 function handleCallback(){const u=new URL(location.href); const t=u.searchParams.get('admin_token'); const tenant=u.searchParams.get('tenant'); const err=u.searchParams.get('login_error'); if(err){$('loginErr').textContent='登入失敗：'+err; $('loginErr').classList.remove('hidden')} if(t){localStorage.setItem(LS_TOKEN,t); if(tenant)localStorage.setItem('2bl_onsite_tenant',tenant); history.replaceState({},'',location.pathname);}}
 async function boot(){handleCallback(); token=localStorage.getItem(LS_TOKEN)||''; $('googleLogin').href=API+'/auth/google/unified/start?tenant='+encodeURIComponent(TENANT)+'&next=onsite'; if(!token){$('loginView').classList.remove('hidden');return} try{me=await apiGet('adminMe',{email:'_'}); email=me.email; localStorage.setItem(LS_EMAIL,email); $('who').textContent=`${me.display_name||me.email}｜${me.role||''}`; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); await loadSessions();}catch(e){localStorage.removeItem(LS_TOKEN); $('loginView').classList.remove('hidden'); $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden')}}
 async function loadSessions(){try{sessions=sortOnsiteSessions(await apiGet('onsiteSessions')); renderSessions()}catch(e){showMsg(e.message,'err')}}
-function renderSessions(){const box=$('sessionsList'); if(!sessions.length){box.innerHTML='<div class="card empty" style="grid-column:1/-1">目前沒有可報到的場次<br><span style="font-size:14px;color:var(--muted)">（僅顯示有已繳費名單、且未封存的場次）</span></div>';return} box.innerHTML=sessions.map(s=>{const od=onsiteOperationalDate(s);const d=Number.isFinite(od.ts)?new Date(od.ts).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',weekday:'short'}):'';return `<div class="card session" onclick="openSession('${esc(s.id)}')"><div class="session-title">${d?'<span class="tag warn">'+esc(d)+'</span> ':''}${esc(s.name)}</div><div class="row"><span class="tag">全部 ${s.total||0}</span><span class="tag ok">可報到 ${s.payable||0}</span><span class="tag">已報到 ${s.checkedIn||0}</span><span class="tag warn">攤位 ${s.stallCount||0}</span>${s.refundFlag?`<span class="tag bad">退費 ${s.refundFlag}</span>`:''}</div><div class="grid"><div class="stat"><b>${money(s.paidAmount||0)}</b><span>已繳金額</span></div><div class="stat"><b>${money(s.depositTotal||0)}</b><span>押金</span></div><div class="stat"><b>${s.approved||0}</b><span>已錄取</span></div></div><button>查看名單</button></div>`}).join('')}
+function renderSessions(){const box=$('sessionsList'); if(!sessions.length){box.innerHTML='<div class="card empty" style="grid-column:1/-1">目前沒有可報到的場次<br><span style="font-size:14px;color:var(--muted)">（僅顯示有已繳費名單、且未封存的場次）</span></div>';return} box.innerHTML=sessions.map(s=>{const od=onsiteOperationalDate(s);const d=Number.isFinite(od.ts)?new Date(od.ts).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',weekday:'short'}):'';return `<div class="card session" onclick="openSession('${esc(s.id)}')"><div class="session-title">${d?'<span class="tag warn">'+esc(d)+'</span> ':''}${esc(s.name)}</div><div class="row"><span class="tag">當日名單 ${s.total||0}</span><span class="tag ok">當日可報到 ${s.payable||0}</span><span class="tag">當日已報到 ${s.checkedIn||0}</span><span class="tag warn">當日攤位 ${s.stallCount||0}</span>${s.refundFlag?`<span class="tag bad">退費 ${s.refundFlag}</span>`:''}</div><div class="grid"><div class="stat"><b>${s.checkedIn||0}/${s.payable||0}</b><span>本日報到進度</span></div><div class="stat"><b>${money(s.depositTotal||0)}</b><span>本日應處理押金</span></div><div class="stat"><b>${s.stallCount||0}</b><span>當日攤位</span></div></div><button>查看 ${esc(s.activityDate||'當日')} 名單</button></div>`}).join('')}
 function onsiteSessionDays(s){
   let raw=s&&s.dates||[];
   if(typeof raw==='string'){try{raw=JSON.parse(raw)}catch(_e){raw=[raw]}}
@@ -453,9 +453,9 @@ function filteredRegs(){
     if(onsiteQuickFilter==='unchecked')return r.checkin!=='已報到';
     if(onsiteQuickFilter==='checked')return r.checkin==='已報到';
     if(onsiteQuickFilter==='notTeardown')return String(r.teardown||'未撤場')!=='已撤場';
-    if(onsiteQuickFilter==='allDeposit')return Number(r.deposit||0)>0;
-    if(onsiteQuickFilter==='refundedDeposit')return Number(r.deposit||0)>0&&String(r.depositRefunded||'')==='已退押金';
-    if(onsiteQuickFilter==='notDeposit')return Number(r.deposit||0)>0&&!['已退押金','押金沒收'].includes(String(r.depositRefunded||'未退押金'));
+    if(onsiteQuickFilter==='allDeposit')return r.depositEligible&&Number(r.deposit||0)>0;
+    if(onsiteQuickFilter==='refundedDeposit')return r.depositEligible&&Number(r.deposit||0)>0&&String(r.depositRefunded||'')==='已退押金';
+    if(onsiteQuickFilter==='notDeposit')return r.depositEligible&&Number(r.deposit||0)>0&&!['已退押金','押金沒收'].includes(String(r.depositRefunded||'未退押金'));
     return true;
   });
 }
@@ -532,7 +532,7 @@ function renderRegs(){
         <div class="mobile-reg-buttons">
           ${checkBtn}
           <button class="secondary" onclick="mark('${esc(r.id)}','${r.teardown==='已撤場'?'teardownUndo':'teardownDone'}')">${r.teardown==='已撤場'?'取消撤場':'撤場'}</button>
-          ${hasDeposit?`<button class="secondary" onclick="mark('${esc(r.id)}','${r.depositRefunded==='已退押金'?'depositUnrefund':'depositRefund'}')">${r.depositRefunded==='已退押金'?'取消退押金':'退押金'}</button>`:''}
+          ${hasDeposit?`<button class="secondary" onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositEligible&&r.teardown==='已撤場'&&r.depositRefunded!=='已退押金'?'':'disabled'}>${r.depositRefunded==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>`:''}
           <button class="secondary" onclick="focusOnsiteSeat('${esc(r.id)}')">帶位</button>
           <button class="secondary" onclick="toggleRegMore('${safeId}')">更多</button>
         </div>
@@ -561,7 +561,7 @@ function renderRegs(){
             <button class="warn" onclick="mark('${esc(r.id)}','earlyFlag')">早退</button>
             <button onclick="mark('${esc(r.id)}','teardownDone')" ${r.teardown==='已撤場'?'disabled':''}>已撤場</button>
             <button class="secondary" onclick="mark('${esc(r.id)}','teardownUndo')" ${r.teardown==='已撤場'?'':'disabled'}>取消撤場</button>
-            ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositRefunded==='已退押金'?'disabled':''}>退押金</button><button class="secondary" onclick="mark('${esc(r.id)}','depositUnrefund')" ${r.depositRefunded==='已退押金'?'':'disabled'}>取消退押金</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')">沒收押金</button>`}`:''}
+            ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositEligible&&r.teardown==='已撤場'&&r.depositRefunded!=='已退押金'?'':'disabled'}>${r.depositRefunded==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')" ${r.depositEligible?'':'disabled'}>沒收押金</button>`}`:''}
             <button class="secondary" onclick="mark('${esc(r.id)}','note')">特殊備註</button>
           </div>
         </div>
@@ -601,7 +601,7 @@ function renderRegs(){
         <button class="warn" onclick="mark('${esc(r.id)}','earlyFlag')">早退</button>
         <button onclick="mark('${esc(r.id)}','teardownDone')" ${r.teardown==='已撤場'?'disabled':''}>已撤場</button>
         <button class="secondary" onclick="mark('${esc(r.id)}','teardownUndo')" ${r.teardown==='已撤場'?'':'disabled'}>未撤場</button>
-        ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositRefunded==='已退押金'?'disabled':''}>退押金</button><button class="secondary" onclick="mark('${esc(r.id)}','depositUnrefund')" ${r.depositRefunded==='已退押金'?'':'disabled'}>未退</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')">沒收押金</button>`}`:''}
+        ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositEligible&&r.teardown==='已撤場'&&r.depositRefunded!=='已退押金'?'':'disabled'}>${r.depositRefunded==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')" ${r.depositEligible?'':'disabled'}>沒收押金</button>`}`:''}
         <button class="secondary" onclick="mark('${esc(r.id)}','note')">特殊備註</button>
       </div>
     </div>`;
