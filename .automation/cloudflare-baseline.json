@@ -1,0 +1,118 @@
+{
+  "generated_at": "2026-08-15T08:58:55.964Z",
+  "repository": "ndiangrace-create/2bL",
+  "git_ref": "refs/heads/agent/2bl-safe-automation",
+  "git_sha": "8805009b20efef1f16414f79e2745523abd62363",
+  "cloudflare_account_suffix": "925c44",
+  "token_status": "active",
+  "worker_name": "2bl-v7",
+  "forbidden_worker_untouched": "tobeloved-api",
+  "deployed_bundle_sha256": "9f513c7f34a4a796f6b63329e1d71e9e2dcd8121194ca2c8a6ff550cdba0cbaf",
+  "deployed_bundle_content_type": "multipart/form-data; boundary=1f42356a38171928c3169743437b4df1812b14715a90a73e9c83e6a2e20c",
+  "deployed_content_sha256": "4fd69d3e8af0ecff402a723ff5e7ace9bc17a1a4fb92789a0de2bd90ea855fc4",
+  "deployed_content_type": "application/javascript+module",
+  "deployed_entrypoint": "worker.js",
+  "deployed_parts": [
+    {
+      "name": "worker.js",
+      "content_type": "application/javascript+module",
+      "size": 463712
+    }
+  ],
+  "compatibility_date": "2026-06-25",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "usage_model": "standard",
+  "bindings": [
+    {
+      "name": "ADMIN_SITE_URL ",
+      "type": "plain_text"
+    },
+    {
+      "name": "AUTH_SECRET",
+      "type": "secret_text"
+    },
+    {
+      "name": "FRONTEND_SITE_URL",
+      "type": "plain_text"
+    },
+    {
+      "name": "GOOGLE_CLIENT_ID",
+      "type": "plain_text"
+    },
+    {
+      "name": "GOOGLE_CLIENT_SECRET",
+      "type": "secret_text"
+    },
+    {
+      "name": "GOOGLE_REDIRECT_URI",
+      "type": "plain_text"
+    },
+    {
+      "name": "GOOGLE_UNIFIED_REDIRECT_URI",
+      "type": "plain_text"
+    },
+    {
+      "name": "JWT_SECRET",
+      "type": "secret_text"
+    },
+    {
+      "name": "MAIL_FROM",
+      "type": "secret_text"
+    },
+    {
+      "name": "ONSITE_SITE_URL",
+      "type": "plain_text"
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "type": "secret_text"
+    },
+    {
+      "name": "PLATFORM_ADMIN_EMAIL",
+      "type": "secret_text"
+    },
+    {
+      "name": "RESEND_KEY",
+      "type": "secret_text"
+    },
+    {
+      "name": "SUPABASE_KEY",
+      "type": "secret_text"
+    },
+    {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "type": "secret_text"
+    },
+    {
+      "name": "SUPABASE_URL",
+      "type": "plain_text"
+    }
+  ],
+  "secret_names": [
+    "AUTH_SECRET",
+    "GOOGLE_CLIENT_SECRET",
+    "JWT_SECRET",
+    "MAIL_FROM",
+    "OPENAI_API_KEY",
+    "PLATFORM_ADMIN_EMAIL",
+    "RESEND_KEY",
+    "SUPABASE_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY"
+  ],
+  "secrets_endpoint_available": true,
+  "workers_dev": {
+    "endpoint_available": true,
+    "enabled": true,
+    "previews_enabled": true
+  },
+  "routes": [
+    {
+      "zone_name": "2b-love.com",
+      "pattern": "2b-love.com/s/*"
+    }
+  ],
+  "custom_domains": [],
+  "current_deployment": null
+}

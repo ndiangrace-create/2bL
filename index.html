@@ -2750,7 +2750,7 @@ function agreementRequiredOn(v){ return !(v===false || v==='false' || v===0 || v
 // ══════════════════════════════════════════════════════════════
 // 活動限定拍照框（H5：問卷 → 相機 → 套框 → 下載／分享）
 // ══════════════════════════════════════════════════════════════
-const PHOTO_DONE_KEY='2bl_photo_lead_done';
+let PHOTO_LEAD_DONE=false;
 let PF={frame:null,sessionId:'',stream:null,shotDataUrl:'',pickedImg:null,facing:'user',zoom:1,win:null,fit:'cover'};
 async function loadPhotoFrames(){
   try{ const r=await apiPost({action:'listActivePhotoFrames'}); ST.photoFrames=(r&&r.frames)||[]; }
@@ -2919,8 +2919,7 @@ function openPhotoFlow(frameId, sessionId){
   m.style.display='flex';
   document.body.style.overflow='hidden';
   const t=document.getElementById('pfTitle'); if(t) t.textContent=f.name||'領取限定拍照框';
-  let done=false; try{ done=localStorage.getItem(PHOTO_DONE_KEY)==='1'; }catch(e){}
-  if(done) startPhotoCamera(); else showPhotoSection('survey');
+  if(PHOTO_LEAD_DONE) startPhotoCamera(); else showPhotoSection('survey');
 }
 function closePhotoFlow(){
   stopPhotoCamera();
@@ -2958,7 +2957,7 @@ async function submitPhotoSurvey(){
       phone:String((document.getElementById('pf_in_phone')||{}).value||'').trim(),
       firstTime:first,source:source,consent:consent,
       frameId:PF.frame?PF.frame.id:'',sessionId:PF.sessionId||''});
-    try{ localStorage.setItem(PHOTO_DONE_KEY,'1'); }catch(e){}
+    PHOTO_LEAD_DONE=true;
     startPhotoCamera();
   }catch(e){ toast&&toast('送出失敗：'+(e&&e.message?e.message:e)); }
   finally{ if(btn){ btn.disabled=false; btn.textContent='送出，開始拍照'; } }
@@ -3294,7 +3293,6 @@ function renderActCard(s, mode){
     </div>
   </div>
   <div class="act-card-actions">
-    <button class="act-card-fav" onclick="toggleFav('${id}',this)" title="收藏">🤍</button>
     <button class="act-card-share" onclick="shareSessionCard('${id}','${name.replace(/'/g,"\'")}',event)" title="分享">🔗</button>
     <button class="act-card-detail" onclick="openSessionById('${id}')">查看詳情</button>
     ${(typeof photoFrameBtnHtml==='function'?photoFrameBtnHtml(s):'')}
@@ -3307,15 +3305,6 @@ function renderActCard(s, mode){
 function shareSessionCard(id, name, event){
   if(event) event.stopPropagation();
   openSharePanel('session', id, name);
-}
-
-// ── 收藏 ──
-function toggleFav(id, btn){
-  const favs = JSON.parse(localStorage.getItem('fav_sessions')||'[]');
-  const idx = favs.indexOf(id);
-  if(idx>=0){ favs.splice(idx,1); btn.textContent='🤍'; toast('已取消收藏'); }
-  else { favs.push(id); btn.textContent='❤️'; toast('已加入收藏'); }
-  localStorage.setItem('fav_sessions', JSON.stringify(favs));
 }
 
 // ── openSessionById（開啟單場報名表）──
@@ -3357,10 +3346,10 @@ function memberSaveEmail(email){
   try{localStorage.setItem('tb_member_email', String(email||'').trim()); localStorage.removeItem('tb_member');}catch(e){}
 }
 function memberSafePhone(){
-  try{return String(localStorage.getItem('tb_member_phone')||'').trim();}catch(e){return '';}
+  return String((ST&&ST.member&&ST.member.phone)||'').trim();
 }
 function memberSavePhone(phone){
-  try{localStorage.setItem('tb_member_phone', String(phone||'').trim());}catch(e){}
+  ST.member={...(ST.member||{}),phone:String(phone||'').trim()};
 }
 function memberShowLogin(){
   const loginArea=$('memberLoginArea');
@@ -5824,8 +5813,8 @@ async function submitReg(ev){
     ST.memberEmail=email;
     ST.currentBundle=null;
     try{ localStorage.setItem('tb_member_email',email||''); }catch(e){}
-    // 同步存入 phone，讓 getMyRegs 查詢時能帶入
-    if(phone) { try{ localStorage.setItem('tb_member_phone', phone); }catch(e){} }
+    // 手機正式來源為 members；畫面執行期間只同步到目前會員狀態。
+    if(phone) ST.member={...(ST.member||{}),phone:String(phone).trim()};
     scheduleMemberRecordsSync('after-register',500);
     // 更新本地 member 資料（包含發票資訊，下次報名自動帶入）
     const _brand=($('f_brand')?.value||'').trim();

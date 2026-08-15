@@ -1,0 +1,99 @@
+name: 2BL 安全自動流
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 只允許唯讀盤點
+        required: true
+        default: audit
+        type: choice
+        options: [audit]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: 2bl-safe-automation-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  readonly-audit:
+    name: Cloudflare／資料契約唯讀核對（禁止部署）
+    runs-on: ubuntu-latest
+    if: github.repository == 'ndiangrace-create/2bL'
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      BOOTSTRAP_SOURCE: "false"
+      ALLOW_WORKER_DIFF: "true"
+
+    steps:
+      - name: 讀取工作分支
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 鎖定正式來源
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REPOSITORY}" = "ndiangrace-create/2bL"
+          test -n "${CLOUDFLARE_ACCOUNT_ID}"
+          test -n "${CLOUDFLARE_API_TOKEN}"
+          test "2bl-v7" != "tobeloved-api"
+
+      - name: 語法檢查
+        run: |
+          node --check worker.js
+          node --check scripts/cloudflare-readonly-audit.mjs
+          node --check scripts/cloudflare-deployment-guard.mjs
+          node --check scripts/verify-data-contract.mjs
+
+      - name: Cloudflare 唯讀盤點與漂移核對
+        run: node scripts/cloudflare-readonly-audit.mjs
+
+      - name: 正式 API 與 Supabase 唯讀連線測試
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 2 \
+            'https://2bl-v7.ndiangrace.workers.dev/?action=ping&tenant=tuibile' \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const r=JSON.parse(s);if(!r.ok||!String(r.supabase||'').includes('正常')){console.error(JSON.stringify(r));process.exit(1)}console.log(JSON.stringify({ok:r.ok,tenant:r.tenant,supabase:r.supabase,staffCount:r.staffCount,sessionCount:r.sessionCount}))})"
+
+      - name: 所有資料進出與名稱統一檢查
+        run: node scripts/verify-data-contract.mjs
+
+      - name: 驗證嚴格部署門
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-data-contract.mjs --strict > .automation/data-contract-strict.log 2>&1
+          echo "嚴格部署門通過；本工作流仍不會部署。"
+
+      - name: Wrangler 安全封裝 dry-run（不部署）
+        run: |
+          npx --yes wrangler@4.102.0 --version
+          npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --dry-run --strict --outdir .automation/wrangler-dry-run
+
+      - name: 顯示部署阻擋狀態
+        shell: bash
+        run: |
+          node -e "const r=require('./.automation/data-contract-report.json'); console.log(JSON.stringify({deployment_ready:r.deployment_ready,blockers:r.blockers,unknown_tables:r.unknown_tables,unknown_routines:r.unknown_routines,disallowed_local_storage:r.local_storage.disallowed},null,2))"
+          echo "本工作流沒有 push、merge、deploy、migration、Routes 或 Domains 寫入步驟。"
+
+      - name: 保存非機密盤點證據
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2bl-readonly-audit-${{ github.run_id }}
+          path: |
+            .automation/cloudflare-audit.json
+            .automation/data-contract-report.json
+            .automation/supabase-schema-audit.json
+          if-no-files-found: warn
+          retention-days: 14
