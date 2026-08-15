@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "1a3da19a5ac89003174cf65aed473ce87c9d71e3",
-  "expected_cloudflare_version": "0d1fcf65-c13d-48dc-9280-9e1145ca6dc8",
-  "reason": "每日報到、撤場、押金與活動金正式上線（更新安全基準後重試）"
+  "approved_source_commit": "cbbe5de1f7a4e9bda6331265ed6c60a3a3aba5e8",
+  "expected_cloudflare_version": "2ecf310d-5f08-43e3-b6bf-81dd0560611d",
+  "reason": "工讀生手機入口兩日切換與後台場次隔離修正"
 }
