@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-15T00:00:00+08:00",
-  "mode": "read_only",
+  "generated_at": "2026-08-15T11:01:48.235Z",
+  "mode": "verified_after_authorized_security_migration",
   "project": {
     "id": "douhmxipedgpfbvfynbq",
     "name": "2bl",
@@ -10,8 +10,8 @@
   },
   "guardrails": {
     "forbidden_project_name": "DOING_SaaS",
-    "database_mutated": false,
-    "migration_applied": false,
+    "database_mutated": true,
+    "migration_applied": true,
     "edge_function_deployed": false
   },
   "inventory": {
@@ -22,67 +22,231 @@
     "anon_authenticated_table_privilege_count": 742,
     "edge_function_count": 0,
     "tables": [
-      "ai_visual_jobs", "announcements", "audit_logs", "consignment_inventory_movements",
-      "consignment_product_variants", "consignment_products", "consignment_registrations",
-      "consignment_sale_items", "consignment_sales", "consignment_settings", "consignment_slots",
-      "email_templates", "error_logs", "events", "finance_audit_logs", "finance_item_audit",
-      "finance_items", "finance_share_links", "invoices", "member_credit_ledger",
-      "member_invoice_profiles", "members", "onsite_passcodes", "operation_settlements",
-      "operation_share_settings", "payment_profiles", "payment_provider_configs", "payments",
-      "photo_frames", "photo_leads", "platform_staff", "refund_transactions",
-      "registration_day_ops", "registration_day_seats", "registration_items",
-      "registration_resolutions", "registrations", "report_download_logs", "report_exports",
-      "report_permissions", "report_templates", "seat_assignments", "seat_maps",
-      "seat_operation_logs", "session_bundles", "session_visual_assets", "sessions",
-      "short_links", "staff", "staff_action_logs", "staff_session_permissions", "stalls",
-      "system_settings", "tenant_agreement_templates", "tenant_settings", "tenants",
+      "ai_visual_jobs",
+      "announcements",
+      "audit_logs",
+      "consignment_inventory_movements",
+      "consignment_product_variants",
+      "consignment_products",
+      "consignment_registrations",
+      "consignment_sale_items",
+      "consignment_sales",
+      "consignment_settings",
+      "consignment_slots",
+      "email_templates",
+      "error_logs",
+      "events",
+      "finance_audit_logs",
+      "finance_item_audit",
+      "finance_items",
+      "finance_share_links",
+      "invoices",
+      "member_credit_ledger",
+      "member_invoice_profiles",
+      "members",
+      "onsite_passcodes",
+      "operation_settlements",
+      "operation_share_settings",
+      "payment_profiles",
+      "payment_provider_configs",
+      "payments",
+      "photo_frames",
+      "photo_leads",
+      "platform_staff",
+      "refund_transactions",
+      "registration_day_ops",
+      "registration_day_seats",
+      "registration_items",
+      "registration_resolutions",
+      "registrations",
+      "report_download_logs",
+      "report_exports",
+      "report_permissions",
+      "report_templates",
+      "seat_assignments",
+      "seat_maps",
+      "seat_operation_logs",
+      "session_bundles",
+      "session_visual_assets",
+      "sessions",
+      "short_links",
+      "staff",
+      "staff_action_logs",
+      "staff_session_permissions",
+      "stalls",
+      "system_settings",
+      "tenant_agreement_templates",
+      "tenant_settings",
+      "tenants",
       "venue_map_templates"
     ],
     "routines": [
-      "adjust_member_credit_atomic", "apply_member_credit_atomic", "claim_session_slot",
-      "complete_deposit_refund_atomic", "complete_partial_day_refund_atomic",
-      "complete_registration_refund_atomic", "consignment_adjust_inventory",
-      "consignment_create_application", "consignment_pos_checkout",
-      "consignment_pos_void_sale", "consignment_review_application", "consignment_save_product",
-      "consignment_submit_products", "create_bundle_registrations_atomic", "purge_error_logs",
-      "release_session_slot", "resolve_registration_atomic", "restore_member_credit_atomic",
-      "rotate_onsite_passcode", "save_seat_marker_positions_atomic", "seat_expand_blank_board",
-      "seat_rebuild_blank_board", "seat_sync_paid_roster_numbers",
-      "set_session_main_visual_atomic", "short_link_hit", "sync_seat_roster_atomic",
+      "adjust_member_credit_atomic",
+      "apply_member_credit_atomic",
+      "claim_session_slot",
+      "complete_deposit_refund_atomic",
+      "complete_partial_day_refund_atomic",
+      "complete_registration_refund_atomic",
+      "consignment_adjust_inventory",
+      "consignment_create_application",
+      "consignment_pos_checkout",
+      "consignment_pos_void_sale",
+      "consignment_review_application",
+      "consignment_save_product",
+      "consignment_submit_products",
+      "create_bundle_registrations_atomic",
+      "purge_error_logs",
+      "release_session_slot",
+      "resolve_registration_atomic",
+      "restore_member_credit_atomic",
+      "rotate_onsite_passcode",
+      "save_seat_marker_positions_atomic",
+      "seat_expand_blank_board",
+      "seat_rebuild_blank_board",
+      "seat_sync_paid_roster_numbers",
+      "set_session_main_visual_atomic",
+      "short_link_hit",
+      "sync_seat_roster_atomic",
       "void_manual_member_credit_atomic"
     ]
   },
   "code_schema_mismatches": {
-    "missing_relations_referenced_by_worker": [
-      "admin_login_logs", "billing_logs", "tenant_apply_logs"
-    ],
-    "missing_routines_referenced_by_worker": ["operation_session_report"]
+    "missing_relations_referenced_by_worker": [],
+    "missing_routines_referenced_by_worker": []
   },
   "name_unification": [
-    {"table":"events","legacy":"name","canonical":"title","only_legacy":0,"only_canonical":1,"both_equal":4,"both_conflict":0},
-    {"table":"members","legacy":"brand","canonical":"brand_name","only_legacy":0,"only_canonical":82,"both_equal":0,"both_conflict":0},
-    {"table":"payments","legacy":"reg_id","canonical":"registration_id","only_legacy":0,"only_canonical":65,"both_equal":0,"both_conflict":0},
-    {"table":"registrations","legacy":"pay_status","canonical":"payment_status","only_legacy":0,"only_canonical":24,"both_equal":33,"both_conflict":56},
-    {"table":"registrations","legacy":"pay_method","canonical":"payment_method","only_legacy":0,"only_canonical":65,"both_equal":0,"both_conflict":0},
-    {"table":"registrations","legacy":"amount","canonical":"total_amount","only_legacy":0,"only_canonical":0,"both_equal":113,"both_conflict":0},
-    {"table":"registrations","legacy":"stall_no","canonical":"stall_number","only_legacy":0,"only_canonical":14,"both_equal":0,"both_conflict":0},
-    {"table":"stalls","legacy":"registration_id","canonical":"reg_id","only_legacy":0,"only_canonical":14,"both_equal":0,"both_conflict":0},
-    {"table":"stalls","legacy":"stall_no","canonical":"seat_code","only_legacy":0,"only_canonical":0,"both_equal":158,"both_conflict":0},
-    {"table":"stalls","legacy":"price_adjustment","canonical":"price_delta","only_legacy":0,"only_canonical":0,"both_equal":149,"both_conflict":9},
-    {"table":"stalls","legacy":"sort_order","canonical":"map_order","only_legacy":0,"only_canonical":0,"both_equal":0,"both_conflict":158},
-    {"table":"sessions","legacy":"seat_auto_layout_days_before","canonical":"seat_assign_days_before","only_legacy":0,"only_canonical":0,"both_equal":25,"both_conflict":0},
-    {"table":"tenants","legacy":"plan","canonical":"plan_type","only_legacy":0,"only_canonical":0,"both_equal":0,"both_conflict":1}
+    {
+      "table": "events",
+      "legacy": "name",
+      "canonical": "title",
+      "only_legacy": 0,
+      "only_canonical": 1,
+      "both_equal": 4,
+      "both_conflict": 0
+    },
+    {
+      "table": "members",
+      "legacy": "brand",
+      "canonical": "brand_name",
+      "only_legacy": 0,
+      "only_canonical": 82,
+      "both_equal": 0,
+      "both_conflict": 0
+    },
+    {
+      "table": "payments",
+      "legacy": "reg_id",
+      "canonical": "registration_id",
+      "only_legacy": 0,
+      "only_canonical": 65,
+      "both_equal": 0,
+      "both_conflict": 0
+    },
+    {
+      "table": "registrations",
+      "legacy": "pay_status",
+      "canonical": "payment_status",
+      "only_legacy": 0,
+      "only_canonical": 24,
+      "both_equal": 33,
+      "both_conflict": 56
+    },
+    {
+      "table": "registrations",
+      "legacy": "pay_method",
+      "canonical": "payment_method",
+      "only_legacy": 0,
+      "only_canonical": 65,
+      "both_equal": 0,
+      "both_conflict": 0
+    },
+    {
+      "table": "registrations",
+      "legacy": "amount",
+      "canonical": "total_amount",
+      "only_legacy": 0,
+      "only_canonical": 0,
+      "both_equal": 113,
+      "both_conflict": 0
+    },
+    {
+      "table": "registrations",
+      "legacy": "stall_no",
+      "canonical": "stall_number",
+      "only_legacy": 0,
+      "only_canonical": 14,
+      "both_equal": 0,
+      "both_conflict": 0
+    },
+    {
+      "table": "stalls",
+      "legacy": "registration_id",
+      "canonical": "reg_id",
+      "only_legacy": 0,
+      "only_canonical": 14,
+      "both_equal": 0,
+      "both_conflict": 0
+    },
+    {
+      "table": "stalls",
+      "legacy": "stall_no",
+      "canonical": "seat_code",
+      "only_legacy": 0,
+      "only_canonical": 0,
+      "both_equal": 158,
+      "both_conflict": 0
+    },
+    {
+      "table": "stalls",
+      "legacy": "price_adjustment",
+      "canonical": "price_delta",
+      "only_legacy": 0,
+      "only_canonical": 0,
+      "both_equal": 149,
+      "both_conflict": 9
+    },
+    {
+      "table": "stalls",
+      "legacy": "sort_order",
+      "canonical": "map_order",
+      "only_legacy": 0,
+      "only_canonical": 0,
+      "both_equal": 0,
+      "both_conflict": 158
+    },
+    {
+      "table": "sessions",
+      "legacy": "seat_auto_layout_days_before",
+      "canonical": "seat_assign_days_before",
+      "only_legacy": 0,
+      "only_canonical": 0,
+      "both_equal": 25,
+      "both_conflict": 0
+    },
+    {
+      "table": "tenants",
+      "legacy": "plan",
+      "canonical": "plan_type",
+      "only_legacy": 0,
+      "only_canonical": 0,
+      "both_equal": 0,
+      "both_conflict": 1
+    }
   ],
   "deprecated_data": {
-    "sessions.stall_list_json": {"total_rows": 25, "populated_rows": 1, "canonical_relation": "stalls"}
+    "sessions.stall_list_json": {
+      "total_rows": 25,
+      "populated_rows": 1,
+      "canonical_relation": "stalls"
+    }
   },
-  "security_blockers": [
-    "57 個 public 資料表雖啟用 RLS，但目前沒有任何 policy；Data API grant 與 RLS 必須分開治理。",
-    "claim_session_slot 與 release_session_slot 是 SECURITY DEFINER、anon/authenticated 可執行，且未固定 search_path。",
-    "complete_deposit_refund_atomic、complete_partial_day_refund_atomic、complete_registration_refund_atomic 是 SECURITY DEFINER 且 anon/authenticated 可執行。"
-  ],
+  "security_blockers": [],
   "performance_findings": [
     "venue_map_templates 存在重複索引 uq_venue_map_templates_tenant_name 與 venue_map_templates_name_uidx。"
   ],
-  "deployment_readiness": "blocked"
+  "deployment_readiness": "ready",
+  "security_findings": [
+    "57 個 public 資料表啟用 RLS 且沒有 policy；目前瀏覽器不直連 Supabase，正式存取只由 Worker 的 service_role 執行，因此維持封閉狀態並持續監控。",
+    "五個 SECURITY DEFINER RPC 已撤銷 public、anon、authenticated 的 EXECUTE，只保留 service_role；search_path 已固定為 public。"
+  ]
 }
