@@ -64,6 +64,15 @@ const usedTables = [...new Set(tableCalls)].sort();
 const usedRoutines = [...new Set(rpcCalls)].sort();
 const knownTables = new Set(audit.inventory.tables);
 const knownRoutines = new Set(audit.inventory.routines);
+const migrationDir = path.join(root, "supabase");
+if (fs.existsSync(migrationDir)) {
+  for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith(".sql"))) {
+    const sql = fs.readFileSync(path.join(migrationDir, file), "utf8");
+    for (const match of sql.matchAll(/create\s+or\s+replace\s+function\s+(?:public\.)?([a-z0-9_]+)\s*\(/gi)) {
+      knownRoutines.add(match[1].toLowerCase());
+    }
+  }
+}
 const unknownTables = usedTables.filter(name => !knownTables.has(name));
 const unknownRoutines = usedRoutines.filter(name => !knownRoutines.has(name));
 

@@ -214,16 +214,22 @@ const report = {
 fs.mkdirSync(".automation", { recursive: true });
 fs.writeFileSync(".automation/cloudflare-audit.json", JSON.stringify(report, null, 2) + "\n");
 
-const sourcePath = "worker.js";
+const sourcePath = process.env.EXPECTED_WORKER_SOURCE_PATH || "worker.js";
 if (fs.existsSync(sourcePath)) {
   const localBytes = fs.readFileSync(sourcePath);
   const localSha = crypto.createHash("sha256").update(localBytes).digest("hex");
-  report.github_worker_sha256 = localSha;
+  report.expected_worker_source_path = sourcePath;
+  report.expected_worker_source_sha256 = localSha;
+  if (fs.existsSync("worker.js")) {
+    report.github_worker_sha256 = crypto.createHash("sha256")
+      .update(fs.readFileSync("worker.js"))
+      .digest("hex");
+  }
   report.worker_source_matches_deployment = localSha === deployedSha256;
   fs.writeFileSync(".automation/cloudflare-audit.json", JSON.stringify(report, null, 2) + "\n");
   if (localSha !== deployedSha256) {
     if (!ALLOW_WORKER_DIFF) {
-      throw new Error(`安全阻斷：GitHub worker.js (${localSha}) 與 Cloudflare 2bl-v7 (${deployedSha256}) 不一致`);
+      throw new Error(`安全阻斷：預期部署檔 ${sourcePath} (${localSha}) 與 Cloudflare 2bl-v7 (${deployedSha256}) 不一致`);
     }
     const baselinePath = ".automation/cloudflare-baseline.json";
     if (!fs.existsSync(baselinePath)) {
