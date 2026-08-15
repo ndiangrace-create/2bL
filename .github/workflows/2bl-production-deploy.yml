@@ -1,0 +1,96 @@
+name: 2BL 正式部署（雙重人工鎖）
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 必須輸入「確認部署 2bl-v7」
+        required: true
+        type: string
+      expected_commit:
+        description: 已核准且已合併至 main 的完整 commit SHA
+        required: true
+        type: string
+      expected_cloudflare_version:
+        description: 部署前報告中的 Cloudflare version ID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: 2bl-v7-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: 僅部署既有 2bl-v7
+    if: github.repository == 'ndiangrace-create/2bL' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: 2bl-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      EXPECTED_CLOUDFLARE_VERSION_ID: ${{ inputs.expected_cloudflare_version }}
+      ALLOW_WORKER_DIFF: "true"
+
+    steps:
+      - name: 讀取 main 的指定版本
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.expected_commit }}
+          fetch-depth: 0
+
+      - name: 驗證人工確認、main 與 commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ inputs.confirmation }}" = "確認部署 2bl-v7"
+          test "${GITHUB_REPOSITORY}" = "ndiangrace-create/2bL"
+          test "${GITHUB_REF}" = "refs/heads/main"
+          test "$(git rev-parse HEAD)" = "${{ inputs.expected_commit }}"
+          test "$(git rev-parse origin/main)" = "${{ inputs.expected_commit }}"
+          test "2bl-v7" != "tobeloved-api"
+
+      - name: 語法與資料契約嚴格檢查
+        run: |
+          node --check worker.js
+          node --check scripts/cloudflare-readonly-audit.mjs
+          node --check scripts/cloudflare-deployment-guard.mjs
+          node --check scripts/verify-data-contract.mjs
+          node scripts/verify-data-contract.mjs --strict
+
+      - name: 部署前唯讀核對 Cloudflare
+        run: |
+          node scripts/cloudflare-readonly-audit.mjs
+          node scripts/cloudflare-deployment-guard.mjs pre
+
+      - name: 固定 Wrangler 版本並只做 dry-run
+        run: |
+          npx --yes wrangler@4.102.0 --version
+          npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --dry-run --strict --outdir .automation/wrangler-dry-run
+
+      - name: 部署既有 Worker（不管理 Routes／Domains／Bindings）
+        run: |
+          npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --strict --keep-vars \
+            --message "GitHub ${GITHUB_SHA}; approved manual production deployment"
+
+      - name: 部署後核對來源與受保護設定
+        env:
+          ALLOW_WORKER_DIFF: "false"
+        run: |
+          node scripts/cloudflare-readonly-audit.mjs
+          node scripts/cloudflare-deployment-guard.mjs post
+
+      - name: 保存部署證據
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2bl-v7-deployment-evidence-${{ github.run_id }}
+          path: |
+            .automation/cloudflare-audit.json
+            .automation/data-contract-report.json
+          if-no-files-found: error
+          retention-days: 30
