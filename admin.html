@@ -5346,8 +5346,8 @@ function renderPasscodeCards(){
     const codeBox = p ? '<span style="font-size:26px;font-weight:900;letter-spacing:4px;color:#2a6a10">'+safe(p.code)+'</span>' : '<span style="color:#999">尚未產生</span>';
     const win = (p&&p.openFrom) ? '<div style="font-size:12px;color:#999;margin-top:4px">開放：'+safe(pcDate(p.openFrom))+' ～ '+safe(pcDate(p.openUntil))+'</div>' : '';
     const btns = p
-      ? '<button class="btn small" onclick="copyOnsiteCode(\''+attr(s.id)+'\')">複製碼</button><button class="btn small" onclick="shareOnsitePasscode(\''+attr(s.id)+'\')">分享</button><button class="btn secondary small" onclick="copyOnsiteLink()">複製連結</button><button class="btn secondary small" onclick="showOnsitePasscodeQr(\''+attr(s.id)+'\')">QR Code</button><button class="btn secondary small" onclick="genPasscode(\''+attr(s.id)+'\',this)">換碼</button><button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="togglePasscode(\''+attr(p.id)+'\',false,this)">停用</button>'
-      : '<button class="btn small" onclick="genPasscode(\''+attr(s.id)+'\',this)">產生通行碼</button>';
+      ? '<button class="btn small" onclick="copyOnsiteCode(\''+attr(s.id)+'\')">複製碼</button><button class="btn small" onclick="shareOnsitePasscode(\''+attr(s.id)+'\')">分享</button><button class="btn secondary small" onclick="copyOnsiteLink()">複製連結</button><button class="btn secondary small" onclick="showOnsitePasscodeQr(\''+attr(s.id)+'\')">QR Code</button><button class="btn secondary small" onclick="genPasscode(\''+attr(s.id)+'\',this,true,\''+attr(p.id)+'\')">換碼</button><button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="togglePasscode(\''+attr(p.id)+'\',false,this)">停用</button>'
+      : '<button class="btn small" onclick="genPasscode(\''+attr(s.id)+'\',this,false,\'\')">產生通行碼</button>';
     return '<div class="card" style="padding:14px;margin-bottom:10px">'
       +'<b>'+safe(s.name||s.id)+'</b>'+(Number.isFinite(sessionOperationalTs(s).ts)?'<span class="sub" style="margin-left:8px">'+safe(new Date(sessionOperationalTs(s).ts).toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'}))+'</span>':'')
       +'<div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap">'+codeBox+btns+'</div>'+win
@@ -5355,10 +5355,11 @@ function renderPasscodeCards(){
       +'</div>';
   }).join('');
 }
-async function genPasscode(sid, btn){
+async function genPasscode(sid, btn, rotate=false, currentId=''){
+  if(rotate&&!confirm('換碼後，先前分享的通行碼會立即失效。確定要換碼嗎？'))return;
   const inp=$('pc_note_'+sid); const note=(inp?inp.value:'').trim();
   const old=btn.textContent; btn.disabled=true; btn.textContent='產生中…';
-  try{ await apiPost({action:'onsitePasscodeGenerate', sessionId:sid, assignee:note}); const list=await api({action:'onsitePasscodeList'}); AdminState.passcodes=Array.isArray(list)?list:[]; renderPasscodeCards(); toast('已產生通行碼'); }
+  try{ const result=await apiPost({action:'onsitePasscodeGenerate', sessionId:sid, assignee:note, rotate, currentId}); const list=await api({action:'onsitePasscodeList'}); AdminState.passcodes=Array.isArray(list)?list:[]; renderPasscodeCards(); toast(result&&result.staleRequest?'通行碼已由另一個操作更新，已載入目前有效碼':(rotate?'已更換通行碼':'已產生通行碼')); }
   catch(e){ toast('產生失敗：'+e.message,6000); btn.disabled=false; btn.textContent=old; }
 }
 async function togglePasscode(id, active, btn){
