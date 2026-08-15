@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "0efb23c7c6be53e95e122c6eac3c868148974c23",
+  "approved_source_commit": "1a3da19a5ac89003174cf65aed473ce87c9d71e3",
   "expected_cloudflare_version": "0d1fcf65-c13d-48dc-9280-9e1145ca6dc8",
-  "reason": "每日報到、撤場、押金與活動金正式上線"
+  "reason": "每日報到、撤場、押金與活動金正式上線（更新安全基準後重試）"
 }
