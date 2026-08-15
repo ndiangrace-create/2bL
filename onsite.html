@@ -234,6 +234,31 @@
   border-color:#e7e5df!important;
 }
 
+/* DESKTOP_REG_CARD_REFLOW_20260816：品牌在左、攤位在右，資料改成閱讀小格，長備註可展開。 */
+@media(min-width:1100px){
+  #regsList .desktop-reg-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:9px}
+  #regsList .desktop-reg-title{min-width:0;flex:1}
+  #regsList .desktop-reg-title h3{font-size:20px;line-height:1.25;margin:0 0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #regsList .desktop-reg-status{display:flex;gap:5px;flex-wrap:wrap}
+  #regsList .desktop-reg-status .tag{font-size:11.5px;padding:3px 7px}
+  #regsList .desktop-reg-header .position-banner{flex:0 0 auto;margin:0;justify-content:flex-end}
+  #regsList .desktop-reg-header .position-label:first-child{display:none}
+  #regsList .desktop-reg-header .position-no{font-size:24px;border-radius:10px;padding:7px 10px}
+  #regsList .desktop-reg-info{display:grid;grid-template-columns:1.25fr .85fr 1fr;gap:7px}
+  #regsList .desktop-info-cell{min-width:0;background:#f8faf8;border:1px solid #e4ebe7;border-radius:10px;padding:7px 8px}
+  #regsList .desktop-info-cell span{display:block;color:#73807c;font-size:11px;font-weight:850;margin-bottom:2px}
+  #regsList .desktop-info-cell b{display:block;color:#24332f;font-size:13.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #regsList .desktop-info-cell:last-child:nth-child(3n+2){grid-column:span 2}
+  #regsList .desktop-reg-note{margin-top:7px;border:1px solid #e7e4dd;border-radius:10px;background:#fbfaf7;overflow:hidden}
+  #regsList .desktop-reg-note summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px;padding:7px 8px;cursor:pointer;list-style:none}
+  #regsList .desktop-reg-note summary::-webkit-details-marker{display:none}
+  #regsList .desktop-reg-note summary span{font-size:11px;color:#7b746b;font-weight:900}
+  #regsList .desktop-reg-note summary b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#4d4943}
+  #regsList .desktop-reg-note summary i{font-style:normal;font-size:11px;color:#8d887f}
+  #regsList .desktop-reg-note[open] summary i{transform:rotate(180deg)}
+  #regsList .desktop-reg-note div{border-top:1px dashed #e2ddd4;padding:8px;font-size:12.5px;line-height:1.45;overflow-wrap:anywhere}
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
@@ -627,27 +652,30 @@ function renderRegs(){
 
       <!-- 桌機沿用完整資料卡 -->
       <div class="reg-left">
-        <h3>${esc(r.brand||'未填品牌')}</h3>
-        <div class="position-banner"><span class="position-label">位置</span><span class="position-no ${r.stallNumber?'':'none'}">${seat}</span><span class="position-label">${r.stallCount||1} 攤</span></div>
-        <div class="row" style="margin-bottom:8px">
-          <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
-          <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span>
-          <span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>
-          <span class="tag ${r.teardown==='已撤場'?'ok':''}">${esc(r.teardown||'未撤場')}</span>
-          ${r.violation?`<span class="tag bad">違規：${esc(r.violation)}</span>`:''}
-          ${depositTag}
-          ${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}
+        <div class="desktop-reg-header">
+          <div class="desktop-reg-title">
+            <h3>${esc(r.brand||'未填品牌')}</h3>
+            <div class="desktop-reg-status">
+              <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
+              <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span>
+              <span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>
+              <span class="tag ${r.teardown==='已撤場'?'ok':''}">${esc(r.teardown||'未撤場')}</span>
+              ${r.violation?`<span class="tag bad">違規：${esc(r.violation)}</span>`:''}
+              ${depositTag}
+              ${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}
+            </div>
+          </div>
+          <div class="position-banner"><span class="position-label">位置</span><span class="position-no ${r.stallNumber?'':'none'}">${seat}</span><span class="position-label">${r.stallCount||1} 攤</span></div>
         </div>
-        <div class="kv">
-          <div class="k">聯絡人</div><div>${esc(r.name)}｜${esc(r.phone)}</div>
-          <div class="k">已繳金額</div><div>${money(r.amount||r.totalAmount||0)}</div>
-          <div class="k">付款時間</div><div>${dt(r.paidAt)}</div>
-          <div class="k">攤位數</div><div>${r.stallCount||1}</div>
-          <div class="k">設備</div><div><b>${equipment}</b></div>
-          <div class="k">押金</div><div>${money(r.deposit||0)}　${esc(r.depositRefunded||'未退押金')}</div>
-          ${Number(r.pendingPartialRefund||0)>0?`<div class="k">退部分天（待退）</div><div>${money(r.pendingPartialRefund)}${r.pendingPartialNote?`　<span style="font-size:13px;color:#8a6d3b">${esc(r.pendingPartialNote)}</span>`:''}</div>`:''}
-          <div class="k">備註</div><div>${esc(r.adminNote||'—')}</div>
+        <div class="desktop-reg-info">
+          <div class="desktop-info-cell"><span>聯絡人</span><b>${esc(r.name)}｜${esc(r.phone)}</b></div>
+          <div class="desktop-info-cell"><span>已繳金額</span><b>${money(r.amount||r.totalAmount||0)}</b></div>
+          <div class="desktop-info-cell"><span>設備</span><b>${equipment}</b></div>
+          <div class="desktop-info-cell"><span>付款時間</span><b>${dt(r.paidAt)}</b></div>
+          <div class="desktop-info-cell"><span>押金</span><b>${money(r.deposit||0)}｜${esc(r.depositRefunded||'未退押金')}</b></div>
+          ${Number(r.pendingPartialRefund||0)>0?`<div class="desktop-info-cell"><span>部分退款待處理</span><b>${money(r.pendingPartialRefund)}${r.pendingPartialNote?`｜${esc(r.pendingPartialNote)}`:''}</b></div>`:''}
         </div>
+        ${r.adminNote?`<details class="desktop-reg-note"><summary><span>備註</span><b>${esc(r.adminNote)}</b><i>⌄</i></summary><div>${esc(r.adminNote)}</div></details>`:''}
       </div>
       <div class="reg-actions">
         <button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>報到</button>
