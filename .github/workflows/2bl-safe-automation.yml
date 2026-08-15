@@ -68,6 +68,16 @@ jobs:
       - name: 所有資料進出與名稱統一檢查
         run: node scripts/verify-data-contract.mjs
 
+      - name: 驗證嚴格部署門會阻擋現有問題
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-data-contract.mjs --strict > .automation/data-contract-strict.log 2>&1
+          status=$?
+          set -e
+          test "$status" -eq 2
+          echo "嚴格部署門已正確阻擋；必須先消除盤點出的 blocker。"
+
       - name: Wrangler 安全封裝 dry-run（不部署）
         run: |
           npx --yes wrangler@4.102.0 --version
