@@ -6,6 +6,7 @@ const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
 const TARGET_WORKER = "2bl-v7";
 const FORBIDDEN_WORKER = "tobeloved-api";
 const BOOTSTRAP = process.env.BOOTSTRAP_SOURCE === "true";
+const ALLOW_WORKER_DIFF = process.env.ALLOW_WORKER_DIFF === "true";
 const API = "https://api.cloudflare.com/client/v4";
 
 if (!ACCOUNT_ID || !API_TOKEN) {
@@ -104,6 +105,7 @@ async function decodeWorkerContent(bytes, contentType) {
 const token = await cf("/user/tokens/verify");
 const settings = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/settings`);
 const deployments = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/deployments`);
+const versions = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/versions?per_page=5`, { optional: true });
 const subdomain = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/subdomain`, { optional: true });
 const secrets = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/secrets`, { optional: true });
 const domains = await cf(`/accounts/${ACCOUNT_ID}/workers/domains`, { optional: true });
@@ -136,6 +138,14 @@ const {
   parts: deployedParts
 } = await decodeWorkerContent(contentBytes, contentType);
 const deployedSha256 = crypto.createHash("sha256").update(sourceBytes).digest("hex");
+
+const currentVersion = Array.isArray(versions?.items)
+  ? versions.items[0]
+  : Array.isArray(versions?.versions)
+    ? versions.versions[0]
+    : Array.isArray(versions)
+      ? versions[0]
+      : null;
 
 const currentDeployment = Array.isArray(deployments?.deployments)
   ? deployments.deployments[0]
@@ -184,6 +194,8 @@ const report = {
       },
   routes: matchedRoutes,
   custom_domains: customDomains,
+  current_version_id: String(currentVersion?.id || ""),
+  current_version_created_on: String(currentVersion?.metadata?.created_on || currentVersion?.created_on || ""),
   current_deployment: currentDeployment
     ? {
         id: String(currentDeployment.id || ""),
@@ -210,7 +222,19 @@ if (fs.existsSync(sourcePath)) {
   report.worker_source_matches_deployment = localSha === deployedSha256;
   fs.writeFileSync(".automation/cloudflare-audit.json", JSON.stringify(report, null, 2) + "\n");
   if (localSha !== deployedSha256) {
-    throw new Error(`安全阻斷：GitHub worker.js (${localSha}) 與 Cloudflare 2bl-v7 (${deployedSha256}) 不一致`);
+    if (!ALLOW_WORKER_DIFF) {
+      throw new Error(`安全阻斷：GitHub worker.js (${localSha}) 與 Cloudflare 2bl-v7 (${deployedSha256}) 不一致`);
+    }
+    const baselinePath = ".automation/cloudflare-baseline.json";
+    if (!fs.existsSync(baselinePath)) {
+      throw new Error("安全阻斷：允許工作分支修改前，必須存在 Cloudflare 核准基準");
+    }
+    const baseline = JSON.parse(fs.readFileSync(baselinePath, "utf8"));
+    if (String(baseline.deployed_content_sha256 || "") !== deployedSha256) {
+      throw new Error("安全阻斷：Cloudflare 正式來源已偏離工作分支建立時基準");
+    }
+    report.authorized_work_branch_diff = true;
+    fs.writeFileSync(".automation/cloudflare-audit.json", JSON.stringify(report, null, 2) + "\n");
   }
 } else if (BOOTSTRAP) {
   if (!/javascript|ecmascript|text\/plain/i.test(sourceContentType)) {
