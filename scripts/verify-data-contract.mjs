@@ -40,7 +40,7 @@ const allowedStorage = new Set([
   "2bl_page_state", "2bl_current_tab", "2bl_activity_view",
   "tb_member_email", "tb_member_email_v2", "2bl_member_token",
   "2bl_admin_page_state", "tb_v3", "2bl_onsite_admin_token",
-  "2bl_onsite_admin_email", "2bl_onsite_tenant"
+  "2bl_onsite_admin_email", "2bl_onsite_email", "2bl_onsite_tenant"
 ]);
 const storageUses = [];
 for (const file of frontendFiles) {
