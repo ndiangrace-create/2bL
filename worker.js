@@ -2818,10 +2818,11 @@ async function hAdminMe(env, p) {
 
 // 記錄登入 log
 async function logAdminLogin(env, tenantId, staffId, email, provider, status, reason, ip, ua) {
+  if (!tenantId) return;
   try {
     await dbInsert(env, 'staff_action_logs', {
       id: genId('LOG'),
-      tenant_id: tenantId || 'platform',
+      tenant_id: tenantId,
       staff_id: staffId || null,
       staff_email: email || '',
       action_type: status === 'success' ? 'admin_auth_success' : 'admin_auth_failure',
