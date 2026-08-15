@@ -260,6 +260,7 @@ console.log(JSON.stringify({
   ok: true,
   worker: TARGET_WORKER,
   sha256: deployedSha256,
+  version: report.current_version_id || report.current_deployment?.versions?.[0]?.version_id || "",
   routes: matchedRoutes.length,
   custom_domains: customDomains.length,
   bindings: report.bindings.length,
