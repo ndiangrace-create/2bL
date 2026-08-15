@@ -35,6 +35,7 @@ ok(admin.includes('ACTION_LAYOUT_GUARD_20260816'),'後台缺少全系統操作�
 ok(onsite.includes('UNIFIED_ACTION_COLOR_20260816'),'現場操作按鈕尚未統一成單一色系');
 ok(onsite.includes('COMPACT_DESKTOP_REG_CARDS_20260816'),'電腦版攤商卡仍未改成場次式並排小卡');
 ok(onsite.includes('#regsList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))'),'電腦版攤商卡未固定兩張並排');
+ok(onsite.includes('#regsList>.onsite-refund-summary{grid-column:1/-1'),'退款摘要會占掉第一張卡的位置，導致首張卡從右邊開始');
 ok(onsite.includes('#regsList .reg .kv{grid-template-columns:72px minmax(0,1fr) 72px minmax(0,1fr)'),'電腦版攤商資料仍是過長單欄');
 ok(onsite.includes('.reg-actions button,\n.mobile-reg-buttons button,\n.reg-more-actions button'),'電腦與手機按鈕未共用相同配色');
 ok(onsite.includes('background:#eef4f1!important;\n  color:#334640!important;'),'操作按鈕未使用統一的質感淺色系');
