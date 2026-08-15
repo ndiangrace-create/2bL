@@ -1207,6 +1207,51 @@
   .accounting-session-table{display:none}.accounting-session-mobile{display:grid;gap:7px;margin-top:10px}.accounting-mobile-card{border:1px solid var(--line);background:#fff;border-radius:14px;padding:9px 10px}.accounting-mobile-head{display:flex;justify-content:space-between;gap:8px}.accounting-mobile-title{font-size:15px;font-weight:950}.accounting-mobile-date{font-size:11px;color:#777}.accounting-mobile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}.accounting-mobile-cell{background:#faf8f4;border-radius:9px;padding:6px}.accounting-mobile-cell span{display:block;font-size:10px;color:#777;font-weight:900}.accounting-mobile-cell b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
 
+/* ACTION_LAYOUT_GUARD_20260816：操作按鈕不得塞在窄右欄、不得重疊或藏在橫向捲動。 */
+.unified-reg-card .compact-action-row,
+#page-todos .todo-action-row,
+#page-onsite .onsite-card-btn{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+  width:100%!important;
+  overflow:visible!important;
+  margin-top:7px!important;
+}
+.unified-reg-card .compact-action-row .btn,
+#page-todos .todo-action-row .btn,
+#page-onsite .onsite-card-btn .btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:36px!important;
+  padding:7px 5px!important;
+  border-radius:10px!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  line-height:1.2!important;
+}
+@media(min-width:761px){
+  .unified-reg-card .compact-action-row{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  #page-onsite .onsite-card-btn{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:620px){
+  #page-onsite .onsite-card-btn,
+  #memberList .member-card-v3 .member-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    overflow:visible!important;
+    flex-wrap:initial!important;
+  }
+  #page-onsite .onsite-card-btn .btn,
+  #memberList .member-card-v3 .member-actions .btn{
+    width:100%!important;
+    min-width:0!important;
+    white-space:normal!important;
+    line-height:1.2!important;
+  }
+}
+
 
 /* DAILY_OPS_SYNC_UI_20260810 */
 .ops-stat.clickable{cursor:pointer;text-align:left}.ops-deposit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 8px}.ops-deposit .ops-stat b{font-size:16px}.ops-deposit .ops-stat small{display:block;color:#777;font-size:10px;margin-top:2px}
