@@ -60,6 +60,11 @@ jobs:
       - name: 所有資料進出與名稱統一檢查
         run: node scripts/verify-data-contract.mjs
 
+      - name: Wrangler 安全封裝 dry-run（不部署）
+        run: |
+          npx --yes wrangler@4.102.0 --version
+          npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --dry-run --strict --outdir .automation/wrangler-dry-run
+
       - name: 顯示部署阻擋狀態
         shell: bash
         run: |
