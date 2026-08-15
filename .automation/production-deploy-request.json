@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "b9c21812e14851cd5633135c8c7f64cc97b34cd0",
-  "expected_cloudflare_version": "715f401d-977c-4518-8e7a-56a2ac3cf254",
-  "reason": "現場操作按鈕改為電腦小格、手機兩欄，移除窄右欄與重疊"
+  "approved_source_commit": "56e1709bebd26d9a695f8c6573d2dadb2805dc52",
+  "expected_cloudflare_version": "1f7a7448-caa0-4286-9d17-d3ba5fc0bceb",
+  "reason": "現場操作按鈕統一質感淺灰綠色系，移除紅黃綠混雜"
 }
