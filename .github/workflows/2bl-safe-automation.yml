@@ -57,6 +57,14 @@ jobs:
       - name: Cloudflare 唯讀盤點與漂移核對
         run: node scripts/cloudflare-readonly-audit.mjs
 
+      - name: 正式 API 與 Supabase 唯讀連線測試
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 2 \
+            'https://2bl-v7.ndiangrace.workers.dev/?action=ping&tenant=tuibile' \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const r=JSON.parse(s);if(!r.ok||!String(r.supabase||'').includes('正常')){console.error(JSON.stringify(r));process.exit(1)}console.log(JSON.stringify({ok:r.ok,tenant:r.tenant,supabase:r.supabase,staffCount:r.staffCount,sessionCount:r.sessionCount}))})"
+
       - name: 所有資料進出與名稱統一檢查
         run: node scripts/verify-data-contract.mjs
 
