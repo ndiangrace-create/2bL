@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "56e1709bebd26d9a695f8c6573d2dadb2805dc52",
-  "expected_cloudflare_version": "1f7a7448-caa0-4286-9d17-d3ba5fc0bceb",
-  "reason": "現場操作按鈕統一質感淺灰綠色系，移除紅黃綠混雜"
+  "approved_source_commit": "3c3acd199173005e7989d03cc04b62b3cf0ff678",
+  "expected_cloudflare_version": "d5fd6fcd-26cc-402a-a6c0-92f35495649d",
+  "reason": "電腦版攤商卡改為場次式兩張並排，資料雙欄縮版"
 }
