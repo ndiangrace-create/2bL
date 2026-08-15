@@ -1,9 +1,6 @@
 name: 2BL 安全自動流
 
 on:
-  push:
-    branches:
-      - agent/2bl-safe-automation
   pull_request:
     branches:
       - main
