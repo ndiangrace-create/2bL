@@ -1090,7 +1090,7 @@
 @media(max-width:720px){.panel-body:has(#seatOpsBox){width:100%!important;padding-left:8px!important;padding-right:8px!important}}
 
 /* SEAT_POINT_MAP_20260812：地圖只顯示方向小點與正式排號，完整資料放在圖下 */
-.seatops-map-stage .seatops-marker{width:44px;height:44px;min-width:44px;min-height:44px;border-radius:50%;padding:2px;background:#213d38;color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.28);font-size:11px;line-height:1;gap:1px;touch-action:none}
+.seatops-map-stage .seatops-marker{width:58px;height:42px;min-width:58px;min-height:42px;border-radius:6px;padding:3px;background:#213d38;color:#fff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.28);font-size:11px;line-height:1;gap:1px;touch-action:none}
 .seatops-map-stage .seatops-marker .point-direction{position:absolute;left:50%;top:50%;width:0;height:0;transform-origin:0 0;pointer-events:none;z-index:3}
 .seatops-map-stage .seatops-marker .point-direction::after{content:"";position:absolute;left:-7px;top:-32px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:0;border-bottom:13px solid #ff9f1c;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45))}
 .seatops-map-stage.rotate-mode .seatops-marker.selected .point-direction::after{border-bottom-color:#ff7a00;filter:drop-shadow(0 0 4px rgba(255,122,0,.75))}
@@ -1104,7 +1104,7 @@
 .seatops-map-stage .seatops-marker .point-no{font-size:10px;line-height:1;font-weight:950;white-space:nowrap}
 .seatops-map-stage .seatops-marker small,.seatops-map-stage .seatops-marker .brand,.seatops-map-stage .seatops-marker .equip{display:none!important}
 .seatops-map-stage .seatops-marker.free{background:#8aa39e}.seatops-map-stage .seatops-marker.paid{background:#b88920}.seatops-map-stage .seatops-marker.service{background:#6689a1}.seatops-map-stage .seatops-marker.closed{background:#888}
-.seatops-map-stage .seatops-marker.selected{outline:4px solid #ffb84d;box-shadow:0 0 0 7px rgba(255,184,77,.22),0 4px 14px rgba(0,0,0,.3);z-index:5}
+.seatops-map-stage .seatops-marker.selected,.seatops-map-stage .seatops-marker.group-selected{outline:4px solid #ffb84d;box-shadow:0 0 0 7px rgba(255,184,77,.22),0 4px 14px rgba(0,0,0,.3);z-index:5}
 .seatops-map-stage .seatops-marker.moving{opacity:.42;outline:3px dashed #ff9f1c}
 .seatops-map-stage.is-placing{cursor:crosshair;box-shadow:inset 0 0 0 4px #ffb84d}
 .seatops-editor{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px;align-items:start}
@@ -1116,11 +1116,11 @@
 .seatops-waiting-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.seatops-waiting-btn{border:1px solid #cfc7bb;background:#fff;border-radius:999px;padding:7px 11px;font-weight:900;cursor:pointer}.seatops-waiting-btn.active{background:#24413d;color:#fff;border-color:#24413d}
 .seatops-next{padding:9px 11px;border-radius:12px;background:#eef7f5;border:1px solid #c9ded9;font-weight:900;margin:8px 0}
 .seatops-roster-title{font-weight:950;font-size:18px;margin:16px 0 7px}.seatops-card .roster-no{font-size:23px;font-weight:950;line-height:1.1;color:#24413d}
-@media(max-width:720px){.seatops-map-stage .seatops-marker{width:38px;height:38px;min-width:38px;min-height:38px}.seatops-map-stage .seatops-marker .point-no{font-size:9px}.seatops-editor{grid-template-columns:1fr}.seatops-side{position:static;order:-1}.seatops-place-banner{align-items:flex-start;flex-direction:column}.seatops-line-settings{grid-template-columns:auto 1fr}}
+@media(max-width:720px){.seatops-map-stage .seatops-marker{width:50px;height:38px;min-width:50px;min-height:38px}.seatops-map-stage .seatops-marker .point-no{font-size:10px}.seatops-editor{grid-template-columns:1fr}.seatops-side{position:fixed;left:8px;right:8px;bottom:8px;top:auto;z-index:30;order:2;box-shadow:0 8px 30px rgba(0,0,0,.28);max-height:42vh;overflow:auto}.seatops-side:not([data-selected-seat]){display:none}.seatops-side-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.seatops-side-actions .seatops-help,.seatops-side-actions .seatops-save-state{grid-column:1/-1}.seatops-place-banner{align-items:flex-start;flex-direction:column}.seatops-line-settings{grid-template-columns:auto 1fr}}
 
 /* SEAT_MOBILE_CANVAS_20260814：手機橫向底圖不可硬縮；以可滑動畫布精準拖曳 */
 .seatops-map-viewport{width:100%;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:12px;background:#f3f3f3;overscroll-behavior:contain}.seatops-map-viewport .seatops-map-stage{touch-action:pan-x pan-y}.seatops-map-viewport .seatops-marker{touch-action:none}.seatops-zoom-tools{display:flex;gap:6px;flex-wrap:wrap}.seatops-zoom-label{display:inline-flex;align-items:center;justify-content:center;min-width:64px;font-weight:900;color:#456}
-@media(max-width:720px){.seatops-map-viewport{max-height:56vh;border:1px solid #ddd}.seatops-map-stage .seatops-marker{width:30px;height:30px;min-width:30px;min-height:30px;border-width:2px}.seatops-map-stage .seatops-marker .point-no{font-size:8px}.seatops-map-stage .seatops-marker .point-direction::after{left:-5px;top:-24px;border-left-width:5px;border-right-width:5px;border-bottom-width:10px}.seatops-mode-tools,.seatops-zoom-tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.seatops-mode-tools .btn,.seatops-zoom-tools .btn{padding:10px 4px}.seatops-zoom-label{min-height:42px;border:1px solid #ddd;border-radius:11px;background:#fff}.seatops-side{padding:10px}}
+@media(max-width:720px){.seatops-map-viewport{max-height:62vh;border:1px solid #ddd}.seatops-map-stage .seatops-marker{width:48px;height:36px;min-width:48px;min-height:36px;border-width:2px}.seatops-map-stage .seatops-marker .point-no{font-size:10px}.seatops-map-stage .seatops-marker .point-direction::after{left:-5px;top:-24px;border-left-width:5px;border-right-width:5px;border-bottom-width:10px}.seatops-mode-tools,.seatops-zoom-tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.seatops-mode-tools .btn,.seatops-zoom-tools .btn{padding:10px 4px}.seatops-zoom-label{min-height:42px;border:1px solid #ddd;border-radius:11px;background:#fff}.seatops-side{padding:10px}.seatops-toolbar .btn,.seatops-toolbar label.btn,.seatops-toolbar select{width:100%;min-height:48px;justify-content:center}}
 
 
 /* MEMBER_COMPACT_MOBILE_20260809 */
@@ -3296,22 +3296,24 @@ function seatOpsMapHtml(){
   const markers=placed.map(x=>{
     let cls=x.type==='service'?'service':x.type==='closed'?'closed':x.occupied?'used':x.type==='paid'?'paid':'free';
     const no=seatOpsPublicNoForSeat(x)||'•',r=seatOpsRosterForSeat(x),title=[no,r&&(r.brand||r.name),r&&r.name,r&&r.phone].filter(Boolean).join('｜');
-    if(String(SeatOps.selectedCode||'')===String(x.code))cls+=' selected';
-    return '<button type="button" class="seatops-marker '+cls+'" data-seat="'+esc(x.code)+'" title="'+esc(title)+'" aria-label="'+esc(title)+'" style="left:'+Math.max(0,Math.min(100,Number(x.x)||0))+'%;top:'+Math.max(0,Math.min(100,Number(x.y)||0))+'%" onpointerdown="seatOpsMarkerPointerDown(event,\''+esc(x.code)+'\')" onclick="seatOpsMarkerClick(event,\''+esc(x.code)+'\')"><span class="point-direction" aria-hidden="true" aria-valuenow="'+seatOpsDirection(x.code)+'" style="transform:rotate('+seatOpsDirection(x.code)+'deg)"></span><span class="point-no">'+esc(no)+'</span></button>';
+    const selected=seatOpsSeatByCode(SeatOps.selectedCode),sameGroup=selected&&x.occupantRegId&&String(selected.occupantRegId)===String(x.occupantRegId);
+    if(String(SeatOps.selectedCode||'')===String(x.code))cls+=' selected';else if(sameGroup)cls+=' group-selected';
+    return '<button type="button" class="seatops-marker '+cls+'" data-seat="'+esc(x.code)+'" data-reg="'+esc(x.occupantRegId||'')+'" title="'+esc(title)+'" aria-label="方桌 '+esc(title)+'" style="left:'+Math.max(0,Math.min(100,Number(x.x)||0))+'%;top:'+Math.max(0,Math.min(100,Number(x.y)||0))+'%" onpointerdown="seatOpsMarkerPointerDown(event,\''+esc(x.code)+'\')" onclick="seatOpsMarkerClick(event,\''+esc(x.code)+'\')"><span class="point-direction" aria-hidden="true" aria-valuenow="'+seatOpsDirection(x.code)+'" style="transform:rotate('+seatOpsDirection(x.code)+'deg)"></span><span class="point-no">'+esc(no)+'</span></button>';
   }).join('');
   const selected=SeatOps.selectedCode?seatOpsSeatByCode(SeatOps.selectedCode):null,r=seatOpsRosterForSeat(selected)||{};
   const deg=selected?seatOpsDirection(selected.code):0;
   const isSaving=selected&&String(SeatOps.savingCode||'')===String(selected.code);
-  const customActions=selected&&selected.isCustom?'<button type="button" class="btn secondary small" onclick="seatOpsRenameCustomMarker()">修改名稱</button><button type="button" class="btn danger small" onclick="seatOpsDeleteCustomMarker()">刪除自訂位置</button>':'<button type="button" class="btn secondary small" onclick="seatOpsReturnSelectedToWaiting()">退回待放</button>';
-  const side=selected?'<aside class="seatops-side" data-selected-seat="'+esc(selected.code)+'"><div class="seatops-side-title">正在調整 '+esc(seatOpsPublicNoForSeat(selected))+'</div><div class="seatops-side-brand">'+esc(r.brand||r.name||(selected.isCustom?'自訂位置':'特殊點位'))+'</div><div class="seatops-side-actions"><div class="seatops-help">'+(SeatOps.toolMode==='rotate'?'直接按住標記拖曳方向，放開後自動儲存。':'直接按住標記拖動位置，放開後自動儲存。')+'</div>'+(SeatOps.toolMode==='rotate'?'<div id="seatOpsDirectionValue" class="seatops-direction-value">目前朝向 '+deg+'°</div>':'')+'<div id="seatOpsSaveState" class="seatops-save-state">'+(isSaving?'儲存中…':'放開後自動儲存')+'</div>'+customActions+'<button type="button" class="btn secondary small" onclick="SeatOps.selectedCode=\'\';renderSeatOps()">完成調整</button></div></aside>':'<aside class="seatops-side"><b>操作方式</b><div class="seatops-help" style="margin-top:6px">先選上方的移動或旋轉模式，再直接按住標記操作。</div></aside>';
+  const customActions=selected&&selected.isCustom?'<button type="button" class="btn secondary small" onclick="seatOpsRenameCustomMarker()">改名稱</button><button type="button" class="btn danger small" onclick="seatOpsDeleteCustomMarker()">刪除</button>':'<button type="button" class="btn secondary small" onclick="seatOpsReturnSelectedToWaiting()">退回待放</button>';
+  const groupCount=selected&&selected.occupantRegId?(SeatOps.seats||[]).filter(x=>String(x.occupantRegId||'')===String(selected.occupantRegId)).length:1;
+  const side=selected?'<aside class="seatops-side" data-selected-seat="'+esc(selected.code)+'"><div class="seatops-side-title">'+esc(seatOpsPublicNoForSeat(selected))+(groupCount>1?'｜'+groupCount+' 攤連動':'')+'</div><div class="seatops-side-brand">'+esc(r.brand||r.name||(selected.isCustom?'自訂位置':'特殊點位'))+'</div><div class="seatops-side-actions"><div class="seatops-help">按住方桌直接拖曳；租多攤會整組一起移動。</div><button type="button" class="btn secondary small" onclick="seatOpsRotateSelected(-90)">↶ 左轉</button><button type="button" class="btn secondary small" onclick="seatOpsRotateSelected(90)">↷ 右轉</button><div id="seatOpsSaveState" class="seatops-save-state">'+(isSaving?'儲存中…':'放開後自動儲存')+'</div>'+customActions+'<button type="button" class="btn small" onclick="SeatOps.selectedCode=\'\';renderSeatOps()">完成</button></div></aside>':'<aside class="seatops-side"><b>操作方式</b><div class="seatops-help" style="margin-top:6px">按住方桌即可拖動；點方桌可旋轉或退回待放。</div></aside>';
   const placing=SeatOps.placingCode?seatOpsSeatByCode(SeatOps.placingCode):null;
   const lineSeats=seatOpsLineCandidateSeats(),lineBanner=SeatOps.toolMode==='line'?'<div class="seatops-place-banner"><div class="seatops-line-settings"><b>要排的攤位</b><select onchange="SeatOps.lineRangeStart=this.value;SeatOps.lineStartPoint=null;renderSeatOps()">'+lineSeats.map(x=>'<option value="'+esc(x.code)+'" '+(String(x.code)===String(SeatOps.lineRangeStart)?'selected':'')+'>'+esc(seatOpsPublicNoForSeat(x))+'</option>').join('')+'</select><b>到</b><select onchange="SeatOps.lineRangeEnd=this.value;SeatOps.lineStartPoint=null;renderSeatOps()">'+lineSeats.map(x=>'<option value="'+esc(x.code)+'" '+(String(x.code)===String(SeatOps.lineRangeEnd)?'selected':'')+'>'+esc(seatOpsPublicNoForSeat(x))+'</option>').join('')+'</select></div><span>'+(SeatOps.lineStartPoint?'起點已設定，請在底圖點第二下設定終點':'請直接在底圖點第一下設定起點，再點第二下設定終點')+'</span><button type="button" class="btn secondary small" onclick="seatOpsCancelLineArrange()">取消</button></div>':'';
   const banner=placing?'<div class="seatops-place-banner"><span>正在放置 '+esc(seatOpsPublicNoForSeat(placing))+'，請點底圖位置</span><button type="button" class="btn secondary small" onclick="SeatOps.placingCode=\'\';renderSeatOps()">取消</button></div>':'';
   const waiting=unplaced.length?'<div class="seatops-unplaced"><b>待放位置：</b><div class="seatops-waiting-list">'+unplaced.map(x=>'<button type="button" class="seatops-waiting-btn '+(String(SeatOps.placingCode)===String(x.code)?'active':'')+'" onclick="seatOpsChooseWaiting(\''+esc(x.code)+'\')">'+esc(seatOpsPublicNoForSeat(x))+'</button>').join('')+'</div></div>':'';
-  const modeTools='<div class="seatops-mode-tools"><button type="button" class="btn small '+(SeatOps.toolMode==='move'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'move\')">移動</button><button type="button" class="btn small '+(SeatOps.toolMode==='rotate'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'rotate\')">旋轉</button><button type="button" class="btn small '+(SeatOps.toolMode==='line'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'line\')">線性排列</button></div>';
+  const modeTools='<div class="seatops-mode-tools"><button type="button" class="btn small '+(SeatOps.toolMode==='move'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'move\')">拖曳方桌</button><button type="button" class="btn small '+(SeatOps.toolMode==='line'?'active':'secondary')+'" onclick="seatOpsSetToolMode(\'line\')">整排排列</button></div>';
   const zoom=Math.max(1,Math.min(4,Number(SeatOps.zoom)||1)),zoomTools='<div class="seatops-zoom-tools"><button type="button" class="btn secondary small" onclick="seatOpsSetZoom((SeatOps.zoom||1)-.4)">－ 縮小</button><span class="seatops-zoom-label">'+Math.round(zoom*100)+'%</span><button type="button" class="btn secondary small" onclick="seatOpsSetZoom((SeatOps.zoom||1)+.4)">＋ 放大</button></div>';
   const startDot=SeatOps.toolMode==='line'&&SeatOps.lineStartPoint?'<span class="seatops-line-start-dot" style="left:'+SeatOps.lineStartPoint.x+'%;top:'+SeatOps.lineStartPoint.y+'%"></span>':'';
-  return '<div class="seatops-map-wrap"><div class="seatops-map-head"><div><b>場地排位圖</b><div class="seatops-help">空白處可滑動底圖；直接按住圓點才會移動或旋轉。手機建議放大後操作。</div></div>'+modeTools+zoomTools+'</div>'+lineBanner+banner+'<div class="seatops-editor"><div id="seatOpsMapViewport" class="seatops-map-viewport"><div id="seatOpsMapStage" class="seatops-map-stage '+(placing?'is-placing ':'')+(SeatOps.toolMode==='rotate'?'rotate-mode ':SeatOps.toolMode==='line'?'line-mode ':'')+'" style="width:'+Math.round(zoom*100)+'%" onclick="seatOpsMapClick(event)"><img src="'+esc(mapUrl)+'" alt="本場位置圖" draggable="false">'+markers+startDot+'</div></div>'+side+'</div>'+waiting+'</div>';
+  return '<div class="seatops-map-wrap"><div class="seatops-map-head"><div><b>場地排位圖</b><div class="seatops-help">空白處滑動地圖；按住方桌直接拖曳。手機可先放大再移動。</div></div>'+modeTools+zoomTools+'</div>'+lineBanner+banner+'<div class="seatops-editor"><div id="seatOpsMapViewport" class="seatops-map-viewport"><div id="seatOpsMapStage" class="seatops-map-stage '+(placing?'is-placing ':'')+(SeatOps.toolMode==='line'?'line-mode ':'')+'" style="width:'+Math.round(zoom*100)+'%" onclick="seatOpsMapClick(event)"><img src="'+esc(mapUrl)+'" alt="本場位置圖" draggable="false">'+markers+startDot+'</div></div>'+side+'</div>'+waiting+'</div>';
 }
 function renderSeatOps(){
   const box=$('seatOpsBox'); if(!box) return;
@@ -3358,7 +3360,7 @@ async function seatOpsMarkerClick(ev,code){
 }
 function seatOpsLineCandidateSeats(){return (SeatOps.seats||[]).filter(x=>!x.isCustom&&(x.occupied||x.type==='service'||x.type==='closed')).slice().sort((a,b)=>Number(a.order||a.mapOrder||0)-Number(b.order||b.mapOrder||0)||seatOpsFormatCode(a.code).localeCompare(seatOpsFormatCode(b.code),undefined,{numeric:true}));}
 function seatOpsSetToolMode(mode){
-  SeatOps.toolMode=['move','rotate','line'].includes(mode)?mode:'move';SeatOps.placingCode='';SeatOps.selectedCode='';SeatOps.lineStartPoint=null;
+  SeatOps.toolMode=['move','line'].includes(mode)?mode:'move';SeatOps.placingCode='';SeatOps.selectedCode='';SeatOps.lineStartPoint=null;
   if(SeatOps.toolMode==='line'){
     const all=seatOpsLineCandidateSeats(),waiting=all.filter(x=>!(Number(x.x)>0||Number(x.y)>0)),base=waiting.length>=2?waiting:all;
     SeatOps.lineRangeStart=base[0]?String(base[0].code):'';SeatOps.lineRangeEnd=base.length?String(base[base.length-1].code):'';
@@ -3383,8 +3385,8 @@ async function seatOpsCommitLine(endPoint){
 }
 function seatOpsChooseWaiting(code){SeatOps.placingCode=String(code||'');SeatOps.selectedCode='';renderSeatOps();}
 async function seatOpsPublish(){
-  if(!await uiConfirm('發布本場全部活動日的排位？\n\n發布後攤商可在「我的紀錄」查看各日位置，系統也會建立排位通知。'))return;
-  try{const r=await apiPost({action:'publishSeatLayout',sessionId:SeatOps.sid});if(r&&r.error)throw new Error(r.error);toast('排位已發布，通知 '+Number(r.notified||0)+' 位攤商',9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('發布失敗：'+e.message,9000);}
+  if(!await uiConfirm('發布本場全部活動日的排位？\n\n發布後，攤商可在「我的紀錄」看到自己的方桌位置。'))return;
+  try{const r=await apiPost({action:'publishSeatLayout',sessionId:SeatOps.sid});if(r&&r.error)throw new Error(r.error);toast('排位已發布，'+Number(r.notified||0)+' 位攤商可查看',9000);await loadSeatOps(SeatOps.sid,SeatOps.activityDate);}catch(e){toast('發布失敗：'+e.message,9000);}
 }
 async function seatOpsMapClick(ev){
   if(ev.target&&ev.target.closest&&ev.target.closest('.seatops-marker')) return;
@@ -3410,10 +3412,19 @@ function seatOpsDirectionPreview(value){
   if(marker){marker.style.transform='rotate('+deg+'deg)';marker.setAttribute('aria-valuenow',String(Math.round(deg)));}
   const label=$('seatOpsDirectionValue');if(label)label.textContent=deg+'°';
 }
+async function seatOpsRotateSelected(delta){
+  const code=String(SeatOps.selectedCode||'');if(!code)return;
+  const group=seatOpsGroupForCode(code),next=(seatOpsDirection(code)+Number(delta||0)+360)%360;
+  for(const s of group){SeatOps.selectedCode=String(s.code);await seatOpsDirectionCommit(next);}
+  SeatOps.selectedCode=code;renderSeatOps();
+}
+function seatOpsGroupForCode(code){
+  const seat=seatOpsSeatByCode(code);if(!seat||seat.isCustom||!seat.occupantRegId)return seat?[seat]:[];
+  return (SeatOps.seats||[]).filter(x=>!x.isCustom&&String(x.occupantRegId||'')===String(seat.occupantRegId)).sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+}
 let SeatDirectionDrag=null;
 function seatOpsMarkerPointerDown(ev,code){
   if(SeatOps.toolMode==='line')return;
-  if(SeatOps.toolMode==='rotate')return seatOpsRotateDragStart(ev,code);
   return seatOpsDragStart(ev,code);
 }
 function seatOpsRotateDragStart(ev,code){
@@ -3465,27 +3476,38 @@ function seatOpsDragStart(ev,code){
   if(SeatOps.toolMode!=='move')return;
   const marker=ev.currentTarget,stage=$('seatOpsMapStage'),st=seatOpsSeatByCode(code);if(!marker||!stage||!st)return;
   ev.preventDefault();ev.stopPropagation();marker.setPointerCapture&&marker.setPointerCapture(ev.pointerId);
-  SeatOps.selectedCode=String(code);SeatMarkerDrag={code:String(code),pointerId:ev.pointerId,marker,stage,startX:ev.clientX,startY:ev.clientY,oldX:Number(st.x)||0,oldY:Number(st.y)||0,moved:false};
-  marker.classList.add('moving','selected');
+  const group=seatOpsGroupForCode(code).filter(x=>Number(x.x)>0||Number(x.y)>0).map(x=>({seat:x,oldX:Number(x.x)||0,oldY:Number(x.y)||0,el:document.querySelector('.seatops-marker[data-seat="'+CSS.escape(String(x.code))+'"]')}));
+  SeatOps.selectedCode=String(code);SeatMarkerDrag={code:String(code),pointerId:ev.pointerId,marker,stage,startX:ev.clientX,startY:ev.clientY,oldX:Number(st.x)||0,oldY:Number(st.y)||0,group,moved:false};
+  group.forEach(x=>x.el&&x.el.classList.add('moving','group-selected'));marker.classList.add('selected');
   marker.onpointermove=seatOpsDragMove;marker.onpointerup=seatOpsDragEnd;marker.onpointercancel=seatOpsDragCancel;
 }
 function seatOpsDragMove(ev){
   const d=SeatMarkerDrag;if(!d||ev.pointerId!==d.pointerId)return;ev.preventDefault();
   if(Math.hypot(ev.clientX-d.startX,ev.clientY-d.startY)>3)d.moved=true;
   if(!d.moved)return;const r=d.stage.getBoundingClientRect();
-  const x=Math.max(0,Math.min(100,(ev.clientX-r.left)/r.width*100)),y=Math.max(0,Math.min(100,(ev.clientY-r.top)/r.height*100));
-  d.x=x;d.y=y;d.marker.style.left=x+'%';d.marker.style.top=y+'%';
+  const dx=(ev.clientX-d.startX)/r.width*100,dy=(ev.clientY-d.startY)/r.height*100;
+  d.group.forEach(x=>{const nx=Math.max(0,Math.min(100,x.oldX+dx)),ny=Math.max(0,Math.min(100,x.oldY+dy));x.x=nx;x.y=ny;if(x.el){x.el.style.left=nx+'%';x.el.style.top=ny+'%';}});
 }
 async function seatOpsDragEnd(ev){
   const d=SeatMarkerDrag;if(!d||ev.pointerId!==d.pointerId)return;ev.preventDefault();ev.stopPropagation();
-  d.marker.onpointermove=d.marker.onpointerup=d.marker.onpointercancel=null;d.marker.classList.remove('moving');
+  d.marker.onpointermove=d.marker.onpointerup=d.marker.onpointercancel=null;d.group.forEach(x=>x.el&&x.el.classList.remove('moving'));
   if(!d.moved){SeatMarkerDrag=null;SeatOps.selectedCode=d.code;renderSeatOps();return;}
   // 拖曳完成後必須同步重畫選取工具，否則地圖雖有橘色選取框，
   // 右側仍會停在「操作方式」，使方向滑桿與旋轉按鈕無法出現。
-  SeatOpsIgnoreClickUntil=Date.now()+500;SeatMarkerDrag=null;await seatOpsSaveMarker(d.code,d.x,d.y,{oldX:d.oldX,oldY:d.oldY,marker:d.marker});
+  SeatOpsIgnoreClickUntil=Date.now()+500;SeatMarkerDrag=null;
+  if(d.group.length>1){
+    const positions=d.group.map(x=>({seatCode:String(x.seat.code),x:Number(x.x.toFixed(3)),y:Number(x.y.toFixed(3))}));
+    try{const out=await apiPost({action:'saveSeatMarkerPositions',sessionId:SeatOps.sid,positions});if(out&&out.error)throw new Error(out.error);positions.forEach(p=>{const s=seatOpsSeatByCode(p.seatCode);if(s){s.x=p.x;s.y=p.y;}});toast(d.group.length+' 攤已一起移動');renderSeatOps();}
+    catch(e){d.group.forEach(x=>{x.seat.x=x.oldX;x.seat.y=x.oldY;});toast('連攤移動失敗，已回到原位：'+e.message,9000);renderSeatOps();}
+  }else await seatOpsSaveMarker(d.code,d.group[0]&&d.group[0].x,d.group[0]&&d.group[0].y,{oldX:d.oldX,oldY:d.oldY,marker:d.marker});
 }
-function seatOpsDragCancel(ev){const d=SeatMarkerDrag;if(!d)return;d.marker.style.left=d.oldX+'%';d.marker.style.top=d.oldY+'%';d.marker.classList.remove('moving');SeatMarkerDrag=null;}
+function seatOpsDragCancel(ev){const d=SeatMarkerDrag;if(!d)return;d.group.forEach(x=>{if(x.el){x.el.style.left=x.oldX+'%';x.el.style.top=x.oldY+'%';x.el.classList.remove('moving');}});SeatMarkerDrag=null;}
 async function seatOpsSaveMarker(code,x,y,opts={}){
+  const pendingGroup=seatOpsGroupForCode(code).filter(s=>!(Number(s.x)>0||Number(s.y)>0));
+  if(pendingGroup.length>1){
+    const gap=(window.innerWidth||999)<=720?5.4:4.2,positions=pendingGroup.map((s,i)=>({seatCode:String(s.code),x:Number(Math.max(1,Math.min(99,x+(i-(pendingGroup.length-1)/2)*gap)).toFixed(3)),y:Number(y.toFixed(3))}));
+    try{const out=await apiPost({action:'saveSeatMarkerPositions',sessionId:SeatOps.sid,positions});if(out&&out.error)throw new Error(out.error);positions.forEach(p=>{const s=seatOpsSeatByCode(p.seatCode);if(s){s.x=p.x;s.y=p.y;}});SeatOps.selectedCode=String(code);toast(pendingGroup.length+' 攤已自動連在一起');renderSeatOps();return true;}catch(e){toast('連攤放置失敗：'+e.message,9000);return false;}
+  }
   SeatOps.selectedCode=String(code);SeatOps.savingCode=String(code);seatOpsSetSaveState('位置儲存中…');
   try{const st=seatOpsSeatByCode(code);const payload=st&&st.isCustom?{action:'saveSeatCustomMarker',sessionId:SeatOps.sid,markerId:st.id,label:st.specialLabel,markerType:st.type,x:Number(x.toFixed(3)),y:Number(y.toFixed(3)),direction:seatOpsDirection(code),showPublic:st.showPublic!==false}:{action:'saveSeatMarkerPosition',sessionId:SeatOps.sid,seatCode:code,x:Number(x.toFixed(3)),y:Number(y.toFixed(3))};const r=await apiPost(payload);if(r&&r.error)throw new Error(r.error);if(st){st.x=Number(x.toFixed(3));st.y=Number(y.toFixed(3));}toast((st&&st.isCustom?st.specialLabel:code)+' 位置已儲存');}
   catch(e){if(opts.marker){opts.marker.style.left=Number(opts.oldX||0)+'%';opts.marker.style.top=Number(opts.oldY||0)+'%';}const st=seatOpsSeatByCode(code);if(st&&Number.isFinite(Number(opts.oldX))&&Number.isFinite(Number(opts.oldY))){st.x=Number(opts.oldX);st.y=Number(opts.oldY);}toast('位置儲存失敗，已回到原位：'+e.message,8000);return false;}
@@ -3512,8 +3534,8 @@ async function downloadSeatBoardPng(mode='public'){
     ctx.drawImage(bmp,0,headerH,W,mapH);
     points.forEach(st=>{
       const no=seatOpsPublicNoForSeat(st);if(!no)return;
-      const x=Number(st.x)/100*W,y=headerH+Number(st.y)/100*mapH,r=30;
-      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle='#173d37';ctx.fill();ctx.lineWidth=5;ctx.strokeStyle='#fff';ctx.stroke();
+      const x=Number(st.x)/100*W,y=headerH+Number(st.y)/100*mapH,w=78,h=54;
+      ctx.save();ctx.translate(x,y);ctx.rotate(seatOpsDirection(st)*Math.PI/180);ctx.fillStyle='#173d37';ctx.fillRect(-w/2,-h/2,w,h);ctx.lineWidth=5;ctx.strokeStyle='#fff';ctx.strokeRect(-w/2,-h/2,w,h);ctx.restore();
       ctx.fillStyle='#fff';ctx.textAlign='center';ctx.save();ctx.translate(x,y);ctx.rotate(seatOpsDirection(st)*Math.PI/180);ctx.beginPath();ctx.moveTo(0,-34);ctx.lineTo(-9,-18);ctx.lineTo(9,-18);ctx.closePath();ctx.fill();ctx.restore();ctx.font='900 17px Arial,"Noto Sans TC",sans-serif';ctx.fillText(no,x,y+8);ctx.textAlign='left';
     });
     let y=headerH+mapH+52;

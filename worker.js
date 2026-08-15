@@ -850,6 +850,7 @@ function formatSession(s) {
     seatPricingEnabled: s.seat_pricing_enabled === true || s.seat_pricing_enabled === 'true',
     seatHoldHours: safeNum(s.seat_hold_hours) || SEAT_HOLD_HOURS,
     seatMapUrl: s.seat_map_url || '',
+    seatBoard: safeJson(s.seat_board_json,{}),
     assignedStaff: s.assigned_staff ? String(s.assigned_staff).split(',').filter(Boolean) : [],
     forceCancel: s.force_cancel || false,
     forceCancelTargetId: s.force_cancel_target_id || '',
@@ -873,6 +874,20 @@ function formatSession(s) {
     agreementVersion:   s.agreement_version || '',
     agreementUpdatedAt: s.agreement_updated_at || '',
   };
+}
+
+function buildOnsiteSeatBoard(session,stalls,regs,daySeats){
+  const board=safeJson(session&&session.seat_board_json,{})||{},regById={};
+  (regs||[]).forEach(r=>regById[String(r.id)]=r);
+  const dates=(safeJson(session&&session.dates_json,[])||[]).map(x=>String((x&&x.date)||x||'').slice(0,10)).filter(Boolean);
+  const today=new Date(Date.now()+8*60*60*1000).toISOString().slice(0,10),activityDate=dates.includes(today)?today:(dates[0]||today);
+  const assigned={};(daySeats||[]).filter(x=>String(x.activity_date).slice(0,10)===activityDate).forEach(x=>assigned[String(x.seat_code)]=String(x.registration_id||''));
+  const markers=(stalls||[]).filter(s=>(Number(s.map_x)>0||Number(s.map_y)>0)&&s.is_active!==false&&s.is_active!=='false').map(s=>{
+    const code=seatCodeOf(s),rid=assigned[code]||String(seatRegId(s)||''),r=regById[rid]||{};
+    return {code,x:safeNum(s.map_x),y:safeNum(s.map_y),direction:safeNum((board.mapDirections||{})[code]),brand:r.brand_name||r.name||'',name:r.name||'',equipmentText:r.equipment_json?_equipmentTextFromMap(safeJson(r.equipment_json,{})):'',occupied:!!rid};
+  });
+  for(const m of (Array.isArray(board.customMarkers)?board.customMarkers:[]))markers.push({code:String(m.label||'自訂位置'),specialLabel:String(m.label||'自訂位置'),x:safeNum(m.x),y:safeNum(m.y),direction:safeNum(m.direction),markerType:m.markerType||'service'});
+  return {...board,mode:'map',activityDate,markers};
 }
 function calcFee(ses, selectedDates, stallCount) {
   const dates = safeJson(ses.dates_json, []);
@@ -2192,7 +2207,7 @@ async function hGetMyRegs(env, p) {
 
   const [regsByMember, sessions] = await Promise.all([
     dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&member_id=ilike.${encodeURIComponent(email)}&select=*&order=created_at.desc`).catch(()=>[]),
-    dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&select=id,name,event_id,venue,dates_json,equip_json,basic_equip,payment_profile_id,seat_pricing_enabled,seat_hold_hours,seat_map_url,force_cancel,force_cancel_deadline,force_cancel_target_id`),
+    dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&select=id,name,event_id,venue,dates_json,equip_json,basic_equip,payment_profile_id,seat_pricing_enabled,seat_hold_hours,seat_map_url,seat_layout_published_at,force_cancel,force_cancel_deadline,force_cancel_target_id`),
   ]);
   const regMap = new Map();
   [...regsByEmail, ...regsByMember].forEach(r=>{ if(r && r.id && phoneMatches(r.phone,phone)) regMap.set(String(r.id), r); });
@@ -2202,6 +2217,8 @@ async function hGetMyRegs(env, p) {
     const s = sMap[r.session_id]||{};
     const paySnap = await ensurePaymentSnapshotForReg(env,TENANT,r,s,{writeIfSafe:true}).catch(()=>_paymentSnapshotFromReg(r));
     const payPub = _paymentSnapshotPublic(paySnap);
+    const daySeatRows=s.seat_layout_published_at?await dbGet(env,'registration_day_seats',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(r.session_id)}&registration_id=eq.${encodeURIComponent(r.id)}&select=activity_date,seat_code&order=activity_date.asc,seat_code.asc`).catch(()=>[]):[];
+    const dayPositions=daySeatRows.reduce((out,x)=>{const date=String(x.activity_date||'').slice(0,10);let row=out.find(y=>y.date===date);if(!row){row={date,stallNumber:''};out.push(row);}row.stallNumber=[row.stallNumber,String(x.seat_code||'')].filter(Boolean).join(',');return out;},[]);
     return {
       id:r.id, sessionId:r.session_id, sessionName:s.name||r.session_id,
       eventId:r.event_id||s.event_id||'', status:r.review_status, payStatus:r.payment_status,
@@ -2213,7 +2230,8 @@ async function hGetMyRegs(env, p) {
       seatChoiceIntent:r.seat_choice_intent||'auto', seatChoiceStatus:r.seat_choice_status||'', seatChoiceType:r.seat_choice_type||'',
       bundleId:r.bundle_id||'', bundleGroupId:r.bundle_group_id||'',
       seatPricingEnabled:(s.seat_pricing_enabled===true||s.seat_pricing_enabled==='true'), seatHoldHours:safeNum(s.seat_hold_hours)||SEAT_HOLD_HOURS,
-      seatMapUrl:s.seat_map_url||'', seatFeeTotal:safeNum(r.seat_fee_total), seatHoldExpiresAt:r.seat_hold_expires_at||'',
+      seatMapUrl:s.seat_layout_published_at?(s.seat_map_url||''):'', seatLayoutPublishedAt:s.seat_layout_published_at||'', dayPositions,
+      seatFeeTotal:safeNum(r.seat_fee_total), seatHoldExpiresAt:r.seat_hold_expires_at||'',
       payMethod:r.payment_method||'', payLast5:r.payment_last5||'', checkin:r.checkin_status, createdAt:r.created_at,
       transferStatus:r.transfer_status||'', transferChosenAt:r.transfer_chosen_at||'', refundAmount:safeNum(r.refund_amount),
       refundAdminFee:safeNum(r.refund_admin_fee), refundTransferFee:safeNum(r.refund_transfer_fee), refundRuleLabel:r.refund_rule_label||'', refundedAt:r.refunded_at||'', refundNote:r.refund_note||'',
@@ -3920,9 +3938,11 @@ async function hOnsiteSessions(env, p) {
   const allowedIds = await getFreshOnsiteAllowedSessionIds(env, TENANT, p.email, p.token);
   if (Array.isArray(allowedIds) && allowedIds.length === 0) return jsonOk([]);
 
-  const [sessions, regs] = await Promise.all([
+  const [sessions, regs, stalls, daySeats] = await Promise.all([
     dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&select=*`),
-    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=session_id,review_status,payment_status,checkin_status,transfer_status,stall_count,amount,deposit`),
+    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=id,session_id,name,brand_name,equipment_json,review_status,payment_status,checkin_status,transfer_status,stall_count,amount,deposit`),
+    dbGet(env, 'stalls', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
+    dbGet(env, 'registration_day_seats', `tenant_id=eq.${TENANT}&select=session_id,activity_date,seat_code,registration_id`).catch(()=>[]),
   ]);
   let list = sessions;
   if (Array.isArray(allowedIds)) list = sessions.filter(s => allowedIds.includes(String(s.id)));
@@ -3959,6 +3979,8 @@ async function hOnsiteSessions(env, p) {
       stallCount: paid.reduce((sum,r)=>sum+(safeNum(r.stall_count)||1),0),
       paidAmount: paid.reduce((sum,r)=>sum+safeNum(r.amount),0),
       depositTotal: paid.reduce((sum,r)=>sum+safeNum(r.deposit),0),
+      seatMapUrl: s.seat_map_url||'',
+      seatBoard: buildOnsiteSeatBoard(s,stalls.filter(x=>String(x.session_id)===String(s.id)),rs,daySeats.filter(x=>String(x.session_id)===String(s.id))),
     };
   }));
 }
@@ -4007,8 +4029,14 @@ async function hOnsitePasscodeVerify(env, b) {
   });
   if (!valid.length) return jsonErr('通行碼無效或已過期');
   const p = valid[0];
-  const ses = await dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(p.session_id)}&select=id,name`).catch(() => []);
-  return jsonOk({ sessionId: p.session_id, sessionName: (ses[0] && ses[0].name) || '', assignee: p.assignee_note || '' });
+  const [ses,stalls,regs,daySeats] = await Promise.all([
+    dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(p.session_id)}&select=*`).catch(() => []),
+    dbGet(env, 'stalls', `tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(p.session_id)}&select=*`).catch(()=>[]),
+    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(p.session_id)}&select=id,name,brand_name,equipment_json`).catch(()=>[]),
+    dbGet(env, 'registration_day_seats', `tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(p.session_id)}&select=activity_date,seat_code,registration_id`).catch(()=>[])
+  ]);
+  const s=ses[0]||{};
+  return jsonOk({ sessionId: p.session_id, sessionName:s.name||'',dates:safeJson(s.dates_json,[]),seatMapUrl:s.seat_map_url||'',seatBoard:buildOnsiteSeatBoard(s,stalls,regs,daySeats),assignee: p.assignee_note || '' });
 }
 // 後台：列出通行碼
 async function hOnsitePasscodeList(env, p) {
@@ -5368,25 +5396,116 @@ async function hAdminSeatBoard(env, b){
   const TENANT=b._tenantId;
   if(!await verifyStaff(env,b.email,b.token,TENANT)) return jsonErr('無權限');
   if(!b.sessionId) return jsonErr('缺少場次編號');
-  const [seatRows, regs] = await Promise.all([
+  const [seatRows, regs, sessionRows, daySeatRows, confirmedPayments] = await Promise.all([
     getSeatRows(env,TENANT,b.sessionId).catch(()=>[]),
-    dbGet(env,'registrations',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(b.sessionId)}&review_status=eq.%E5%B7%B2%E9%8C%84%E5%8F%96&select=id,name,brand_name,stall_number,stall_count,seat_choice_intent,seat_choice_status,payment_status,transfer_status`).catch(()=>[])
+    dbGet(env,'registrations',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(b.sessionId)}&review_status=eq.%E5%B7%B2%E9%8C%84%E5%8F%96&select=*`).catch(()=>[]),
+    dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId)}&select=id,name,dates_json,seat_map_url,seat_board_json,seat_layout_published_at,seat_assign_last_at`).catch(()=>[]),
+    dbGet(env,'registration_day_seats',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(b.sessionId)}&select=activity_date,seat_code,registration_id&order=activity_date.asc,seat_code.asc`).catch(()=>[]),
+    dbGet(env,'payments',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(b.sessionId)}&status=eq.%E5%B7%B2%E7%A2%BA%E8%AA%8D&select=registration_id,reg_id,paid_at,created_at`).catch(()=>[])
   ]);
+  if(!sessionRows.length) return jsonErr('找不到場次');
+  const session=sessionRows[0];
+  const dateRows=safeJson(session.dates_json,[]);
+  const availableDates=(Array.isArray(dateRows)?dateRows:[]).map(x=>String((x&&x.date)||x||'').slice(0,10)).filter(Boolean);
+  const requested=String(b.activityDate||'').slice(0,10);
+  const activityDate=(requested&&availableDates.includes(requested)?requested:(availableDates[0]||String(daySeatRows[0]&&daySeatRows[0].activity_date||'').slice(0,10)));
+  const board=safeJson(session.seat_board_json,{})||{};
+  const customMarkers=Array.isArray(board.customMarkers)?board.customMarkers:[];
+  const currentAssignments=daySeatRows.filter(x=>String(x.activity_date).slice(0,10)===activityDate);
+  const assignedByCode={}; currentAssignments.forEach(x=>{assignedByCode[String(x.seat_code)]=String(x.registration_id||'');});
+  const confirmedIds=new Set(confirmedPayments.map(x=>String(x.registration_id||x.reg_id||'')).filter(Boolean));
+  const firstPaidAt={}; confirmedPayments.forEach(x=>{const id=String(x.registration_id||x.reg_id||'');const at=x.paid_at||x.created_at||'';if(id&&(!firstPaidAt[id]||String(at)<String(firstPaidAt[id])))firstPaidAt[id]=at;});
   const regById={}; for(const r of regs) regById[String(r.id)]=r;
   const seats=seatRows.map(s=>{
-    const rid=String(seatRegId(s)||''); const occ=regById[rid];
+    const code=seatCodeOf(s),rid=assignedByCode[String(code)]||String(seatRegId(s)||''); const occ=regById[rid];
     return { code:seatCodeOf(s), type:normalizeSeatType(s.seat_type),
       active:s.is_active!==false&&s.is_active!=='false', status:s.status||'空閒',
-      occupied:isSeatOccupiedActive(s), priceDelta:safeNum(s.price_delta),
+      occupied:!!occ, priceDelta:safeNum(s.price_delta), x:safeNum(s.map_x), y:safeNum(s.map_y),
+      order:safeNum(s.map_order), direction:safeNum((board.mapDirections||{})[code]),
       occupantRegId:(occ?rid:''), occupantName:occ?(occ.brand_name||occ.name||''):'' };
   });
+  for(const m of customMarkers){
+    if(!m||!m.id)continue;
+    seats.push({code:'CUSTOM:'+m.id,id:String(m.id),isCustom:true,type:String(m.markerType||'service'),specialLabel:String(m.label||'自訂位置'),showPublic:m.showPublic!==false,active:true,occupied:false,x:safeNum(m.x),y:safeNum(m.y),direction:safeNum(m.direction),order:100000+seats.length});
+  }
   const regsOut=regs
     .filter(r=>!isCapacityInactiveTransferStatus(r.transfer_status))
     .map(r=>({ regId:String(r.id), name:r.name||'', brand:r.brand_name||'',
       stallNumber:r.stall_number||'', stallCount:Math.max(1,safeNum(r.stall_count)||1),
       intent:(String(r.seat_choice_intent||'auto')==='paid'?'paid':'auto'),
-      seatChoiceStatus:r.seat_choice_status||'', payStatus:r.payment_status||'' }));
-  return jsonOk({seats, regs:regsOut});
+      seatChoiceStatus:r.seat_choice_status||'', payStatus:r.payment_status||'',
+      transferStatus:r.transfer_status||'', phone:r.phone||'', paidAt:firstPaidAt[String(r.id)]||r.created_at||'',
+      confirmedPaid:String(r.payment_status||'')==='免費'||confirmedIds.has(String(r.id)),
+      equipmentText:_equipmentTextFromMap(_effectiveEquipmentMapForReg(r,session)),
+      dayPositions:daySeatRows.filter(x=>String(x.registration_id)===String(r.id)).reduce((out,x)=>{const d=String(x.activity_date).slice(0,10);let row=out.find(y=>y.date===d);if(!row){row={date:d,codes:[]};out.push(row);}row.codes.push(String(x.seat_code));return out;},[])
+    }));
+  const activeSeats=seats.filter(x=>!x.isCustom&&x.active);
+  const assignedStalls=currentAssignments.length;
+  const requiredStalls=regsOut.filter(x=>x.confirmedPaid).reduce((n,x)=>n+x.stallCount,0);
+  return jsonOk({activityDate,availableDates,seats,regs:regsOut,session:{id:session.id,name:session.name||'',seatMapUrl:session.seat_map_url||'',seatBoard:board,seatLayoutPublishedAt:session.seat_layout_published_at||''},summary:{requiredStalls,assignedStalls,waitingPaid:Math.max(0,requiredStalls-assignedStalls),autoFree:Math.max(0,activeSeats.length-assignedStalls),firstAssignedAt:session.seat_assign_last_at||'',equipmentTotalText:_equipmentTextFromMap(regs.reduce((all,r)=>{const m=_effectiveEquipmentMapForReg(r,session);Object.keys(m||{}).forEach(k=>all[k]=(Number(all[k])||0)+(Number(m[k])||0));return all;},{}))}});
+}
+
+async function hSyncSeatRoster(env,b){
+  const TENANT=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT))return jsonErr('無權限');
+  if(!b.sessionId)return jsonErr('缺少場次編號');
+  const out=await dbRpc(env,'sync_seat_roster_mobile_atomic',{p_tenant_id:TENANT,p_session_id:String(b.sessionId),p_actor_email:String(b.email||'')});
+  return jsonOk(out||{success:true});
+}
+async function hSaveSeatMarkerPosition(env,b){
+  const TENANT=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT))return jsonErr('無權限');
+  const code=String(b.seatCode||'').trim(),x=Number(b.x),y=Number(b.y);
+  if(!b.sessionId||!code||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>100||y<0||y>100)return jsonErr('位置資料不正確');
+  const rows=await dbUpdateReturning(env,'stalls',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(b.sessionId)}&or=(seat_code.eq.${encodeURIComponent(code)},stall_no.eq.${encodeURIComponent(code)})`,{map_x:x,map_y:y,updated_at:nowIso()});
+  if(!rows.length)return jsonErr('找不到這個攤位');
+  return jsonOk({success:true,seatCode:code,x,y});
+}
+async function hSaveSeatMarkerPositions(env,b){
+  const TENANT=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT))return jsonErr('無權限');
+  const positions=Array.isArray(b.positions)?b.positions:[];
+  if(positions.length<2)return jsonErr('至少需要兩個位置');
+  const out=await dbRpc(env,'save_seat_marker_positions_atomic',{p_tenant_id:TENANT,p_session_id:String(b.sessionId||''),p_positions:positions});
+  return jsonOk(out||{success:true,updated:positions.length});
+}
+async function hSaveSeatBoardConfig(env,b){
+  const TENANT=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT))return jsonErr('無權限');
+  const rows=await dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId||'')}&select=seat_board_json`);
+  if(!rows.length)return jsonErr('找不到場次');
+  const board=safeJson(rows[0].seat_board_json,{})||{};
+  if(b.mode)board.mode=String(b.mode);
+  if(b.mapDirections&&typeof b.mapDirections==='object'&&!Array.isArray(b.mapDirections))board.mapDirections=b.mapDirections;
+  await dbUpdate(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId)}`,{seat_board_json:board,updated_at:nowIso()});
+  return jsonOk({success:true,seatBoard:board});
+}
+async function hSaveSeatCustomMarker(env,b){
+  const TENANT=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT))return jsonErr('無權限');
+  const rows=await dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId||'')}&select=seat_board_json`);
+  if(!rows.length)return jsonErr('找不到場次');
+  const board=safeJson(rows[0].seat_board_json,{})||{},list=Array.isArray(board.customMarkers)?board.customMarkers.slice():[];
+  const markerId=String(b.markerId||genId('MARKER')),marker={id:markerId,label:String(b.label||'自訂位置').slice(0,40),markerType:['service','closed'].includes(String(b.markerType))?String(b.markerType):'service',x:Math.max(0,Math.min(100,Number(b.x)||0)),y:Math.max(0,Math.min(100,Number(b.y)||0)),direction:(Number(b.direction)||0)%360,showPublic:b.showPublic!==false};
+  const idx=list.findIndex(x=>String(x&&x.id)===markerId);if(idx>=0)list[idx]=marker;else list.push(marker);board.customMarkers=list;
+  await dbUpdate(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId)}`,{seat_board_json:board,updated_at:nowIso()});
+  return jsonOk({success:true,marker,seatBoard:board});
+}
+async function hDeleteSeatCustomMarker(env,b){
+  const TENANT=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT))return jsonErr('無權限');
+  const rows=await dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId||'')}&select=seat_board_json`);if(!rows.length)return jsonErr('找不到場次');
+  const board=safeJson(rows[0].seat_board_json,{})||{};board.customMarkers=(Array.isArray(board.customMarkers)?board.customMarkers:[]).filter(x=>String(x&&x.id)!==String(b.markerId||''));
+  await dbUpdate(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId)}`,{seat_board_json:board,updated_at:nowIso()});
+  return jsonOk({success:true,seatBoard:board});
+}
+async function hPublishSeatLayout(env,b){
+  const TENANT=b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT))return jsonErr('無權限');
+  const at=nowIso();const rows=await dbUpdateReturning(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.sessionId||'')}`,{seat_layout_published_at:at,updated_at:at});
+  if(!rows.length)return jsonErr('找不到場次');
+  const regs=await dbGet(env,'registration_day_seats',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(b.sessionId)}&select=registration_id`).catch(()=>[]);
+  return jsonOk({success:true,publishedAt:at,notified:new Set(regs.map(x=>String(x.registration_id))).size});
 }
 async function hAdminAssignSeat(env, b){
   const TENANT=b._tenantId;
@@ -7971,6 +8090,13 @@ async function routePost(env, action, b, ctx, req) {
     case 'claimPaidSeat':       return hClaimPaidSeat(env,b);
     case 'saveSeatMap':         return hSaveSeatMap(env,b);
     case 'adminSeatBoard':      return hAdminSeatBoard(env,b);
+    case 'syncSeatRoster':      return hSyncSeatRoster(env,b);
+    case 'saveSeatMarkerPosition': return hSaveSeatMarkerPosition(env,b);
+    case 'saveSeatMarkerPositions': return hSaveSeatMarkerPositions(env,b);
+    case 'saveSeatBoardConfig': return hSaveSeatBoardConfig(env,b);
+    case 'saveSeatCustomMarker': return hSaveSeatCustomMarker(env,b);
+    case 'deleteSeatCustomMarker': return hDeleteSeatCustomMarker(env,b);
+    case 'publishSeatLayout':   return hPublishSeatLayout(env,b);
     case 'adminAssignSeat':     return hAdminAssignSeat(env,b);
     case 'runBatchAssign':      return hRunBatchAssign(env,b);
     case 'saveSeatMapImage':    return hSaveSeatMapImage(env,b);
