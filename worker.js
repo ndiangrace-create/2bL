@@ -2425,134 +2425,12 @@ async function updateMemberLastLogin(env, email, tenantId, googleSub, displayNam
 
 // POST /apply — 客戶申請試用（不需登入）
 async function hApplyTrial(env, b) {
-  if (!b.brand_name || !b.contact_email) return jsonErr('請填寫品牌名稱與 Email');
-
-  // 檢查是否已申請
-  const existing = await dbGet(env, 'tenant_apply_logs',
-    `contact_email=eq.${encodeURIComponent(b.contact_email)}&status=eq.pending&select=id`).catch(()=>[]);
-  if (existing.length) return jsonErr('此 Email 已有待處理的申請，請稍候或聯繫我們');
-
-  const id = genId('APL');
-  await dbInsert(env, 'tenant_apply_logs', {
-    id,
-    brand_name: b.brand_name,
-    contact_name: b.contact_name || '',
-    contact_email: b.contact_email.toLowerCase(),
-    contact_phone: b.contact_phone || '',
-    event_type: b.event_type || '',
-    plan_type: 'trial',
-    note: b.note || '',
-    status: 'pending',
-    created_at: new Date().toISOString(),
-  });
-
-  // 寄通知給你（系統管理者）
-  const adminEmail = env.PLATFORM_ADMIN_EMAIL || 'ndiangrace@gmail.com';
-  await sendEmail(env, {
-    to: adminEmail,
-    subject: `【2b-love.com】新申請：${b.brand_name}`,
-    html: `
-      <h2>新試用申請</h2>
-      <p><b>品牌名稱：</b>${b.brand_name}</p>
-      <p><b>聯絡人：</b>${b.contact_name || '未填'}</p>
-      <p><b>Email：</b>${b.contact_email}</p>
-      <p><b>電話：</b>${b.contact_phone || '未填'}</p>
-      <p><b>活動類型：</b>${b.event_type || '未填'}</p>
-      <p><b>備註：</b>${b.note || '無'}</p>
-      <p><b>申請編號：</b>${id}</p>
-      <br>
-      <a href="${env.ADMIN_SITE_URL || ''}?manage=1">前往開通工具</a>
-    `,
-  }).catch(()=>{});
-
-  return jsonOk({ ok: true, apply_id: id, message: '申請已送出，我們將在 1–2 個工作天內與您聯繫' });
+  return jsonErr('2BL 未開放自助申請，請直接聯繫管理者');
 }
 
 // POST /approveApply — 你的一鍵開通（需平台管理員身份）
 async function hApproveApply(env, b) {
-  // 驗證是平台管理員
-  const payload = await verifyAdminJwt(b.token, env);
-  if (!payload || payload.normalized_role !== 'platform_super_admin') return jsonErr('無權限', 401);
-
-  const applyId = b.apply_id;
-  if (!applyId) return jsonErr('缺少 apply_id');
-
-  const applyRows = await dbGet(env, 'tenant_apply_logs', `id=eq.${applyId}&select=*`);
-  const apply = applyRows[0];
-  if (!apply) return jsonErr('找不到申請記錄');
-  if (apply.status !== 'pending') return jsonErr('此申請已處理');
-
-  // 建立新 tenant
-  const tenantId = b.tenant_id || apply.brand_name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 20) + '_' + Date.now().toString().slice(-4);
-  const now = new Date();
-  const trialEnd = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000); // 試用期
-
-  await dbInsert(env, 'tenants', {
-    id: tenantId,
-    slug: tenantId,
-    name: apply.brand_name,
-    status: 'active',
-    plan_type: 'trial',
-    trial_start_at: now.toISOString(),
-    trial_end_at: trialEnd.toISOString(),
-    is_locked: false,
-    contact_name: apply.contact_name,
-    contact_phone: apply.contact_phone,
-    event_type: apply.event_type,
-    apply_note: apply.note,
-    notify_email: apply.contact_email,
-    config_json: '{}',
-    payment_config_json: '{}',
-    default_refund_rules_json: '{}',
-    created_at: now.toISOString(),
-    updated_at: now.toISOString(),
-  });
-
-  // 建立 staff（主辦者）
-  const staffId = genId('STF');
-  await dbInsert(env, 'staff', {
-    id: staffId,
-    tenant_id: tenantId,
-    email: apply.contact_email,
-    name: apply.contact_name || apply.brand_name,
-    role: 'organizer_owner',
-    normalized_role: 'organizer_owner',
-    is_active: true,
-    display_name: apply.contact_name || apply.brand_name,
-    perms_json: '{}',
-    created_at: now.toISOString(),
-    updated_at: now.toISOString(),
-  });
-
-  // 更新申請記錄
-  await dbUpdate(env, 'tenant_apply_logs', `id=eq.${applyId}`, {
-    status: 'approved',
-    tenant_id: tenantId,
-    approved_at: now.toISOString(),
-    approved_by: payload.email,
-  });
-
-  // 寄開通通知給客戶
-  const loginUrl = `${env.FRONTEND_SITE_URL || ''}?tenant=${tenantId}`;
-  await sendEmail(env, {
-    to: apply.contact_email,
-    subject: '【兔彼樂市集活動系統】您的試用帳號已開通！',
-    html: `
-      <h2>恭喜！您的試用帳號已開通</h2>
-      <p>您好，${apply.contact_name || apply.brand_name}！</p>
-      <p>您申請的「兔彼樂市集活動系統」試用帳號已開通。</p>
-      <p><b>試用期限：</b>${TRIAL_DAYS}天（至 ${trialEnd.toLocaleDateString('zh-TW')}）</p>
-      <p><b>試用限制：</b>最多建立 ${TRIAL_MAX_SESSIONS} 個場次</p>
-      <br>
-      <p>請使用您的 Google 帳號（${apply.contact_email}）登入：</p>
-      <a href="${loginUrl}" style="background:#3a7d5c;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">立即登入後台</a>
-      <br><br>
-      <p>如有任何問題，請聯繫我們：ndiangrace@gmail.com</p>
-      <p>兔彼樂市集活動系統</p>
-    `,
-  }).catch(()=>{});
-
-  return jsonOk({ ok: true, tenant_id: tenantId, message: `已開通，開通信已寄至 ${apply.contact_email}` });
+  return jsonErr('2BL 未開放自助租戶開通');
 }
 
 // GET /apply/list — 查詢申請列表（平台管理員用）
@@ -2570,8 +2448,7 @@ async function hGetTenantsAdmin(env, p) {
 async function hApplyList(env, p) {
   const payload = await verifyAdminJwt(p.token, env);
   if (!payload || payload.normalized_role !== 'platform_super_admin') return jsonErr('無權限', 401);
-  const rows = await dbGet(env, 'tenant_apply_logs', `order=created_at.desc&limit=50&select=*`);
-  return jsonOk(rows);
+  return jsonOk([]);
 }
 
 // ── 鎖定 / 停用機制 API ──────────────────────────────────────────
@@ -2603,20 +2480,23 @@ async function hUnlockTenant(env, b) {
     trial_end_at: newEnd.toISOString(),
     updated_at: now.toISOString(),
   });
-  // 記錄計費
-  await dbInsert(env, 'billing_logs', {
-    id: genId('BIL'),
+  // 2BL 沒有第二套 billing_logs；續費操作統一寫入既有 audit_logs。
+  await dbInsert(env, 'audit_logs', {
+    id: genId('AUD'),
     tenant_id: b.tenant_id,
-    billing_type: 'manual',
-    amount: Number(b.amount) || 0,
-    tax: Number(b.tax) || 0,
-    total: (Number(b.amount) || 0) + (Number(b.tax) || 0),
-    status: 'confirmed',
-    confirmed_at: now.toISOString(),
-    confirmed_by: payload.email,
-    period_start: now.toISOString(),
-    period_end: newEnd.toISOString(),
-    note: b.note || '手動續費',
+    actor_email: payload.email || '',
+    actor_role: payload.normalized_role || payload.role || 'platform_super_admin',
+    action: 'tenant_manual_renewal_confirmed',
+    target_table: 'tenants',
+    target_id: b.tenant_id,
+    before_json: {},
+    after_json: { plan_type: 'active', trial_end_at: newEnd.toISOString() },
+    meta_json: {
+      amount: Number(b.amount) || 0,
+      tax: Number(b.tax) || 0,
+      total: (Number(b.amount) || 0) + (Number(b.tax) || 0),
+      note: b.note || '手動續費'
+    },
     created_at: now.toISOString(),
   });
   // 寄通知給客戶
@@ -2939,16 +2819,23 @@ async function hAdminMe(env, p) {
 // 記錄登入 log
 async function logAdminLogin(env, tenantId, staffId, email, provider, status, reason, ip, ua) {
   try {
-    await dbInsert(env, 'admin_login_logs', {
+    await dbInsert(env, 'staff_action_logs', {
       id: genId('LOG'),
-      tenant_id: tenantId || '',
+      tenant_id: tenantId || 'platform',
       staff_id: staffId || null,
-      email: email || '',
-      provider: provider || 'google',
-      login_status: status || 'error',
-      reason: reason || '',
-      ip: ip || '',
-      user_agent: ua || '',
+      staff_email: email || '',
+      action_type: status === 'success' ? 'admin_auth_success' : 'admin_auth_failure',
+      target_type: 'authentication',
+      target_id: staffId || email || null,
+      before_data: null,
+      after_data: null,
+      meta_json: {
+        provider: provider || 'google',
+        status: status || 'error',
+        reason: reason || '',
+        ip: ip || '',
+        user_agent: ua || ''
+      },
       created_at: new Date().toISOString(),
     });
   } catch(e) { /* 登入 log 失敗不影響主流程 */ }
@@ -7722,9 +7609,54 @@ async function hGetOperationsReport(env,p){
   const scope=await getStaffScopeForOperations(env,p.email,p.token,TENANT); if(!scope) return jsonErr('無權限');
   let eventId=String(p.eventId||'').trim()||null;
   if(scope.eventId){ if(eventId && eventId!==scope.eventId) return jsonErr('無權限'); eventId=scope.eventId; }
-  const params={p_tenant_id:TENANT,p_session_ids:scope.sessionIds&&scope.sessionIds.length?scope.sessionIds:null,p_event_id:eventId,p_date_from:p.dateFrom||null,p_date_to:p.dateTo||null};
-  const raw=await dbRpc(env,'operation_session_report',params);
-  const rows=(Array.isArray(raw)?raw:[]).map(r=>({sessionId:r.session_id,sessionName:r.session_name,eventId:r.event_id,eventTitle:r.event_title||'未歸屬',confirmedRevenue:Number(r.confirmed_revenue)||0,refundAmount:Number(r.refund_amount)||0,expenseAmount:Number(r.expense_amount)||0,distributableProfit:Number(r.distributable_profit)||0,companyRatio:Number(r.company_ratio)||0,partnerRatio:Number(r.partner_ratio)||0,companyShare:Number(r.company_share)||0,partnerShare:Number(r.partner_share)||0,partnerName:r.partner_name||'',shareSource:r.share_source||'',settlementLocked:!!r.settlement_locked}));
+
+  const [sessionsRaw,events,allRegs,financeItems,refunds,shareSettings,settlements]=await Promise.all([
+    dbGet(env,'sessions',`tenant_id=eq.${TENANT}&select=*`),
+    dbGet(env,'events',`tenant_id=eq.${TENANT}&select=id,title,name`).catch(()=>[]),
+    dbGet(env,'registrations',`tenant_id=eq.${TENANT}&select=*`),
+    dbGet(env,'finance_items',`tenant_id=eq.${TENANT}&select=session_id,amount,type`).catch(()=>[]),
+    dbGet(env,'refund_transactions',`tenant_id=eq.${TENANT}&status=eq.${encodeURIComponent('已退款')}&select=session_id,refund_amount`).catch(()=>[]),
+    dbGet(env,'operation_share_settings',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
+    dbGet(env,'operation_settlements',`tenant_id=eq.${TENANT}&select=session_id,locked_at`).catch(()=>[]),
+  ]);
+  const itemMap=await _getRegistrationItemsForRegs(env,allRegs);
+  const eventMap={}; for(const e of events) eventMap[String(e.id)]=e;
+  const from=String(p.dateFrom||'').slice(0,10), to=String(p.dateTo||'').slice(0,10);
+  let sessions=sessionsRaw.filter(s=>{
+    if(eventId && String(s.event_id||'')!==eventId) return false;
+    if(scope.sessionIds&&scope.sessionIds.length&&!scope.sessionIds.includes(String(s.id))) return false;
+    const d=String(_sessionDateValue(s)||'').slice(0,10);
+    if(from && d && d<from) return false;
+    if(to && d && d>to) return false;
+    return true;
+  });
+  const rows=sessions.map(s=>{
+    const sid=String(s.id), eid=String(s.event_id||'');
+    const regs=allRegs.filter(r=>String(r.session_id)===sid);
+    const summary=_buildAdminSessionRow(s,regs,eventMap[eid]||{},itemMap);
+    const confirmedRevenue=Number(summary?.finance?.receivedTotal)||0;
+    const refundAmount=refunds.filter(r=>String(r.session_id)===sid).reduce((n,r)=>n+(Number(r.refund_amount)||0),0);
+    const expenseAmount=financeItems.filter(i=>String(i.session_id)===sid).reduce((n,i)=>n+(Number(i.amount)||0),0);
+    const sessionSetting=shareSettings.find(x=>String(x.session_id||'')===sid);
+    const eventSetting=shareSettings.find(x=>!x.session_id&&String(x.event_id||'')===eid);
+    const setting=sessionSetting||eventSetting||null;
+    const companyRatio=Number(setting?.company_ratio ?? 50);
+    const partnerRatio=Number(setting?.partner_ratio ?? 50);
+    const distributableProfit=confirmedRevenue-refundAmount-expenseAmount;
+    const companyShare=Math.floor(distributableProfit*companyRatio/100);
+    const partnerShare=distributableProfit-companyShare;
+    return {
+      sessionId:sid,
+      sessionName:s.name||sid,
+      eventId:eid||null,
+      eventTitle:(eventMap[eid]?.title||eventMap[eid]?.name||'未歸屬'),
+      confirmedRevenue,refundAmount,expenseAmount,distributableProfit,
+      companyRatio,partnerRatio,companyShare,partnerShare,
+      partnerName:setting?.partner_name||'',
+      shareSource:sessionSetting?'session':(eventSetting?'event':'default_50_50'),
+      settlementLocked:settlements.some(x=>String(x.session_id)===sid&&x.locked_at)
+    };
+  });
   const totals=rows.reduce((a,r)=>{a.confirmedRevenue+=r.confirmedRevenue;a.refundAmount+=r.refundAmount;a.expenseAmount+=r.expenseAmount;a.distributableProfit+=r.distributableProfit;a.companyShare+=r.companyShare;a.partnerShare+=r.partnerShare;return a;},{confirmedRevenue:0,refundAmount:0,expenseAmount:0,distributableProfit:0,companyShare:0,partnerShare:0});
   return jsonOk({rows,totals,scoped:!scope.all});
 }
