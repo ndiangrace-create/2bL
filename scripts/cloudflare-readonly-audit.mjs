@@ -137,11 +137,13 @@ const {
 } = await decodeWorkerContent(contentBytes, contentType);
 const deployedSha256 = crypto.createHash("sha256").update(sourceBytes).digest("hex");
 
-const currentDeployment = Array.isArray(deployments?.items)
-  ? deployments.items[0]
-  : Array.isArray(deployments)
-    ? deployments[0]
-    : null;
+const currentDeployment = Array.isArray(deployments?.deployments)
+  ? deployments.deployments[0]
+  : Array.isArray(deployments?.items)
+    ? deployments.items[0]
+    : Array.isArray(deployments)
+      ? deployments[0]
+      : null;
 
 const customDomains = Array.isArray(domains)
   ? domains
@@ -186,7 +188,13 @@ const report = {
     ? {
         id: String(currentDeployment.id || ""),
         created_on: String(currentDeployment.created_on || ""),
-        source: String(currentDeployment.source || "")
+        source: String(currentDeployment.source || ""),
+        versions: Array.isArray(currentDeployment.versions)
+          ? currentDeployment.versions.map(version => ({
+              version_id: String(version?.version_id || ""),
+              percentage: Number(version?.percentage || 0)
+            }))
+          : []
       }
     : null
 };
