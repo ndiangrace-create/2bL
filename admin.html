@@ -1670,6 +1670,29 @@
 }
 </style>
 
+<style>
+/* SYSTEM_DESKTOP_DENSITY_GUARD_20260816：桌機重複資料用小卡並排，提示訊息不占掉左側卡位。 */
+@media(min-width:861px){
+  .page-title{margin:10px 0 8px}
+  .page-title h2{font-size:22px}
+  .page-actions{gap:6px}
+  .page-actions .btn{min-height:36px;padding:7px 10px;font-size:13px}
+  .filter-row{gap:6px;margin:7px 0 10px}
+  .filter-row input,.filter-row select{min-height:38px;padding:8px 12px}
+  #page-consignment > .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;align-items:stretch!important}
+  #page-consignment > .cards > .card{margin:0!important;min-height:0!important}
+  #page-todos #todoList.cards > :is(.empty,.loading,.notice),
+  #panelCards.cards > :is(.empty,.loading,.notice),
+  #memberList.member-list > :is(.empty,.loading,.notice),
+  #leadList > :is(.empty,.loading,.notice),
+  .mini-card-grid > :is(.empty,.loading,.notice),
+  .panel-body > .cards > :is(.empty,.loading,.notice){grid-column:1/-1!important}
+}
+@media(max-width:860px){
+  #page-consignment > .cards{grid-template-columns:1fr!important}
+}
+</style>
+
 </head>
 <body>
 <section id="loginPage" class="login-wrap">
