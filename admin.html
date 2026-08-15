@@ -3243,11 +3243,11 @@ function seatOpsSetZoom(next){
   requestAnimationFrame(()=>{const nv=$('seatOpsMapViewport');if(nv){nv.scrollLeft=Math.max(0,cx*nv.scrollWidth-nv.clientWidth/2);nv.scrollTop=Math.max(0,cy*nv.scrollHeight-nv.clientHeight/2);}});
 }
 async function seatOpsSyncStallCount(){
-  if(!await uiConfirm('建立本場位置並自動排位？\n\n系統會依每日實際參加、已錄取且正式付款已確認／免費的名單建立位置，再依付款順序排位。'))return;
+  if(!await uiConfirm('補排新攤商？\n\n已排好的位置全部鎖住不動，只會把新攤商放進剩餘空位。'))return;
   try{
     const r=await apiPost({action:'syncSeatRoster',sessionId:SeatOps.sid,force:true});
     if(r&&r.error)throw new Error(r.error);
-    toast('排位完成：已建立 '+Number(r.createdSeats||0)+' 個位置，新排 '+Number(r.assigned||0)+' 筆，待人工 '+Number(r.waiting||0)+' 筆。',10000);
+    toast('補位完成：原有 '+Number(r.preserved||0)+' 筆完全不動，新補 '+Number(r.assigned||0)+' 筆，待人工 '+Number(r.waiting||0)+' 筆。',10000);
     await loadSeatOps(SeatOps.sid,SeatOps.activityDate);
   }catch(e){toast('建立位置並排位失敗：'+(e&&e.message?e.message:e),10000);}
 }
@@ -3336,7 +3336,7 @@ function renderSeatOps(){
   if(sum.firstAssignedAt) h+='<div class="sub" style="margin:4px 0 8px">位置編號建立時間：'+esc(sum.firstAssignedAt)+'</div>';
   const published=String((SeatOps.session||{}).seatLayoutPublishedAt||'');
   const hasMap=!!String((SeatOps.session||{}).seatMapUrl||'').trim();
-  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋排號、品牌、姓名、電話" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已放上底圖</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待放上底圖</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsSyncStallCount()">✓ 同步實際攤位數</button><button type="button" class="btn secondary" onclick="seatOpsAddCustomMarker()">＋ 自訂位置</button><label class="btn secondary" style="cursor:pointer">🗺 '+(hasMap?'更換場地底圖':'上傳場地底圖')+'<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="seatOpsUploadMapFile(this)"></label>'+(hasMap?'<button type="button" class="btn secondary" onclick="seatOpsRemoveMap()">移除底圖</button>':'')+'<button type="button" class="btn" onclick="seatOpsPublish()">📣 '+(published?'重新發布排位':'發布排位')+'</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 完整分享圖</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版</button></div>';
+  h+='<div class="seatops-toolbar"><input id="seatOpsSearch" value="'+esc(SeatOps.query||'')+'" placeholder="搜尋排號、品牌、姓名、電話" oninput="SeatOps.query=this.value;renderSeatOps()"><select onchange="SeatOps.filter=this.value;renderSeatOps()"><option value="all" '+(SeatOps.filter==='all'?'selected':'')+'>全部</option><option value="assigned" '+(SeatOps.filter==='assigned'?'selected':'')+'>已放上底圖</option><option value="waiting" '+(SeatOps.filter==='waiting'?'selected':'')+'>待放上底圖</option><option value="refund" '+(SeatOps.filter==='refund'?'selected':'')+'>退費中</option></select><button type="button" class="btn" onclick="seatOpsSyncStallCount()">＋ 補排新攤商'+(Number(sum.waitingPaid)>0?'（'+Number(sum.waitingPaid)+' 攤）':'')+'</button><button type="button" class="btn secondary" onclick="seatOpsAddCustomMarker()">＋ 自訂位置</button><label class="btn secondary" style="cursor:pointer">🗺 '+(hasMap?'更換場地底圖':'上傳場地底圖')+'<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="seatOpsUploadMapFile(this)"></label>'+(hasMap?'<button type="button" class="btn secondary" onclick="seatOpsRemoveMap()">移除底圖</button>':'')+'<button type="button" class="btn" onclick="seatOpsPublish()">📣 '+(published?'重新發布排位':'發布排位')+'</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'public\')">⬇ 完整分享圖</button><button type="button" class="btn secondary" onclick="downloadSeatBoardPng(\'staff\')">⬇ 工作人員版</button></div>';
   h+='<div class="sub" style="margin:4px 0 9px">'+(published?'已發布：'+esc(published):'尚未發布；攤商端不會顯示未完成的排位。')+'</div>';
   h+=seatOpsBoardHtml();
   h+='<div class="seatops-roster-title">攤商完整資料（'+list.length+'）</div>';

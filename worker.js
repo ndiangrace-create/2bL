@@ -3983,10 +3983,10 @@ async function hOnsiteSessions(env, p) {
 
   const [sessions, regs, stalls, daySeats, dayOps] = await Promise.all([
     dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&select=*`),
-    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=id,session_id,name,brand_name,equipment_json,selected_dates_json,review_status,payment_status,checkin_status,transfer_status,stall_count,amount,deposit`),
+    dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=id,session_id,name,brand_name,equipment_json,selected_dates_json,review_status,payment_status,checkin_status,transfer_status,stall_count,amount,deposit,deposit_refunded`),
     dbGet(env, 'stalls', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
     dbGet(env, 'registration_day_seats', `tenant_id=eq.${TENANT}&select=session_id,activity_date,seat_code,registration_id`).catch(()=>[]),
-    dbGet(env, 'registration_day_ops', `tenant_id=eq.${TENANT}&select=session_id,registration_id,activity_date,checkin_status`).catch(()=>[]),
+    dbGet(env, 'registration_day_ops', `tenant_id=eq.${TENANT}&select=session_id,registration_id,activity_date,checkin_status,teardown_status,deposit_status`).catch(()=>[]),
   ]);
   let list = sessions;
   if (Array.isArray(allowedIds)) list = sessions.filter(s => allowedIds.includes(String(s.id)));
@@ -4032,13 +4032,23 @@ async function hOnsiteSessions(env, p) {
       depositTotal: dayPaid.filter(r=>_dayDepositEligible(r,activityDate)).reduce((sum,r)=>sum+safeNum(r.deposit),0),
       dayStats: dates.map(day=>{
         const rows=paid.filter(r=>_registrationDates(r).includes(day));
-        const checkedOnDay=new Set(sessionDayOps.filter(o=>String(o.activity_date).slice(0,10)===day&&String(o.checkin_status||'')==='已報到').map(o=>String(o.registration_id)));
+        const opsOnDay=sessionDayOps.filter(o=>String(o.activity_date).slice(0,10)===day);
+        const opByReg={};opsOnDay.forEach(o=>opByReg[String(o.registration_id)]=o);
+        const checkedOnDay=new Set(opsOnDay.filter(o=>String(o.checkin_status||'')==='已報到').map(o=>String(o.registration_id)));
+        const teardownOnDay=new Set(opsOnDay.filter(o=>String(o.teardown_status||'')==='已撤場').map(o=>String(o.registration_id)));
+        const depositRows=rows.filter(r=>_dayDepositEligible(r,day)&&safeNum(r.deposit)>0);
+        const depositDoneStatuses=new Set(['已退押金','已轉活動金','押金沒收','已隨退款退還']);
+        const depositDone=depositRows.filter(r=>depositDoneStatuses.has(String(r.deposit_refunded||opByReg[String(r.id)]?.deposit_status||'')));
         return {
           activityDate:day,
           payable:rows.length,
           checkedIn:rows.filter(r=>checkedOnDay.has(String(r.id))).length,
+          teardownDone:rows.filter(r=>teardownOnDay.has(String(r.id))).length,
           stallCount:rows.reduce((sum,r)=>sum+(safeNum(r.stall_count)||1),0),
           depositTotal:rows.filter(r=>_dayDepositEligible(r,day)).reduce((sum,r)=>sum+safeNum(r.deposit),0),
+          depositTotalCount:depositRows.length,
+          depositDoneCount:depositDone.length,
+          depositPendingCount:Math.max(0,depositRows.length-depositDone.length),
         };
       }),
       seatMapUrl: s.seat_map_url||'',

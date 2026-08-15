@@ -24,7 +24,11 @@ assert.match(member,/mine\?'#ffcb3d':'#c8c2b9'/,'攤商自己的方桌必須使�
 assert.match(member,/您的方桌/,'攤商位置必須有清楚標示');
 assert.match(onsite,/onsite-map-marker[^\n]+border-radius:4px/,'現場位置也必須是方桌');
 
-assert.match(sql,/delete from public\.registration_day_seats[\s\S]*assigned_type='auto' and assigned_by='system_batch'/,'只能重建系統自動排位');
+assert.match(sql,/existingPositionsLocked',true/,'補排結果必須明確標示既有位置已鎖住');
+assert.match(sql,/not exists\([\s\S]*seat_mobile_previous/,'只能撤回本次同步暫時新增的排位');
+assert.doesNotMatch(sql,/delete from public\.registration_day_seats\s*where tenant_id=p_tenant_id and session_id=p_session_id\s*and assigned_type='auto' and assigned_by='system_batch';/,'不可整批刪除既有自動排位');
+assert.match(admin,/補排新攤商/,'後台需要直覺的補排按鈕');
+assert.match(admin,/已排好的位置全部鎖住不動/,'補排前必須清楚告知舊位置不動');
 assert.match(sql,/ds\.activity_date=any\(v_days\)/,'跨日必須共同檢查同一組位置');
 assert.match(sql,/foreach v_day in array v_days[\s\S]*unnest\(v_codes\)/,'同一組位置必須寫入每個活動日');
 assert.match(sql,/between v_start\.rn and v_start\.rn\+v_need-1/,'多攤必須使用連續位置');
