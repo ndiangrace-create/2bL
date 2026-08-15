@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-08-15T16:51:12.053Z",
+  "generated_at": "2026-08-15T17:10:13.981Z",
   "repository": "ndiangrace-create/2bL",
   "git_ref": "refs/heads/main",
-  "git_sha": "80352586b91b830fade5311c93ebb5ec9d6b960d",
+  "git_sha": "a4af686862404787cdd7d0328539770772998c89",
   "cloudflare_account_suffix": "925c44",
   "token_status": "active",
   "worker_name": "2bl-v7",
   "forbidden_worker_untouched": "tobeloved-api",
-  "deployed_bundle_sha256": "fa2d373c7fc042f5d79e8b02f996839f25ccaea0e26605eff49a9858518ae2d1",
-  "deployed_bundle_content_type": "multipart/form-data; boundary=a0852bdf96ea32df219dde58054323ae672c01d239637b6a09a387cbcb25",
+  "deployed_bundle_sha256": "8c524b78ff4cd96f2c5f7da65220ee93ca0b40f443e2082807fbff0a2233ad84",
+  "deployed_bundle_content_type": "multipart/form-data; boundary=29baefa92bc7cee8845510d6ae63909e2e2fd028031c80949077ebea4e06",
   "deployed_content_sha256": "fc8f5f810da7b8762d577ec293dde6e86a7b581026ff5e559c3b8a16f9317d0a",
   "deployed_content_type": "application/javascript+module",
   "deployed_entrypoint": "worker.js",
@@ -114,15 +114,15 @@
     }
   ],
   "custom_domains": [],
-  "current_version_id": "b93e29d6-93b5-4172-8e4b-19f0ec0b7713",
-  "current_version_created_on": "2026-08-15T16:51:08.590189Z",
+  "current_version_id": "0d78582c-feec-4db7-b02c-f653b270bc8e",
+  "current_version_created_on": "2026-08-15T17:10:10.658126Z",
   "current_deployment": {
-    "id": "af1757e4-854a-4eba-b9c9-6697a0c825bc",
-    "created_on": "2026-08-15T16:51:09.099299Z",
+    "id": "9400516d-5a7c-4c66-af0b-c250af55fed0",
+    "created_on": "2026-08-15T17:10:11.195651Z",
     "source": "wrangler",
     "versions": [
       {
-        "version_id": "b93e29d6-93b5-4172-8e4b-19f0ec0b7713",
+        "version_id": "0d78582c-feec-4db7-b02c-f653b270bc8e",
         "percentage": 100
       }
     ]
