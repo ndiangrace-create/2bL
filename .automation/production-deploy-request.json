@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "5d1ca50b4ffa3ad6caeb3caf1af38513accd74f3",
-  "expected_cloudflare_version": "1f5afb22-bd61-4bc4-a8f0-34ec02cfe185",
-  "reason": "補排新攤商不動舊位置，現場顯示每日撤場與退押金下一步"
+  "approved_source_commit": "b9c21812e14851cd5633135c8c7f64cc97b34cd0",
+  "expected_cloudflare_version": "715f401d-977c-4518-8e7a-56a2ac3cf254",
+  "reason": "現場操作按鈕改為電腦小格、手機兩欄，移除窄右欄與重疊"
 }
