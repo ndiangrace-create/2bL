@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "93da89ea76b1d872ae293ea5937c3db63c52bd72",
-  "expected_cloudflare_version": "b401de8c-f43e-4351-ad0a-1a0a71c1f1cf",
-  "reason": "手機優先排位系統正式上線"
+  "approved_source_commit": "0efb23c7c6be53e95e122c6eac3c868148974c23",
+  "expected_cloudflare_version": "0d1fcf65-c13d-48dc-9280-9e1145ca6dc8",
+  "reason": "每日報到、撤場、押金與活動金正式上線"
 }
