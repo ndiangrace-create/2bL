@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "5625e1169012eeaa961f7ccdbbfb75981bba655b",
-  "expected_cloudflare_version": "d377d143-a166-4ff6-affe-49d4c5b0d4e9",
-  "reason": "修正電腦版第一張攤商卡誤排到右欄，恢復由左至右排列"
+  "approved_source_commit": "b65d61c33d3ba8ba28c223fe5b8136dfd29d3151",
+  "expected_cloudflare_version": "fcd0ddba-6c78-4534-a988-1f6bded6fe62",
+  "reason": "全系統電腦版卡片縮小並排、提示訊息防錯位，保留手機單欄操作"
 }
