@@ -20,10 +20,14 @@ for(const [name,source] of [['admin.html',admin],['onsite.html',onsite],['index.
 ok(worker.includes("registration_day_ops"),'現場操作未使用每日資料表');
 ok(worker.includes("const dayPaid=paid.filter"),'現場場次卡片仍可能顯示跨日累計');
 ok(worker.includes('dayStats: dates.map'),'工讀生入口未提供每一天獨立統計');
+ok(worker.includes('teardownDone:rows.filter'),'場次入口未提供每日撤場進度');
+ok(worker.includes('depositPendingCount:Math.max'),'場次入口未提供每日待退押金進度');
+ok(onsite.includes('現在先處理：未報到'),'現場頁缺少下一步工作提醒');
+ok(onsite.includes('押金：最後一天處理'),'第一天未提醒押金最後一天處理');
 ok(onsite.includes("openSession('${esc(s.id)}','${esc(x.activityDate||'')}')"),'工讀生入口無法從日期按鈕直接進入當日名單');
 ok(admin.includes('const sessionChanged=!!AdminState.onsite.sid'),'後台切換場次時仍可能沿用上一場日期狀態');
 ok(admin.includes('不同場次絕不共用名單'),'後台未清楚標示場次隔離');
-ok(onsite.includes('當日已報到'),'手機現場入口未清楚標示當日數字');
+ok(onsite.includes('報到 ${x.checkedIn||0}/${x.payable||0}'),'手機現場入口未清楚標示每日報到數字');
 ok(worker.includes("兩天／多天報名只能在最後一個參加日退押金"),'缺少最後一天退押金阻擋');
 ok(worker.includes("請先完成當日撤場，再退押金"),'缺少撤場後才能退押金阻擋');
 ok(worker.includes("complete_deposit_refund_atomic"),'退押金未使用正式原子金流');

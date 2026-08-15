@@ -195,7 +195,8 @@
 .session-day-btn{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;text-align:left;background:#fff;color:#26312f;border:1px solid var(--line);padding:10px 12px;border-radius:12px}
 .session-day-btn.today{border:2px solid #26312f;background:#f4f8f2}
 .session-day-btn small{font-size:12px;color:var(--muted)}
-@media(max-width:520px){.session-day-btn{min-height:52px;font-size:15px}.session-grid{grid-template-columns:1fr}}
+.session-day-progress{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.session-day-progress span{padding:4px 7px;border-radius:8px;background:#edf3ed;font-size:12px;font-weight:900}.session-day-progress .warn{background:#fff0d5}.session-day-enter{font-style:normal;font-weight:900;color:#365b4d}
+@media(max-width:520px){.session-day-btn{min-height:72px;font-size:15px;grid-template-columns:1fr auto}.session-day-btn small{grid-column:1/-1}.session-grid{grid-template-columns:1fr}.session-day-enter{grid-row:1;grid-column:2}}
 
 /* INTUITIVE_ONSITE_UX_20260810 */
 .onsite-live-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0}.onsite-live-stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 8px}.onsite-live-stat span{display:block;font-size:10.5px;color:var(--muted);font-weight:850;white-space:nowrap}.onsite-live-stat b{font-size:17px;line-height:1.15}.onsite-quick-scroll{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 6px}.onsite-quick-scroll::-webkit-scrollbar{display:none}.onsite-quick-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#333;border-radius:999px;padding:7px 10px;font-size:12.5px;font-weight:900}.onsite-quick-chip.active{background:#26312f;color:#fff;border-color:#26312f}.mobile-reg-state-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.mobile-reg-main .mobile-reg-buttons{display:flex!important;gap:5px!important;overflow-x:auto;flex-wrap:nowrap!important}.mobile-reg-main .mobile-reg-buttons button{width:auto!important;flex:0 0 auto!important;min-width:0!important;padding:7px 9px!important}
@@ -322,7 +323,10 @@ function renderSessions(){
     const multi=stats.length>1;
     const dayButtons=stats.map((x,i)=>{
       const active=String(x.activityDate||'')===String(s.activityDate||'');
-      return `<button class="session-day-btn ${active?'today':''}" onclick="event.stopPropagation();openSession('${esc(s.id)}','${esc(x.activityDate||'')}')"><b>${esc((x.activityDate||'').replace(/^\d{4}-/,''))}${multi?'｜第'+(i+1)+'天':''}</b><small>品牌 ${x.payable||0}・攤位 ${x.stallCount||0}</small><span>當日已報到 ${x.checkedIn||0}/${x.payable||0}</span></button>`;
+      const depositText=Number(x.depositTotalCount||0)>0
+        ?`押金：待處理 ${x.depositPendingCount||0}／已完成 ${x.depositDoneCount||0}`
+        :(multi&&i<stats.length-1?'押金：最後一天處理':'押金：本日無需處理');
+      return `<button class="session-day-btn ${active?'today':''}" onclick="event.stopPropagation();openSession('${esc(s.id)}','${esc(x.activityDate||'')}')"><b>${esc((x.activityDate||'').replace(/^\d{4}-/,''))}${multi?'｜第'+(i+1)+'天':''}</b><small>品牌 ${x.payable||0}・攤位 ${x.stallCount||0}</small><em class="session-day-enter">進入處理 ›</em><div class="session-day-progress"><span>報到 ${x.checkedIn||0}/${x.payable||0}</span><span>撤場 ${x.teardownDone||0}/${x.payable||0}</span><span class="${Number(x.depositPendingCount||0)>0?'warn':''}">${esc(depositText)}</span></div></button>`;
     }).join('');
     return `<div class="card session"><div class="session-title">${esc(s.name)}</div><div class="sub">${multi?'同一場活動・請直接點日期':'請點日期進入名單'}</div><div class="session-days">${dayButtons}</div>${s.refundFlag?`<span class="tag bad">退費標記 ${s.refundFlag}</span>`:''}</div>`;
   }).join('');
@@ -487,12 +491,16 @@ function renderOnsiteLiveSummary(){
   const s=currentDaySummary||{},a=s.attendance||{},t=s.teardown||{},d=s.deposit||{};
   const total=Number(a.total)||regs.length,checked=Number(a.checked)||0,unchecked=Number(a.unchecked)||0,notTeardown=Number(t.pending)||0;
   const eq=Array.isArray(s.equipment)?s.equipment:[];
+  const nextStep=unchecked>0
+    ?`現在先處理：未報到 ${unchecked} 位`
+    :(notTeardown>0?`下一步：待撤場 ${notTeardown} 位`:(Number(d.pendingCount||0)>0?`最後一步：待退押金 ${Number(d.pendingCount)||0} 筆`:'本日現場工作已全部完成'));
   if($('onsiteLiveSummary'))$('onsiteLiveSummary').innerHTML=`
+    <div class="notice" style="margin:8px 0"><b>${esc(nextStep)}</b></div>
     <div class="onsite-live-summary">
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('all')"><span>應報到</span><b>${total}</b></button>
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('checked')"><span>已報到</span><b>${checked}</b></button>
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('unchecked')"><span>未報到</span><b>${unchecked}</b></button>
-      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('notTeardown')"><span>未撤場</span><b>${notTeardown}</b></button>
+      <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('notTeardown')"><span>待撤場</span><b>${notTeardown}</b></button>
       <button class="onsite-live-stat" onclick="setOnsiteQuickFilter('notDeposit')"><span>待退押金</span><b>${Number(d.pendingCount)||0}</b></button>
     </div>
     <div class="onsite-live-summary" style="grid-template-columns:repeat(3,minmax(0,1fr))">
@@ -502,7 +510,7 @@ function renderOnsiteLiveSummary(){
     </div>
     ${Number(d.totalCount||0)===0?`<div class="sub" style="margin:3px 0 6px">本日沒有應退押金；連續多日報名只在最後一個實際參加日退還。</div>`:''}
     ${eq.length?`<div class="sub" style="margin:4px 0 8px"><b>當日設備：</b>${eq.map(x=>`${esc(x.name)} × ${Number(x.qty)||0}`).join('、')}</div>`:''}`;
-  const chips=[['all','全部 '+total],['unchecked','未報到 '+unchecked],['checked','已報到 '+checked],['notTeardown','未撤場 '+notTeardown],['allDeposit','全部押金 '+(Number(d.totalCount)||0)],['refundedDeposit','已退押金 '+(Number(d.refundedCount)||0)],['notDeposit','待退押金 '+(Number(d.pendingCount)||0)]];
+  const chips=[['all','全部 '+total],['unchecked','未報到 '+unchecked],['checked','已報到 '+checked],['notTeardown','待撤場 '+notTeardown],['allDeposit','全部押金 '+(Number(d.totalCount)||0)],['refundedDeposit','已退押金 '+(Number(d.refundedCount)||0)],['notDeposit','待退押金 '+(Number(d.pendingCount)||0)]];
   if($('onsiteQuickFilters'))$('onsiteQuickFilters').innerHTML=chips.map(([f,label])=>`<button class="onsite-quick-chip ${onsiteQuickFilter===f?'active':''}" onclick="setOnsiteQuickFilter('${f}')">${esc(label)}</button>`).join('');
 }
 

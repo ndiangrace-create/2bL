@@ -1,4 +1,4 @@
--- 手機優先排位：保留既有活動、攤位與人工排位，只重建 system_batch 自動排位。
+-- 手機優先排位：既有排位全部鎖住不動，只把新攤商補進剩餘空位。
 -- 同一筆報名跨日使用同一組位置；多攤依 map_order 取得連續位置。
 create or replace function public.sync_seat_roster_mobile_atomic(
   p_tenant_id text,
@@ -20,7 +20,10 @@ declare
   v_day date;
   v_need integer;
   v_assigned integer := 0;
+  v_preserved integer := 0;
   v_waiting integer := 0;
+  v_existing_days integer := 0;
+  v_complete_days integer := 0;
   v_now timestamptz := now();
 begin
   if coalesce(trim(p_tenant_id),'')='' or coalesce(trim(p_session_id),'')='' then
@@ -31,10 +34,7 @@ begin
   where tenant_id=p_tenant_id and id=p_session_id for update;
   if not found then raise exception '找不到場次'; end if;
 
-  -- 先沿用既有安全名單規則補齊位置；此函式與下方重排同屬一個交易，失敗會全部回復。
-  v_base := public.sync_seat_roster_atomic(p_tenant_id,p_session_id,p_actor_email);
-
-  -- 先暫存目前的正式自動排位；重排時優先沿用第一天原位置，避免活動中無故換位。
+  -- 先鎖定呼叫前已存在的正式排位。後續任何補位都不得改動這份快照。
   create temporary table if not exists seat_mobile_previous(
     activity_date date, seat_code text, registration_id text
   ) on commit drop;
@@ -42,8 +42,18 @@ begin
   insert into seat_mobile_previous(activity_date,seat_code,registration_id)
   select activity_date,seat_code,registration_id::text
   from public.registration_day_seats
-  where tenant_id=p_tenant_id and session_id=p_session_id
-    and assigned_type='auto' and assigned_by='system_batch';
+  where tenant_id=p_tenant_id and session_id=p_session_id;
+
+  -- 沿用既有函式建立不足的空位置；它新增的自動配位先撤回，再由下方跨日補位規則安全安排。
+  v_base := public.sync_seat_roster_atomic(p_tenant_id,p_session_id,p_actor_email);
+  delete from public.registration_day_seats ds
+  where ds.tenant_id=p_tenant_id and ds.session_id=p_session_id
+    and ds.assigned_type='auto' and ds.assigned_by='system_batch'
+    and not exists(
+      select 1 from seat_mobile_previous p
+      where p.activity_date=ds.activity_date and p.seat_code=ds.seat_code
+        and p.registration_id=ds.registration_id::text
+    );
 
   select coalesce(array_agg(d order by d),'{}'::date[]) into v_session_days
   from (
@@ -58,11 +68,6 @@ begin
     where coalesce(nullif(x->>'date',''),nullif(trim(both '"' from x::text),'')) ~ '^\d{4}-\d{2}-\d{2}$'
   ) q;
   if coalesce(array_length(v_session_days,1),0)=0 then v_session_days:=array[current_date]; end if;
-
-  -- 人工安排與加價選位完全保留；只移除可安全重建的系統自動排位。
-  delete from public.registration_day_seats
-  where tenant_id=p_tenant_id and session_id=p_session_id
-    and assigned_type='auto' and assigned_by='system_batch';
 
   for v_reg in
     select r.*,
@@ -91,17 +96,41 @@ begin
     ) selected_days;
     if coalesce(array_length(v_days,1),0)=0 then continue; end if;
 
-    -- 優先保留這位攤商原本第一個活動日的整組位置。
-    select coalesce(array_agg(seat_code order by seat_code),'{}'::text[]) into v_codes
-    from seat_mobile_previous
-    where registration_id=v_reg.id::text
-      and activity_date=(select min(activity_date) from seat_mobile_previous where registration_id=v_reg.id::text);
-    if coalesce(array_length(v_codes,1),0)<>v_need or exists(
+    select count(*) into v_existing_days from unnest(v_days) d
+    where exists(select 1 from seat_mobile_previous p where p.registration_id=v_reg.id::text and p.activity_date=d);
+    select count(*) into v_complete_days from unnest(v_days) d
+    where (select count(*) from seat_mobile_previous p where p.registration_id=v_reg.id::text and p.activity_date=d)=v_need;
+
+    -- 有舊位置時只准沿用。舊資料不完整或租用攤數改變，交給人工確認，絕不自動搬動。
+    if v_existing_days>0 then
+      if exists(
+        select 1 from unnest(v_days) d
+        where (select count(*) from seat_mobile_previous p where p.registration_id=v_reg.id::text and p.activity_date=d) not in (0,v_need)
+      ) or v_complete_days=0 then
+        v_waiting:=v_waiting+1;
+        continue;
+      end if;
+      select coalesce(array_agg(p.seat_code order by coalesce(s.map_order,999999),p.seat_code),'{}'::text[]) into v_codes
+      from seat_mobile_previous p
+      left join public.stalls s on s.tenant_id=p_tenant_id and s.session_id=p_session_id and coalesce(s.seat_code,s.stall_no)=p.seat_code
+      where p.registration_id=v_reg.id::text
+        and p.activity_date=(
+          select min(d) from unnest(v_days) d
+          where (select count(*) from seat_mobile_previous px where px.registration_id=v_reg.id::text and px.activity_date=d)=v_need
+        );
+    else
+      v_codes:='{}';
+    end if;
+
+    if coalesce(array_length(v_codes,1),0)=v_need and exists(
       select 1 from public.registration_day_seats ds
       where ds.tenant_id=p_tenant_id and ds.session_id=p_session_id
         and ds.activity_date=any(v_days) and ds.seat_code=any(v_codes)
         and ds.registration_id<>v_reg.id
-    ) then v_codes:='{}'; end if;
+    ) then
+      v_waiting:=v_waiting+1;
+      continue;
+    end if;
 
     -- 沒有可沿用的位置時，才尋找新的連續位置。
     if coalesce(array_length(v_codes,1),0)=0 then
@@ -134,19 +163,33 @@ begin
       continue;
     end if;
     foreach v_day in array v_days loop
-      delete from public.registration_day_seats where tenant_id=p_tenant_id and session_id=p_session_id and activity_date=v_day and registration_id=v_reg.id and assigned_type='auto';
-      insert into public.registration_day_seats(tenant_id,session_id,activity_date,seat_code,registration_id,assigned_type,assigned_by,assigned_at,created_at,updated_at)
-      select p_tenant_id,p_session_id,v_day,code,v_reg.id,'auto','system_batch',v_now,v_now,v_now from unnest(v_codes) code;
+      -- 這一天已有位置就原封不動；只有完全沒位置的日期才補上同一組新位置。
+      if not exists(
+        select 1 from public.registration_day_seats ds
+        where ds.tenant_id=p_tenant_id and ds.session_id=p_session_id
+          and ds.activity_date=v_day and ds.registration_id=v_reg.id
+      ) then
+        insert into public.registration_day_seats(tenant_id,session_id,activity_date,seat_code,registration_id,assigned_type,assigned_by,assigned_at,created_at,updated_at)
+        select p_tenant_id,p_session_id,v_day,code,v_reg.id,'auto','system_batch',v_now,v_now,v_now from unnest(v_codes) code;
+      end if;
       insert into public.registration_day_ops(tenant_id,session_id,registration_id,activity_date,participation_status,stall_number,created_at,updated_at)
-      values(p_tenant_id,p_session_id,v_reg.id,v_day,'參加',array_to_string(v_codes,','),v_now,v_now)
+      values(p_tenant_id,p_session_id,v_reg.id,v_day,'參加',coalesce((select string_agg(ds.seat_code,',' order by ds.seat_code) from public.registration_day_seats ds where ds.tenant_id=p_tenant_id and ds.session_id=p_session_id and ds.activity_date=v_day and ds.registration_id=v_reg.id),''),v_now,v_now)
       on conflict(tenant_id,registration_id,activity_date) do update set stall_number=excluded.stall_number,updated_at=v_now;
     end loop;
-    update public.registrations set stall_number=array_to_string(v_codes,','),seat_choice_status='locked',seat_choice_type='auto',updated_at=v_now
+    update public.registrations set stall_number=array_to_string(v_codes,','),seat_choice_status='locked',seat_choice_type='auto'
     where tenant_id=p_tenant_id and id=v_reg.id;
-    v_assigned:=v_assigned+1;
+    if v_existing_days=v_complete_days and v_complete_days=coalesce(array_length(v_days,1),0) then
+      v_preserved:=v_preserved+1;
+    else
+      v_assigned:=v_assigned+1;
+    end if;
   end loop;
 
-  return coalesce(v_base,'{}'::jsonb)||jsonb_build_object('samePositionAssigned',v_assigned,'samePositionWaiting',v_waiting,'mobileFirst',true);
+  return coalesce(v_base,'{}'::jsonb)||jsonb_build_object(
+    'assigned',v_assigned,'preserved',v_preserved,'waiting',v_waiting,
+    'samePositionAssigned',v_assigned,'samePositionWaiting',v_waiting,
+    'existingPositionsLocked',true,'mobileFirst',true
+  );
 end;
 $$;
 
