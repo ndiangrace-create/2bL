@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "2bl-v7",
+  "main": "worker.js",
+  "compatibility_date": "2026-06-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
+  "workers_dev": true,
+  "preview_urls": true,
+  "secrets": {
+    "required": [
+      "AUTH_SECRET",
+      "GOOGLE_CLIENT_SECRET",
+      "JWT_SECRET",
+      "MAIL_FROM",
+      "OPENAI_API_KEY",
+      "PLATFORM_ADMIN_EMAIL",
+      "RESEND_KEY",
+      "SUPABASE_KEY",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]
+  }
+}
