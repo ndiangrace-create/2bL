@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-08-15T14:45:11.259Z",
+  "generated_at": "2026-08-15T14:56:47.896Z",
   "repository": "ndiangrace-create/2bL",
   "git_ref": "refs/heads/main",
-  "git_sha": "76750baaf568343412be3425ad67b1fecc03190c",
+  "git_sha": "dd5dbb4d8c6ca74ca64566795f7593d20eefeedc",
   "cloudflare_account_suffix": "925c44",
   "token_status": "active",
   "worker_name": "2bl-v7",
   "forbidden_worker_untouched": "tobeloved-api",
-  "deployed_bundle_sha256": "7ae6095d79781e590b119535cbad160d7131fc6298838578bd6df6370a692de3",
-  "deployed_bundle_content_type": "multipart/form-data; boundary=7bbe57e1e106c537ead535532ad736457ba9bf36251968eb6e96ed33974c",
-  "deployed_content_sha256": "ae7f711c8e62b5b274f35c1cec5bd8d7869ef89212bd75f2ca76b082d009200c",
+  "deployed_bundle_sha256": "704d794cd4436e1af7b5cbb2bafedc0d448940249121b74c8513c4ae540d2656",
+  "deployed_bundle_content_type": "multipart/form-data; boundary=c620119bf839aaf41097c19babba208cd4ac4ba74784a5f15a80e435f986",
+  "deployed_content_sha256": "744ecdae9b36c445d9f5b2493254f3895824d95b7d14f5aeac502a8d7b0289bf",
   "deployed_content_type": "application/javascript+module",
   "deployed_entrypoint": "worker.js",
   "deployed_parts": [
     {
       "name": "worker.js",
       "content_type": "application/javascript+module",
-      "size": 532593
+      "size": 533357
     }
   ],
   "compatibility_date": "2026-06-25",
@@ -114,21 +114,21 @@
     }
   ],
   "custom_domains": [],
-  "current_version_id": "2ecf310d-5f08-43e3-b6bf-81dd0560611d",
-  "current_version_created_on": "2026-08-15T14:45:07.637764Z",
+  "current_version_id": "1f5afb22-bd61-4bc4-a8f0-34ec02cfe185",
+  "current_version_created_on": "2026-08-15T14:56:44.320237Z",
   "current_deployment": {
-    "id": "13851d5c-039d-4275-9ec2-3b9082e09d3e",
-    "created_on": "2026-08-15T14:45:08.107245Z",
+    "id": "92e2298b-e3f9-4e39-aa57-33ac6be5b032",
+    "created_on": "2026-08-15T14:56:44.803972Z",
     "source": "wrangler",
     "versions": [
       {
-        "version_id": "2ecf310d-5f08-43e3-b6bf-81dd0560611d",
+        "version_id": "1f5afb22-bd61-4bc4-a8f0-34ec02cfe185",
         "percentage": 100
       }
     ]
   },
   "expected_worker_source_path": ".automation/wrangler-dry-run/worker.js",
-  "expected_worker_source_sha256": "ae7f711c8e62b5b274f35c1cec5bd8d7869ef89212bd75f2ca76b082d009200c",
-  "github_worker_sha256": "a35a9ae3b8569039373b060d93a80cb9727df867a2e024c3a84309456edb261e",
+  "expected_worker_source_sha256": "744ecdae9b36c445d9f5b2493254f3895824d95b7d14f5aeac502a8d7b0289bf",
+  "github_worker_sha256": "0cdc66d0cbddd684637f89eedbcd6250c5fc65fea7a2c0b6eac66c0275b7ddf8",
   "worker_source_matches_deployment": true
 }
