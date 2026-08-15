@@ -191,6 +191,11 @@
 .onsite-day-tabs{display:flex;gap:7px;overflow:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
 .onsite-day-btn{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#273330;border-radius:999px;padding:8px 13px;font-weight:900}
 .onsite-day-btn.active{background:#26312f;color:#fff;border-color:#26312f}
+.session-days{display:grid;gap:7px;margin:10px 0}
+.session-day-btn{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;text-align:left;background:#fff;color:#26312f;border:1px solid var(--line);padding:10px 12px;border-radius:12px}
+.session-day-btn.today{border:2px solid #26312f;background:#f4f8f2}
+.session-day-btn small{font-size:12px;color:var(--muted)}
+@media(max-width:520px){.session-day-btn{min-height:52px;font-size:15px}.session-grid{grid-template-columns:1fr}}
 
 /* INTUITIVE_ONSITE_UX_20260810 */
 .onsite-live-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0}.onsite-live-stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 8px}.onsite-live-stat span{display:block;font-size:10.5px;color:var(--muted);font-weight:850;white-space:nowrap}.onsite-live-stat b{font-size:17px;line-height:1.15}.onsite-quick-scroll{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 6px}.onsite-quick-scroll::-webkit-scrollbar{display:none}.onsite-quick-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#333;border-radius:999px;padding:7px 10px;font-size:12.5px;font-weight:900}.onsite-quick-chip.active{background:#26312f;color:#fff;border-color:#26312f}.mobile-reg-state-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.mobile-reg-main .mobile-reg-buttons{display:flex!important;gap:5px!important;overflow-x:auto;flex-wrap:nowrap!important}.mobile-reg-main .mobile-reg-buttons button{width:auto!important;flex:0 0 auto!important;min-width:0!important;padding:7px 9px!important}
@@ -309,7 +314,19 @@ async function enterByPasscode(){ const code=($('pcInput').value||'').trim(); if
 function handleCallback(){const u=new URL(location.href); const t=u.searchParams.get('admin_token'); const tenant=u.searchParams.get('tenant'); const err=u.searchParams.get('login_error'); if(err){$('loginErr').textContent='登入失敗：'+err; $('loginErr').classList.remove('hidden')} if(t){localStorage.setItem(LS_TOKEN,t); if(tenant)localStorage.setItem('2bl_onsite_tenant',tenant); history.replaceState({},'',location.pathname);}}
 async function boot(){handleCallback(); token=localStorage.getItem(LS_TOKEN)||''; $('googleLogin').href=API+'/auth/google/unified/start?tenant='+encodeURIComponent(TENANT)+'&next=onsite'; if(!token){$('loginView').classList.remove('hidden');return} try{me=await apiGet('adminMe',{email:'_'}); email=me.email; localStorage.setItem(LS_EMAIL,email); $('who').textContent=`${me.display_name||me.email}｜${me.role||''}`; $('logoutBtn').style.display='inline-flex'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); await loadSessions();}catch(e){localStorage.removeItem(LS_TOKEN); $('loginView').classList.remove('hidden'); $('loginErr').textContent=e.message; $('loginErr').classList.remove('hidden')}}
 async function loadSessions(){try{sessions=sortOnsiteSessions(await apiGet('onsiteSessions')); renderSessions()}catch(e){showMsg(e.message,'err')}}
-function renderSessions(){const box=$('sessionsList'); if(!sessions.length){box.innerHTML='<div class="card empty" style="grid-column:1/-1">目前沒有可報到的場次<br><span style="font-size:14px;color:var(--muted)">（僅顯示有已繳費名單、且未封存的場次）</span></div>';return} box.innerHTML=sessions.map(s=>{const od=onsiteOperationalDate(s);const d=Number.isFinite(od.ts)?new Date(od.ts).toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit',weekday:'short'}):'';return `<div class="card session" onclick="openSession('${esc(s.id)}')"><div class="session-title">${d?'<span class="tag warn">'+esc(d)+'</span> ':''}${esc(s.name)}</div><div class="row"><span class="tag">當日名單 ${s.total||0}</span><span class="tag ok">當日可報到 ${s.payable||0}</span><span class="tag">當日已報到 ${s.checkedIn||0}</span><span class="tag warn">當日攤位 ${s.stallCount||0}</span>${s.refundFlag?`<span class="tag bad">退費 ${s.refundFlag}</span>`:''}</div><div class="grid"><div class="stat"><b>${s.checkedIn||0}/${s.payable||0}</b><span>本日報到進度</span></div><div class="stat"><b>${money(s.depositTotal||0)}</b><span>本日應處理押金</span></div><div class="stat"><b>${s.stallCount||0}</b><span>當日攤位</span></div></div><button>查看 ${esc(s.activityDate||'當日')} 名單</button></div>`}).join('')}
+function renderSessions(){
+  const box=$('sessionsList');
+  if(!sessions.length){box.innerHTML='<div class="card empty" style="grid-column:1/-1">目前沒有可報到的場次<br><span style="font-size:14px;color:var(--muted)">（僅顯示有已繳費名單、且未封存的場次）</span></div>';return}
+  box.innerHTML=sessions.map(s=>{
+    const stats=Array.isArray(s.dayStats)&&s.dayStats.length?s.dayStats:[{activityDate:s.activityDate,payable:s.payable||0,checkedIn:s.checkedIn||0,stallCount:s.stallCount||0}];
+    const multi=stats.length>1;
+    const dayButtons=stats.map((x,i)=>{
+      const active=String(x.activityDate||'')===String(s.activityDate||'');
+      return `<button class="session-day-btn ${active?'today':''}" onclick="event.stopPropagation();openSession('${esc(s.id)}','${esc(x.activityDate||'')}')"><b>${esc((x.activityDate||'').replace(/^\d{4}-/,''))}${multi?'｜第'+(i+1)+'天':''}</b><small>品牌 ${x.payable||0}・攤位 ${x.stallCount||0}</small><span>當日已報到 ${x.checkedIn||0}/${x.payable||0}</span></button>`;
+    }).join('');
+    return `<div class="card session"><div class="session-title">${esc(s.name)}</div><div class="sub">${multi?'同一場活動・請直接點日期':'請點日期進入名單'}</div><div class="session-days">${dayButtons}</div>${s.refundFlag?`<span class="tag bad">退費標記 ${s.refundFlag}</span>`:''}</div>`;
+  }).join('');
+}
 function onsiteSessionDays(s){
   let raw=s&&s.dates||[];
   if(typeof raw==='string'){try{raw=JSON.parse(raw)}catch(_e){raw=[raw]}}
@@ -325,7 +342,7 @@ function renderOnsiteDayTabs(){
   const box=$('onsiteDayTabs');if(!box)return;
   const ds=onsiteSessionDays(currentSession);
   if(ds.length<=1){box.innerHTML='';return;}
-  box.innerHTML='<div class="onsite-day-tabs">'+ds.map(d=>`<button class="onsite-day-btn ${d===currentActivityDate?'active':''}" onclick="switchOnsiteDay('${esc(d)}')">${esc(d.replace(/^\d{4}-/,''))}</button>`).join('')+'</div>';
+  box.innerHTML='<div class="onsite-day-tabs">'+ds.map((d,i)=>`<button class="onsite-day-btn ${d===currentActivityDate?'active':''}" onclick="switchOnsiteDay('${esc(d)}')">${esc(d.replace(/^\d{4}-/,''))}${ds.length>1?'・第'+(i+1)+'天':''}</button>`).join('')+'</div>';
 }
 async function switchOnsiteDay(day){
   currentActivityDate=String(day||'').slice(0,10);renderOnsiteDayTabs();await loadOnsiteRegsForDay();
@@ -345,11 +362,12 @@ async function loadOnsiteRegsForDay(){
     renderOnsiteLiveSummary();renderRegs();
   }catch(e){showMsg(e.message,'err')}
 }
-async function openSession(id){
+async function openSession(id,requestedDay=''){
   const found=sessions.find(s=>String(s.id)===String(id));
   currentSession=found||currentSession||{id,name:'',dates:[]};
   if(!currentSession.id)currentSession.id=id;
-  currentActivityDate=pickOnsiteDefaultDay(currentSession);
+  const days=onsiteSessionDays(currentSession);
+  currentActivityDate=days.includes(String(requestedDay||'').slice(0,10))?String(requestedDay).slice(0,10):pickOnsiteDefaultDay(currentSession);
   $('sessionsView').classList.add('hidden');$('regsView').classList.remove('hidden');
   $('sessionTitle').textContent=currentSession.name||'';
   renderOnsiteDayTabs();renderOnsiteSeatMap();

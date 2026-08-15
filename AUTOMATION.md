@@ -12,6 +12,8 @@
 
 ## 目前可以自動執行
 
+使用者已授權的修改，只要完整驗證、手機端對端操作模擬與正式資料唯讀核對全部通過，就直接合併並部署，不再重複等待第二次確認。任一檢查失敗則停止部署並回報，不反覆重跑。
+
 Pull Request 與手動 audit 只會：讀取 Cloudflare 現況、核對 Worker 來源漂移、檢查 JavaScript、比對 Worker 使用的資料表／RPC 名稱、找出前端直接 Supabase 存取及不允許的 localStorage 資料，並上傳不含 Secret 值的稽核報告。
 
 這個流程只有 `contents: read`，沒有提交、合併、部署、migration 或 Cloudflare 設定寫入步驟。

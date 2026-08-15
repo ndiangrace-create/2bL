@@ -4009,7 +4009,8 @@ async function hOnsiteSessions(env, p) {
     const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
     const activityDate=dates.includes(today)?today:(dates.find(d=>d>=today)||dates[dates.length-1]||'');
     const dayPaid=paid.filter(r=>!activityDate||_registrationDates(r).includes(activityDate));
-    const checkedIds=new Set(dayOps.filter(o=>String(o.session_id)===String(s.id)&&String(o.activity_date).slice(0,10)===activityDate&&String(o.checkin_status||'')==='已報到').map(o=>String(o.registration_id)));
+    const sessionDayOps=dayOps.filter(o=>String(o.session_id)===String(s.id));
+    const checkedIds=new Set(sessionDayOps.filter(o=>String(o.activity_date).slice(0,10)===activityDate&&String(o.checkin_status||'')==='已報到').map(o=>String(o.registration_id)));
     const checked = dayPaid.filter(r => checkedIds.has(String(r.id)));
     const flagged = rs.filter(r => String(r.transfer_status || '').includes('退費') || String(r.transfer_status || '').includes('退款'));
     const fmt = formatSession(s);
@@ -4029,6 +4030,17 @@ async function hOnsiteSessions(env, p) {
       stallCount: dayPaid.reduce((sum,r)=>sum+(safeNum(r.stall_count)||1),0),
       paidAmount: dayPaid.reduce((sum,r)=>sum+safeNum(r.amount),0),
       depositTotal: dayPaid.filter(r=>_dayDepositEligible(r,activityDate)).reduce((sum,r)=>sum+safeNum(r.deposit),0),
+      dayStats: dates.map(day=>{
+        const rows=paid.filter(r=>_registrationDates(r).includes(day));
+        const checkedOnDay=new Set(sessionDayOps.filter(o=>String(o.activity_date).slice(0,10)===day&&String(o.checkin_status||'')==='已報到').map(o=>String(o.registration_id)));
+        return {
+          activityDate:day,
+          payable:rows.length,
+          checkedIn:rows.filter(r=>checkedOnDay.has(String(r.id))).length,
+          stallCount:rows.reduce((sum,r)=>sum+(safeNum(r.stall_count)||1),0),
+          depositTotal:rows.filter(r=>_dayDepositEligible(r,day)).reduce((sum,r)=>sum+safeNum(r.deposit),0),
+        };
+      }),
       seatMapUrl: s.seat_map_url||'',
       seatBoard: buildOnsiteSeatBoard(s,stalls.filter(x=>String(x.session_id)===String(s.id)),rs,daySeats.filter(x=>String(x.session_id)===String(s.id))),
     };
