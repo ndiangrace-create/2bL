@@ -40,6 +40,67 @@ function safeBinding(binding) {
   };
 }
 
+async function decodeWorkerContent(bytes, contentType) {
+  if (/javascript|ecmascript|text\/plain/i.test(contentType)) {
+    return {
+      sourceBytes: bytes,
+      sourceContentType: contentType,
+      entrypoint: "",
+      parts: []
+    };
+  }
+
+  if (!/multipart\/form-data/i.test(contentType)) {
+    throw new Error(`無法安全解析 Worker 來源封包，Content-Type 為 ${contentType}`);
+  }
+
+  const form = await new Response(bytes, {
+    headers: { "content-type": contentType }
+  }).formData();
+  const entries = [...form.entries()];
+  const parts = entries.map(([name, value]) => ({
+    name,
+    content_type: typeof value === "string" ? "text/plain" : String(value.type || ""),
+    size: typeof value === "string" ? Buffer.byteLength(value) : Number(value.size || 0)
+  }));
+
+  const metadataValue = form.get("metadata");
+  let metadata = {};
+  if (metadataValue) {
+    const metadataText = typeof metadataValue === "string"
+      ? metadataValue
+      : Buffer.from(await metadataValue.arrayBuffer()).toString("utf8");
+    metadata = JSON.parse(metadataText);
+  }
+
+  let entrypoint = String(metadata.main_module || metadata.body_part || "");
+  let sourceValue = entrypoint ? form.get(entrypoint) : null;
+  const executableParts = entries.filter(([name, value]) => {
+    if (name === "metadata") return false;
+    const type = typeof value === "string" ? "text/plain" : String(value.type || "");
+    return /javascript|ecmascript|text\/plain/i.test(type) || /\.(?:mjs|cjs|js)$/i.test(name);
+  });
+
+  if (executableParts.length !== 1) {
+    throw new Error(`安全阻斷：Worker 含 ${executableParts.length} 個程式模組，禁止只取其中一個建立 GitHub 基準`);
+  }
+  if (!sourceValue) {
+    [entrypoint, sourceValue] = executableParts[0];
+  }
+  if (!sourceValue) {
+    throw new Error("安全阻斷：找不到 Worker 正式入口程式");
+  }
+
+  const sourceBytes = typeof sourceValue === "string"
+    ? Buffer.from(sourceValue)
+    : Buffer.from(await sourceValue.arrayBuffer());
+  const sourceContentType = typeof sourceValue === "string"
+    ? "text/plain"
+    : String(sourceValue.type || "");
+
+  return { sourceBytes, sourceContentType, entrypoint, parts };
+}
+
 const token = await cf("/user/tokens/verify");
 const settings = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/settings`);
 const deployments = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/deployments`);
@@ -67,7 +128,14 @@ const contentResponse = await cf(
 );
 const contentBytes = Buffer.from(await contentResponse.arrayBuffer());
 const contentType = contentResponse.headers.get("content-type") || "";
-const deployedSha256 = crypto.createHash("sha256").update(contentBytes).digest("hex");
+const deployedBundleSha256 = crypto.createHash("sha256").update(contentBytes).digest("hex");
+const {
+  sourceBytes,
+  sourceContentType,
+  entrypoint,
+  parts: deployedParts
+} = await decodeWorkerContent(contentBytes, contentType);
+const deployedSha256 = crypto.createHash("sha256").update(sourceBytes).digest("hex");
 
 const currentDeployment = Array.isArray(deployments?.items)
   ? deployments.items[0]
@@ -91,8 +159,12 @@ const report = {
   token_status: String(token?.status || "active"),
   worker_name: TARGET_WORKER,
   forbidden_worker_untouched: FORBIDDEN_WORKER,
+  deployed_bundle_sha256: deployedBundleSha256,
+  deployed_bundle_content_type: contentType,
   deployed_content_sha256: deployedSha256,
-  deployed_content_type: contentType,
+  deployed_content_type: sourceContentType,
+  deployed_entrypoint: entrypoint,
+  deployed_parts: deployedParts,
   compatibility_date: String(settings?.compatibility_date || ""),
   compatibility_flags: Array.isArray(settings?.compatibility_flags) ? settings.compatibility_flags : [],
   usage_model: String(settings?.usage_model || ""),
@@ -133,10 +205,10 @@ if (fs.existsSync(sourcePath)) {
     throw new Error(`安全阻斷：GitHub worker.js (${localSha}) 與 Cloudflare 2bl-v7 (${deployedSha256}) 不一致`);
   }
 } else if (BOOTSTRAP) {
-  if (!/javascript|ecmascript|text\/plain/i.test(contentType)) {
-    throw new Error(`無法安全取回 Worker 單檔來源，Content-Type 為 ${contentType}`);
+  if (!/javascript|ecmascript|text\/plain/i.test(sourceContentType)) {
+    throw new Error(`無法安全取回 Worker 入口檔，Content-Type 為 ${sourceContentType}`);
   }
-  const sourceText = contentBytes.toString("utf8");
+  const sourceText = sourceBytes.toString("utf8");
   const secretPatterns = [
     /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
     /(?:sk|rk)-[A-Za-z0-9_-]{20,}/,
@@ -145,7 +217,7 @@ if (fs.existsSync(sourcePath)) {
   if (secretPatterns.some(pattern => pattern.test(sourceText))) {
     throw new Error("安全阻斷：已部署 Worker 原始碼疑似含硬編碼機密，禁止提交 GitHub");
   }
-  fs.writeFileSync(sourcePath, contentBytes);
+  fs.writeFileSync(sourcePath, sourceBytes);
   fs.writeFileSync(".automation/cloudflare-baseline.json", JSON.stringify(report, null, 2) + "\n");
   console.log(`已從 Cloudflare 2bl-v7 取得正式來源，SHA-256：${deployedSha256}`);
 } else {
