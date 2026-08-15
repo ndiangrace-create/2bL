@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "3c3acd199173005e7989d03cc04b62b3cf0ff678",
-  "expected_cloudflare_version": "d5fd6fcd-26cc-402a-a6c0-92f35495649d",
-  "reason": "電腦版攤商卡改為場次式兩張並排，資料雙欄縮版"
+  "approved_source_commit": "5625e1169012eeaa961f7ccdbbfb75981bba655b",
+  "expected_cloudflare_version": "d377d143-a166-4ff6-affe-49d4c5b0d4e9",
+  "reason": "修正電腦版第一張攤商卡誤排到右欄，恢復由左至右排列"
 }
