@@ -62,7 +62,7 @@ for (const zone of Array.isArray(zones) ? zones : []) {
 }
 
 const contentResponse = await cf(
-  `/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/content`,
+  `/accounts/${ACCOUNT_ID}/workers/scripts/${TARGET_WORKER}/content/v2`,
   { raw: true }
 );
 const contentBytes = Buffer.from(await contentResponse.arrayBuffer());
