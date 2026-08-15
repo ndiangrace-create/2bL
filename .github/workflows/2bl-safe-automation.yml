@@ -2,24 +2,19 @@ name: 2BL 安全自動流
 
 on:
   pull_request:
-    branches:
-      - main
-    types:
-      - opened
-      - synchronize
-      - reopened
+    branches: [main]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       mode:
-        description: 僅允許唯讀盤點；正式部署需另經核准流程
+        description: 只允許唯讀盤點
         required: true
         default: audit
         type: choice
-        options:
-          - audit
+        options: [audit]
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 concurrency:
@@ -27,24 +22,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  cloudflare-readonly-audit:
-    name: 讀取並核對 2bl-v7（禁止部署）
+  readonly-audit:
+    name: Cloudflare／資料契約唯讀核對（禁止部署）
     runs-on: ubuntu-latest
     if: github.repository == 'ndiangrace-create/2bL'
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      BOOTSTRAP_SOURCE: "true"
-      WORK_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      BOOTSTRAP_SOURCE: "false"
+      ALLOW_WORKER_DIFF: "true"
 
     steps:
       - name: 讀取工作分支
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.WORK_BRANCH }}
           fetch-depth: 0
 
-      - name: 鎖定 2BL 正式環境
+      - name: 鎖定正式來源
         shell: bash
         run: |
           set -euo pipefail
@@ -52,40 +46,34 @@ jobs:
           test -n "${CLOUDFLARE_ACCOUNT_ID}"
           test -n "${CLOUDFLARE_API_TOKEN}"
           test "2bl-v7" != "tobeloved-api"
-          echo "安全核對完成：只允許讀取 2bl-v7"
 
-      - name: Cloudflare 唯讀盤點與來源核對
+      - name: 語法檢查
+        run: |
+          node --check worker.js
+          node --check scripts/cloudflare-readonly-audit.mjs
+          node --check scripts/cloudflare-deployment-guard.mjs
+          node --check scripts/verify-data-contract.mjs
+
+      - name: Cloudflare 唯讀盤點與漂移核對
         run: node scripts/cloudflare-readonly-audit.mjs
 
-      - name: 檢查 Worker JavaScript 語法
-        if: hashFiles('worker.js') != ''
-        run: node --check worker.js
+      - name: 所有資料進出與名稱統一檢查
+        run: node scripts/verify-data-contract.mjs
 
-      - name: 保存非機密盤點報告
+      - name: 顯示部署阻擋狀態
+        shell: bash
+        run: |
+          node -e "const r=require('./.automation/data-contract-report.json'); console.log(JSON.stringify({deployment_ready:r.deployment_ready,blockers:r.blockers,unknown_tables:r.unknown_tables,unknown_routines:r.unknown_routines,disallowed_local_storage:r.local_storage.disallowed},null,2))"
+          echo "本工作流沒有 push、merge、deploy、migration、Routes 或 Domains 寫入步驟。"
+
+      - name: 保存非機密盤點證據
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: 2bl-cloudflare-readonly-audit
-          path: .automation/cloudflare-audit.json
+          name: 2bl-readonly-audit-${{ github.run_id }}
+          path: |
+            .automation/cloudflare-audit.json
+            .automation/data-contract-report.json
+            .automation/supabase-schema-audit.json
           if-no-files-found: warn
           retention-days: 14
-
-      - name: 將 Cloudflare 正式來源放入工作分支
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          if test -z "$(git status --porcelain -- worker.js .automation/cloudflare-baseline.json)"; then
-            echo "工作分支已有相同正式來源，不需提交"
-            exit 0
-          fi
-          git config user.name "2BL Safe Automation"
-          git config user.email "actions@users.noreply.github.com"
-          git add worker.js .automation/cloudflare-baseline.json
-          git commit -m "納入 Cloudflare 2bl-v7 正式來源 [skip ci]"
-          git push origin "HEAD:${WORK_BRANCH}"
-
-      - name: 明確禁止部署
-        run: |
-          echo "本流程只做 GET 唯讀盤點、雜湊核對與工作分支來源初始化。"
-          echo "未呼叫 Cloudflare 上傳、部署、Routes、Domains、Variables 或 Secrets 寫入 API。"
