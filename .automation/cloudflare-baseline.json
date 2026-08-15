@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-08-15T08:58:55.964Z",
+  "generated_at": "2026-08-15T12:26:49.003Z",
   "repository": "ndiangrace-create/2bL",
-  "git_ref": "refs/heads/agent/2bl-safe-automation",
-  "git_sha": "8805009b20efef1f16414f79e2745523abd62363",
+  "git_ref": "refs/pull/2/merge",
+  "git_sha": "fa7c5ec55b971a84fb33c8d897d38ab520340dd1",
   "cloudflare_account_suffix": "925c44",
   "token_status": "active",
   "worker_name": "2bl-v7",
   "forbidden_worker_untouched": "tobeloved-api",
-  "deployed_bundle_sha256": "9f513c7f34a4a796f6b63329e1d71e9e2dcd8121194ca2c8a6ff550cdba0cbaf",
-  "deployed_bundle_content_type": "multipart/form-data; boundary=1f42356a38171928c3169743437b4df1812b14715a90a73e9c83e6a2e20c",
-  "deployed_content_sha256": "4fd69d3e8af0ecff402a723ff5e7ace9bc17a1a4fb92789a0de2bd90ea855fc4",
+  "deployed_bundle_sha256": "2d31b1f53ab3a1149e5ff7faf2d826f003676460e360fddf2aa9437bf67451e8",
+  "deployed_bundle_content_type": "multipart/form-data; boundary=ceff4a7b6345e86dc920afe2b0d221eeaee6f605db6881ddb6d31f7abb14",
+  "deployed_content_sha256": "88e2c91c3986e4a00a27935175cfceb6b68c50fc973cd3d6c70f858aa648c4b7",
   "deployed_content_type": "application/javascript+module",
   "deployed_entrypoint": "worker.js",
   "deployed_parts": [
     {
       "name": "worker.js",
       "content_type": "application/javascript+module",
-      "size": 463712
+      "size": 477587
     }
   ],
   "compatibility_date": "2026-06-25",
@@ -114,5 +114,17 @@
     }
   ],
   "custom_domains": [],
-  "current_deployment": null
+  "current_version_id": "b401de8c-f43e-4351-ad0a-1a0a71c1f1cf",
+  "current_version_created_on": "2026-08-15T11:48:20.606963Z",
+  "current_deployment": {
+    "id": "462aaa8a-125e-4fd7-b7a5-b3537d084ac8",
+    "created_on": "2026-08-15T11:48:21.094211Z",
+    "source": "wrangler",
+    "versions": [
+      {
+        "version_id": "b401de8c-f43e-4351-ad0a-1a0a71c1f1cf",
+        "percentage": 100
+      }
+    ]
+  }
 }

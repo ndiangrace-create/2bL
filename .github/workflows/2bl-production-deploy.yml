@@ -80,6 +80,7 @@ jobs:
       - name: 部署後核對來源與受保護設定
         env:
           ALLOW_WORKER_DIFF: "false"
+          EXPECTED_WORKER_SOURCE_PATH: ".automation/wrangler-dry-run/worker.js"
         run: |
           node scripts/cloudflare-readonly-audit.mjs
           node scripts/cloudflare-deployment-guard.mjs post
