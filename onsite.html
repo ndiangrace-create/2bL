@@ -205,6 +205,23 @@
 .onsite-live-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0}.onsite-live-stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 8px}.onsite-live-stat span{display:block;font-size:10.5px;color:var(--muted);font-weight:850;white-space:nowrap}.onsite-live-stat b{font-size:17px;line-height:1.15}.onsite-quick-scroll{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 6px}.onsite-quick-scroll::-webkit-scrollbar{display:none}.onsite-quick-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:#333;border-radius:999px;padding:7px 10px;font-size:12.5px;font-weight:900}.onsite-quick-chip.active{background:#26312f;color:#fff;border-color:#26312f}.mobile-reg-state-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.mobile-reg-main .mobile-reg-buttons{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important}.mobile-reg-main .mobile-reg-buttons button{width:100%!important;min-width:0!important;padding:8px 5px!important;white-space:normal!important;line-height:1.2!important}
 @media(max-width:680px){.onsite-live-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.toolbar{display:block}.toolbar input{margin-bottom:5px}#filter{display:none}.reg{min-height:0!important;padding:8px 9px!important}.mobile-reg-equip{font-size:13px!important;margin-top:4px!important}.mobile-reg-state{display:none}.mobile-reg-brand{font-size:16.5px!important}.mobile-reg-seat{font-size:13px!important;padding:4px 7px!important}.reg-more-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}.reg-more-actions button{width:100%!important;min-width:0!important;white-space:normal!important;line-height:1.2!important}}
 
+/* UNIFIED_ACTION_COLOR_20260816：現場操作統一質感淺灰綠，不用多色區分按鈕。 */
+.reg-actions button,
+.mobile-reg-buttons button,
+.reg-more-actions button{
+  background:#eef4f1!important;
+  color:#334640!important;
+  border:1px solid #d4e1dc!important;
+  box-shadow:none!important;
+}
+.reg-actions button:disabled,
+.mobile-reg-buttons button:disabled,
+.reg-more-actions button:disabled{
+  background:#f6f5f2!important;
+  color:#a5aaa7!important;
+  border-color:#e7e5df!important;
+}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"></head>
 <body>
