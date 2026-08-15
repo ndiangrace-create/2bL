@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "b65d61c33d3ba8ba28c223fe5b8136dfd29d3151",
-  "expected_cloudflare_version": "fcd0ddba-6c78-4534-a988-1f6bded6fe62",
-  "reason": "全系統電腦版卡片縮小並排、提示訊息防錯位，保留手機單欄操作"
+  "approved_source_commit": "160c5c42730156ac5483d585bb163b0776dfb6f1",
+  "expected_cloudflare_version": "b93e29d6-93b5-4172-8e4b-19f0ec0b7713",
+  "reason": "現場攤商卡片重排：右上攤位、資訊小格、備註展開"
 }
