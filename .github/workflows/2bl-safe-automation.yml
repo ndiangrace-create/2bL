@@ -78,7 +78,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- worker.js .automation/cloudflare-baseline.json; then
+          if test -z "$(git status --porcelain -- worker.js .automation/cloudflare-baseline.json)"; then
             echo "工作分支已有相同正式來源，不需提交"
             exit 0
           fi
