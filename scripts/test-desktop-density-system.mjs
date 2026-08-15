@@ -14,6 +14,10 @@ ok(admin.includes('#page-consignment > .cards{grid-template-columns:repeat(2'),'
 ok(admin.includes('> :is(.empty,.loading,.notice){grid-column:1/-1!important}'),'後台提示訊息仍可能占掉第一張卡的位置');
 ok(onsite.includes('#regsList>.empty,#regsList>.loading,#regsList>.notice{grid-column:1/-1'),'現場空白提示仍可能造成左右錯位');
 ok(onsite.includes('#regsList{display:grid;grid-template-columns:repeat(2'),'現場電腦版攤商卡沒有兩張並排');
+ok(onsite.includes('DESKTOP_REG_CARD_REFLOW_20260816'),'現場電腦版攤商卡缺少閱讀重排');
+ok(onsite.includes('class="desktop-reg-header"'),'攤位號碼仍未移到卡片右上角');
+ok(onsite.includes('class="desktop-reg-info"'),'攤商資料仍是凌亂文字列');
+ok(onsite.includes('class="desktop-reg-note"'),'長備註仍未改為可展開內容');
 ok(consignment.includes('CONSIGNMENT_DESKTOP_DENSITY_20260816'),'寄賣頁缺少桌機小卡排版');
 ok(consignment.includes("$('sessionList').className='compact-card-list'"),'寄賣檔期未啟用並排小卡');
 ok(consignment.includes("$('sessionList').className=''"),'寄賣申請表未恢復完整寬度');
