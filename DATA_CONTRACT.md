@@ -4,7 +4,7 @@
 正式 Supabase：`2bl`／`douhmxipedgpfbvfynbq`  
 正式 Tenant：`tuibile`
 
-本文件只記錄唯讀結果，未建立資料表、欄位、RPC、policy、migration 或 Edge Function。
+本文件記錄唯讀盤點與已授權的 RPC 權限修正；未建立資料表、欄位、RPC、policy 或 Edge Function。
 
 ## 唯一資料流
 
@@ -39,16 +39,15 @@
 
 有衝突的欄位不得自動覆蓋、刪除或改名。下一次資料庫變更必須先提供值域對照、回填 SQL、驗證 SQL、索引／FK／RLS 影響與回復方案。
 
-## 目前阻擋部署的資料問題
+## 已完成的阻擋修正
 
-1. Worker 引用不存在的資料表：`admin_login_logs`、`billing_logs`、`tenant_apply_logs`。
-2. Worker 引用不存在的 RPC：`operation_session_report`。
-3. `index.html` 仍以 localStorage 保存 `fav_sessions`、`tb_member_phone`、`2bl_photo_lead_done`。
-4. `onsite.html` 仍以 localStorage 保存 `2bl_onsite_operator`。
-5. 五個 SECURITY DEFINER RPC 對 anon/authenticated 保有 EXECUTE，其中兩個未固定 search_path。
-6. 所有 57 個 public table 都啟用 RLS，但 policy 數為 0；目前 Worker 使用 service role，不能把「RLS 已啟用」誤判成一般 API 已安全。
+1. Worker 已停止引用不存在的三張資料表與一個 RPC，並改接既有正式資料來源或安全關閉未開放功能。
+2. 瀏覽器已停止保存收藏、電話、拍照完成旗標與現場操作人長期資料。
+3. 五個 SECURITY DEFINER RPC 已撤銷 public、anon、authenticated 的執行權，只保留 Worker 使用的 service_role。
+4. 五個 RPC 的 search_path 均已固定為 public。
+5. 57 個 public table 維持 RLS 開啟且沒有一般使用者 policy；前端不直連 Supabase，資料僅由 Worker 進出。
 
-上述問題未解決以前，安全部署工作流會在資料契約嚴格檢查階段停止。
+資料契約阻擋已清除，仍須先完成差異確認，才可進入合併與部署階段。
 
 ## 目前允許的 localStorage 類型
 
@@ -56,9 +55,8 @@
 - 導覽：目前頁籤、返回頁面、篩選條件、tenant/session 範圍。
 - 不允許：電話、收藏、操作人姓名、表單內容、付款／退款／報名資料與「已完成」業務旗標。
 
-## 不會自行執行的修正
+## 尚未執行的資料整理
 
-- 不會建立缺少的三張表或缺少的 RPC，因為必須先確認它們應改接哪個既有正式名稱。
-- 不會撤銷 RPC 權限或新增 RLS policy，因為這是正式資料庫變更。
 - 不會清除或合併重複欄位，因為現有資料有衝突。
 - 不會刪除重複索引，需先確認實際 constraint 依賴。
+- 不會新增一般使用者 RLS policy；目前正式架構只允許 Worker 存取 Supabase。
