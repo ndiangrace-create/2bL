@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "cbbe5de1f7a4e9bda6331265ed6c60a3a3aba5e8",
-  "expected_cloudflare_version": "2ecf310d-5f08-43e3-b6bf-81dd0560611d",
-  "reason": "工讀生手機入口兩日切換與後台場次隔離修正"
+  "approved_source_commit": "5d1ca50b4ffa3ad6caeb3caf1af38513accd74f3",
+  "expected_cloudflare_version": "1f5afb22-bd61-4bc4-a8f0-34ec02cfe185",
+  "reason": "補排新攤商不動舊位置，現場顯示每日撤場與退押金下一步"
 }
