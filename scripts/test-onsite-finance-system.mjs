@@ -55,6 +55,12 @@ ok(worker.includes('refundAlreadyReflected:true'),'財報未明示退款已反�
 ok(!worker.includes('const distributableProfit=confirmedRevenue-refundAmount-expenseAmount;'),'場次報表仍重複扣退款');
 ok(admin.includes('已收總額（含押金）')&&admin.includes('營業收入（不含押金）'),'後台未分開顯示總收入、營業收入與押金');
 ok(admin.includes('有效報名品牌')&&admin.includes('租用攤位數總計')&&admin.includes('單日最高使用量'),'後台仍混用品牌、租用攤位與單日使用量');
+ok(!worker.includes('來源：${money.source}'),'財務畫面仍會顯示資料表或欄位路徑');
+ok(!worker.includes('it.note || money.source'),'財務明細仍會回傳工程註記');
+ok(!admin.includes("safe(r.financeSource||'DB')"),'報名詳情仍顯示內部資料來源');
+ok(worker.includes("ownerMode:_paymentOwnerModeLabel(snap.paymentOwnerMode)"),'收款分組仍會顯示內部模式代碼');
+ok(worker.includes('function publicErrorMessage(msg)'),'全系統錯誤訊息缺少工程資訊遮罩');
+ok(worker.includes("return '系統暫時無法完成操作，請稍後再試；若持續發生請聯繫管理者。'"),'技術錯誤仍可能顯示資料表、欄位或服務路徑');
 const currentFinance={totalIncome:41440,deposit:7500,businessRevenue:33940,refundHistory:9700,expense:18360};
 ok(currentFinance.totalIncome-currentFinance.deposit===currentFinance.businessRevenue,'高火北總收入、押金與營業收入對帳失敗');
 ok(currentFinance.businessRevenue-currentFinance.expense===15580,'高火北可分配盈餘不正確');
