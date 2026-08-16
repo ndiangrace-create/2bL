@@ -1791,7 +1791,7 @@ let FinOvData=null;
 const FORCE_REASONS={typhoon:'颱風警報',heavy_rain:'豪雨／大雨特報',earthquake_or_disaster:'地震或災害安全疑慮',gov_work_school_suspension:'政府公告停班停課',gov_order_cancel:'政府／主管機關要求停辦',venue_safety_request:'場地方公共安全要求',venue_unavailable:'場地突發不可使用',traffic_disruption:'交通中斷或重大管制',other_force_majeure:'其他不可抗力因素'};
 const $ = id => document.getElementById(id);
 const urlParams = new URLSearchParams(location.search);
-(function initUrl(){ const t=urlParams.get('tenant')||urlParams.get('tenantId'); const tok=urlParams.get('admin_token'); const err=urlParams.get('login_error'); if(t) sessionStorage.setItem(TENANT_KEY,t); if(tok) sessionStorage.setItem('2bl_admin_token_pending',tok); if(err) sessionStorage.setItem('2bl_login_error_pending',err); if(t||tok||err) history.replaceState({},'',location.pathname+(t?'?tenant='+encodeURIComponent(t):'')); })();
+(function initUrl(){ const t=urlParams.get('tenant')||urlParams.get('tenantId'); const tok=urlParams.get('admin_token'); const err=urlParams.get('login_error'); const isFinanceShare=urlParams.has('financeShare')||urlParams.has('fs'); if(t) sessionStorage.setItem(TENANT_KEY,t); if(tok) sessionStorage.setItem('2bl_admin_token_pending',tok); if(err) sessionStorage.setItem('2bl_login_error_pending',err); if((t||tok||err)&&!isFinanceShare) history.replaceState({},'',location.pathname+(t?'?tenant='+encodeURIComponent(t):'')); })();
 AdminState.tenantId = sessionStorage.getItem(TENANT_KEY)||urlParams.get('tenant')||urlParams.get('tenantId')||'';
 function endpoint(){return API.replace(/\/+$/,'');}
 function safe(v){return String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
@@ -3028,7 +3028,7 @@ async function shareFinanceReconciliation(sid){
   try{
     const r=await apiPost({action:'createFinanceShare',sessionId:sid});
     const url=r?.url||'';if(!url)throw new Error('系統未能建立分享網址');
-    try{await navigator.clipboard.writeText(url);toast('財報對帳連結已複製｜14天有效｜唯讀，夥伴不能修改資料',9000);}
+    try{await navigator.clipboard.writeText(url);toast('財報短網址已複製｜14天有效｜唯讀，夥伴不能修改資料',9000);}
     catch(e){prompt('複製這個財報對帳連結：',url);}
   }catch(e){toast('建立財報分享連結失敗：'+e.message,8000);}
 }
