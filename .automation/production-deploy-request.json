@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "fe2bfda8667c70ab91afb5b01fdd7b3e643353b3",
-  "expected_cloudflare_version": "dcb4d97e-59a3-457f-9513-7e4a6c019b61",
-  "reason": "修復平台總管登入並補齊總管、系列管理者與民眾前台驗證"
+  "approved_source_commit": "9e06e26998e5fc611424f7167122737db1e312b5",
+  "expected_cloudflare_version": "a24c8c0a-a4da-47f1-b60f-7bf56dcea789",
+  "reason": "現場押金已退／未退同按鈕切換、顯示金額並與正式退款金流隔離"
 }
