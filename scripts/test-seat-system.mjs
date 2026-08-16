@@ -33,6 +33,16 @@ assert.match(sql,/ds\.activity_date=any\(v_days\)/,'跨日必須共同檢查同�
 assert.match(sql,/foreach v_day in array v_days[\s\S]*unnest\(v_codes\)/,'同一組位置必須寫入每個活動日');
 assert.match(sql,/between v_start\.rn and v_start\.rn\+v_need-1/,'多攤必須使用連續位置');
 assert.match(sql,/pg_advisory_xact_lock/,'排位重建必須防止同時操作');
+assert.match(worker,/singleSource:'registration_day_seats'/,'排位看板必須標示每日排位為唯一來源');
+assert.doesNotMatch(worker,/assignedByCode\[String\(code\)\]\|\|String\(seatRegId\(s\)\|\|''\)/,'排位看板不可混入舊 stalls 佔位資料');
+assert.match(worker,/stallNumber:currentAssignments\.filter/,'看板名單必須使用所選日期的位置');
+assert.match(admin,/dayPositions[\s\S]*SeatOps\.activityDate/,'操作畫面必須依目前日期讀取位置');
+assert.doesNotMatch(admin,/function seatOpsPositionNosForReg\(r\)\{return String\(\(r&&r\.stallNumber\)/,'操作畫面不可退回舊的整場位置');
+assert.match(worker,/autoAssignSeatForPaidReg[\s\S]*sync_seat_roster_mobile_atomic/,'臨時付款攤商必須走安全補位');
+assert.match(worker,/batchAssignSeatsForSession[\s\S]*sync_seat_roster_mobile_atomic/,'批次排位必須走安全補位');
+assert.match(worker,/releaseRegistrationSeats[\s\S]*dbDelete\(env,'registration_day_seats'/,'取消或退費必須只釋放該攤商的每日位置');
+assert.match(worker,/舊的指定位置功能已停用/,'會分裂資料的舊指定位置功能必須封鎖');
+assert.match(worker,/participatesToday:_registrationDates\(r\)\.includes\(activityDate\)/,'每日需求數只能計算當天有參加的攤商');
 
 const sample=['A01','A02','A03','A04'];
 const contiguous=(start,count)=>sample.slice(start,start+count);
@@ -41,4 +51,25 @@ const days=['2026-08-15','2026-08-16'];
 const assigned=Object.fromEntries(days.map(day=>[day,contiguous(1,2)]));
 assert.deepEqual(assigned[days[0]],assigned[days[1]],'兩天位置必須相同');
 
-console.log('排位系統測試通過：方桌、手機拖曳、連攤、兩天同位、攤商顏色、後端接線。');
+// 端對端操作模擬：補一筆臨時新攤商後，所有既有位置逐字不變。
+const original=[
+  {day:days[0],code:'A01',reg:'old-1'},{day:days[1],code:'A01',reg:'old-1'},
+  {day:days[0],code:'A02',reg:'old-2'},{day:days[0],code:'A03',reg:'old-2'},
+  {day:days[1],code:'A02',reg:'old-2'},{day:days[1],code:'A03',reg:'old-2'},
+];
+const fingerprint=rows=>rows.map(x=>x.day+'|'+x.code+'|'+x.reg).sort().join('\n');
+const before=fingerprint(original);
+const occupied=new Set(original.map(x=>x.day+'|'+x.code));
+const freePair=['A04','A05'].every(code=>days.every(day=>!occupied.has(day+'|'+code)));
+assert.equal(freePair,true,'新攤商只能使用兩天都空著的連續位置');
+const after=[...original,...days.flatMap(day=>['A04','A05'].map(code=>({day,code,reg:'late-2-stalls'})))];
+assert.equal(fingerprint(after.filter(x=>x.reg!=='late-2-stalls')),before,'補排不得移動任何既有攤商');
+assert.deepEqual(after.filter(x=>x.reg==='late-2-stalls'&&x.day===days[0]).map(x=>x.code),['A04','A05'],'租兩攤必須連攤');
+assert.deepEqual(after.filter(x=>x.reg==='late-2-stalls'&&x.day===days[0]).map(x=>x.code),after.filter(x=>x.reg==='late-2-stalls'&&x.day===days[1]).map(x=>x.code),'兩日必須同位');
+const coordinates={A01:[10,10],A02:[20,10],A03:[30,10],A04:[40,10],A05:[50,10]};
+coordinates.A04=[42,18];
+assert.equal(fingerprint(after),fingerprint(after),'拖曳只能改座標，不可改排位');
+const released=after.filter(x=>x.reg!=='late-2-stalls');
+assert.equal(fingerprint(released),before,'取消新攤商只能釋放自己的位置');
+
+console.log('排位系統測試通過：單一來源、舊位鎖定、臨時補位、方桌拖曳、連攤、兩天同位。');
