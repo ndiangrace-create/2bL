@@ -1871,7 +1871,7 @@ function showAdminLogin(msg){
 }
 function adminAuthErrorMessage(msg){
   const s=String(msg||'');
-  return ['無權限','token 無效','token 與 email 不符','未帶 token','請重新登入'].some(x=>s.includes(x));
+  return ['token 無效','token 與 email 不符','未帶 token','請重新登入'].some(x=>s.includes(x));
 }
 async function resumeAdminSession(s){
   if(!s||!s.email||!s.token) return false;
