@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "f76ad36af453bdc8183127c88a2bdc29f6c8a057",
-  "expected_cloudflare_version": "9751f7e7-ee9f-4778-b204-04d029afe4bf",
-  "reason": "修復前台報名回覆遺失、後台過期登入與活動權限隔離"
+  "approved_source_commit": "3f3bf83e465402d9abc3129741dd21745c41417e",
+  "expected_cloudflare_version": "3680fea5-5191-4665-9c56-eef129f5f233",
+  "reason": "部署系列管理者權限與後台模組隔離"
 }
