@@ -16,6 +16,9 @@ for(const action of seatActions){
 }
 assert.match(admin,/apiPost\(\{action:['"]adminSeatBoard['"]/, '排位看板必須用 POST 載入，避免管理員憑證進入網址');
 assert.doesNotMatch(admin,/api\(\{action:['"]adminSeatBoard['"]/, '排位看板不可用 GET 載入');
+assert.match(admin,/regs\.filter\(r=>r\.participatesToday\)\.filter\(seatOpsCardMatches\)/,'每日名單不可顯示未參加當日的攤商');
+assert.match(admin,/onclick="seatOpsChooseReg/,'手機攤商資料卡必須可以直接選取排位');
+assert.match(admin,/async function seatOpsChooseReg[\s\S]*syncSeatRoster[\s\S]*SeatOps\.selectedCode=waiting\?'':String\(own\[0\]\.code\)/,'新攤商必須能安全補排，且選取時要取代舊的 A15／A16 狀態');
 
 assert.match(admin,/\.seatops-map-stage \.seatops-marker\{width:58px;height:42px/,'後台必須顯示長方形方桌');
 assert.doesNotMatch(admin,/\.seatops-map-stage \.seatops-marker\{[^}]*border-radius:50%/,'排位圖不可再使用圓點');
