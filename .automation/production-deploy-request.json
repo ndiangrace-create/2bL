@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "68385420b4a5ea14cf30e48c75ad41280a6c6de8",
-  "expected_cloudflare_version": "0d78582c-feec-4db7-b02c-f653b270bc8e",
-  "reason": "修復每日排位單一來源、臨時攤商安全補位與當日需求統計"
+  "approved_source_commit": "144e79fbe6ceb7d0cbb9281468aed1ebe1e59a8c",
+  "expected_cloudflare_version": "9751f7e7-ee9f-4778-b204-04d029afe4bf",
+  "reason": "修正會員社群審核連結、已填誤擋與非必填欄位阻擋"
 }
