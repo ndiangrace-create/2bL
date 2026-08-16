@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "cec41cd7d34ce6ba2aeaf5cba97487094d8f883b",
-  "expected_cloudflare_version": "47a0d810-9bd8-4cd1-afd1-b8efcaba96a1",
-  "reason": "修正總收入、營業收入與押金口徑，避免已退款重複扣除，並納入舊組合日期安全修復"
+  "approved_source_commit": "4d2656eb261e5bde72f1e3a062aa2dbdb5b1df57",
+  "expected_cloudflare_version": "80e0b948-4af6-455a-92a3-729d5129e4af",
+  "reason": "移除後台財務工程路徑、內部收款代碼與技術錯誤資訊外漏"
 }
