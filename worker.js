@@ -1,5 +1,6 @@
 import {
   capabilitiesForRole,
+  selectActivePlatformAdminRecord,
   isDestructiveAdminAction,
   isSeriesManagerAction,
   PLATFORM_ADMIN_ACTIONS,
@@ -713,21 +714,35 @@ async function hGetSessionShortLink(env, p) {
 // ── SECTION 7: 管理員驗證 ───────────────────────────────────────
 // AI 高成本功能專用：只允許真正的平台超級管理員，不能用 organizer_owner 或一般 superadmin 權限代替。
 async function verifyPlatformSuperAdmin(env, email, token, tenantId) {
-  if (!email || !token || !tenantId) return false;
-  const payload = await verifyAdminToken(token, email, tenantId, env);
-  if (!payload) return false;
-  const role = String(payload.normalized_role || payload.role || '').trim();
-  if (role === 'platform_super_admin') return true;
-  if (payload.legacy) {
-    const rows = await dbGet(env, 'platform_staff', `email=eq.${encodeURIComponent(email)}&is_active=eq.true&select=role,normalized_role`).catch(()=>[]);
-    const dbRole = String((rows[0] && (rows[0].normalized_role || rows[0].role)) || '').trim();
-    return dbRole === 'platform_super_admin';
-  }
-  return false;
+  const auth = await loadFreshAdminAuthorization(env, email, token, tenantId);
+  return !!(auth && auth.role === 'platform_super_admin' && auth.capabilities.canPlatform);
 }
 
 function _staffActive(row) {
   return !!row && (row.is_active !== undefined ? row.is_active !== false : row.active !== false);
+}
+
+// 平台總管的正式名單目前可能位於 platform_staff，亦可能沿用 staff 的
+// platform_super_admin 紀錄。兩個來源都由同一個函式讀取，避免改權限模組時
+// 只認其中一張表，造成既有總管全部被擋在登入頁。
+async function loadActivePlatformAdminRecord(env, email) {
+  const who = String(email || '').trim().toLowerCase();
+  if (!who) return null;
+
+  const platformRows = await dbGet(
+    env,
+    'platform_staff',
+    `email=eq.${encodeURIComponent(who)}&is_active=eq.true&select=id,email,name,is_active,last_login_at`,
+  ).catch(()=>[]);
+  const directRecord = selectActivePlatformAdminRecord(platformRows, []);
+  if (directRecord) return directRecord;
+
+  const staffRows = await dbGet(
+    env,
+    'staff',
+    `email=eq.${encodeURIComponent(who)}&select=*`,
+  ).catch(()=>[]);
+  return selectActivePlatformAdminRecord([], staffRows);
 }
 
 // 每次管理操作都以資料庫最新 staff 設定為準，不再相信登入時寫進 JWT 的舊角色或舊範圍。
@@ -735,14 +750,16 @@ async function loadFreshAdminAuthorization(env, email, token, tenantId) {
   const tid = String(tenantId || '').trim();
   const who = String(email || '').trim().toLowerCase();
   if (!tid || !who || !token) return null;
-  const payload = await verifyAdminToken(token, who, tid, env);
+  let payload = await verifyAdminToken(token, who, tid, env);
+  // 舊 platform_staff 簽出的 token 可能沒有 role 欄位，但 tenant_id 固定為 platform。
+  if (!payload && tid !== 'platform') payload = await verifyAdminToken(token, who, 'platform', env);
   if (!payload) return null;
 
   const tokenRole = String(payload.normalized_role || payload.role || '').trim();
-  if (tokenRole === 'platform_super_admin') {
-    const rows = await dbGet(env, 'platform_staff', `email=eq.${encodeURIComponent(who)}&is_active=eq.true&select=id,email,name,role,normalized_role,is_active`).catch(()=>[]);
-    const row = rows[0];
-    if (!row || String(row.normalized_role || row.role || '') !== 'platform_super_admin') return null;
+  const platformToken = tokenRole === 'platform_super_admin' || String(payload.tenant_id || '') === 'platform';
+  if (platformToken) {
+    const row = await loadActivePlatformAdminRecord(env, who);
+    if (!row) return null;
     return {
       email: who, tenantId: tid, role: 'platform_super_admin', scopeType: 'platform',
       scopeEventId: '', allowedSessionIds: null, capabilities: capabilitiesForRole('platform_super_admin'),
@@ -2523,7 +2540,9 @@ async function checkIsMember(env, email, tenantId) {
 // 輔助：用 email 簽發 staff token
 async function issueStaffTokenByEmail(env, email, tenantId) {
   const platformRows = await dbGet(env, 'platform_staff', `email=eq.${encodeURIComponent(email)}&is_active=eq.true&select=*`).catch(()=>[]);
-  if (platformRows[0]) return issueAdminToken({ ...platformRows[0], email }, 'platform', env);
+  if (platformRows[0]) return issueAdminToken({
+    ...platformRows[0], email, role:'platform_super_admin', normalized_role:'platform_super_admin',
+  }, 'platform', env);
   const rows = await dbGet(env, 'staff', `tenant_id=eq.${tenantId}&email=eq.${encodeURIComponent(email)}&select=*`).catch(()=>[]);
   if (!rows[0]) throw new Error('staff not found');
   const active = rows[0].is_active !== undefined ? rows[0].is_active : rows[0].active;
@@ -2571,7 +2590,7 @@ async function hApproveApply(env, b) {
 // BUG-B FIX 2025-06
 async function hGetTenantsAdmin(env, p) {
   const payload = await verifyAdminJwt(p.token, env);
-  if (!payload || payload.normalized_role !== 'platform_super_admin') return jsonErr('無權限', 401);
+  if (!payload || !await verifyPlatformSuperAdmin(env, payload.email, p.token, p.tenant || p.tenant_id || 'platform')) return jsonErr('無權限', 401);
   const rows = await dbGet(env, 'tenants',
     'order=created_at.desc&select=id,name,slug,plan_type,is_locked,locked_reason,trial_start_at,trial_end_at,session_count_used,contact_name,contact_phone,notify_email,created_at'
   );
@@ -2580,7 +2599,7 @@ async function hGetTenantsAdmin(env, p) {
 
 async function hApplyList(env, p) {
   const payload = await verifyAdminJwt(p.token, env);
-  if (!payload || payload.normalized_role !== 'platform_super_admin') return jsonErr('無權限', 401);
+  if (!payload || !await verifyPlatformSuperAdmin(env, payload.email, p.token, p.tenant || p.tenant_id || 'platform')) return jsonErr('無權限', 401);
   return jsonOk([]);
 }
 
@@ -2589,7 +2608,7 @@ async function hApplyList(env, p) {
 // POST /lockTenant — 鎖定租戶（平台管理員用）
 async function hLockTenant(env, b) {
   const payload = await verifyAdminJwt(b.token, env);
-  if (!payload || payload.normalized_role !== 'platform_super_admin') return jsonErr('無權限', 401);
+  if (!payload || !await verifyPlatformSuperAdmin(env, payload.email, b.token, b.tenant || b.tenant_id || 'platform')) return jsonErr('無權限', 401);
   await dbUpdate(env, 'tenants', `id=eq.${b.tenant_id}`, {
     is_locked: true,
     locked_at: new Date().toISOString(),
@@ -2602,7 +2621,7 @@ async function hLockTenant(env, b) {
 // POST /unlockTenant — 解鎖租戶（收到付款後）
 async function hUnlockTenant(env, b) {
   const payload = await verifyAdminJwt(b.token, env);
-  if (!payload || payload.normalized_role !== 'platform_super_admin') return jsonErr('無權限', 401);
+  if (!payload || !await verifyPlatformSuperAdmin(env, payload.email, b.token, b.tenant || b.tenant_id || 'platform')) return jsonErr('無權限', 401);
   const now = new Date();
   const newEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   await dbUpdate(env, 'tenants', `id=eq.${b.tenant_id}`, {
@@ -2877,7 +2896,10 @@ async function hGoogleCallback(env, url) {
     `email=eq.${encodeURIComponent(googleEmail)}&is_active=eq.true&select=*`).catch(()=>[]);
   if (platformRows[0]) {
     const ps = platformRows[0];
-    const adminToken = await issueAdminToken({ ...ps, email: googleEmail, name: ps.name||googleName }, 'platform', env);
+    const adminToken = await issueAdminToken({
+      ...ps, email: googleEmail, name: ps.name||googleName,
+      role:'platform_super_admin', normalized_role:'platform_super_admin',
+    }, 'platform', env);
     await dbUpdate(env, 'platform_staff', `email=eq.${encodeURIComponent(googleEmail)}`, { last_login_at: new Date().toISOString() });
     await logAdminLogin(env, tenant, ps.id, googleEmail, 'google', 'success', '', '', '');
     const u = new URL(ADMIN_SITE_URL || 'https://2b-love.com/admin.html');
@@ -3003,9 +3025,11 @@ async function hAdminLogin(env, p) {
     `email=eq.${encodeURIComponent(p.email)}&is_active=eq.true&select=*`).catch(()=>[]);
   if (platformRows.length) {
     const ps = platformRows[0];
-    const token = await issueAdminToken({ ...ps, email: p.email }, 'platform', env);
+    const token = await issueAdminToken({
+      ...ps, email: p.email, role:'platform_super_admin', normalized_role:'platform_super_admin',
+    }, 'platform', env);
     const tc = await getTenantCtx(env, TENANT);
-    return jsonOk({ success:true, role:ps.role, name:ps.name||'', token, tenantId:TENANT, tenantName:tc.name, isPlatformStaff:true });
+    return jsonOk({ success:true, role:'platform_super_admin', name:ps.name||'', token, tenantId:TENANT, tenantName:tc.name, isPlatformStaff:true });
   }
 
   const rows = await dbGet(env, 'staff', `tenant_id=eq.${TENANT}&email=eq.${encodeURIComponent(p.email)}&select=*`);
@@ -8676,6 +8700,9 @@ async function routePost(env, action, b, ctx, req) {
     default: return jsonErr('unknown POST action: '+action);
   }
 }
+
+// 僅供自動化驗證直接走與正式環境相同的簽章及即時授權流程；HTTP 入口仍由 default export 控制。
+export { issueAdminToken, issueMemberToken, loadFreshAdminAuthorization };
 
 // ── SECTION 16: 主進入點 ────────────────────────────────────────
 export default {
