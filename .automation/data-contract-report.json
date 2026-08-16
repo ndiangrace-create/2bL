@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T01:42:19.851Z",
+  "generated_at": "2026-08-16T09:07:56.779Z",
   "project_id": "douhmxipedgpfbvfynbq",
   "formal_files": [
     "index.html",
@@ -163,28 +163,28 @@
       },
       {
         "file": "admin.html",
-        "method": "setItem",
-        "key": "tb_v3"
-      },
-      {
-        "file": "admin.html",
-        "method": "getItem",
-        "key": "tb_v3"
-      },
-      {
-        "file": "admin.html",
-        "method": "setItem",
-        "key": "2bl_admin_page_state"
-      },
-      {
-        "file": "admin.html",
-        "method": "getItem",
-        "key": "2bl_admin_page_state"
-      },
-      {
-        "file": "admin.html",
         "method": "removeItem",
         "key": "tb_v3"
+      },
+      {
+        "file": "admin.html",
+        "method": "setItem",
+        "key": "tb_v3"
+      },
+      {
+        "file": "admin.html",
+        "method": "getItem",
+        "key": "tb_v3"
+      },
+      {
+        "file": "admin.html",
+        "method": "setItem",
+        "key": "2bl_admin_page_state"
+      },
+      {
+        "file": "admin.html",
+        "method": "getItem",
+        "key": "2bl_admin_page_state"
       },
       {
         "file": "onsite.html",

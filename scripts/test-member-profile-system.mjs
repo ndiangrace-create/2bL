@@ -8,7 +8,7 @@ const worker=read('worker.js');
 for(const source of [...index.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(x=>x[1])){
   assert.doesNotThrow(()=>new Function(source),'index.html 內嵌程式語法錯誤');
 }
-assert.doesNotThrow(()=>new Function(worker.replace(/^export\s+default\s*\{/m,'const __workerExport={')),'worker.js 語法錯誤');
+assert.doesNotThrow(()=>new Function(worker.replace(/^import\s*\{[\s\S]*?\}\s*from\s*['"][^'"]+['"];?\s*/,'').replace(/^export\s+default\s*\{/m,'const __workerExport={')),'worker.js 語法錯誤');
 
 assert.match(worker,/has\(m\.fb_url\)\|\|has\(m\.ig_url\)\|\|has\(m\.collab_url\)/,'後端完整度必須接受 FB、IG 或官網');
 assert.match(worker,/if\(!socialOrWebsite\) return jsonErr\('FB、IG 或官網至少需要填寫一項'\)/,'後端儲存必須阻擋三項皆空');
