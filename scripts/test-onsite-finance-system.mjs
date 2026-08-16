@@ -6,6 +6,7 @@ const migration=read('supabase/onsite_daily_finance_integrity.sql');
 const depositStatusMigration=read('supabase/deposit_return_status_only.sql');
 const backfill=read('supabase/backfill_daily_checkins_safe.sql');
 const depositNormalize=read('supabase/normalize_daily_deposit_status_safe.sql');
+const financeDateRepair=read('supabase/repair_bundle_dates_finance_safe.sql');
 function ok(value,message){if(!value)throw new Error(message);}
 
 const routes=new Set([...worker.matchAll(/case\s+['"]([^'"]+)['"]\s*:/g)].map(x=>x[1]));
@@ -47,6 +48,17 @@ ok(worker.includes("set_deposit_return_status_atomic"),'退押金未使用獨立
 ok(worker.includes("activityCreditTotal"),'財務未拆出活動金');
 ok(worker.includes("revenueTotal: invoiceTotal"),'營收未排除押金');
 ok(worker.includes("summary?.finance?.revenueTotal"),'分潤仍可能使用含押金金額');
+ok(worker.includes('function _singleRegistrationDeposit'),'缺少每筆報名押金只計一次的共用規則');
+ok(worker.includes('Math.min(raw, configured)'),'舊資料重複押金未封頂為場次押金');
+ok(worker.includes('const distributableProfit=confirmedRevenue-expenseAmount;'),'分潤仍可能把已排除的退款再扣一次');
+ok(worker.includes('refundAlreadyReflected:true'),'財報未明示退款已反映在目前營業收入');
+ok(!worker.includes('const distributableProfit=confirmedRevenue-refundAmount-expenseAmount;'),'場次報表仍重複扣退款');
+ok(admin.includes('已收總額（含押金）')&&admin.includes('營業收入（不含押金）'),'後台未分開顯示總收入、營業收入與押金');
+ok(admin.includes('有效報名品牌')&&admin.includes('租用攤位數總計')&&admin.includes('單日最高使用量'),'後台仍混用品牌、租用攤位與單日使用量');
+const currentFinance={totalIncome:41440,deposit:7500,businessRevenue:33940,refundHistory:9700,expense:18360};
+ok(currentFinance.totalIncome-currentFinance.deposit===currentFinance.businessRevenue,'高火北總收入、押金與營業收入對帳失敗');
+ok(currentFinance.businessRevenue-currentFinance.expense===15580,'高火北可分配盈餘不正確');
+ok((currentFinance.businessRevenue-currentFinance.expense)/2===7790,'高火北 50/50 分潤不正確');
 ok(onsite.includes("'depositUnrefund'"),'現場缺少撤銷誤按退押金');
 ok(admin.includes("depositUnrefund:'確認撤銷")&&onsite.includes("depositUnrefund:'確認撤銷"),'撤銷退押金缺少二次確認');
 ok(admin.includes("'撤銷已退押金 '+money(dep)")&&onsite.includes("'撤銷已退押金 '+money(r.deposit||0)"),'押金切換按鈕未顯示應退金額');
@@ -60,5 +72,8 @@ ok(backfill.includes("r.checkin_status='已報到'")&&backfill.includes('on conf
 ok(!/\bdelete\b|\btruncate\b/i.test(backfill.replace(/^--.*$/gm,'')),'既有報到安全回填不可刪除資料');
 ok(depositNormalize.includes("o.activity_date<>r.last_day")&&depositNormalize.includes("set deposit_status='不適用'"),'舊押金狀態未限制為非最後參加日校正');
 ok(!/refund_transactions|update\s+public\.registrations/i.test(depositNormalize.replace(/^--.*$/gm,'')),'每日押金校正不可改正式退款交易或全域押金結果');
+ok(financeDateRepair.includes("id in ('RMRTDEII574','RMRTDVCI6LZ','RMRTJBMKV8B','RMRU1KJ3X9P','RMRVP28KRLP','RMRVP9BNQ3H')"),'舊組合報名日期修復範圍不完整');
+ok(financeDateRepair.includes("id = 'RMRVP02KDAS'"),'美島舊組合子報名日期未納入修復');
+ok(!/\bdelete\b|\btruncate\b/i.test(financeDateRepair.replace(/^--.*$/gm,'')),'舊場次財務修復不可刪除資料');
 
 console.log('每日報到、撤場、押金、活動金、正式金流與按鈕接線測試通過。');
