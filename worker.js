@@ -2227,7 +2227,7 @@ async function hGetMyRegs(env, p) {
       activityCreditApplied:safeNum(r.activity_credit_applied),
       stallCount:Number(r.stall_count||1), selectedDates:safeJson(r.selected_dates_json,[]), equip:safeJson(r.equipment_json,{}),
       totalEquipmentText:_equipmentTextFromMap(_effectiveEquipmentMapForReg(r, s)), preNoticeEquipmentText:_equipmentTextFromMap(_effectiveEquipmentMapForReg(r, s)),
-      addonQty:safeJson(r.addon_qty_json,{}), participants:safeJson(r.participants_json,{}), stallNumber:r.stall_number||'',
+      addonQty:safeJson(r.addon_qty_json,{}), participants:safeJson(r.participants_json,{}), stallNumber:(dayPositions[0]&&dayPositions[0].stallNumber)||'',
       seatChoiceIntent:r.seat_choice_intent||'auto', seatChoiceStatus:r.seat_choice_status||'', seatChoiceType:r.seat_choice_type||'',
       bundleId:r.bundle_id||'', bundleGroupId:r.bundle_group_id||'',
       seatPricingEnabled:(s.seat_pricing_enabled===true||s.seat_pricing_enabled==='true'), seatHoldHours:safeNum(s.seat_hold_hours)||SEAT_HOLD_HOURS,
@@ -3870,7 +3870,7 @@ function formatOnsiteReg(r, dayOp, activityDate) {
     violation: daily.violation_flags || r.violation_flags || '',
     transferStatus: r.transfer_status || '',
     adminNote: daily.admin_note || r.admin_note || '',
-    stallNumber: daily.stall_number || r.stall_number || '',
+    stallNumber: daily.stall_number || '',
     equipmentText: _equipmentTextFromMap(safeJson(daily.equipment_json, safeJson(r.equipment_json,{}))),
     pendingPartialRefund: safeNum(r.pending_partial_refund),
     pendingPartialNote: r.pending_partial_note || '',
@@ -5030,9 +5030,17 @@ async function getBundleGroupRegs(env, TENANT, reg){
 }
 async function releaseRegistrationSeats(env,TENANT,reg,reason){
   let count=0;
+  // 每日排位才是正式位置來源。取消／完成退費時只釋放這一筆報名，
+  // 不得重新整理或移動同場其他攤商。
+  try{
+    const daily=await dbGet(env,'registration_day_seats',`tenant_id=eq.${TENANT}&registration_id=eq.${encodeURIComponent(reg.id)}&select=activity_date,seat_code`).catch(()=>[]);
+    count=daily.length;
+    await dbDelete(env,'registration_day_seats',`tenant_id=eq.${TENANT}&registration_id=eq.${encodeURIComponent(reg.id)}`);
+    await dbUpdate(env,'registration_day_ops',`tenant_id=eq.${TENANT}&registration_id=eq.${encodeURIComponent(reg.id)}`,{stall_number:'',updated_at:nowIso()});
+  }catch(e){ logError(env,{source:'releaseRegistrationSeats',message:(reason||'release seats failed')+' (daily)',error:e&&e.message?e.message:e}); }
   try{
     const st=await dbGet(env,'stalls',`tenant_id=eq.${TENANT}&reg_id=eq.${encodeURIComponent(reg.id)}&select=id`);
-    for(const s of st){ await dbUpdate(env,'stalls',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(s.id)}`,{status:'空閒',reg_id:null,email:null,hold_time:null,seat_hold_expires_at:null,updated_at:nowIso()}); count++; }
+    for(const s of st){ await dbUpdate(env,'stalls',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(s.id)}`,{status:'空閒',reg_id:null,email:null,hold_time:null,seat_hold_expires_at:null,updated_at:nowIso()}); }
   }catch(e){ logError(env,{source:'releaseRegistrationSeats',message:reason||'release seats failed',error:e&&e.message?e.message:e}); }
   try{ await dbUpdate(env,'registrations',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(reg.id)}`,{stall_number:null,seat_choice_status:'released',seat_choice_type:null,seat_hold_expires_at:null}); }catch(e){}
   return count;
@@ -5585,31 +5593,16 @@ async function hClaimPaidSeat(env,b){
   return jsonOk({success:true,seats:codes,seatFee,total:newTotal,paid:paidAmount,due,expiresAt:locked?'':expiresAt,locked,message});
 }
 async function autoAssignSeatForPaidReg(env, tenantId, reg){
-  if(reg.stall_number) return {skipped:true,reason:'already_has_stall'};
-  const need=Math.max(1,Number(reg.stall_count)||1);
-  const rows=await getSeatRows(env,tenantId,reg.session_id);
-  const free=rows.filter(s=>normalizeSeatType(s.seat_type)==='auto' && s.is_active!==false && s.is_active!=='false' && !isSeatOccupiedActive(s)).sort((a,b)=>{const oa=Number(a.map_order)||0,ob=Number(b.map_order)||0;return oa!==ob?oa-ob:String(seatCodeOf(a)).localeCompare(String(seatCodeOf(b)));});
-  if(free.length<need) return {skipped:true,reason:'no_auto_seat'};
-  const picked=free.slice(0,need);
-  for(const s of picked){ await dbUpdate(env,'stalls',`tenant_id=eq.${tenantId}&id=eq.${encodeURIComponent(s.id)}`,{status:'鎖定',reg_id:reg.id,email:reg.email||'',hold_time:nowIso(),seat_hold_expires_at:null}); }
-  const codes=picked.map(seatCodeOf);
-  await dbUpdate(env,'registrations',`tenant_id=eq.${tenantId}&id=eq.${encodeURIComponent(reg.id)}`,{stall_number:codes.join(','),seat_choice_status:'locked',seat_choice_type:'auto'});
-  return {success:true,seats:codes};
+  // 付款後臨時加入也只跑「鎖住舊位置、補進空位」的每日排位程序。
+  const out=await dbRpc(env,'sync_seat_roster_mobile_atomic',{p_tenant_id:tenantId,p_session_id:String(reg.session_id),p_actor_email:'system_payment'});
+  const daily=await dbGet(env,'registration_day_seats',`tenant_id=eq.${tenantId}&session_id=eq.${encodeURIComponent(reg.session_id)}&registration_id=eq.${encodeURIComponent(reg.id)}&select=activity_date,seat_code&order=activity_date.asc,seat_code.asc`).catch(()=>[]);
+  return daily.length?{success:true,seats:daily.map(x=>String(x.seat_code)),daySeats:daily,existingPositionsLocked:true,result:out}:{skipped:true,reason:'waiting_manual',existingPositionsLocked:true,result:out};
 }
 
 // ── 活動前批次自動排位：依繳費順序，帶入 map_order 最前的可排(auto)位置；跳過已鎖(加價選位)位置 ──
 async function batchAssignSeatsForSession(env, tenantId, session){
-  const sid = session.id;
-  const pays = await dbGet(env,'payments',`tenant_id=eq.${tenantId}&session_id=eq.${encodeURIComponent(sid)}&status=eq.%E5%B7%B2%E7%A2%BA%E8%AA%8D&select=registration_id,paid_at`);
-  const paidAt = {};
-  for (const pmt of (pays||[])){ const rid=pmt.registration_id; if(!rid) continue; if(!paidAt[rid] || String(pmt.paid_at||'')<String(paidAt[rid])) paidAt[rid]=pmt.paid_at||''; }
-  const regs = await dbGet(env,'registrations',`tenant_id=eq.${tenantId}&session_id=eq.${encodeURIComponent(sid)}&review_status=eq.%E5%B7%B2%E9%8C%84%E5%8F%96&select=*`);
-  const queue = (regs||[])
-    .filter(r=>isPaidStatus(r.payment_status) && !r.stall_number && String(r.seat_choice_intent||'auto')!=='paid')
-    .sort((a,b)=>{ const pa=paidAt[a.id]||a.created_at||'', pb=paidAt[b.id]||b.created_at||''; return String(pa).localeCompare(String(pb)); });
-  let assigned=0;
-  for (const r of queue){ try{ const res=await autoAssignSeatForPaidReg(env,tenantId,r); if(res&&res.success) assigned++; }catch(e){ logError(env,{source:'batchAssignSeatsForSession',message:'assign one failed',error:e&&e.message?e.message:e}); } }
-  return {assigned, total:queue.length};
+  const out=await dbRpc(env,'sync_seat_roster_mobile_atomic',{p_tenant_id:tenantId,p_session_id:String(session.id),p_actor_email:'system_batch'});
+  return {...(out||{}),assigned:safeNum(out&&out.assigned),total:safeNum(out&&out.assigned)+safeNum(out&&out.preserved)+safeNum(out&&out.waiting),existingPositionsLocked:true};
 }
 
 // selectStall（相容舊 action，正式轉交加價選位 claimPaidSeat）
@@ -5643,7 +5636,7 @@ async function hAdminSeatBoard(env, b){
   const firstPaidAt={}; confirmedPayments.forEach(x=>{const id=String(x.registration_id||x.reg_id||'');const at=x.paid_at||x.created_at||'';if(id&&(!firstPaidAt[id]||String(at)<String(firstPaidAt[id])))firstPaidAt[id]=at;});
   const regById={}; for(const r of regs) regById[String(r.id)]=r;
   const seats=seatRows.map(s=>{
-    const code=seatCodeOf(s),rid=assignedByCode[String(code)]||String(seatRegId(s)||''); const occ=regById[rid];
+    const code=seatCodeOf(s),rid=assignedByCode[String(code)]||''; const occ=regById[rid];
     return { code:seatCodeOf(s), type:normalizeSeatType(s.seat_type),
       active:s.is_active!==false&&s.is_active!=='false', status:s.status||'空閒',
       occupied:!!occ, priceDelta:safeNum(s.price_delta), x:safeNum(s.map_x), y:safeNum(s.map_y),
@@ -5657,18 +5650,19 @@ async function hAdminSeatBoard(env, b){
   const regsOut=regs
     .filter(r=>!isCapacityInactiveTransferStatus(r.transfer_status))
     .map(r=>({ regId:String(r.id), name:r.name||'', brand:r.brand_name||'',
-      stallNumber:r.stall_number||'', stallCount:Math.max(1,safeNum(r.stall_count)||1),
+      stallNumber:currentAssignments.filter(x=>String(x.registration_id)===String(r.id)).map(x=>String(x.seat_code)).join(','), stallCount:Math.max(1,safeNum(r.stall_count)||1),
       intent:(String(r.seat_choice_intent||'auto')==='paid'?'paid':'auto'),
       seatChoiceStatus:r.seat_choice_status||'', payStatus:r.payment_status||'',
       transferStatus:r.transfer_status||'', phone:r.phone||'', paidAt:firstPaidAt[String(r.id)]||r.created_at||'',
       confirmedPaid:String(r.payment_status||'')==='免費'||confirmedIds.has(String(r.id)),
+      participatesToday:_registrationDates(r).includes(activityDate),
       equipmentText:_equipmentTextFromMap(_effectiveEquipmentMapForReg(r,session)),
       dayPositions:daySeatRows.filter(x=>String(x.registration_id)===String(r.id)).reduce((out,x)=>{const d=String(x.activity_date).slice(0,10);let row=out.find(y=>y.date===d);if(!row){row={date:d,codes:[]};out.push(row);}row.codes.push(String(x.seat_code));return out;},[])
     }));
   const activeSeats=seats.filter(x=>!x.isCustom&&x.active);
   const assignedStalls=currentAssignments.length;
-  const requiredStalls=regsOut.filter(x=>x.confirmedPaid).reduce((n,x)=>n+x.stallCount,0);
-  return jsonOk({activityDate,availableDates,seats,regs:regsOut,session:{id:session.id,name:session.name||'',seatMapUrl:session.seat_map_url||'',seatBoard:board,seatLayoutPublishedAt:session.seat_layout_published_at||''},summary:{requiredStalls,assignedStalls,waitingPaid:Math.max(0,requiredStalls-assignedStalls),autoFree:Math.max(0,activeSeats.length-assignedStalls),firstAssignedAt:session.seat_assign_last_at||'',equipmentTotalText:_equipmentTextFromMap(regs.reduce((all,r)=>{const m=_effectiveEquipmentMapForReg(r,session);Object.keys(m||{}).forEach(k=>all[k]=(Number(all[k])||0)+(Number(m[k])||0));return all;},{}))}});
+  const requiredStalls=regsOut.filter(x=>x.confirmedPaid&&x.participatesToday).reduce((n,x)=>n+x.stallCount,0);
+  return jsonOk({singleSource:'registration_day_seats',activityDate,availableDates,seats,regs:regsOut,session:{id:session.id,name:session.name||'',seatMapUrl:session.seat_map_url||'',seatBoard:board,seatLayoutPublishedAt:session.seat_layout_published_at||''},summary:{requiredStalls,assignedStalls,waitingPaid:Math.max(0,requiredStalls-assignedStalls),autoFree:Math.max(0,activeSeats.length-assignedStalls),firstAssignedAt:session.seat_assign_last_at||'',equipmentTotalText:_equipmentTextFromMap(regs.reduce((all,r)=>{const m=_effectiveEquipmentMapForReg(r,session);Object.keys(m||{}).forEach(k=>all[k]=(Number(all[k])||0)+(Number(m[k])||0));return all;},{}))}});
 }
 
 async function hSyncSeatRoster(env,b){
@@ -5736,6 +5730,9 @@ async function hPublishSeatLayout(env,b){
 async function hAdminAssignSeat(env, b){
   const TENANT=b._tenantId;
   if(!await verifyStaff(env,b.email,b.token,TENANT)) return jsonErr('無權限');
+  // 舊版只寫 stalls / registrations，會和每日正式排位分裂；保留路由但禁止再寫入。
+  return jsonErr('舊的指定位置功能已停用，請使用「補排新攤商」；已排位置會保持不動。');
+  /* istanbul ignore next -- legacy implementation retained temporarily for rollback reading only */
   if(!b.regId) return jsonErr('缺少報名編號');
   const rows=await dbGet(env,'registrations',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.regId)}&select=*`);
   if(!rows.length) return jsonErr('找不到報名');
