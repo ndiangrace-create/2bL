@@ -1,3 +1,13 @@
+import {
+  capabilitiesForRole,
+  isDestructiveAdminAction,
+  isSeriesManagerAction,
+  PLATFORM_ADMIN_ACTIONS,
+  TENANT_OWNER_ACTIONS,
+  SESSION_TARGET_ACTIONS,
+  REGISTRATION_TARGET_ACTIONS,
+} from './lib/admin-authorization.js';
+
 // SEAT_SINGLE_SOURCE_ACTUAL_FIX_20260722：實際移除舊 API、補上 saveSeatMapImage、統一位置分類與資料來源
 // MEMBER_FASTPASS_PAYMENT_EQUIP_FIX_20260721：會員免審核狀態回傳＋付款卡片設備自備顯示
 // FULL_FLOW_FIX_20260721：會員、選位、場地圖、取消退款、現場與拍照框閉環修復
@@ -716,106 +726,211 @@ async function verifyPlatformSuperAdmin(env, email, token, tenantId) {
   return false;
 }
 
+function _staffActive(row) {
+  return !!row && (row.is_active !== undefined ? row.is_active !== false : row.active !== false);
+}
+
+// 每次管理操作都以資料庫最新 staff 設定為準，不再相信登入時寫進 JWT 的舊角色或舊範圍。
+async function loadFreshAdminAuthorization(env, email, token, tenantId) {
+  const tid = String(tenantId || '').trim();
+  const who = String(email || '').trim().toLowerCase();
+  if (!tid || !who || !token) return null;
+  const payload = await verifyAdminToken(token, who, tid, env);
+  if (!payload) return null;
+
+  const tokenRole = String(payload.normalized_role || payload.role || '').trim();
+  if (tokenRole === 'platform_super_admin') {
+    const rows = await dbGet(env, 'platform_staff', `email=eq.${encodeURIComponent(who)}&is_active=eq.true&select=id,email,name,role,normalized_role,is_active`).catch(()=>[]);
+    const row = rows[0];
+    if (!row || String(row.normalized_role || row.role || '') !== 'platform_super_admin') return null;
+    return {
+      email: who, tenantId: tid, role: 'platform_super_admin', scopeType: 'platform',
+      scopeEventId: '', allowedSessionIds: null, capabilities: capabilitiesForRole('platform_super_admin'),
+      staffId: row.id || payload.staff_id || '', displayName: row.name || payload.display_name || who,
+    };
+  }
+
+  if (!payload.legacy && String(payload.tenant_id || '') !== tid) return null;
+  const rows = await dbGet(env, 'staff', `tenant_id=eq.${tid}&email=eq.${encodeURIComponent(who)}&select=*`).catch(()=>[]);
+  const row = rows[0];
+  if (!_staffActive(row)) return null;
+  const role = String(row.normalized_role || row.role || '').trim();
+  const scopeType = String(row.scope_type || '').trim().toLowerCase() || (role === 'organizer_owner' ? 'all' : 'session');
+  const scopeEventId = String(row.scope_event_id || '').trim();
+  let allowedSessionIds = null;
+
+  if (role === 'organizer_admin') {
+    if (scopeType !== 'event' || !scopeEventId) return null;
+    const eventRows = await dbGet(env, 'events', `tenant_id=eq.${tid}&id=eq.${encodeURIComponent(scopeEventId)}&select=id`).catch(()=>[]);
+    if (!eventRows.length) return null;
+    const sessions = await dbGet(env, 'sessions', `tenant_id=eq.${tid}&event_id=eq.${encodeURIComponent(scopeEventId)}&select=id`).catch(()=>[]);
+    allowedSessionIds = sessions.map(s => String(s.id));
+  } else if (scopeType === 'event' && scopeEventId) {
+    const sessions = await dbGet(env, 'sessions', `tenant_id=eq.${tid}&event_id=eq.${encodeURIComponent(scopeEventId)}&select=id`).catch(()=>[]);
+    allowedSessionIds = sessions.map(s => String(s.id));
+  } else if (scopeType === 'session' || ['session_admin','finance_admin','onsite_staff'].includes(role)) {
+    const permRows = await dbGet(env, 'staff_session_permissions', `tenant_id=eq.${tid}&staff_email=eq.${encodeURIComponent(who)}&is_active=eq.true&select=session_id`).catch(()=>null);
+    if (Array.isArray(permRows)) allowedSessionIds = permRows.map(x => String(x.session_id)).filter(Boolean);
+    else allowedSessionIds = String(row.limit_sessions || '').split(',').map(x=>x.trim()).filter(Boolean);
+  }
+
+  return {
+    email: who, tenantId: tid, role, scopeType, scopeEventId, allowedSessionIds,
+    capabilities: capabilitiesForRole(role), staffId: row.id || payload.staff_id || '',
+    displayName: row.display_name || row.name || payload.display_name || who,
+  };
+}
+
+function _authAllowsSession(auth, sessionId) {
+  const sid = String(sessionId || '').trim();
+  if (!sid) return false;
+  return auth && auth.allowedSessionIds === null ? true : !!(auth && auth.allowedSessionIds.includes(sid));
+}
+
+function _scopeRows(input, rows, sessionKey='session_id') {
+  const auth = input && input._authz;
+  if (!auth || auth.allowedSessionIds === null) return rows || [];
+  const allowed = new Set(auth.allowedSessionIds || []);
+  return (rows || []).filter(row => allowed.has(String(row && row[sessionKey] || '')));
+}
+
+function _scopeSessionRows(input, rows) { return _scopeRows(input, rows, 'id'); }
+function _scopeEventRows(input, rows) {
+  const auth = input && input._authz;
+  if (!auth || auth.allowedSessionIds === null) return rows || [];
+  return (rows || []).filter(row => String(row && row.id || '') === String(auth.scopeEventId || ''));
+}
+
+function _scopePhotoFrames(input, rows) {
+  const auth = input && input._authz;
+  if (!auth || auth.allowedSessionIds === null) return rows || [];
+  return (rows || []).filter(frame => {
+    const type = String(frame.scope_type || '');
+    if (type === 'event') return String(frame.scope_event_id || '') === String(auth.scopeEventId || '');
+    if (type === 'session') return _authAllowsSession(auth, frame.scope_session_id);
+    return false;
+  });
+}
+
 async function verifyStaff(env, email, token, tenantId, requiredRole='', sessionId='') {
-  if (!email || !token) return false;
-  const tid = (typeof tenantId === 'string' && tenantId) ? tenantId : null;
-  if (!tid) return false;
+  const auth = await loadFreshAdminAuthorization(env, email, token, tenantId);
+  if (!auth) return false;
+  if (sessionId && !_authAllowsSession(auth, sessionId)) return false;
+  if (!requiredRole) return true;
+  const c = auth.capabilities || {};
+  if (requiredRole === 'superadmin') return !!c.canManageTenantSettings;
+  if (requiredRole === 'finance') return !!c.canManageFinance;
+  if (requiredRole === 'checkin') return !!c.canManageOnsite;
+  if (requiredRole === 'review') return !!c.canManageRegistrations;
+  if (requiredRole === 'sessions' || requiredRole === 'events') return !!c.canManageSessions;
+  if (requiredRole === 'announce') return !!c.canManageCommunications;
+  if (requiredRole === 'members') return !!c.canManageMembers;
+  return false;
+}
 
-  // 驗證 token（JWT 或舊格式）
-  const jwtPayload = await verifyAdminToken(token, email, tid, env);
-  if (!jwtPayload) return false;
+function _adminActionNeedsCentralGuard(action) {
+  return isSeriesManagerAction(action) || TENANT_OWNER_ACTIONS.has(action) ||
+    PLATFORM_ADMIN_ACTIONS.has(action) || isDestructiveAdminAction(action);
+}
 
-  const role = jwtPayload.normalized_role || jwtPayload.role || '';
-  const limitSessions = jwtPayload.limit_sessions || '';
+function _inputIds(value) {
+  if (Array.isArray(value)) return value.map(String).map(x=>x.trim()).filter(Boolean);
+  return String(value || '').split(',').map(x=>x.trim()).filter(Boolean);
+}
 
-  // platform_super_admin 直通（跨 tenant）
-  if (role === 'platform_super_admin') return true;
-
-  // tenant 隔離：token 內的 tenant_id 才是準的，前端傳來的不可信
-  if (jwtPayload.tenant_id !== tid && !jwtPayload.legacy) return false;
-
-  // 舊格式回退：查 DB 確認
-  if (jwtPayload.legacy) {
-    const platformRows = await dbGet(env, 'platform_staff', `email=eq.${encodeURIComponent(email)}&is_active=eq.true&select=*`).catch(()=>[]);
-    if (platformRows[0]?.role === 'platform_super_admin') return true;
-    const rows = await dbGet(env, 'staff', `tenant_id=eq.${tid}&email=eq.${encodeURIComponent(email)}&select=*`);
-    const staff = rows[0];
-    if (!staff) return false;
-    const staffActive = staff.is_active !== undefined ? staff.is_active : staff.active;
-    if (staffActive === false) return false;
-    const staffRole = staff.normalized_role || staff.role || '';
-    if (staffRole === 'organizer_owner' || staffRole === 'platform_super_admin') return true;
-    if (requiredRole === 'superadmin') return false;
-    if (requiredRole) {
-      const perms = safeJson(staff.perms_json, {});
-      if (!perms[requiredRole]) return false;
-    }
-    const ls = staff.limit_sessions || '';
-    if (sessionId && ls) {
-      const allowed = String(ls).split(',').map(s=>s.trim()).filter(Boolean);
-      if (allowed.length && !allowed.includes(sessionId)) return false;
-    }
-    return true;
-  }
-
-  // JWT 格式：從 payload 取角色
-  const normalizedRole = role;
-  const ownerRoles = ['organizer_owner', 'platform_super_admin', 'organizer_admin'];
-
-  if (requiredRole === 'superadmin') {
-    return normalizedRole === 'organizer_owner' || normalizedRole === 'platform_super_admin';
-  }
-
-  if (requiredRole === 'finance') {
-    const allowed = ['organizer_owner','platform_super_admin','organizer_admin','finance_admin'];
-    return allowed.includes(normalizedRole);
-  }
-
-  if (requiredRole === 'checkin') {
-    const allowed = ['organizer_owner','platform_super_admin','organizer_admin','session_admin','onsite_staff'];
-    if (!allowed.includes(normalizedRole)) return false;
-    // 不可在此直接 return。現場人員 / 場次管理員還必須繼續往下檢查 session 授權，
-    // 避免改 URL 或直接打 API 就讀到未授權場次。
-  }
-
-  if (requiredRole === 'review' || requiredRole === 'sessions' || requiredRole === 'events') {
-    const allowed = ['organizer_owner','platform_super_admin','organizer_admin','session_admin','finance_admin'];
-    return allowed.includes(normalizedRole);
-  }
-
-  if (requiredRole === 'announce') {
-    const allowed = ['organizer_owner','platform_super_admin','organizer_admin'];
-    return allowed.includes(normalizedRole);
-  }
-
-  // 有 sessionId 限制：session_admin / onsite_staff 只能看授權場次
-  if (sessionId && limitSessions) {
-    if (['session_admin','onsite_staff'].includes(normalizedRole)) {
-      const allowed = String(limitSessions).split(',').map(s=>s.trim()).filter(Boolean);
-      if (allowed.length && !allowed.includes(sessionId)) return false;
+async function _registrationScopeRows(env, tenantId, ids) {
+  const out = [];
+  for (const id of [...new Set(ids)]) {
+    const rows = await dbGet(env, 'registrations', `tenant_id=eq.${tenantId}&id=eq.${encodeURIComponent(id)}&select=id,session_id,event_id,payment_group_id,bundle_group_id,email`).catch(()=>[]);
+    if (!rows.length) return null;
+    const row = rows[0];
+    out.push(row);
+    const groupId = String(row.payment_group_id || row.bundle_group_id || '').trim();
+    if (groupId) {
+      const column = row.payment_group_id ? 'payment_group_id' : 'bundle_group_id';
+      const grouped = await dbGet(env, 'registrations', `tenant_id=eq.${tenantId}&${column}=eq.${encodeURIComponent(groupId)}&select=id,session_id,event_id,email`).catch(()=>[]);
+      out.push(...grouped);
     }
   }
+  return out;
+}
 
-  // JWT 驗證通過後仍回查 staff 最新狀態，避免停用或場次權限變更後舊 token 仍可使用。
-  const activeRows = await dbGet(env, 'staff', `tenant_id=eq.${tid}&email=eq.${encodeURIComponent(email)}&select=is_active,active,limit_sessions,role,normalized_role`).catch(()=>[]);
-  if (activeRows[0]) {
-    const active = activeRows[0].is_active !== undefined ? activeRows[0].is_active : activeRows[0].active;
-    if (active === false) return false;
-    const dbRole = activeRows[0].normalized_role || activeRows[0].role || normalizedRole;
-    const dbLimitSessions = activeRows[0].limit_sessions || '';
-    if (sessionId && ['onsite_staff','session_admin'].includes(dbRole)) {
-      // 009 權限表優先；若尚未執行 009 或查不到表，才回退 staff.limit_sessions。
-      const permRows = await dbGet(env, 'staff_session_permissions', `tenant_id=eq.${tid}&staff_email=eq.${encodeURIComponent(email)}&session_id=eq.${encodeURIComponent(sessionId)}&is_active=eq.true&select=session_id`).catch(()=>null);
-      if (Array.isArray(permRows)) {
-        if (!permRows.length) return false;
-      } else {
-        const allowed = String(dbLimitSessions).split(',').map(s=>s.trim()).filter(Boolean);
-        if (dbRole === 'onsite_staff' && !allowed.length) return false;
-        if (allowed.length && !allowed.includes(sessionId)) return false;
-      }
+async function _assertSeriesManagerScope(env, action, input, auth) {
+  const tenantId = auth.tenantId;
+  const eventId = String(input.eventId || input.event_id || (action === 'updateEvent' ? input.id : '') || '').trim();
+  if (eventId && eventId !== auth.scopeEventId) return '此帳號只能管理被指定的活動系列';
+
+  const sessionIds = [
+    ..._inputIds(input.sessionId || input.session_id || input.sid),
+    ..._inputIds(input.sessionIds || input.session_ids),
+  ];
+  if (SESSION_TARGET_ACTIONS.has(action) && !sessionIds.length) {
+    const idAsSession = ['updateSession','toggleSession','copySession'].includes(action) ? String(input.id || '').trim() : '';
+    if (idAsSession) sessionIds.push(idAsSession);
+  }
+  if (action === 'forceCancelSession') {
+    sessionIds.push(..._inputIds(input.transferTargetSessionId || input.transfer_target_session_id));
+  }
+  if (sessionIds.some(id => !_authAllowsSession(auth, id))) return '此帳號只能管理被指定系列的場次';
+
+  const regIds = [
+    ..._inputIds(input.regId || input.registrationId || input.registration_id),
+    ..._inputIds(input.regIds || input.registrationIds),
+  ];
+  if (REGISTRATION_TARGET_ACTIONS.has(action) || action === 'batchUpdateStatus') {
+    if (!regIds.length) return '缺少可驗證的報名資料範圍';
+    const rows = await _registrationScopeRows(env, tenantId, regIds);
+    if (!rows || rows.some(r => !_authAllowsSession(auth, r.session_id))) return '此帳號不能管理其他系列的報名資料';
+  }
+
+  if (['saveMemberNote','getMemberHistory'].includes(action)) {
+    const memberEmail = String(input.memberEmail || input.targetEmail || input.emailQuery || '').trim().toLowerCase();
+    if (memberEmail) {
+      const rows = await dbGet(env, 'registrations', `tenant_id=eq.${tenantId}&email=ilike.${encodeURIComponent(memberEmail)}&select=session_id`).catch(()=>[]);
+      if (!rows.some(r => _authAllowsSession(auth, r.session_id))) return '此會員不在被指定系列內';
     }
   }
-  return true; // 通過基本驗證，無特殊 requiredRole
+
+  if (action === 'sendNotify' && !sessionIds.length && !regIds.length) {
+    return '系列管理者發送通知時必須指定場次或報名資料';
+  }
+  if (action === 'savePhotoFrame') {
+    const scopeType = String(input.scopeType || input.scope_type || '').trim();
+    const scopeId = String(input.scopeId || input.scope_id ||
+      (scopeType === 'event' ? (input.scopeEventId || input.scope_event_id) : (input.scopeSessionId || input.scope_session_id)) || '').trim();
+    if (scopeType === 'event' && scopeId !== auth.scopeEventId) return '相框只能套用在被指定系列';
+    if (scopeType === 'session' && !_authAllowsSession(auth, scopeId)) return '相框只能套用在被指定系列的場次';
+    if (!['event','session'].includes(scopeType)) return '系列管理者的相框必須指定活動或場次';
+  }
+  if (action === 'onsitePasscodeToggle') {
+    const rows = await dbGet(env, 'onsite_passcodes', `tenant_id=eq.${tenantId}&id=eq.${encodeURIComponent(String(input.id||''))}&select=session_id`).catch(()=>[]);
+    if (!rows.length || !_authAllowsSession(auth, rows[0].session_id)) return '此通行碼不屬於被指定系列';
+  }
+  return '';
+}
+
+async function authorizeAdminAction(env, action, input) {
+  if (input && input.passcode && ['onsiteRegs','onsiteDaySummary','onsiteMark'].includes(action)) return null;
+  if (!_adminActionNeedsCentralGuard(action)) return null;
+  const auth = await loadFreshAdminAuthorization(env, input.email, input.token, input._tenantId);
+  if (!auth) return { error: '登入權限已失效，請重新登入' };
+  input._authz = auth;
+
+  if (PLATFORM_ADMIN_ACTIONS.has(action) && !auth.capabilities.canPlatform) {
+    return { error: '此功能僅限平台總管' };
+  }
+  if (TENANT_OWNER_ACTIONS.has(action) && !auth.capabilities.canManageTenantSettings) {
+    return { error: '此功能屬於租戶設定，不在指定系列管理權限內' };
+  }
+  if (isDestructiveAdminAction(action) && !auth.capabilities.canDelete) {
+    return { error: '管理者不可刪除資料，請使用停用、封存或取消' };
+  }
+  if (auth.role === 'organizer_admin') {
+    if (!isSeriesManagerAction(action)) return { error: '此功能不在指定系列管理權限內' };
+    const scopeError = await _assertSeriesManagerScope(env, action, input, auth);
+    if (scopeError) return { error: scopeError };
+  }
+  return { auth };
 }
 
 // ── SECTION 8: Session 格式化 / 費用計算 ────────────────────────
@@ -2821,14 +2936,26 @@ async function hAdminMe(env, p) {
   if (!payload) return jsonErr('token 無效或已過期，請重新登入', 401);
   // email=_ 表示由 JWT 自行驗證，不做 email 比對
   if (email && email !== '_' && email !== '__jwt__' && payload.email !== email) return jsonErr('token 與 email 不符', 401);
+  const tokenRole = String(payload.normalized_role || payload.role || '').trim();
+  const authTenant = tokenRole === 'platform_super_admin'
+    ? String(p.tenant || p.tenantId || payload.tenant_id || 'platform')
+    : String(payload.tenant_id || '');
+  const auth = await loadFreshAdminAuthorization(env, payload.email, token, authTenant);
+  if (!auth) return jsonErr('管理者已停用、權限範圍無效或不完整，請聯絡平台管理者', 401);
   return jsonOk({
-    email: payload.email,
-    tenant_id: payload.tenant_id,
-    staff_id: payload.staff_id,
-    role: payload.role,
-    normalized_role: payload.normalized_role,
-    limit_sessions: payload.limit_sessions,
-    display_name: payload.display_name,
+    email: auth.email,
+    tenant_id: tokenRole === 'platform_super_admin' ? 'platform' : auth.tenantId,
+    staff_id: auth.staffId,
+    role: auth.role,
+    normalized_role: auth.role,
+    display_name: auth.displayName,
+    authorization: {
+      role: auth.role,
+      scopeType: auth.scopeType,
+      scopeEventId: auth.scopeEventId,
+      allowedSessionIds: auth.allowedSessionIds,
+      capabilities: auth.capabilities,
+    },
     issued_at: payload.issued_at,
     expires_at: payload.expires_at,
   });
@@ -2897,11 +3024,14 @@ async function hGetDashboard(env, p) {
   let qs = `tenant_id=eq.${TENANT}&select=review_status,payment_status,amount,transfer_status,refund_amount`;
   if (p.sessionId) qs += `&session_id=eq.${encodeURIComponent(p.sessionId)}`;
   if (p.eventId)   qs += `&event_id=eq.${encodeURIComponent(p.eventId)}`;
-  const [regs, sesCnt, evtCnt] = await Promise.all([
+  const [regsRaw, sesCntRaw, evtCntRaw] = await Promise.all([
     dbGet(env, 'registrations', qs),
     dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&status=eq.%E5%A0%B1%E5%90%8D%E4%B8%AD&select=id`),
     dbGet(env, 'events', `tenant_id=eq.${TENANT}&status=neq.%E5%81%9C%E7%94%A8&select=id`),
   ]);
+  const regs = _scopeRows(p, regsRaw);
+  const sesCnt = _scopeSessionRows(p, sesCntRaw);
+  const evtCnt = _scopeEventRows(p, evtCntRaw);
   const activeRegs = regs.filter(r => !_isCancelledReg(r));
   const paidList = activeRegs.filter(r=>isPaidStatus(r.payment_status));
   return jsonOk({
@@ -3090,7 +3220,7 @@ function _financeIssuesForReg(r){
 async function hAdminBusinessOverview(env, p){
   const TENANT = (p && p._tenantId);
   if (!await verifyStaff(env, p.email, p.token, TENANT)) return jsonErr('無權限');
-  const [sessions, regs, members, staff, events, agreements] = await Promise.all([
+  const [sessionsRaw, regsRaw, membersRaw, staffRaw, eventsRaw, agreementsRaw] = await Promise.all([
     dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
     dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
     dbGet(env, 'members', `tenant_id=eq.${TENANT}&select=email,joined_at,updated_at`).catch(()=>[]),
@@ -3098,6 +3228,14 @@ async function hAdminBusinessOverview(env, p){
     dbGet(env, 'events', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
     dbGet(env, 'tenant_agreement_templates', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
   ]);
+  const sessions = _scopeSessionRows(p, sessionsRaw);
+  const regs = _scopeRows(p, regsRaw);
+  const events = _scopeEventRows(p, eventsRaw);
+  const scopedEmails = new Set(regs.map(r=>String(r.email||'').trim().toLowerCase()).filter(Boolean));
+  const members = p._authz && p._authz.allowedSessionIds !== null
+    ? membersRaw.filter(m=>scopedEmails.has(String(m.email||'').trim().toLowerCase())) : membersRaw;
+  const staff = p._authz && p._authz.allowedSessionIds !== null ? [] : staffRaw;
+  const agreements = p._authz && p._authz.allowedSessionIds !== null ? [] : agreementsRaw;
   const now = new Date();
   const month = _aggregateBiz(sessions, regs, members, staff, _adminMonthStart(now), _adminNextMonth(now));
   const quarter = _aggregateBiz(sessions, regs, members, staff, _adminQuarterStart(now), _adminNextQuarter(now));
@@ -3187,7 +3325,7 @@ async function hAdminBusinessOverview(env, p){
 async function hAdminFinanceAnomalies(env, p){
   const TENANT = (p && p._tenantId);
   if (!await verifyStaff(env, p.email, p.token, TENANT, 'finance')) return jsonErr('無權限');
-  const regs = await dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=id,session_id,email,name,brand,brand_name,review_status,payment_status,pay_status,amount,total_amount,deposit,refund_amount,transfer_status,payment_method,pay_method,payment_last5,payment_reported_at,created_at`).catch(()=>[]);
+  const regs = _scopeRows(p, await dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=id,session_id,email,name,brand,brand_name,review_status,payment_status,pay_status,amount,total_amount,deposit,refund_amount,transfer_status,payment_method,pay_method,payment_last5,payment_reported_at,created_at`).catch(()=>[]));
   const rows=[];
   regs.forEach(r=>{
     _financeIssuesForReg(r).forEach(issue=>rows.push({...r, issue, amount:_officialAmount(r)}));
@@ -3518,7 +3656,7 @@ async function hGetRegs(env, p) {
   let qs = `tenant_id=eq.${TENANT}&select=*`;
   if (p.sessionId) qs += `&session_id=eq.${encodeURIComponent(p.sessionId)}`;
   if (p.eventId)   qs += `&event_id=eq.${encodeURIComponent(p.eventId)}`;
-  const rows = await dbGet(env, 'registrations', qs);
+  const rows = _scopeRows(p, await dbGet(env, 'registrations', qs));
   return jsonOk(rows.map(r=>({
     id:r.id, sessionId:r.session_id, eventId:r.event_id,
     email:r.email, name:r.name, phone:r.phone,
@@ -3682,11 +3820,14 @@ async function hGetSessionRegistrations(env, p) {
 async function hGetTodos(env, p) {
   const TENANT = (p && p._tenantId);
   if (!await verifyStaff(env,p.email,p.token,TENANT)) return jsonErr('無權限');
-  const [regs,sessions,events] = await Promise.all([
+  const [regsRaw,sessionsRaw,eventsRaw] = await Promise.all([
     dbGet(env,'registrations',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
     dbGet(env,'sessions',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
     dbGet(env,'events',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
   ]);
+  const regs = _scopeRows(p, regsRaw);
+  const sessions = _scopeSessionRows(p, sessionsRaw);
+  const events = _scopeEventRows(p, eventsRaw);
   const smap={}; sessions.forEach(s=>smap[s.id]=s);
   const emap={}; events.forEach(e=>emap[e.id]=e);
   const out=[];
@@ -4244,7 +4385,7 @@ async function hOnsitePasscodeVerify(env, b) {
 async function hOnsitePasscodeList(env, p) {
   const TENANT = (p && p._tenantId);
   if (!await verifyStaff(env, p.email, p.token, TENANT, 'checkin')) return jsonErr('無權限');
-  const rows = await dbGet(env, 'onsite_passcodes', `tenant_id=eq.${TENANT}&select=*`).catch(() => []);
+  const rows = _scopeRows(p, await dbGet(env, 'onsite_passcodes', `tenant_id=eq.${TENANT}&select=*`).catch(() => []));
   return jsonOk(rows.map(r => ({ id: r.id, sessionId: r.session_id, code: r.code, assignee: r.assignee_note || '', openFrom: r.open_from, openUntil: r.open_until, active: r.active })));
 }
 // 後台：產生 / 換碼（自動算開放時間，4位不與現有啟用碼重複，一場一碼）
@@ -4409,7 +4550,7 @@ async function hGetStaff(env, p) {
 async function hGetEventsAdmin(env, p) {
   const TENANT = (p && p._tenantId) ;  // M-02：tenant 已由路由層驗證（見 routeGet/routePost）
   if (!await verifyStaff(env, p.email, p.token, TENANT)) return jsonErr('無權限');
-  const rows = await dbGet(env, 'events', `tenant_id=eq.${TENANT}&select=*`);
+  const rows = _scopeEventRows(p, await dbGet(env, 'events', `tenant_id=eq.${TENANT}&select=*`));
   return jsonOk(rows.map(r=>({id:r.id,title:r.title,desc:r.description,location:r.location,cover:r.cover_url,status:r.status,createdAt:r.created_at,paymentProfileId:r.payment_profile_id||'',paymentProfile:_paymentSnapshotPublic(safeJson(r.payment_profile_snapshot,null))})));
 }
 
@@ -4424,11 +4565,13 @@ async function hGetSessionsAdmin(env, p) {
     dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&select=*`),
     dbGet(env, 'events', `tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),
   ]);
-  const itemMap = await _getRegistrationItemsForRegs(env, allRegs);
+  const sessions = _scopeSessionRows(p, sessionsRaw);
+  const scopedRegs = _scopeRows(p, allRegs);
+  const itemMap = await _getRegistrationItemsForRegs(env, scopedRegs);
   const evtMap = {}; events.forEach(e=>evtMap[e.id]=e);
-  return jsonOk(sessionsRaw.map(s => _buildAdminSessionRow(
+  return jsonOk(sessions.map(s => _buildAdminSessionRow(
     s,
-    allRegs.filter(r=>String(r.session_id)===String(s.id)),
+    scopedRegs.filter(r=>String(r.session_id)===String(s.id)),
     evtMap[s.event_id] || {},
     itemMap
   )));
@@ -4438,7 +4581,7 @@ async function hGetSessionsAdmin(env, p) {
 async function hGetPayments(env, p) {
   const TENANT = (p && p._tenantId) ;  // M-02：tenant 已由路由層驗證（見 routeGet/routePost）
   if (!await verifyStaff(env, p.email, p.token, TENANT, 'finance')) return jsonErr('無權限');
-  const rows = await dbGet(env, 'payments', `tenant_id=eq.${TENANT}&select=*`);
+  const rows = _scopeRows(p, await dbGet(env, 'payments', `tenant_id=eq.${TENANT}&select=*`));
   return jsonOk(rows.map(r=>({id:r.id,regId:r.registration_id||r.reg_id,sessionId:r.session_id,email:r.email,amount:r.amount,method:r.method,status:r.status,tradeNo:r.trade_no,paidAt:r.paid_at,createdAt:r.created_at,paymentProfileId:r.payment_profile_id||'',paymentProfile:_paymentSnapshotPublic(safeJson(r.payment_profile_snapshot,null))})));
 }
 
@@ -4519,7 +4662,7 @@ async function hGetForceRefundList(env, p) {
   if (!await verifyStaff(env, p.email, p.token, TENANT, 'finance')) return jsonErr('無權限');
   // 正式資料庫目前以 transfer_status=申請退費 作為不可抗力／一般退費待處理狀態。
   // 不查不存在的 registrations.force_status，避免前台/後台因欄位不同步中斷。
-  const rows = await dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&transfer_status=eq.%E7%94%B3%E8%AB%8B%E9%80%80%E8%B2%BB&select=*`);
+  const rows = _scopeRows(p, await dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&transfer_status=eq.%E7%94%B3%E8%AB%8B%E9%80%80%E8%B2%BB&select=*`));
   // 取得場次名稱
   const sesIds = [...new Set(rows.map(r=>r.session_id).filter(Boolean))];
   const sesNames = {};
@@ -5305,9 +5448,10 @@ async function hSubmitPhotoLead(env,b){
 async function hListPhotoFrames(env,b){
   const T=b._tenantId;
   if(!await verifyStaff(env,b.email,b.token,T,'sessions')) return jsonErr('無權限');
-  const rows=await dbGet(env,'photo_frames',`tenant_id=eq.${T}&select=*`);
+  const rows=_scopePhotoFrames(b,await dbGet(env,'photo_frames',`tenant_id=eq.${T}&select=*`));
   let leads=[];
   try{ leads=await dbGet(env,'photo_leads',`tenant_id=eq.${T}&select=frame_id,marketing_consent`); }catch(e){ leads=[]; }
+  if(b._authz && b._authz.allowedSessionIds!==null){const ids=new Set(rows.map(x=>String(x.id)));leads=leads.filter(x=>ids.has(String(x.frame_id)));}
   const cnt={}, con={};
   for(const l of (leads||[])){
     const k=String(l.frame_id||'');
@@ -5370,7 +5514,8 @@ async function hListPhotoLeads(env,b){
   if(b.consentOnly===true||b.consentOnly==='true') qs+='&marketing_consent=eq.true';
   if(b.from) qs+=`&created_at=gte.${encodeURIComponent(b.from)}`;
   if(b.to)   qs+=`&created_at=lte.${encodeURIComponent(b.to)}`;
-  const rows=await dbGet(env,'photo_leads',qs);
+  let rows=await dbGet(env,'photo_leads',qs);
+  if(b._authz && b._authz.allowedSessionIds!==null){const frames=_scopePhotoFrames(b,await dbGet(env,'photo_frames',`tenant_id=eq.${T}&select=id,scope_type,scope_event_id,scope_session_id`).catch(()=>[])),ids=new Set(frames.map(x=>String(x.id)));rows=(rows||[]).filter(x=>ids.has(String(x.frame_id)));}
   const list=(rows||[]).sort((a,b2)=>String(b2.created_at||'').localeCompare(String(a.created_at||'')));
   const consent=list.filter(l=>l.marketing_consent===true||l.marketing_consent==='true').length;
   const bySource={};
@@ -6866,12 +7011,14 @@ async function hResendInvite(env, b) {
   return jsonOk({success:true});
 }
 
-const VALID_STAFF_ROLES = new Set(['platform_super_admin','organizer_admin','onsite_staff']);
+// 租戶後台不得建立 platform_super_admin；平台身分只能存在 platform_staff。
+const VALID_STAFF_ROLES = new Set(['organizer_admin','session_admin','finance_admin','onsite_staff']);
 function normalizeStaffRoleInput(role) {
   const r = String(role || '').trim();
   const map = {
-    'platform_super_admin':'platform_super_admin',
     'organizer_admin':'organizer_admin',
+    'session_admin':'session_admin',
+    'finance_admin':'finance_admin',
     'onsite_staff':'onsite_staff'
   };
   return map[r] || '';
@@ -6903,9 +7050,11 @@ async function hAddStaff(env, b) {
   let normalizedRole; try{ normalizedRole = assertValidStaffRole(b.role || 'organizer_admin'); }catch(e){ return jsonErr(e.message); }
   const displayRole = normalizedRole;
   const perms = b.perms || (normalizedRole === 'onsite_staff' ? {checkin:true} : {});
-  // 授權範圍：all（全部）/ event（整個系列）/ session（指定場次）
-  const scopeType = ['all','event','session'].includes(b.scopeType) ? b.scopeType : 'all';
+  // 所有非 owner 租戶角色都必須先指定 event 或 session，不建立全租戶權限。
+  const scopeType = ['event','session'].includes(b.scopeType) ? b.scopeType : (normalizedRole==='organizer_admin'?'event':'session');
   const scopeEventId = scopeType==='event' ? String(b.scopeEventId||'').trim() : '';
+  if(normalizedRole==='organizer_admin' && (!scopeEventId || scopeType!=='event')) return jsonErr('主辦管理員必須指定一個活動系列');
+  if(scopeEventId){const ev=await dbGet(env,'events',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(scopeEventId)}&select=id`).catch(()=>[]);if(!ev.length)return jsonErr('指定的活動系列不存在');}
   await dbInsert(env,'staff',{
     id:crypto.randomUUID(),
     email:b.targetEmail,
@@ -6965,6 +7114,11 @@ async function hUpdateStaffSessions(env, b) {
   const scopeEventId = (scopeType === 'event') ? (b.scopeEventId || b.scope_event_id || '') : '';
   const normalizedScopeType = scopeType === 'sessions' ? 'session' : scopeType;
   if (!['all','event','session'].includes(normalizedScopeType)) return jsonErr('不支援的授權範圍');
+  const targetRows=await dbGet(env,'staff',`tenant_id=eq.${TENANT}&email=eq.${encodeURIComponent(b.targetEmail)}&select=role,normalized_role`).catch(()=>[]);
+  if(!targetRows.length)return jsonErr('找不到管理者');
+  const nextRole=String(b.role||targetRows[0].normalized_role||targetRows[0].role||'');
+  if(nextRole==='organizer_admin'&&(normalizedScopeType!=='event'||!scopeEventId))return jsonErr('主辦管理員必須指定一個活動系列');
+  if(scopeEventId){const ev=await dbGet(env,'events',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(scopeEventId)}&select=id`).catch(()=>[]);if(!ev.length)return jsonErr('指定的活動系列不存在');}
   const staffUpd = {limit_sessions:sessions.join(','), scope_type:normalizedScopeType, scope_event_id:scopeEventId, scope_session_ids:sessions, updated_at:nowIso()};
   if (b.role) { let nr; try{ nr=assertValidStaffRole(b.role); }catch(e){ return jsonErr(e.message); } staffUpd.normalized_role=nr; staffUpd.role=nr; staffUpd.role_id=nr; }
   await dbUpdate(env,'staff',`email=eq.${encodeURIComponent(b.targetEmail)}&tenant_id=eq.${TENANT}`,staffUpd);
@@ -7269,7 +7423,8 @@ async function hGetFinancePaymentGroups(env,p){
   const sId=p.sessionId||p.session_id||'';
   let qs=`tenant_id=eq.${TENANT}&select=*`;
   if(sId) qs+=`&session_id=eq.${encodeURIComponent(sId)}`;
-  const [regs,sessions]=await Promise.all([dbGet(env,'registrations',qs).catch(()=>[]), dbGet(env,'sessions',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[])]);
+  const [regsRaw,sessionsRaw]=await Promise.all([dbGet(env,'registrations',qs).catch(()=>[]), dbGet(env,'sessions',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[])]);
+  const regs=_scopeRows(p,regsRaw),sessions=_scopeSessionRows(p,sessionsRaw);
   const smap={}; sessions.forEach(s=>smap[s.id]=s);
   const itemMap=await _getRegistrationItemsForRegs(env,regs).catch(()=>({}));
   const groups={};
@@ -7421,7 +7576,9 @@ async function hSaveMemberNote(env, b) {
 async function hGetMembers(env, p) {
   const TENANT = (p && p._tenantId);
   if (!await verifyStaff(env,p.email,p.token,TENANT,'review')) return jsonErr('無權限');
-  const [members,ledger]=await Promise.all([dbGet(env,'members',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),dbGet(env,'member_credit_ledger',`tenant_id=eq.${TENANT}&status=eq.${encodeURIComponent('有效')}&select=member_email,direction,amount`).catch(()=>[])]);
+  const [membersRaw,ledger,regs]=await Promise.all([dbGet(env,'members',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),dbGet(env,'member_credit_ledger',`tenant_id=eq.${TENANT}&status=eq.${encodeURIComponent('有效')}&select=member_email,direction,amount`).catch(()=>[]),dbGet(env,'registrations',`tenant_id=eq.${TENANT}&select=email,session_id`).catch(()=>[])]);
+  const scopedEmails = new Set(_scopeRows(p, regs).map(r=>normEmail(r.email)).filter(Boolean));
+  const members = p._authz && p._authz.allowedSessionIds !== null ? membersRaw.filter(m=>scopedEmails.has(normEmail(m.email))) : membersRaw;
   const balances={};for(const x of ledger){const k=normEmail(x.member_email);balances[k]=(balances[k]||0)+(x.direction==='debit'?-safeNum(x.amount):safeNum(x.amount));}
   return jsonOk(members.map(r=>({...formatMemberRow(r),activityCreditBalance:Math.max(0,balances[normEmail(r.email)]||0)})));
 }
@@ -7443,7 +7600,8 @@ async function hGetMemberHistory(env, p) {
   const key=String(p.memberKey||p.key||p.email||p.phone||p.brand||'').trim();
   if(!key) return jsonOk([]);
   const q=encodeURIComponent('*'+key+'*');
-  const [regs,sessions,events]=await Promise.all([dbGet(env,'registrations',`tenant_id=eq.${TENANT}&or=(email.ilike.${q},phone.ilike.${q},brand_name.ilike.${q},name.ilike.${q})&select=*&order=created_at.desc`), dbGet(env,'sessions',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]), dbGet(env,'events',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[])]);
+  const [regsRaw,sessionsRaw,eventsRaw]=await Promise.all([dbGet(env,'registrations',`tenant_id=eq.${TENANT}&or=(email.ilike.${q},phone.ilike.${q},brand_name.ilike.${q},name.ilike.${q})&select=*&order=created_at.desc`), dbGet(env,'sessions',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]), dbGet(env,'events',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[])]);
+  const regs=_scopeRows(p,regsRaw),sessions=_scopeSessionRows(p,sessionsRaw),events=_scopeEventRows(p,eventsRaw);
   const smap={}; sessions.forEach(s=>smap[s.id]=s); const emap={}; events.forEach(e=>emap[e.id]=e);
   return jsonOk(regs.map(r=>_formatAdminRegistration(r, smap[r.session_id]||{}, emap[(smap[r.session_id]||{}).event_id]||{})));
 }
@@ -7455,6 +7613,10 @@ async function hUpdateStaffScope(env, b) {
   const raw=String(b.scopeType||b.scope_type||'all').trim();
   const scopeType=raw==='sessions'?'session':(raw==='series'?'event':(['all','event','session'].includes(raw)?raw:'all'));
   const scopeEventId=scopeType==='event'?String(b.eventId||b.scopeEventId||b.scope_event_id||'').trim():'';
+  const targetRows=await dbGet(env,'staff',`tenant_id=eq.${TENANT}&email=eq.${encodeURIComponent(targetEmail)}&select=role,normalized_role`).catch(()=>[]);
+  if(!targetRows.length)return jsonErr('找不到管理者');
+  if(String(targetRows[0].normalized_role||targetRows[0].role||'')==='organizer_admin'&&(scopeType!=='event'||!scopeEventId))return jsonErr('主辦管理員必須指定一個活動系列');
+  if(scopeEventId){const ev=await dbGet(env,'events',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(scopeEventId)}&select=id`).catch(()=>[]);if(!ev.length)return jsonErr('指定的活動系列不存在');}
   const ids=(b.limitSessions||b.scopeSessionIds||b.scope_session_ids||[]).map(x=>String(x||'').trim()).filter(Boolean);
   const data={scope_type:scopeType, scope_event_id:scopeEventId, limit_sessions:scopeType==='session'?ids.join(','):'', updated_at:nowIso()};
   await dbUpdate(env,'staff',`tenant_id=eq.${TENANT}&email=eq.${encodeURIComponent(targetEmail)}`,data);
@@ -7996,20 +8158,9 @@ async function hConfirmForceRefund(env, b) {
 // LINE Pay confirm redirect（GET）
 
 async function getStaffScopeForOperations(env,email,token,tenantId){
-  const payload=await verifyAdminToken(token,email,tenantId,env); if(!payload) return null;
-  const role=String(payload.normalized_role||payload.role||'').trim();
-  if(role==='platform_super_admin') return {all:true,sessionIds:null,eventId:null};
-  const rows=await dbGet(env,'staff',`tenant_id=eq.${tenantId}&email=eq.${encodeURIComponent(email)}&select=role,normalized_role,scope_type,scope_event_id,scope_session_ids,limit_sessions,active,is_active`).catch(()=>[]);
-  const st=rows[0]; if(!st || st.active===false || st.is_active===false) return null;
-  if(String(st.normalized_role||st.role)!=='organizer_admin') return null;
-  const scope=String(st.scope_type||'all');
-  if(scope==='event' && st.scope_event_id) return {all:false,eventId:st.scope_event_id,sessionIds:null};
-  if(scope==='session' || scope==='sessions'){
-    let ids=Array.isArray(st.scope_session_ids)?st.scope_session_ids:[];
-    if(!ids.length) ids=String(st.limit_sessions||'').split(',').map(x=>x.trim()).filter(Boolean);
-    return {all:false,eventId:null,sessionIds:ids};
-  }
-  return {all:true,sessionIds:null,eventId:null};
+  const auth=await loadFreshAdminAuthorization(env,email,token,tenantId); if(!auth) return null;
+  if(auth.allowedSessionIds===null) return {all:true,sessionIds:null,eventId:null};
+  return {all:false,eventId:auth.scopeEventId||null,sessionIds:auth.allowedSessionIds||[]};
 }
 async function hGetOperationsReport(env,p){
   const TENANT=p._tenantId;
@@ -8280,6 +8431,9 @@ async function routeGet(env, action, p, req) {
   if (action==='linePayConfirm') return Response.redirect(FALLBACK_SITE_URL+'?pay_result=disabled',302);
   if (action==='linePayCancel') return Response.redirect(FALLBACK_SITE_URL+'?linepay_cancel=1',302);
 
+  const getAuthz = await authorizeAdminAction(env, action, p);
+  if (getAuthz && getAuthz.error) return jsonErr(getAuthz.error, 403);
+
   switch(action) {
     case 'frontBootstrap':      return hFrontBootstrap(env,p);
     case 'getEvents':           return hGetEvents(env,p);
@@ -8363,6 +8517,8 @@ async function routePost(env, action, b, ctx, req) {
     b._ip = req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || req.headers.get('X-Real-IP') || null;
     b._userAgent = req.headers.get('User-Agent') || null;
   }
+  const postAuthz = await authorizeAdminAction(env, action, b);
+  if (postAuthz && postAuthz.error) return jsonErr(postAuthz.error, 403);
   if (action==='resendRegConfirm') {
     if (!await verifyStaff(env,b.email,b.token,TENANT,'review')) return jsonErr('無權限');
     const rows = await dbGet(env,'registrations',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(b.regId)}&select=*`);

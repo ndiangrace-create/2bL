@@ -11,7 +11,7 @@ for(const [name,html] of [['index.html',index],['admin.html',admin]]){
     assert.doesNotThrow(()=>new Function(source),name+' 內嵌程式語法錯誤');
   }
 }
-assert.doesNotThrow(()=>new Function(worker.replace(/^export\s+default\s*\{/m,'const __workerExport={')),'worker.js 語法錯誤');
+assert.doesNotThrow(()=>new Function(worker.replace(/^import\s*\{[\s\S]*?\}\s*from\s*['"][^'"]+['"];?\s*/,'').replace(/^export\s+default\s*\{/m,'const __workerExport={')),'worker.js 語法錯誤');
 
 assert.match(worker,/async function finalizeRegistrationSafely\(/,'報名主交易後必須有獨立的安全收尾層');
 assert.match(worker,/await finalizeRegistrationSafely\(env, TENANT, b, ses, id, meta, ctx\)/,'單場報名必須走安全收尾層');
