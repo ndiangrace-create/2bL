@@ -1361,6 +1361,16 @@
   width:100%;
   max-width:100%;
 }
+.finance-combined-card{
+  min-width:0;
+  margin-top:18px;
+}
+.finance-combined-table .mini-table{
+  min-width:1120px;
+}
+.finance-combined-table td:nth-child(7){
+  overflow-wrap:anywhere;
+}
 @media (max-width:1380px){
   .finance-detail-grid{grid-template-columns:1fr;}
   .finance-detail-grid .finance-side{position:static;}
@@ -2915,6 +2925,51 @@ async function openSessionDetail(sid){
   }catch(e){$('panelBody').innerHTML='<div class="empty">載入失敗：'+safe(e.message)+'</div>';}
 }
 
+function financeInvoiceTableHtml(financeRows,invoiceRows){
+  const byRegistration=new Map();
+  const ensure=(id,brand='')=>{
+    const key=String(id||brand||'unknown');
+    if(!byRegistration.has(key)) byRegistration.set(key,{brand:brand||'—',invoiceAmount:0,deposit:0,total:0,paymentStatus:'—',invoiceInfo:'個人',invoiceEmail:'—',invoiceStatus:'待開立',financeSubtotal:0,financeHasTotal:false});
+    const row=byRegistration.get(key);
+    if(brand&&(!row.brand||row.brand==='—')) row.brand=brand;
+    return row;
+  };
+  for(const x of Array.isArray(invoiceRows)?invoiceRows:[]){
+    const row=ensure(x.id,x.brand||x.name||'');
+    row.invoiceAmount=Number(x.amount||0)||0;
+    row.deposit=Number(x.deposit||0)||0;
+    row.total=row.invoiceAmount+row.deposit;
+    row.invoiceInfo=x.taxId?[x.invoiceTitle||x.brand||'',x.taxId].filter(Boolean).join('｜'):(x.invoiceTitle||'個人');
+    row.invoiceEmail=x.invoiceEmail||x.email||'—';
+    row.invoiceStatus=x.invoiceStatus||'待開立';
+  }
+  for(const x of Array.isArray(financeRows)?financeRows:[]){
+    const rawId=String(x.id||'');
+    const id=rawId.endsWith('-deposit')?rawId.slice(0,-8):rawId;
+    const brand=String(x.name||'').split('｜')[0]||'';
+    const row=ensure(id,brand);
+    const amount=Number(x.amount||0)||0;
+    const type=String(x.type||'');
+    const isDeposit=type.includes('押金')||rawId.endsWith('-deposit');
+    if(isDeposit){
+      if(!row.deposit) row.deposit+=amount;
+    }else{
+      row.financeSubtotal+=amount;
+      if(type==='應收款') row.financeHasTotal=true;
+      if(x.note) row.paymentStatus=x.note;
+    }
+  }
+  const rows=[...byRegistration.values()];
+  if(!rows.length) return '<div class="empty">目前沒有資料</div>';
+  let h='<div class="table-wrap finance-combined-table"><table class="mini-table"><thead><tr><th>品牌</th><th>應收總額</th><th>營業／發票金額</th><th>押金</th><th>付款狀態</th><th>統編／抬頭</th><th>發票 Email</th><th>發票狀態</th></tr></thead><tbody>';
+  for(const row of rows){
+    const total=row.total||(row.financeHasTotal?row.financeSubtotal:row.financeSubtotal+row.deposit);
+    const invoiceAmount=row.invoiceAmount||(row.financeHasTotal?Math.max(0,total-row.deposit):row.financeSubtotal);
+    h+='<tr><td>'+safe(row.brand)+'</td><td>'+money(total)+'</td><td>'+money(invoiceAmount)+'</td><td>'+money(row.deposit)+'</td><td>'+safe(row.paymentStatus)+'</td><td>'+safe(row.invoiceInfo)+'</td><td>'+safe(row.invoiceEmail)+'</td><td>'+safe(row.invoiceStatus)+'</td></tr>';
+  }
+  return h+'</tbody></table></div>';
+}
+
 async function openFinancePanel(sid){
   AdminState.currentSessionId=sid; AdminState.currentLayer='finance'; const s=sessionById(sid);
   openPanel(sessionName(s)+'｜本場財報','本場收入、押金、退款、支出與分潤會依最新紀錄即時更新。','<div class="loading">財務載入中…</div>',{replace:true});
@@ -2930,7 +2985,7 @@ async function openFinancePanel(sid){
     const warn=(r.warnings||[]).map(x=>'<div class="quality-warn">⚠ '+safe(x)+'</div>').join('');
     const stat=(label,val,cls)=>'<div class="mini-stat"'+(cls?' style="background:'+cls+'"':'')+'><b>'+money(val||0)+'</b><span>'+safe(label)+'</span></div>';
     const dayStalls=(Array.isArray(r.dailyStalls)?r.dailyStalls:[]).map(x=>safe(x.date||x.label||'')+'：'+num(x.stallCount||0)+' 攤').join('｜');
-    const countSummary='<div class="info-line"><span>有效報名品牌</span><b>'+num(r.activePaidBrands||0)+' 個</b></div><div class="info-line"><span>租用攤位數總計</span><b>'+num(r.contractedStalls||0)+' 攤</b></div><div class="info-line"><span>單日最高使用量</span><b>'+num(r.maxDailyStalls||0)+' 攤</b></div><div class="info-line"><span>每日使用量／兩日攤日</span><b>'+safe(dayStalls||'—')+'｜共 '+num(r.stallDays||0)+' 攤日</b></div>';
+    const countSummary='<div class="info-line"><span>有效報名品牌</span><b>'+num(r.activePaidBrands||0)+' 個</b></div><div class="info-line"><span>租用攤位數總計</span><b>'+num(r.contractedStalls||0)+' 攤</b></div><div class="info-line"><span>每日使用量／兩日攤日（單日最高 '+num(r.maxDailyStalls||0)+' 攤）</span><b>'+safe(dayStalls||'—')+'｜共 '+num(r.stallDays||0)+' 攤日</b></div>';
     const financeSummary='<div class="report-card"><div class="report-title">正式損益計算</div><div class="sub" style="margin-bottom:8px">總收入包含押金；營業收入已排除押金與已退費報名。退款金額只列歷史紀錄，不會再從營業收入重複扣除。</div>'+countSummary+'<div class="mini-stat-row">'
       +stat('已收總額（含押金）',r.totalIncome??r.cashReceived,'#eef5fb')+stat('營業收入（不含押金）',r.businessRevenue??r.confirmedRevenue,'#eef7ee')+stat('押金（每筆報名只計一次）',depositTotal,'#fffbe8')+stat('已完成退款（已反映）',r.refundAmount,'#fff0ee')+stat('本場總支出',r.totalExpense,'#fff8ed')
       +stat('攤位費開票稅5%',r.stallInvoiceTax??r.invoiceTaxAmount??0,'#f6f1ff')+stat('可分配盈餘',r.distributableProfit,(Number(r.distributableProfit)||0)>=0?'#eef7ee':'#fff0ee')+stat('公司分潤',r.companyShare,'#eef5fb')+stat('合作方分潤',r.partnerShare,'#fff8ed')+'</div></div>';
@@ -2938,7 +2993,7 @@ async function openFinancePanel(sid){
     const expenseForm=locked?'':'<div class="report-card"><div class="report-title">新增本場支出</div><div class="form-grid"><div class="form-field"><label>支出類別</label><select id="expense_type"><option value="場地費">場地費（主辦實際支付）</option><option value="設備成本">設備成本</option><option value="印刷費">印刷費</option><option value="人事費">人事費</option><option value="行銷費">行銷費</option><option value="物流費">物流費</option><option value="清潔費">清潔費</option><option value="保險費">保險費</option><option value="其他支出">其他支出</option></select></div><div class="form-field"><label>金額</label><input id="expense_amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="例如 5000"></div><div class="form-field full"><label>名稱 / 說明</label><input id="expense_name" placeholder="例如：8/8 場地租金、桌椅運費"></div></div><div class="card-actions"><button class="btn" onclick="saveSessionExpense(\''+attr(sid)+'\',this)">＋ 登錄支出</button></div><div class="sub">場地費照主辦實際支付金額登錄，不會自動加稅；5% 稅額只套用於攤友繳交、需開立發票的攤位費。</div></div>';
     const shareCard='<div class="report-card"><div class="report-title">本場分潤設定</div><div class="sub" style="margin-bottom:8px">目前套用：'+safe(r.shareSource==='session'?'本場設定':r.shareSource==='event'?'系列設定':'系統預設 50/50')+'</div><div class="form-grid"><div class="form-field full"><label>合作方名稱</label><input id="share_partner" value="'+attr(r.partnerName||'')+'" '+(locked?'disabled':'')+' placeholder="例如：合作主辦方"></div><div class="form-field"><label>公司 %</label><input id="share_company" type="number" min="0" max="100" step="0.01" value="'+attr(r.companyRatio??50)+'" '+(locked?'disabled':'')+'></div><div class="form-field"><label>合作方 %</label><input id="share_partner_ratio" type="number" min="0" max="100" step="0.01" value="'+attr(r.partnerRatio??50)+'" '+(locked?'disabled':'')+'></div></div>'+(locked?'':'<div class="card-actions"><button class="btn secondary" onclick="saveFinanceShare(\''+attr(sid)+'\',this)">儲存本場分潤比例</button></div>')+'</div>';
     const settleCard=locked?'<div class="report-card"><div class="report-title">🔒 已正式結算</div><div class="sub">鎖定時間：'+safe(r.settlement?.lockedAt||'—')+'<br>鎖定人：'+safe(r.settlement?.lockedBy||'—')+'</div><div class="card-actions"><button class="btn danger" onclick="unlockFinanceSettlement(\''+attr(sid)+'\',this)">解除結算鎖定（僅平台超管）</button></div></div>':'<div class="report-card"><div class="report-title">正式結算</div><div class="sub">鎖定後會保存本次收入／退款／支出／分潤快照，並禁止修改支出與比例。</div><div class="card-actions"><button class="btn" onclick="lockFinanceSettlement(\''+attr(sid)+'\',this)">🔒 確認並鎖定本場結算</button></div></div>';
-    $('panelBody').innerHTML='<div class="readable-detail">'+warn+financeSummary+'<div class="finance-detail-grid"><div>'+expenseForm+'<div style="height:14px"></div><div class="report-card"><div class="report-title">本場支出明細</div><div class="info-line"><span>正式支出總額</span><span>'+money(r.totalExpense||0)+'</span></div>'+expenseRows+'</div><div style="height:14px"></div><div class="card-actions"><button type="button" class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載全場完整資料</button><button type="button" class="btn secondary" onclick="shareFinanceReconciliation(\''+attr(sid)+'\')">分享財報給夥伴對帳</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'<div style="height:14px"></div><h3>報名金流項目</h3>'+tableFromRows(finance,['type','name','amount','note'],['類型','名稱','金額','備註'])+'</div><div class="finance-side">'+shareCard+'<div style="height:14px"></div>'+settleCard+'<div style="height:14px"></div><div class="report-card"><div class="report-title">口徑提醒</div><div class="sub">押金每筆報名只計一次；多日不乘天數。已退費報名會退出目前收入，退款卡片只供歷史核對，不會再扣第二次。</div></div><div style="height:14px"></div><h3>發票資料</h3>'+tableFromRows(invoices,['brand','taxId','invoiceTitle','invoiceEmail','invoiceStatus'],['品牌','統編','抬頭','Email','狀態'])+'</div></div></div>';
+    $('panelBody').innerHTML='<div class="readable-detail">'+warn+financeSummary+'<div class="finance-detail-grid"><div>'+expenseForm+'<div style="height:14px"></div><div class="report-card"><div class="report-title">本場支出明細</div><div class="info-line"><span>正式支出總額</span><span>'+money(r.totalExpense||0)+'</span></div>'+expenseRows+'</div><div style="height:14px"></div><div class="card-actions"><button type="button" class="btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載全場完整資料</button><button type="button" class="btn secondary" onclick="shareFinanceReconciliation(\''+attr(sid)+'\')">分享財報給夥伴對帳</button></div><div style="height:14px"></div><h3>依收款設定分組</h3>'+tableFromRows(paymentGroups,['paymentProfileName','ownerMode','count','receivable','received','transferDue'],['收款設定','模式','筆數','應收','已收','需轉付'])+'</div><div class="finance-side">'+shareCard+'<div style="height:14px"></div>'+settleCard+'<div style="height:14px"></div><div class="report-card"><div class="report-title">口徑提醒</div><div class="sub">押金每筆報名只計一次；多日不乘天數。已退費報名會退出目前收入，退款卡片只供歷史核對，不會再扣第二次。</div></div></div></div><div class="report-card finance-combined-card"><div class="report-title">報名金流與發票資料</div><div class="sub" style="margin-bottom:8px">每個有效報名品牌一列；應收、押金與發票資料在同一列核對。</div>'+financeInvoiceTableHtml(finance,invoices)+'</div></div>';
   }catch(e){$('panelBody').innerHTML='<div class="empty">財務載入失敗：'+safe(e.message)+'</div>';}
 }
 

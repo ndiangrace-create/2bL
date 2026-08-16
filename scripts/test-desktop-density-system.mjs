@@ -16,6 +16,10 @@ ok(admin.includes('FINANCE_PANEL_BALANCED_LAYOUT_20260816'),'財報缺少獨立�
 ok(admin.includes('grid-template-columns:minmax(0,9fr) minmax(0,11fr)'),'財報右側發票資料仍被壓縮');
 ok(admin.includes('<div class="finance-detail-grid">'),'財報仍誤用一般詳情頁 2:1 欄寬');
 ok(admin.includes('@media (max-width:1380px)')&&admin.includes('.finance-detail-grid{grid-template-columns:1fr;}'),'較小螢幕的財報沒有自動改為上下排列');
+ok(admin.includes('function financeInvoiceTableHtml'),'財報缺少金流與發票合併邏輯');
+ok(admin.includes('報名金流與發票資料'),'財報未將同一筆報名的金流與發票合併');
+ok(!admin.includes('<h3>報名金流項目</h3>')&&!admin.includes('<h3>發票資料</h3>'),'財報仍把同一份報名拆成兩張表');
+ok(admin.includes('finance-combined-table'),'合併後的完整報名財務表缺少獨立寬版樣式');
 ok(onsite.includes('#regsList>.empty,#regsList>.loading,#regsList>.notice{grid-column:1/-1'),'現場空白提示仍可能造成左右錯位');
 ok(onsite.includes('#regsList{display:grid;grid-template-columns:repeat(2'),'現場電腦版攤商卡沒有兩張並排');
 ok(onsite.includes('DESKTOP_REG_CARD_REFLOW_20260816'),'現場電腦版攤商卡缺少閱讀重排');
