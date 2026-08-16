@@ -439,8 +439,14 @@ function corsHeaders() {
     'Expires': '0',
   };
 }
+function publicErrorMessage(msg){
+  const text=String(msg||'系統暫時無法完成操作').trim();
+  const technical=/(?:\bDB\s+(?:GET|INSERT|UPSERT|UPDATE|DELETE|RPC)\b|\bPGRST\w*\b|\bSQLSTATE\b|\/rest\/v\d+\/|supabase(?:\.co)?|service[_ -]?role|authorization:\s*bearer|(?:tenant|registration|session|payment)_id\b|(?:registrations|registration_items|sessions|staff|tenants|refund_transactions)\.[a-z_/]+|(?:relation|column)\s+["']?[^\s"']+["']?\s+does not exist)/i.test(text);
+  if(technical) return '系統暫時無法完成操作，請稍後再試；若持續發生請聯繫管理者。';
+  return text;
+}
 const jsonOk  = data => new Response(JSON.stringify(data), {status:200, headers:corsHeaders()});
-const jsonErr = msg  => new Response(JSON.stringify({error:msg}), {status:200, headers:corsHeaders()});
+const jsonErr = msg  => new Response(JSON.stringify({error:publicErrorMessage(msg)}), {status:200, headers:corsHeaders()});
 
 // ── SECTION 6: Supabase 查詢工具 ────────────────────────────────
 function supabaseServiceRoleKey(env) {
@@ -3455,6 +3461,27 @@ function _isActiveFinanceReg(r){
 function _itemKind(it){
   return String(it.item_type || it.type || it.kind || it.name || it.item_name || '').trim();
 }
+function _financeItemKindLabel(kind){
+  const raw=String(kind||'').trim(),key=raw.toLowerCase();
+  const labels={
+    stall_fee:'攤位費',equipment:'設備費',addon:'加購費',deposit:'押金',
+    discount:'折扣',adjustment:'金額調整',seat_fee:'加價選位費'
+  };
+  if(labels[key]) return labels[key];
+  if(raw.includes('押金')) return '押金';
+  if(raw.includes('攤位')) return '攤位費';
+  if(raw.includes('設備')) return '設備費';
+  if(raw.includes('加購')) return '加購費';
+  return '報名費用';
+}
+function _paymentOwnerModeLabel(mode){
+  return ({
+    tuibile_self:'兔彼樂自收',
+    tuibile_agency:'兔彼樂代收',
+    partner_self:'合作主辦自收',
+    legacy:'既有收款方式'
+  })[String(mode||'').trim()] || '一般收款';
+}
 function _itemAmount(it){
   const stored = _firstNum(it.amount, it.total);
   if (stored !== 0) return stored;
@@ -4657,10 +4684,10 @@ async function hGetFinance(env, p) {
     const brand = r.brand_name || r.brand || r.name || r.email || r.id;
     if (money.itemRows && money.itemRows.length) {
       for (const it of money.itemRows) {
-        out.push({id:r.id, sessionId:sId, type:it.kind || '項目', name:`${brand}｜${it.name}`, amount:it.amount, note:`${_reviewStatus(r)}／${_payStatus(r)}｜${it.note || money.source}`, paymentProfileName:_paymentSnapshotPublic(_paymentSnapshotFromReg(r)).paymentProfileName||'未保存快照'});
+        out.push({id:r.id, sessionId:sId, type:_financeItemKindLabel(it.kind), name:`${brand}｜${it.name}`, amount:it.amount, note:`${_reviewStatus(r)}／${_payStatus(r)}`, paymentProfileName:_paymentSnapshotPublic(_paymentSnapshotFromReg(r)).paymentProfileName||'既有收款設定'});
       }
     } else {
-      out.push({id:r.id, sessionId:sId, type:'應收款', name:brand, amount:money.cashTotal, note:`${_reviewStatus(r)}／${_payStatus(r)}｜來源：${money.source}`, paymentProfileName:_paymentSnapshotPublic(_paymentSnapshotFromReg(r)).paymentProfileName||'未保存快照'});
+      out.push({id:r.id, sessionId:sId, type:'應收款', name:brand, amount:money.cashTotal, note:`${_reviewStatus(r)}／${_payStatus(r)}`, paymentProfileName:_paymentSnapshotPublic(_paymentSnapshotFromReg(r)).paymentProfileName||'既有收款設定'});
       if (money.depositTotal > 0) out.push({id:r.id+'-deposit', sessionId:sId, type:'押金', name:brand, amount:money.depositTotal, note:'押金獨立列，不列入發票'});
     }
   }
@@ -7485,9 +7512,9 @@ async function hGetFinancePaymentGroups(env,p){
   for(const r of regs.filter(_isReceivableReg)){
     const ses=smap[r.session_id]||{};
     const money=_regFinanceAmounts(r,ses,itemMap[r.id]);
-    const snap=_paymentSnapshotPublic(_paymentSnapshotFromReg(r) || {payment_profile_name:'未保存收款快照', payment_owner_mode:'legacy', allowed_methods:{bank:true}});
+    const snap=_paymentSnapshotPublic(_paymentSnapshotFromReg(r) || {payment_profile_name:'既有收款設定', payment_owner_mode:'legacy', allowed_methods:{bank:true}});
     const key=(snap.paymentProfileId||'legacy')+'|'+(snap.paymentOwnerMode||'legacy');
-    if(!groups[key]) groups[key]={paymentProfileId:snap.paymentProfileId, paymentProfileName:snap.paymentProfileName||'未保存收款快照', ownerMode:snap.paymentOwnerMode||'legacy', ownerName:snap.paymentOwnerName||'', count:0, receivable:0, received:0, deposit:0, transferDue:0};
+    if(!groups[key]) groups[key]={paymentProfileId:snap.paymentProfileId, paymentProfileName:snap.paymentProfileName||'既有收款設定', ownerMode:_paymentOwnerModeLabel(snap.paymentOwnerMode), ownerName:snap.paymentOwnerName||'', count:0, receivable:0, received:0, deposit:0, transferDue:0};
     groups[key].count++;
     groups[key].receivable+=money.cashTotal;
     if(_isConfirmedPaidReg(r)) groups[key].received+=money.cashTotal;
