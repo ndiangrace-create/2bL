@@ -3128,10 +3128,19 @@ function _isReceivableReg(r){
 }
 function _officialAmount(r){ return safeNum(_firstNum(r.amount, r.total_amount, r.total, r.registration_total_amount)); }
 function _sessionDeposit(s){ return safeNum(_firstNum(s && s.deposit, s && s.deposit_amount, s && s.deposit_total)); }
+// 一筆報名只會有一筆押金；多日或多攤都不能把押金乘上日期／攤數。
+// sessions.deposit 是正式場次設定，舊資料若曾重複寫入，財務彙總仍封頂為該場押金。
+function _singleRegistrationDeposit(r, s, rawDeposit){
+  const sessionDeposit = _sessionDeposit(s);
+  const ownDeposit = safeNum(_firstNum(r && r.deposit, r && r.deposit_total, r && r.deposit_amount));
+  const configured = sessionDeposit > 0 ? sessionDeposit : ownDeposit;
+  const raw = safeNum(rawDeposit);
+  if (configured > 0) return Math.max(0, raw > 0 ? Math.min(raw, configured) : configured);
+  return Math.max(0, raw);
+}
 function _regDeposit(r, s){
   const own = safeNum(_firstNum(r.deposit, r.deposit_total, r.deposit_amount));
-  if (own > 0) return own;
-  return _sessionDeposit(s);
+  return _singleRegistrationDeposit(r, s, own);
 }
 function _officialDeposit(r, s){ return _regDeposit(r, s); }
 function _officialRefund(r){ return safeNum(_firstNum(r.refund_amount, r.refund_total)); }
@@ -3185,7 +3194,8 @@ function _aggregateBiz(sessions, regs, members, staff, start, end){
   const ses = sessions.filter(s => !start || _adminDateInRange(_sessionDateValue(s), start, end));
   const sesIds = new Set(ses.map(s=>s.id));
   const rgs = regs.filter(r => !start ? true : (sesIds.has(r.session_id) || _adminDateInRange(r.created_at, start, end)));
-  const paid = rgs.filter(_isPaidReg);
+  const activeRgs = rgs.filter(_isActiveFinanceReg);
+  const paid = activeRgs.filter(_isPaidReg);
   const brandSet = new Set();
   rgs.forEach(r=>{ const k=String(r.brand_name||r.brand||r.name||r.email||'').trim(); if(k) brandSet.add(k); });
   const memberSet = new Set();
@@ -3194,9 +3204,10 @@ function _aggregateBiz(sessions, regs, members, staff, start, end){
   ses.forEach(s=>{ const v=_sessionVenueValue(s); if(v) venueSet.add(v); });
   const equipmentMap={};
   rgs.forEach(r=>Object.entries(_effectiveEquipmentMapForReg(r, sesMap[r.session_id] || {})).forEach(([k,v])=>_inc(equipmentMap,k,v)));
-  const gross = paid.reduce((sum,r)=>sum+_officialAmount(r),0);
+  const totalIncome = paid.reduce((sum,r)=>sum+_officialAmount(r),0);
   const depositTotal = paid.filter(_isConfirmedPaidReg).reduce((sum,r)=>sum+_regDeposit(r, sesMap[r.session_id]),0);
   const refundTotal = rgs.reduce((sum,r)=>sum+_officialRefund(r),0);
+  const operatingRevenue = Math.max(0, totalIncome - depositTotal);
   return {
     sessions: ses.length,
     activeSessions: ses.filter(s=>!['停用','關閉','已關閉','封存'].includes(String(s.status||''))).length,
@@ -3211,10 +3222,13 @@ function _aggregateBiz(sessions, regs, members, staff, start, end){
     paymentPending: rgs.filter(r=>_payStatus(r)==='待確認').length,
     paid: paid.length,
     free: rgs.filter(_isFreePay).length,
-    grossRevenue: gross,
+    totalIncome,
+    operatingRevenue,
+    grossRevenue: operatingRevenue,
     depositTotal,
     refundTotal,
-    netRevenue: Math.max(0, gross - refundTotal),
+    // 已退費報名已由 activeRgs 排除；退款只保留為歷史紀錄，不可再次扣除。
+    netRevenue: operatingRevenue,
     brands: brandSet.size,
     venues: venueSet.size,
     checkinDone: rgs.filter(r=>_checkinStatus(r)==='已報到').length,
@@ -3271,7 +3285,9 @@ async function hAdminBusinessOverview(env, p){
     _inc(byVenueMap, _sessionVenueValue(s));
     _inc(byTypeMap, _sessionTypeValue(s));
     const list=regs.filter(r=>r.session_id===s.id);
-    const paid=list.filter(_isPaidReg);
+    const paid=list.filter(_isActiveFinanceReg).filter(_isPaidReg);
+    const totalIncome=paid.reduce((sum,r)=>sum+_officialAmount(r),0);
+    const depositTotal=paid.filter(_isConfirmedPaidReg).reduce((sum,r)=>sum+_regDeposit(r, s),0);
     bySession.push({
       id:s.id, name:s.name||s.title||s.id, date:_sessionDateValue(s), venue:_sessionVenueValue(s), status:s.status||'',
       total:list.length,
@@ -3279,8 +3295,9 @@ async function hAdminBusinessOverview(env, p){
       approved:list.filter(r=>_reviewStatus(r)==='已錄取').length,
       paymentPending:list.filter(r=>_payStatus(r)==='待確認').length,
       paid:paid.length,
-      revenue:Math.max(0, paid.reduce((sum,r)=>sum+_officialAmount(r),0)-list.reduce((sum,r)=>sum+_officialRefund(r),0)),
-      depositTotal:paid.filter(_isConfirmedPaidReg).reduce((sum,r)=>sum+_regDeposit(r, s),0),
+      totalIncome,
+      revenue:Math.max(0,totalIncome-depositTotal),
+      depositTotal,
       checkinDone:list.filter(r=>_checkinStatus(r)==='已報到').length,
     });
   });
@@ -3486,15 +3503,16 @@ function _regFinanceAmounts(r, s, regItems){
   let depositTotal = 0;
   let depositSource = 'none';
   if (item.depositTotal > 0) {
-    depositTotal = item.depositTotal;
+    depositTotal = _singleRegistrationDeposit(r, s, item.depositTotal);
     depositSource = 'registration_items.deposit';
   } else if (ownDeposit > 0) {
-    depositTotal = ownDeposit;
+    depositTotal = _singleRegistrationDeposit(r, s, ownDeposit);
     depositSource = 'registrations.deposit';
   } else if (cashTotal > 0 || _isApprovedReg(r) || _isConfirmedPaidReg(r)) {
-    depositTotal = _sessionDeposit(s);
+    depositTotal = _singleRegistrationDeposit(r, s, 0);
     depositSource = 'sessions.deposit';
   }
+  depositTotal = Math.min(Math.max(0, depositTotal), Math.max(0, cashTotal));
 
   const revenueTotal = Math.max(0, cashTotal - depositTotal);
   return {
@@ -3568,8 +3586,11 @@ function _buildAdminSessionRow(s, list, evt, itemMap = {}) {
     const dayMap = _equipmentMapFromRegs(dayRegs, s);
     const stallCount = dayRegs.reduce((a,r)=> a + (safeNum(r.stall_count)||1), 0);
     return { date:dk, key:dk, label:dk, stallCount, equipmentText:_equipmentTextFromMap(dayMap) };
-  }).filter(x => x.equipmentText && x.equipmentText !== '無');
+  });
   const dailyText = dailyRows.length ? dailyRows.map(x=> x.label + '：' + x.equipmentText).join('｜') : '無';
+  const contractedStalls = prepareRegs.reduce((n,r)=>n+(safeNum(r.stall_count)||1),0);
+  const maxDailyStalls = dailyRows.reduce((n,x)=>Math.max(n,safeNum(x.stallCount)),0);
+  const stallDays = dailyRows.reduce((n,x)=>n+safeNum(x.stallCount),0);
   // 現金、活動金、押金分開。營業收入＝已投入資金－仍應返還的押金。
   const invoiceTotal = Math.max(0, funded - depositTotal);
   const fmt = formatSession(s);
@@ -3587,6 +3608,9 @@ function _buildAdminSessionRow(s, list, evt, itemMap = {}) {
     free: listActive.filter(_isFreePay).length,
     checkedIn: listActive.filter(r=>_checkinStatus(r)==='已報到').length,
     refund: refundRegs.length,
+    contractedStalls,
+    maxDailyStalls,
+    stallDays,
   };
   const finance = {
     depositTotal: Math.max(0, depositTotal),
@@ -4125,16 +4149,18 @@ async function hFinanceOverview(env, p){
     counts.paymentPending += st.paymentPending||0; counts.free += st.free||0;
     const eid = String(s.event_id||'') || '_none';
     const ename = (evt.title||evt.name) || '（未分類主題）';
-    if(!themeMap[eid]) themeMap[eid] = {eventId:eid,eventName:ename,received:0,receivable:0,unreceived:0,deposit:0,refund:0,sessions:0,paid:0};
+    if(!themeMap[eid]) themeMap[eid] = {eventId:eid,eventName:ename,received:0,receivable:0,unreceived:0,deposit:0,invoice:0,refund:0,sessions:0,paid:0};
     const t = themeMap[eid];
     t.received+=f.receivedTotal||0; t.receivable+=f.receivableTotal||0; t.unreceived+=f.unreceivedTotal||0;
-    t.deposit+=f.depositTotal||0; t.refund+=refundAmt; t.sessions+=1; t.paid+=st.paid||0;
+    t.deposit+=f.depositTotal||0; t.invoice+=f.invoiceTotal||0; t.refund+=refundAmt; t.sessions+=1; t.paid+=st.paid||0;
     bySession.push({ id:s.id, name:row.name||s.name||s.id, eventName:ename, date:row.dateText||_sessionDateValue(s), status:s.status||'',
       received:f.receivedTotal||0, receivable:f.receivableTotal||0, unreceived:f.unreceivedTotal||0,
-      deposit:f.depositTotal||0, refund:refundAmt, net:(f.receivedTotal||0)-refundAmt, paid:st.paid||0 });
+      deposit:f.depositTotal||0, refund:refundAmt, net:f.invoiceTotal||0, paid:st.paid||0 });
   }
-  totals.net = totals.received - totals.refund;
-  const byTheme = Object.values(themeMap).map(t=>({...t, net:t.received-t.refund})).sort((a,b)=>b.received-a.received);
+  // received 是目前仍有效的已收總額（含押金），invoice 是目前營業收入（不含押金）。
+  // 已退款報名已不在 received/invoice 內，所以 net 不得再扣 refund。
+  totals.net = totals.invoice;
+  const byTheme = Object.values(themeMap).map(t=>({...t, net:t.invoice})).sort((a,b)=>b.received-a.received);
   bySession.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   return jsonOk({ totals, counts, byTheme, bySession, scoped: Array.isArray(allowedIds), role, generatedAt: new Date().toISOString() });
 }
@@ -8222,6 +8248,8 @@ async function hGetOperationsReport(env,p){
     const regs=allRegs.filter(r=>String(r.session_id)===sid);
     const summary=_buildAdminSessionRow(s,regs,eventMap[eid]||{},itemMap);
     // 可分潤收入不得包含可退押金；活動金已實際扣抵時才算本場已投入收入。
+    const totalIncome=Number(summary?.finance?.receivedTotal)||0;
+    const depositTotal=Number(summary?.finance?.depositTotal)||0;
     const confirmedRevenue=Number(summary?.finance?.revenueTotal ?? summary?.finance?.invoiceTotal)||0;
     const refundAmount=refunds.filter(r=>String(r.session_id)===sid).reduce((n,r)=>n+(Number(r.refund_amount)||0),0);
     const expenseAmount=financeItems.filter(i=>String(i.session_id)===sid).reduce((n,i)=>n+(Number(i.amount)||0),0);
@@ -8230,7 +8258,9 @@ async function hGetOperationsReport(env,p){
     const setting=sessionSetting||eventSetting||null;
     const companyRatio=Number(setting?.company_ratio ?? 50);
     const partnerRatio=Number(setting?.partner_ratio ?? 50);
-    const distributableProfit=confirmedRevenue-refundAmount-expenseAmount;
+    // confirmedRevenue 只包含仍有效的已繳費報名，已退費報名早已排除。
+    // refundAmount 僅供歷史對帳顯示，不可再從營業收入扣第二次。
+    const distributableProfit=confirmedRevenue-expenseAmount;
     const companyShare=Math.floor(distributableProfit*companyRatio/100);
     const partnerShare=distributableProfit-companyShare;
     return {
@@ -8238,14 +8268,15 @@ async function hGetOperationsReport(env,p){
       sessionName:s.name||sid,
       eventId:eid||null,
       eventTitle:(eventMap[eid]?.title||eventMap[eid]?.name||'未歸屬'),
-      confirmedRevenue,refundAmount,expenseAmount,distributableProfit,
+      totalIncome,depositTotal,confirmedRevenue,netRevenue:confirmedRevenue,refundAmount,expenseAmount,distributableProfit,
+      activePaidBrands:safeNum(summary?.stats?.paid),contractedStalls:safeNum(summary?.stats?.contractedStalls),maxDailyStalls:safeNum(summary?.stats?.maxDailyStalls),stallDays:safeNum(summary?.stats?.stallDays),dailyStalls:summary?.equipment?.dailyRows||[],
       companyRatio,partnerRatio,companyShare,partnerShare,
       partnerName:setting?.partner_name||'',
       shareSource:sessionSetting?'session':(eventSetting?'event':'default_50_50'),
       settlementLocked:settlements.some(x=>String(x.session_id)===sid&&x.locked_at)
     };
   });
-  const totals=rows.reduce((a,r)=>{a.confirmedRevenue+=r.confirmedRevenue;a.refundAmount+=r.refundAmount;a.expenseAmount+=r.expenseAmount;a.distributableProfit+=r.distributableProfit;a.companyShare+=r.companyShare;a.partnerShare+=r.partnerShare;return a;},{confirmedRevenue:0,refundAmount:0,expenseAmount:0,distributableProfit:0,companyShare:0,partnerShare:0});
+  const totals=rows.reduce((a,r)=>{a.totalIncome+=r.totalIncome;a.depositTotal+=r.depositTotal;a.confirmedRevenue+=r.confirmedRevenue;a.netRevenue+=r.netRevenue;a.refundAmount+=r.refundAmount;a.expenseAmount+=r.expenseAmount;a.distributableProfit+=r.distributableProfit;a.companyShare+=r.companyShare;a.partnerShare+=r.partnerShare;return a;},{totalIncome:0,depositTotal:0,confirmedRevenue:0,netRevenue:0,refundAmount:0,expenseAmount:0,distributableProfit:0,companyShare:0,partnerShare:0});
   return jsonOk({rows,totals,scoped:!scope.all});
 }
 async function _sessionFinanceReportData(env,TENANT,sessionId){
@@ -8253,8 +8284,8 @@ async function _sessionFinanceReportData(env,TENANT,sessionId){
     dbGet(env,'sessions',`tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(sessionId)}&select=*`),dbGet(env,'registrations',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&select=*`),dbGet(env,'events',`tenant_id=eq.${TENANT}&select=id,title,name`).catch(()=>[]),dbGet(env,'finance_items',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&select=*`).catch(()=>[]),dbGet(env,'refund_transactions',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&status=eq.${encodeURIComponent('已退款')}&select=refund_amount`).catch(()=>[]),dbGet(env,'operation_share_settings',`tenant_id=eq.${TENANT}&select=*`).catch(()=>[]),dbGet(env,'operation_settlements',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&select=*`).catch(()=>[])
   ]);if(!sesRows.length)throw new Error('找不到場次');
   const s=sesRows[0],itemMap=await _getRegistrationItemsForRegs(env,regs),evt=events.find(x=>String(x.id)===String(s.event_id))||{},summary=_buildAdminSessionRow(s,regs,evt,itemMap),finance=summary.finance||{};
-  const confirmedRevenue=safeNum(finance.revenueTotal??finance.invoiceTotal),refundAmount=refunds.reduce((n,x)=>n+safeNum(x.refund_amount),0),netRevenue=confirmedRevenue-refundAmount,totalExpense=items.reduce((n,x)=>n+safeNum(x.amount),0),sessionSetting=settings.find(x=>String(x.session_id||'')===String(sessionId)),eventSetting=settings.find(x=>!x.session_id&&String(x.event_id||'')===String(s.event_id||'')),setting=sessionSetting||eventSetting||{},companyRatio=Number(setting.company_ratio??50),partnerRatio=Number(setting.partner_ratio??50),distributableProfit=netRevenue-totalExpense,companyShare=Math.floor(distributableProfit*companyRatio/100),partnerShare=distributableProfit-companyShare,settlement=settlements.find(x=>x.locked_at)||null;
-  return {session:{id:s.id,name:s.name||s.id,dates:_sessionDates(s),venue:s.venue||s.region||''},confirmedRevenue,cashReceived:safeNum(finance.receivedTotal),activityCreditApplied:safeNum(finance.activityCreditTotal),depositTotal:safeNum(finance.depositTotal),refundAmount,netRevenue,totalExpense,distributableProfit,companyRatio,partnerRatio,companyShare,partnerShare,partnerName:setting.partner_name||'',shareSource:sessionSetting?'session':eventSetting?'event':'default_50_50',settlementLocked:!!settlement,settlement:settlement?{lockedAt:settlement.locked_at,lockedBy:settlement.locked_by}:null,expenseItems:items.map(x=>({id:x.id,type:x.type,name:x.name,amount:safeNum(x.amount),isAuto:!!x.is_auto,createdAt:x.created_at})),warnings:[],generatedAt:nowIso()};
+  const totalIncome=safeNum(finance.receivedTotal),depositTotal=safeNum(finance.depositTotal),confirmedRevenue=safeNum(finance.revenueTotal??finance.invoiceTotal),refundAmount=refunds.reduce((n,x)=>n+safeNum(x.refund_amount),0),netRevenue=confirmedRevenue,totalExpense=items.reduce((n,x)=>n+safeNum(x.amount),0),sessionSetting=settings.find(x=>String(x.session_id||'')===String(sessionId)),eventSetting=settings.find(x=>!x.session_id&&String(x.event_id||'')===String(s.event_id||'')),setting=sessionSetting||eventSetting||{},companyRatio=Number(setting.company_ratio??50),partnerRatio=Number(setting.partner_ratio??50),distributableProfit=netRevenue-totalExpense,companyShare=Math.floor(distributableProfit*companyRatio/100),partnerShare=distributableProfit-companyShare,settlement=settlements.find(x=>x.locked_at)||null;
+  return {session:{id:s.id,name:s.name||s.id,dates:_sessionDates(s),venue:s.venue||s.region||''},totalIncome,businessRevenue:confirmedRevenue,confirmedRevenue,cashReceived:totalIncome,activityCreditApplied:safeNum(finance.activityCreditTotal),depositTotal,refundAmount,refundAlreadyReflected:true,netRevenue,totalExpense,distributableProfit,companyRatio,partnerRatio,companyShare,partnerShare,partnerName:setting.partner_name||'',activePaidBrands:safeNum(summary?.stats?.paid),contractedStalls:safeNum(summary?.stats?.contractedStalls),maxDailyStalls:safeNum(summary?.stats?.maxDailyStalls),stallDays:safeNum(summary?.stats?.stallDays),dailyStalls:summary?.equipment?.dailyRows||[],shareSource:sessionSetting?'session':eventSetting?'event':'default_50_50',settlementLocked:!!settlement,settlement:settlement?{lockedAt:settlement.locked_at,lockedBy:settlement.locked_by}:null,expenseItems:items.map(x=>({id:x.id,type:x.type,name:x.name,amount:safeNum(x.amount),isAuto:!!x.is_auto,createdAt:x.created_at})),warnings:[],generatedAt:nowIso()};
 }
 async function hGetSessionFinanceReport(env,p){const T=p._tenantId;if(!await verifyStaff(env,p.email,p.token,T,'finance',p.sessionId))return jsonErr('無權限');try{return jsonOk(await _sessionFinanceReportData(env,T,String(p.sessionId||'')));}catch(e){return jsonErr(e.message||String(e));}}
 async function hAccountingReport(env,p){
@@ -8262,8 +8293,8 @@ async function hAccountingReport(env,p){
   const mode=String(p.mode||'month'),anchorText=String(p.anchor||new Date().toISOString().slice(0,10)).slice(0,10),parts=anchorText.split('-').map(Number);let start,end,label='';
   if(mode==='custom'){start=String(p.start||'');end=String(p.end||'');label=`${start}～${end}`;}else{const y=parts[0]||new Date().getUTCFullYear(),m=Math.max(0,(parts[1]||1)-1),fmt=d=>`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;if(mode==='year'){start=`${y}-01-01`;end=`${y}-12-31`;label=`${y} 年`;}else if(mode==='quarter'){const q=Math.floor(m/3)*3;start=fmt(new Date(Date.UTC(y,q,1)));end=fmt(new Date(Date.UTC(y,q+3,0)));label=`${y} 第 ${q/3+1} 季`;}else{start=fmt(new Date(Date.UTC(y,m,1)));end=fmt(new Date(Date.UTC(y,m+1,0)));label=`${y}/${String(m+1).padStart(2,'0')}`;}}
   const response=await hGetOperationsReport(env,{...p,dateFrom:start,dateTo:end}),body=await response.clone().json();if(body.ok===false)return response;const data=body.data||body,rows=data.rows||[];
-  const sessions=rows.map(r=>({date:'',sessionId:r.sessionId,sessionName:r.sessionName,income:r.confirmedRevenue,refund:r.refundAmount,netIncome:r.confirmedRevenue-r.refundAmount,expense:r.expenseAmount,profit:r.distributableProfit,companyShare:r.companyShare,partnerShare:r.partnerShare})),totals=sessions.reduce((a,r)=>{a.income+=r.income;a.refund+=r.refund;a.expense+=r.expense;a.profit+=r.profit;return a;},{income:0,refund:0,expense:0,profit:0});totals.netIncome=totals.income-totals.refund;
-  return jsonOk({period:{start,end,label},basis:'正式已確認收入，不含押金；扣除已完成退款與正式支出。',totals,counts:{sessions:sessions.length,profitable:sessions.filter(x=>x.profit>=0).length,loss:sessions.filter(x=>x.profit<0).length},sessions,expenseBreakdown:[]});
+  const sessions=rows.map(r=>({date:'',sessionId:r.sessionId,sessionName:r.sessionName,totalIncome:r.totalIncome,deposit:r.depositTotal,income:r.confirmedRevenue,refund:r.refundAmount,netIncome:r.confirmedRevenue,expense:r.expenseAmount,profit:r.distributableProfit,companyShare:r.companyShare,partnerShare:r.partnerShare})),totals=sessions.reduce((a,r)=>{a.totalIncome+=r.totalIncome;a.deposit+=r.deposit;a.income+=r.income;a.refund+=r.refund;a.expense+=r.expense;a.profit+=r.profit;return a;},{totalIncome:0,deposit:0,income:0,refund:0,expense:0,profit:0});totals.netIncome=totals.income;
+  return jsonOk({period:{start,end,label},basis:'總收入含押金；營業收入不含押金。已退費報名已排除，退款只列歷史紀錄、不再重複扣除；盈餘再扣正式支出。',totals,counts:{sessions:sessions.length,profitable:sessions.filter(x=>x.profit>=0).length,loss:sessions.filter(x=>x.profit<0).length},sessions,expenseBreakdown:[]});
 }
 async function hLockFinanceSettlement(env,b){const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');const report=await _sessionFinanceReportData(env,T,String(b.sessionId||''));if(report.settlementLocked)return jsonErr('本場已結算鎖定');const ses=(await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.sessionId)}&select=event_id`))[0]||{};await dbInsert(env,'operation_settlements',{id:crypto.randomUUID(),tenant_id:T,event_id:ses.event_id||null,session_id:String(b.sessionId),snapshot_json:report,locked_at:nowIso(),locked_by:String(b.email||''),updated_at:nowIso()});return jsonOk({success:true});}
 async function hUnlockFinanceSettlement(env,b){const T=b._tenantId;if(!await verifyPlatformSuperAdmin(env,b.email,b.token,T))return jsonErr('僅平台超級管理員可解除結算');await dbUpdate(env,'operation_settlements',`tenant_id=eq.${T}&session_id=eq.${encodeURIComponent(b.sessionId||'')}`,{locked_at:null,locked_by:null,updated_at:nowIso()});return jsonOk({success:true});}
