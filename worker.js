@@ -4757,10 +4757,22 @@ async function finalizeRegistration(env, TENANT, b, ses, id, meta, ctx) {
     console.error('FINANCE RECORDS FAILED reg=' + id + ':', e && e.message ? e.message : e); logError(env, {source:'finalizeRegistration', message:'FINANCE RECORDS FAILED reg=' + id + ':', error:e && e.message ? e.message : e});
   }
 
-  await upsertMember(env, b);
+  // 會員同步是報名成立後的附帶工作。就算 members 暫時寫入失敗，也不能讓
+  // 已經寫進 registrations 的報名在前台顯示成「送出失敗」。
+  try {
+    await upsertMember(env, b);
+  } catch(e) {
+    console.error('MEMBER UPSERT FAILED reg=' + id + ':', e && e.message ? e.message : e);
+    logError(env, {source:'finalizeRegistration', action:'upsertMember', regId:id, sessionId:b.sessionId, email:b.email, message:'MEMBER UPSERT FAILED reg=' + id, error:e && e.message ? e.message : e});
+  }
 
   if (b.stallNumber) {
-    try { await holdStall(env, b.sessionId, b.stallNumber, id, b.email||'', TENANT); } catch {}
+    try {
+      await holdStall(env, b.sessionId, b.stallNumber, id, b.email||'', TENANT);
+    } catch(e) {
+      console.error('STALL HOLD FAILED reg=' + id + ':', e && e.message ? e.message : e);
+      logError(env, {source:'finalizeRegistration', action:'holdStall', regId:id, sessionId:b.sessionId, email:b.email, message:'STALL HOLD FAILED reg=' + id, error:e && e.message ? e.message : e});
+    }
   }
 
   // 寄信不可阻塞前台成功畫面：Email 服務慢或失敗時，使用者不該卡在報名頁。
@@ -4779,6 +4791,17 @@ async function finalizeRegistration(env, TENANT, b, ses, id, meta, ctx) {
   };
   if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(sendConfirmMail());
   else sendConfirmMail();
+}
+
+// 報名主交易與後續工作之間的永久隔離層：
+// registrations 一旦成功建立，任何會員、財務、攤位或寄信後續都不得改寫成功結果。
+async function finalizeRegistrationSafely(env, TENANT, b, ses, id, meta, ctx) {
+  try {
+    await finalizeRegistration(env, TENANT, b, ses, id, meta, ctx);
+  } catch(e) {
+    console.error('POST-REGISTRATION FINALIZE FAILED reg=' + id + ':', e && e.message ? e.message : e);
+    logError(env, {source:'finalizeRegistrationSafely', action:'register', regId:id, sessionId:b.sessionId, email:b.email, message:'POST-REGISTRATION FINALIZE FAILED reg=' + id, error:e && e.message ? e.message : e});
+  }
 }
 
 // 找出這個 Email 在某場次「還有效」的既有報名（已取消／不錄取／已退費 視為結束，不算）
@@ -4884,7 +4907,7 @@ async function hRegisterBundle(env, b, ctx) {
   // 3) 交易成功後，才做非交易性的後續（財務明細、會員、攤位、寄信）。
   //    絕不可提早，否則失敗時信已經寄出去了。
   for (const { bb, prep } of preps) {
-    await finalizeRegistration(env, T, bb, prep.ses, prep.id, prep.meta, ctx);
+    await finalizeRegistrationSafely(env, T, bb, prep.ses, prep.id, prep.meta, ctx);
   }
 
   const dueTotal = merges.reduce((n, m) => n + m._due, 0)
@@ -4926,7 +4949,7 @@ async function hRegister(env, b, ctx) {
     return jsonErr('報名建立失敗，請稍後再試（名額已釋放）');
   }
 
-  await finalizeRegistration(env, TENANT, b, ses, id, meta, ctx);
+  await finalizeRegistrationSafely(env, TENANT, b, ses, id, meta, ctx);
   return jsonOk({success:true, ok:true, id, status:meta.status, total:meta.total});
 }
 

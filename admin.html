@@ -1854,13 +1854,46 @@ function sortNearestFirst(list, getter){
 
 function unwrap(j){ if(Array.isArray(j)) return j; if(j && Array.isArray(j.data)) return j.data; if(j && j.data !== undefined) return j.data; return j; }
 function activeTenant(){ return AdminState.tenantId || 'tuibile'; }
-async function api(params={}){ const p={...params,tenant:params.tenant||activeTenant(),email:params.email||AdminState.email||'_',token:params.token||AdminState.token||'',_t:Date.now()}; const qs=new URLSearchParams(); for(const k in p){ const v=p[k]; if(v!==undefined&&v!==null) qs.set(k, typeof v==='object'?JSON.stringify(v):String(v)); } const r=await fetch(API+'?'+qs.toString(),{cache:'no-store'}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error) throw new Error(j.error||j.message||('連線失敗 '+r.status)); return unwrap(j); }
-async function apiPost(body={}){ const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,tenant:body.tenant||activeTenant(),email:body.email||AdminState.email,token:body.token||AdminState.token})}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error) throw new Error(j.error||j.message||('連線失敗 '+r.status)); return unwrap(j); }
-function startGoogleLogin(){ const t=activeTenant(); if(!t){showLoginError('網址缺少 tenant，無法登入');return;} location.href=endpoint()+'/auth/google/start?tenant='+encodeURIComponent(t); }
-async function handleOAuthCallback(){ const token=sessionStorage.getItem('2bl_admin_token_pending'); const loginError=sessionStorage.getItem('2bl_login_error_pending'); sessionStorage.removeItem('2bl_admin_token_pending'); sessionStorage.removeItem('2bl_login_error_pending'); if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內',staff_inactive:'此管理員帳號已停用',id_token_verify_failed:'Google 身份驗證失敗',google_cancelled:'Google 登入已取消',token_exchange_failed:'Google 登入流程錯誤'}[loginError]||('登入失敗：'+loginError));return false;} if(!token) return false; try{ const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json()); if(j.error||!j.email){showLoginError('無權限登入後台');return false;} AdminState.tenantId=j.tenant_id||activeTenant(); sessionStorage.setItem(TENANT_KEY,AdminState.tenantId); saveSession({email:j.email,token,role:j.normalized_role||j.role||'',name:j.display_name||j.name||j.email,tenantId:AdminState.tenantId}); if((j.normalized_role||j.role)==='onsite_staff'){ location.href='onsite.html?admin_token='+encodeURIComponent(token)+'&tenant='+encodeURIComponent(AdminState.tenantId); return true; } enterAdmin(); return true; }catch(e){showLoginError('登入驗證失敗：'+e.message);return false;} }
+async function api(params={}){ const p={...params,tenant:params.tenant||activeTenant(),email:params.email||AdminState.email||'_',token:params.token||AdminState.token||'',_t:Date.now()}; const qs=new URLSearchParams(); for(const k in p){ const v=p[k]; if(v!==undefined&&v!==null) qs.set(k, typeof v==='object'?JSON.stringify(v):String(v)); } const r=await fetch(API+'?'+qs.toString(),{cache:'no-store'}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error){ const msg=j.error||j.message||('連線失敗 '+r.status); if(r.status===401||adminAuthErrorMessage(msg)) showAdminLogin('登入已過期，請重新使用 Google 登入。'); throw new Error(msg); } return unwrap(j); }
+async function apiPost(body={}){ const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,tenant:body.tenant||activeTenant(),email:body.email||AdminState.email,token:body.token||AdminState.token})}); const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'})); if(!r.ok||j.error){ const msg=j.error||j.message||('連線失敗 '+r.status); if(r.status===401||adminAuthErrorMessage(msg)) showAdminLogin('登入已過期，請重新使用 Google 登入。'); throw new Error(msg); } return unwrap(j); }
+function startGoogleLogin(){ const t=activeTenant(); if(!t){showLoginError('網址缺少 tenant，無法登入');return;} localStorage.removeItem(SESSION_KEY); location.href=endpoint()+'/auth/google/start?tenant='+encodeURIComponent(t); }
+async function handleOAuthCallback(){ const token=sessionStorage.getItem('2bl_admin_token_pending'); const loginError=sessionStorage.getItem('2bl_login_error_pending'); sessionStorage.removeItem('2bl_admin_token_pending'); sessionStorage.removeItem('2bl_login_error_pending'); if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內',staff_inactive:'此管理員帳號已停用',id_token_verify_failed:'Google 身份驗證失敗',google_cancelled:'Google 登入已取消',token_exchange_failed:'Google 登入流程錯誤'}[loginError]||('登入失敗：'+loginError));return false;} if(!token) return false; try{ const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json()); if(j.error||!j.email){showLoginError('無權限登入後台');return false;} const callbackTenant=String(j.tenant_id||'')==='platform'?activeTenant():(j.tenant_id||activeTenant()); AdminState.tenantId=callbackTenant; sessionStorage.setItem(TENANT_KEY,AdminState.tenantId); saveSession({email:j.email,token,role:j.normalized_role||j.role||'',name:j.display_name||j.name||j.email,tenantId:AdminState.tenantId}); if((j.normalized_role||j.role)==='onsite_staff'){ location.href='onsite.html?admin_token='+encodeURIComponent(token)+'&tenant='+encodeURIComponent(AdminState.tenantId); return true; } await enterAdmin(); return true; }catch(e){showLoginError('登入驗證失敗：'+e.message);return false;} }
 function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classList.remove('hidden');}
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function readSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
+function showAdminLogin(msg){
+  localStorage.removeItem(SESSION_KEY);
+  AdminState.email=''; AdminState.token=''; AdminState.role=''; AdminState.name='';
+  const login=$('loginPage'),admin=$('adminPage');
+  if(login) login.classList.remove('hidden');
+  if(admin) admin.classList.add('hidden');
+  if(msg) showLoginError(msg);
+}
+function adminAuthErrorMessage(msg){
+  const s=String(msg||'');
+  return ['無權限','token 無效','token 與 email 不符','未帶 token','請重新登入'].some(x=>s.includes(x));
+}
+async function resumeAdminSession(s){
+  if(!s||!s.email||!s.token) return false;
+  const rememberedTenant=String(s.tenantId||activeTenant()||'tuibile');
+  try{
+    const r=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(s.token)+'&_t='+Date.now(),{cache:'no-store'});
+    const j=await r.json().catch(()=>({error:'後端回傳不是 JSON'}));
+    if(!r.ok||j.error||!j.email){
+      showAdminLogin('登入已過期，請重新使用 Google 登入。');
+      return false;
+    }
+    // 平台管理員 token 的 tenant_id 是 platform；實際瀏覽租戶仍沿用網址／上次租戶。
+    const tenantId=String(j.tenant_id||'')==='platform'?rememberedTenant:(j.tenant_id||rememberedTenant);
+    sessionStorage.setItem(TENANT_KEY,tenantId);
+    saveSession({email:j.email,token:s.token,role:j.normalized_role||j.role||s.role||'',name:j.display_name||s.name||j.email,tenantId});
+    await enterAdmin();
+    return true;
+  }catch(e){
+    showAdminLogin('後台連線暫時失敗，請重新整理或使用 Google 登入。');
+    return false;
+  }
+}
 function saveAdminPageState(page){ try{ const p=page||AdminState.currentPage||'sessions'; const L=AdminState.currentLayer||'root'; const st={page:p, layer:L, sid:AdminState.currentSessionId||'', filter:AdminState.currentFilter||'', dateKey:(L==='equipment')?(AdminState._navDateKey||''):'', dateLabel:(L==='equipment')?(AdminState._navDateLabel||''):'', activityDate:(L==='seatOps')?String(SeatOps.activityDate||''):'', updatedAt:Date.now()}; localStorage.setItem(ADMIN_PAGE_STATE_KEY, JSON.stringify(st)); }catch(e){} }
 function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','onsite','members','leads','consignment','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
@@ -5578,7 +5611,7 @@ async function deleteFeatEvent(id, btn){
 async function applyTenantLogo(){ try{ const c=await api({action:'getSiteConfig'}); if(c && c.logoUrl){ document.querySelectorAll('.login-mark, .logo').forEach(img=>{ img.src=c.logoUrl; }); } }catch(e){} }
 document.addEventListener('DOMContentLoaded', applyTenantLogo);
 async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; const val=id=>($(id)?$(id).value:''); try{ await apiPost({action:'saveSiteConfig',heroImg:val('home_hero'),infoText:val('home_info'),logoUrl:val('home_logo'),mascotHome:val('home_mascotHome'),mascotPortal:val('home_mascotPortal'),mascotMember:val('home_mascotMember'),mascotSupport:val('home_mascotSupport'),mascotProfile:val('home_mascotProfile'),mascotModal:val('home_mascotModal')}); toast('首頁顯示已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
-(async function boot(){ const q=new URLSearchParams(location.search),financeShare=q.get('financeShare')||'',financeShareCode=q.get('fs')||''; if(financeShare||financeShareCode){document.documentElement.classList.add('finance-share-mode');document.title='2BL｜合作夥伴財報對帳';await renderPublicFinanceShare({token:financeShare,code:financeShareCode});return;} const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ saveSession(s); enterAdmin(); } })();
+(async function boot(){ const q=new URLSearchParams(location.search),financeShare=q.get('financeShare')||'',financeShareCode=q.get('fs')||''; if(financeShare||financeShareCode){document.documentElement.classList.add('finance-share-mode');document.title='2BL｜合作夥伴財報對帳';await renderPublicFinanceShare({token:financeShare,code:financeShareCode});return;} const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ await resumeAdminSession(s); } })();
 </script>
 </body>
 </html>

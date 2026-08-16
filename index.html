@@ -3155,6 +3155,23 @@ async function apiPost(body, timeoutMs=30000){
     clearTimeout(timer);
   }
 }
+
+function isAmbiguousRegisterTransportError(message){
+  const s=String(message||'');
+  return ['送出逾時','網路錯誤','連線失敗','後端回傳格式錯誤'].some(x=>s.includes(x));
+}
+
+// POST 回覆若在手機網路中途遺失，先回查正式 registrations；查到就視為成功，
+// 避免資料已入庫、畫面卻叫使用者重送而造成重複報名。
+async function recoverCommittedRegistration(sessionId,email,phone){
+  try{
+    const rows=await api({action:'getMyRegs',email,phone,_t:Date.now(),__timeout:12000});
+    if(!Array.isArray(rows)) return null;
+    return rows.find(r=>String(r.sessionId||r.session_id||'')===String(sessionId)
+      && !['不錄取','已取消'].includes(String(r.status||r.reviewStatus||''))
+      && !['已退費','已退款'].includes(String(r.transferStatus||r.transfer_status||''))) || null;
+  }catch(_e){ return null; }
+}
 function openModal(id){const el=$(id);if(el){el.classList.add('show');el.classList.add('open');}}
 function closeModal(id){const el=$(id);if(el){el.classList.remove('show');el.classList.remove('open');}}
 function openLine(){ if(!LINE_URL){ toast('此主辦尚未設定 LINE，請聯繫主辦'); return; } window.open(LINE_URL,'_blank','noopener'); }
@@ -5813,8 +5830,14 @@ async function submitReg(ev){
         }
       }
     }catch(_dupErr){ console.warn('[dup precheck skipped]', _dupErr); }
-    const res=await apiPost(body);
+    let res=await apiPost(body);
     if(!res){ toast('❌ 後端沒有回傳資料',8000); showFormError('後端沒有回傳資料，請稍後到我的紀錄確認是否已建立報名。'); restoreBtn(); return false; }
+    if(res.error && isAmbiguousRegisterTransportError(res.error)){
+      const committed=await recoverCommittedRegistration(s.id,email,phone);
+      if(committed){
+        res={success:true,ok:true,id:committed.id||committed.regId||'',status:committed.status||committed.reviewStatus||'待審核',total:committed.totalAmount||committed.amount||0,recovered:true};
+      }
+    }
     if(res.error){ toast('❌ '+res.error, 8000); showFormError(res.error); restoreBtn(); return false; }
     hideFormError();
     ST.memberEmail=email;
