@@ -8,6 +8,7 @@ import {
   SERIES_MANAGER_ACTIONS,
   SESSION_TARGET_ACTIONS,
   REGISTRATION_TARGET_ACTIONS,
+  selectActivePlatformAdminRecord,
 } from '../lib/admin-authorization.js';
 
 const manager = capabilitiesForRole('organizer_admin');
@@ -22,6 +23,18 @@ for (const key of ['canManageTenantSettings','canManageStaff','canDelete','canPl
 assert.equal(capabilitiesForRole('platform_super_admin').canPlatform, true);
 assert.equal(capabilitiesForRole('platform_super_admin').canDelete, true);
 assert.equal(capabilitiesForRole('organizer_owner').canDelete, false);
+
+// 實際正式資料沿用 staff.platform_super_admin；platform_staff 即使為空也不得讓總管消失。
+const legacyPlatformAdmin = selectActivePlatformAdminRecord([], [{
+  id:'platform-1', email:'owner@example.com', role:'platform_super_admin',
+  normalized_role:'platform_super_admin', is_active:true,
+}]);
+assert.equal(legacyPlatformAdmin?.source, 'staff');
+assert.equal(legacyPlatformAdmin?.normalized_role, 'platform_super_admin');
+assert.equal(selectActivePlatformAdminRecord([], [{
+  role:'platform_super_admin', normalized_role:'platform_super_admin', is_active:false,
+}]), null, '停用的總管不得通過');
+assert.equal(selectActivePlatformAdminRecord([{id:'platform-2',is_active:true}], [])?.source, 'platform_staff');
 
 for (const action of ['deleteEvent','deleteSession','deleteFinanceItem','deletePhotoFrame','deleteVenueMap','removeStaff']) {
   assert.ok(DESTRUCTIVE_ADMIN_ACTIONS.has(action), `${action} 必須集中列為刪除操作`);
@@ -55,6 +68,9 @@ const protectedActions = new Set([...SERIES_MANAGER_ACTIONS,...TENANT_OWNER_ACTI
 const frontActions = [...front.matchAll(/action\s*[:=]\s*['\"]([A-Za-z0-9_]+)['\"]/g)].map(m=>m[1]);
 assert.deepEqual([...new Set(frontActions.filter(a=>protectedActions.has(a)))], [], '前台 action 不可被後台中央權限誤擋');
 assert.match(worker, /loadFreshAdminAuthorization/);
+assert.match(worker, /loadActivePlatformAdminRecord/);
+assert.match(worker, /selectActivePlatformAdminRecord\(\[\], staffRows\)/);
+assert.doesNotMatch(worker, /platform_staff[^\n]*select=role,normalized_role/, 'platform_staff 沒有 role 欄位，不可再查不存在欄位');
 assert.match(worker, /scopeType !== 'event' \|\| !scopeEventId/);
 assert.match(worker, /authorizeAdminAction\(env, action, p\)/);
 assert.match(worker, /authorizeAdminAction\(env, action, b\)/);
