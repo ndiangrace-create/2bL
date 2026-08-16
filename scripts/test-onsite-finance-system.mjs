@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const read=f=>fs.readFileSync(new URL('../'+f,import.meta.url),'utf8');
 const worker=read('worker.js'),admin=read('admin.html'),onsite=read('onsite.html'),index=read('index.html');
 const migration=read('supabase/onsite_daily_finance_integrity.sql');
+const depositStatusMigration=read('supabase/deposit_return_status_only.sql');
 const backfill=read('supabase/backfill_daily_checkins_safe.sql');
 const depositNormalize=read('supabase/normalize_daily_deposit_status_safe.sql');
 function ok(value,message){if(!value)throw new Error(message);}
@@ -42,11 +43,16 @@ ok(onsite.includes('background:#eef4f1!important;\n  color:#334640!important;'),
 ok(onsite.includes('button:disabled{opacity:1'),'停用按鈕仍可能呈現混濁疊色');
 ok(worker.includes("兩天／多天報名只能在最後一個參加日退押金"),'缺少最後一天退押金阻擋');
 ok(worker.includes("請先完成當日撤場，再退押金"),'缺少撤場後才能退押金阻擋');
-ok(worker.includes("complete_deposit_refund_atomic"),'退押金未使用正式原子金流');
+ok(worker.includes("set_deposit_return_status_atomic"),'退押金未使用獨立狀態原子操作');
 ok(worker.includes("activityCreditTotal"),'財務未拆出活動金');
 ok(worker.includes("revenueTotal: invoiceTotal"),'營收未排除押金');
 ok(worker.includes("summary?.finance?.revenueTotal"),'分潤仍可能使用含押金金額');
-ok(!onsite.includes("'depositUnrefund'"),'現場仍提供直接取消正式押金金流');
+ok(onsite.includes("'depositUnrefund'"),'現場缺少撤銷誤按退押金');
+ok(admin.includes("depositUnrefund:'確認撤銷")&&onsite.includes("depositUnrefund:'確認撤銷"),'撤銷退押金缺少二次確認');
+ok(admin.includes("'撤銷已退押金 '+money(dep)")&&onsite.includes("'撤銷已退押金 '+money(r.deposit||0)"),'押金切換按鈕未顯示應退金額');
+ok(depositStatusMigration.includes('set_deposit_return_status_atomic')&&depositStatusMigration.includes("tenant_id='tuibile' and refund_scope='deposit' and status='已退款'"),'資料庫未將兔彼樂押金狀態與正式退款切開');
+ok(!/delete\s+from\s+public\.refund_transactions/i.test(depositStatusMigration),'押金狀態修正不可刪除歷史紀錄');
+ok(!/payment_status|checkin_status|teardown_status\s*=|stall_number/i.test(depositStatusMigration.replace(/if coalesce\(v_op\.teardown_status[\s\S]*?end if;/,'')),'撤銷退押金不可改付款、報到、撤場或排位');
 ok(admin.includes("filter==='notDeposit')rows=rows.filter(r=>r.depositEligible")&&onsite.includes("onsiteQuickFilter==='notDeposit')return r.depositEligible"),'第一天仍可能誤列為待退押金');
 ok(migration.includes('guard_deposit_refund_transaction'),'資料庫缺少退押金保護');
 ok(migration.includes('member_notifications'),'會員通知資料表 migration 缺失');

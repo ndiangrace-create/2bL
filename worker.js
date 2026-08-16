@@ -4504,14 +4504,12 @@ async function hOnsiteMark(env, b) {
   } else if (mode === 'depositRefund') {
     if(!_dayDepositEligible(reg,activityDate))return jsonErr('兩天／多天報名只能在最後一個參加日退押金');
     if(String(dayOp.teardown_status||'')!=='已撤場')return jsonErr('請先完成當日撤場，再退押金');
-    if(String(reg.deposit_refunded||'')==='已退押金')return jsonErr('此報名押金已退還');
-    const refund=await dbRpc(env,'complete_deposit_refund_atomic',{
-      p_tenant_id:TENANT,p_registration_id:regId,p_activity_date:activityDate,
-      p_refund_method:String(b.refundMethod||'現場退還'),p_refund_reference:String(b.refundReference||''),
-      p_refund_note:noteText||'現場完成撤場後退押金',p_refunded_at:now,p_actor_email:String(b.email||operator||'')
+    const refund=await dbRpc(env,'set_deposit_return_status_atomic',{
+      p_tenant_id:TENANT,p_registration_id:regId,p_activity_date:activityDate,p_returned:true,
+      p_actor_email:String(b.email||operator||''),p_note:noteText||'現場完成撤場後退押金'
     });
     await dbInsert(env,'seat_operation_logs',{id:genId('OPL'),tenant_id:TENANT,session_id:reg.session_id,registration_id:regId,stall_id:null,action:mode,operator_type:pc?'onsite_passcode':'admin',operator_id:operator,note:noteText||null,created_at:now}).catch(()=>{});
-    return jsonOk({success:true,mode,regId,activityDate,refundAmount:safeNum(refund&&refund.refund_amount)});
+    return jsonOk({success:true,mode,regId,activityDate,depositAmount:safeNum(refund&&refund.deposit_amount)});
   } else if (mode === 'depositForfeited') {
     // 違約沒收押金：押金轉為主辦收入
     if (String(reg.deposit_refunded||'') === '押金沒收') return jsonErr('此報名押金已標記沒收');
@@ -4536,7 +4534,13 @@ async function hOnsiteMark(env, b) {
     dayData.teardown_status='未撤場';
     data.admin_note = appendNote('改為未撤場');
   } else if (mode === 'depositUnrefund') {
-    return jsonErr('已完成的押金金流不可直接取消，請由財務更正並保留紀錄');
+    if(!_dayDepositEligible(reg,activityDate))return jsonErr('押金只能在最後一個參加日處理');
+    const refund=await dbRpc(env,'set_deposit_return_status_atomic',{
+      p_tenant_id:TENANT,p_registration_id:regId,p_activity_date:activityDate,p_returned:false,
+      p_actor_email:String(b.email||operator||''),p_note:noteText||'現場撤銷誤按退押金'
+    });
+    await dbInsert(env,'seat_operation_logs',{id:genId('OPL'),tenant_id:TENANT,session_id:reg.session_id,registration_id:regId,stall_id:null,action:mode,operator_type:pc?'onsite_passcode':'admin',operator_id:operator,note:noteText||'撤銷誤按退押金',created_at:now}).catch(()=>{});
+    return jsonOk({success:true,mode,regId,activityDate,depositAmount:safeNum(refund&&refund.deposit_amount)});
   } else if (mode === 'note') {
     data.admin_note = appendNote('現場備註');
     dayData.admin_note=appendNote('現場備註');

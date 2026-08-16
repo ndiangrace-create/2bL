@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T09:52:05.397Z",
+  "generated_at": "2026-08-16T11:06:28.277Z",
   "project_id": "douhmxipedgpfbvfynbq",
   "formal_files": [
     "index.html",
@@ -51,13 +51,13 @@
     "adjust_member_credit_atomic",
     "apply_member_credit_atomic",
     "claim_session_slot",
-    "complete_deposit_refund_atomic",
     "complete_partial_day_refund_atomic",
     "create_bundle_registrations_atomic",
     "purge_error_logs",
     "release_session_slot",
     "resolve_registration_atomic",
     "save_seat_marker_positions_atomic",
+    "set_deposit_return_status_atomic",
     "set_session_main_visual_atomic",
     "short_link_hit",
     "sync_seat_roster_mobile_atomic",

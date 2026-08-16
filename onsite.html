@@ -615,7 +615,7 @@ function renderRegs(){
         <div class="mobile-reg-buttons">
           ${checkBtn}
           <button class="secondary" onclick="mark('${esc(r.id)}','${r.teardown==='已撤場'?'teardownUndo':'teardownDone'}')">${r.teardown==='已撤場'?'取消撤場':'撤場'}</button>
-          ${hasDeposit?`<button class="secondary" onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositEligible&&r.teardown==='已撤場'&&r.depositRefunded!=='已退押金'?'':'disabled'}>${r.depositRefunded==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>`:''}
+          ${hasDeposit?`<button class="secondary" onclick="mark('${esc(r.id)}','${r.depositRefunded==='已退押金'?'depositUnrefund':'depositRefund'}')" ${r.depositEligible&&(r.depositRefunded==='已退押金'||r.teardown==='已撤場')?'':'disabled'}>${r.depositRefunded==='已退押金'?'撤銷已退押金 '+money(r.deposit||0):r.depositEligible?'退押金 '+money(r.deposit||0):'最後一天退'}</button>`:''}
           <button class="secondary" onclick="focusOnsiteSeat('${esc(r.id)}')">帶位</button>
           <button class="secondary" onclick="toggleRegMore('${safeId}')">更多</button>
         </div>
@@ -644,7 +644,7 @@ function renderRegs(){
             <button class="warn" onclick="mark('${esc(r.id)}','earlyFlag')">早退</button>
             <button onclick="mark('${esc(r.id)}','teardownDone')" ${r.teardown==='已撤場'?'disabled':''}>已撤場</button>
             <button class="secondary" onclick="mark('${esc(r.id)}','teardownUndo')" ${r.teardown==='已撤場'?'':'disabled'}>取消撤場</button>
-            ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositEligible&&r.teardown==='已撤場'&&r.depositRefunded!=='已退押金'?'':'disabled'}>${r.depositRefunded==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')" ${r.depositEligible?'':'disabled'}>沒收押金</button>`}`:''}
+            ${hasDeposit?`<button onclick="mark('${esc(r.id)}','${r.depositRefunded==='已退押金'?'depositUnrefund':'depositRefund'}')" ${r.depositEligible&&(r.depositRefunded==='已退押金'||r.teardown==='已撤場')?'':'disabled'}>${r.depositRefunded==='已退押金'?'撤銷已退押金 '+money(r.deposit||0):r.depositEligible?'退押金 '+money(r.deposit||0):'最後一天退'}</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')" ${r.depositEligible?'':'disabled'}>沒收押金</button>`}`:''}
             <button class="secondary" onclick="mark('${esc(r.id)}','note')">特殊備註</button>
           </div>
         </div>
@@ -687,7 +687,7 @@ function renderRegs(){
         <button class="warn" onclick="mark('${esc(r.id)}','earlyFlag')">早退</button>
         <button onclick="mark('${esc(r.id)}','teardownDone')" ${r.teardown==='已撤場'?'disabled':''}>已撤場</button>
         <button class="secondary" onclick="mark('${esc(r.id)}','teardownUndo')" ${r.teardown==='已撤場'?'':'disabled'}>未撤場</button>
-        ${hasDeposit?`<button onclick="mark('${esc(r.id)}','depositRefund')" ${r.depositEligible&&r.teardown==='已撤場'&&r.depositRefunded!=='已退押金'?'':'disabled'}>${r.depositRefunded==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')" ${r.depositEligible?'':'disabled'}>沒收押金</button>`}`:''}
+        ${hasDeposit?`<button onclick="mark('${esc(r.id)}','${r.depositRefunded==='已退押金'?'depositUnrefund':'depositRefund'}')" ${r.depositEligible&&(r.depositRefunded==='已退押金'||r.teardown==='已撤場')?'':'disabled'}>${r.depositRefunded==='已退押金'?'撤銷已退押金 '+money(r.deposit||0):r.depositEligible?'退押金 '+money(r.deposit||0):'最後一天退'}</button>${passcode?'':`<button class="danger" onclick="mark('${esc(r.id)}','depositForfeited')" ${r.depositEligible?'':'disabled'}>沒收押金</button>`}`:''}
         <button class="secondary" onclick="mark('${esc(r.id)}','note')">特殊備註</button>
       </div>
     </div>`;
@@ -697,6 +697,7 @@ async function mark(id,mode){
   const needNote=['refundFlag','noShow','depositForfeited','note'];
   const confirmMsgs={
     depositRefund:'確認退還押金給攤商？',
+    depositUnrefund:'確認撤銷「已退押金」並恢復為「未退押金」？這不會改動報到、撤場或付款。',
     depositForfeited:'確認沒收押金（違約）？押金將轉為收入。'
   };
   if(confirmMsgs[mode] && !confirm(confirmMsgs[mode])) return;
