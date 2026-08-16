@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "9e06e26998e5fc611424f7167122737db1e312b5",
-  "expected_cloudflare_version": "a24c8c0a-a4da-47f1-b60f-7bf56dcea789",
-  "reason": "現場押金已退／未退同按鈕切換、顯示金額並與正式退款金流隔離"
+  "approved_source_commit": "cec41cd7d34ce6ba2aeaf5cba97487094d8f883b",
+  "expected_cloudflare_version": "47a0d810-9bd8-4cd1-afd1-b8efcaba96a1",
+  "reason": "修正總收入、營業收入與押金口徑，避免已退款重複扣除，並納入舊組合日期安全修復"
 }
