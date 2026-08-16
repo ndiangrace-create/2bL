@@ -2021,7 +2021,8 @@ function renderOnsiteList(){
   else for(const r of rows){
     const id=attr(r.id||r.regId),ck=_onsiteIsChecked(r),teardown=String(r.teardown||r.teardownStatus||'未撤場'),dep=Number(r.deposit||0)||0,depStatus=String(r.depositRefunded||'未退押金'),seat=String(r.stallNumber||'未排位');
     const tags=`<span class="tag ${ck?'ok':''}">${safe(ck?'已報到':'未報到')}</span><span class="tag ${teardown==='已撤場'?'ok':''}">${safe(teardown)}</span>${dep>0?`<span class="tag ${depStatus==='已退押金'?'ok':depStatus==='押金沒收'?'bad':'warn'}">${safe(depStatus)} ${money(dep)}</span>`:''}`;
-    const actions=`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button><button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','depositRefund',this)" ${r.depositEligible&&teardown==='已撤場'&&depStatus!=='已退押金'?'':'disabled'}>${depStatus==='已退押金'?'押金已退':r.depositEligible?'退押金':'最後一天退'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
+    const depositMode=depStatus==='已退押金'?'depositUnrefund':'depositRefund';
+    const actions=`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button><button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${depositMode}',this)" ${r.depositEligible&&(depStatus==='已退押金'||teardown==='已撤場')?'':'disabled'}>${depStatus==='已退押金'?'撤銷已退押金 '+money(dep):r.depositEligible?'退押金 '+money(dep):'最後一天退'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
     cards+=`<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">${safe(r.brand||r.name||'未填品牌')}</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${tags}</div><div class="onsite-sub">${safe(r.name||'—')}｜${safe(r.phone||'—')}｜${safe(seat)}</div>${r.equipmentText?`<div class="onsite-sub">設備｜${safe(r.equipmentText)}</div>`:''}</div><div class="onsite-card-btn direct-actions">${actions}</div></article>`;
   }
   $('onsiteBody').innerHTML=`<div class="onsite-grid">${cards}</div>`;
@@ -2029,7 +2030,7 @@ function renderOnsiteList(){
 async function onsiteMarkAdmin(regId,mode,btn){
   const sid=AdminState.onsite?.sid||'',day=AdminState.onsite?.activityDate||'';
   if(!sid||!day||!regId){toast('缺少場次、日期或報名資料，已阻斷操作');return;}
-  const confirmMap={depositRefund:'確認退還此日押金？',depositForfeited:'確認沒收此日押金？',teardownDone:'確認此日已完成撤場？'};
+  const confirmMap={depositRefund:'確認已將此日押金退給攤商？',depositUnrefund:'確認撤銷「已退押金」並恢復為「未退押金」？這不會改動報到、撤場或付款。',depositForfeited:'確認沒收此日押金？',teardownDone:'確認此日已完成撤場？'};
   if(confirmMap[mode]&&!await uiConfirm(confirmMap[mode]))return;
   const note=['note','depositForfeited'].includes(mode)?(prompt('請輸入備註（可留空）','')||''):'';
   const old=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='處理中…';}

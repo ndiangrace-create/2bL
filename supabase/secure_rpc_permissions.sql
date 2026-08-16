@@ -13,6 +13,8 @@ revoke execute on function public.release_session_slot(text, text, integer)
   from public, anon, authenticated;
 revoke execute on function public.complete_deposit_refund_atomic(text, text, date, text, text, text, timestamptz, text)
   from public, anon, authenticated;
+revoke execute on function public.set_deposit_return_status_atomic(text, text, date, boolean, text, text)
+  from public, anon, authenticated;
 revoke execute on function public.complete_partial_day_refund_atomic(text, text, jsonb, numeric, numeric, numeric, numeric, boolean, text, text, text, timestamptz, text)
   from public, anon, authenticated;
 revoke execute on function public.complete_registration_refund_atomic(text, jsonb, text, text, text, timestamptz, text, text)
@@ -23,6 +25,8 @@ grant execute on function public.claim_session_slot(text, text, integer)
 grant execute on function public.release_session_slot(text, text, integer)
   to service_role;
 grant execute on function public.complete_deposit_refund_atomic(text, text, date, text, text, text, timestamptz, text)
+  to service_role;
+grant execute on function public.set_deposit_return_status_atomic(text, text, date, boolean, text, text)
   to service_role;
 grant execute on function public.complete_partial_day_refund_atomic(text, text, jsonb, numeric, numeric, numeric, numeric, boolean, text, text, text, timestamptz, text)
   to service_role;
