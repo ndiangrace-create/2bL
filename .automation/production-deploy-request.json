@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "4d2656eb261e5bde72f1e3a062aa2dbdb5b1df57",
-  "expected_cloudflare_version": "80e0b948-4af6-455a-92a3-729d5129e4af",
-  "reason": "移除後台財務工程路徑、內部收款代碼與技術錯誤資訊外漏"
+  "approved_source_commit": "3b62e44c12e39f70a4f29177ef336665ddb5fb85",
+  "expected_cloudflare_version": "80ba70c8-2b93-4eb6-87a0-cb05d74125eb",
+  "reason": "財報分享改用10碼短網址並保留14天唯讀連結"
 }
