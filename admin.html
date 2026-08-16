@@ -3246,7 +3246,7 @@ async function loadSeatOps(sid,activityDate){
   try{
     const sameSession=String(SeatOps.sid||'')===String(sid||'');
     const requestedDate=String(activityDate||(sameSession?SeatOps.activityDate:'')||'').slice(0,10);
-    const d=await api({action:'adminSeatBoard',sessionId:sid,activityDate:requestedDate});
+    const d=await apiPost({action:'adminSeatBoard',sessionId:sid,activityDate:requestedDate});
     if(!d || d.error) throw new Error((d&&d.error)||'載入失敗');
     const prev=SeatOps||{};
     const selectedStillExists=(d.seats||[]).some(x=>String(x.code)===String(prev.selectedCode||''));

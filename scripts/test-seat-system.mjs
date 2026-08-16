@@ -14,6 +14,8 @@ for(const action of seatActions){
   assert.match(admin,new RegExp(`action:['"]${action}['"]`),`後台缺少 ${action}`);
   assert.match(worker,new RegExp(`case ['"]${action}['"]`),`Worker 缺少 ${action}`);
 }
+assert.match(admin,/apiPost\(\{action:['"]adminSeatBoard['"]/, '排位看板必須用 POST 載入，避免管理員憑證進入網址');
+assert.doesNotMatch(admin,/api\(\{action:['"]adminSeatBoard['"]/, '排位看板不可用 GET 載入');
 
 assert.match(admin,/\.seatops-map-stage \.seatops-marker\{width:58px;height:42px/,'後台必須顯示長方形方桌');
 assert.doesNotMatch(admin,/\.seatops-map-stage \.seatops-marker\{[^}]*border-radius:50%/,'排位圖不可再使用圓點');
