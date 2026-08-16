@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "160c5c42730156ac5483d585bb163b0776dfb6f1",
-  "expected_cloudflare_version": "b93e29d6-93b5-4172-8e4b-19f0ec0b7713",
-  "reason": "現場攤商卡片重排：右上攤位、資訊小格、備註展開"
+  "approved_source_commit": "68385420b4a5ea14cf30e48c75ad41280a6c6de8",
+  "expected_cloudflare_version": "0d78582c-feec-4db7-b02c-f653b270bc8e",
+  "reason": "修復每日排位單一來源、臨時攤商安全補位與當日需求統計"
 }
