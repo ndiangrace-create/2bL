@@ -1,0 +1,5 @@
+{
+  "purpose": "post-deploy-readonly-verification",
+  "target": "2bl-v7",
+  "requested_at": "2026-08-16T01:47:00+08:00"
+}
