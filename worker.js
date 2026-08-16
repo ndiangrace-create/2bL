@@ -2046,14 +2046,14 @@ function phoneMatches(a,b){
   return ca === cb;
 }
 // PROFILE_COMPLETE_FIX_20260726：後端漏了完整度判定，導致前台永遠要求補資料、報名被擋。
-// 必填與前台表單 1:1：聯絡人姓名／手機／攤位品牌名稱／販售內容／品牌介紹／FB或IG(至少一)。
+// 必填與前台表單 1:1：聯絡人姓名／手機／攤位品牌名稱／販售內容／品牌介紹／FB、IG、官網至少一項。
 function _memberProfileStatus(m){
   m=m||{};
   const has=function(v){ return String(v==null?'':v).trim()!==''; };
   const brand = m.brand_name||m.brand;
   const sell = m.sell_items||m.sell_item||m.sell_category||m.sell_cat;
-  const fbig = has(m.fb_url)||has(m.ig_url);
-  const checks=[['聯絡人姓名',has(m.name)],['手機',has(m.phone)],['攤位／品牌名稱',has(brand)],['販售商品／內容',has(sell)],['品牌介紹',has(m.brand_intro)],['FB 或 IG',fbig]];
+  const socialOrWebsite = has(m.fb_url)||has(m.ig_url)||has(m.collab_url);
+  const checks=[['聯絡人姓名',has(m.name)],['手機',has(m.phone)],['攤位／品牌名稱',has(brand)],['販售商品／內容',has(sell)],['品牌介紹',has(m.brand_intro)],['FB、IG 或官網（至少一項）',socialOrWebsite]];
   const missingFields=checks.filter(function(c){return !c[1];}).map(function(c){return c[0];});
   return { profileComplete: missingFields.length===0, missingFields: missingFields };
 }
@@ -2069,7 +2069,7 @@ function memberPayloadFromRow(m){
     sellItem:m.sell_items||m.sell_item||'', sell_items:m.sell_items||m.sell_item||'',
     photo:m.photo_url||'', photo_url:m.photo_url||'',
     fb:m.fb_url||'', fb_url:m.fb_url||'', ig:m.ig_url||'', ig_url:m.ig_url||'',
-    collabUrl:m.collab_url||'', collabDesc:m.collab_desc||'', collabItems:m.collab_items||'',
+    collabUrl:m.collab_url||'', collab_url:m.collab_url||'', website:m.collab_url||'', web:m.collab_url||'', collabDesc:m.collab_desc||'', collabItems:m.collab_items||'',
     company:m.company||m.invoice_title||'', taxId:m.tax_id||'', tax_id:m.tax_id||'',
     invoiceType:m.invoice_type||'', invoiceTitle:m.invoice_title||m.company||'', invoice_title:m.invoice_title||m.company||'',
     invoiceEmail:m.invoice_email||'', invoice_email:m.invoice_email||'',
@@ -4646,13 +4646,13 @@ async function prepareRegistration(env, b) {
     if (lim>0 && cur+stallCount>lim) return {error:'名額不足，剩 '+(lim-cur)+' 攤'};
   }
 
-  // H-02：依 tenant_settings.module_flags_json.requireSocialLinks 決定是否強制 FB/IG
+  // H-02：依 tenant_settings.module_flags_json.requireSocialLinks 決定是否強制 FB／IG／官網至少一項。
   try {
     const tsRows = await dbGet(env, 'tenant_settings', `tenant_id=eq.${TENANT}&select=module_flags_json`);
     const mf = safeJson(tsRows.length ? tsRows[0].module_flags_json : '{}', {});
     if (mf.requireSocialLinks === true) {
-      const hasSocial = String(b.fb || b.fb_url || '').trim() || String(b.ig || b.ig_url || '').trim();
-      if (!hasSocial) return {error:'FB 或 IG 連結為必填（至少填一個）'};
+      const hasSocial = String(b.fb || b.fb_url || '').trim() || String(b.ig || b.ig_url || '').trim() || String(b.collabUrl || b.collab_url || b.website || b.web || '').trim();
+      if (!hasSocial) return {error:'FB、IG 或官網至少需要填寫一項'};
     }
   } catch(e) { console.error('requireSocialLinks check skipped', e && e.message); logError(env, {source:'prepareRegistration', message:'requireSocialLinks check skipped', error:e && e.message}); }
 
@@ -4968,19 +4968,43 @@ async function upsertMember(env, b) {
   b.phone = normPhone(b.phone);
   if (!b.email) return;
   const now = nowIso();
-  const rows = await dbGet(env, 'members', `tenant_id=eq.${TENANT}&email=ilike.${encodeURIComponent(b.email)}&select=joined_at`);
+  const rows = await dbGet(env, 'members', `tenant_id=eq.${TENANT}&email=ilike.${encodeURIComponent(b.email)}&select=*`);
   const data = {
     email:b.email, tenant_id:TENANT,
     name:b.name||'', phone:String(b.phone||''),
     brand_name:b.brand||'', brand_intro:b.brandIntro||'',
     sell_category:b.sellCat||b.sellCategory||'',
-    photo_url:b.photo||'', fb_url:b.fb||'', ig_url:b.ig||'',
-    collab_url:b.collabUrl||'', collab_desc:b.collabDesc||'',
+    photo_url:b.photo||b.photo_url||'', fb_url:b.fb||b.fb_url||'', ig_url:b.ig||b.ig_url||'',
+    collab_url:b.collabUrl||b.collab_url||b.website||b.web||'', collab_desc:b.collabDesc||b.collab_desc||'',
     company:b.company||b.invoiceTitle||'', tax_id:b.taxId||'',
     invoice_type:b.invoiceType||'', invoice_title:b.invoiceTitle||b.company||'',
     invoice_email:b.invoiceEmail||'', invoice_carrier:b.invoiceCarrier||'',
     collab_items:b.collabItems||'', city:b.city||'', line_id:b.lineId||'', updated_at:now,
   };
+  // 部分流程只會帶入少數欄位；更新既有會員時，沒傳來的欄位必須保留，
+  // 不可把原本已填的社群／官網或品牌資料洗成空白。
+  if (rows.length) {
+    const supplied=(...keys)=>keys.some(k=>Object.prototype.hasOwnProperty.call(b,k));
+    if(!supplied('name')) delete data.name;
+    if(!supplied('phone')) delete data.phone;
+    if(!supplied('brand')) delete data.brand_name;
+    if(!supplied('brandIntro')) delete data.brand_intro;
+    if(!supplied('sellCat','sellCategory')) delete data.sell_category;
+    if(!supplied('photo')) delete data.photo_url;
+    if(!supplied('fb','fb_url')) delete data.fb_url;
+    if(!supplied('ig','ig_url')) delete data.ig_url;
+    if(!supplied('collabUrl','collab_url','website','web')) delete data.collab_url;
+    if(!supplied('collabDesc','collab_desc')) delete data.collab_desc;
+    if(!supplied('company','invoiceTitle')) delete data.company;
+    if(!supplied('taxId')) delete data.tax_id;
+    if(!supplied('invoiceType')) delete data.invoice_type;
+    if(!supplied('invoiceTitle','company')) delete data.invoice_title;
+    if(!supplied('invoiceEmail')) delete data.invoice_email;
+    if(!supplied('invoiceCarrier')) delete data.invoice_carrier;
+    if(!supplied('collabItems')) delete data.collab_items;
+    if(!supplied('city')) delete data.city;
+    if(!supplied('lineId')) delete data.line_id;
+  }
   if (!rows.length) {
     data.joined_at = now; data.fast_pass = false;
     await dbInsert(env, 'members', data);
@@ -5010,6 +5034,8 @@ async function hSaveMember(env, b) {
   if (!email || !authPhone) return jsonErr('請先以 Email 與手機完成身份驗證');
   const verified = await findVerifiedMemberByEmailPhone(env, TENANT, email, authPhone);
   if (!verified || normEmail(verified.email) !== email) return jsonErr('身份驗證失敗，無權限修改此會員資料');
+  const socialOrWebsite=String(b.fb||'').trim()||String(b.ig||'').trim()||String(b.collabUrl||b.website||b.web||'').trim();
+  if(!socialOrWebsite) return jsonErr('FB、IG 或官網至少需要填寫一項');
   b.email = email;
   await upsertMember(env, b);
   const savedRows = await dbGet(env,'members',`tenant_id=eq.${TENANT}&email=ilike.${encodeURIComponent(email)}&select=*`).catch(()=>[]);
@@ -7351,7 +7377,7 @@ async function hSaveEmailTemplate(env, b) {
   await writeAuditLog(env,TENANT,b.email||'','announce','email_template_saved','email_templates',key,null,{template_key:key,is_active:row.is_active},{});
   return jsonOk({success:true, template:saved});
 }
-function formatMemberRow(r){ const fastPass=r.fast_pass===true||r.fast_pass==='true'; return {id:r.id||'', email:r.email||'', name:r.name||r.display_name||'', phone:r.phone||'', brand:r.brand_name||r.brand||'', brandName:r.brand_name||r.brand||'', fb:r.fb_url||r.facebook||r.fb||'', ig:r.ig_url||r.instagram||r.ig||'', category:r.category||r.sale_category||'', intro:r.intro||r.brand_intro||r.description||'', fastPass, fast_pass:fastPass, adminNote:r.admin_note||'', admin_note:r.admin_note||'', adminNoteAt:r.admin_note_updated_at||'', createdAt:r.created_at||'', updatedAt:r.updated_at||''}; }
+function formatMemberRow(r){ const fastPass=r.fast_pass===true||r.fast_pass==='true',ps=_memberProfileStatus(r); return {id:r.id||'', email:r.email||'', name:r.name||r.display_name||'', phone:r.phone||'', brand:r.brand_name||r.brand||'', brandName:r.brand_name||r.brand||'', fb:r.fb_url||r.facebook||r.fb||'', ig:r.ig_url||r.instagram||r.ig||'', website:r.collab_url||'', web:r.collab_url||'', collabUrl:r.collab_url||'', category:r.category||r.sell_category||r.sale_category||'', sellCategory:r.sell_category||'', intro:r.intro||r.brand_intro||r.description||'', profileComplete:ps.profileComplete,missingFields:ps.missingFields, fastPass, fast_pass:fastPass, adminNote:r.admin_note||'', admin_note:r.admin_note||'', adminNoteAt:r.admin_note_updated_at||'', createdAt:r.created_at||'', updatedAt:r.updated_at||''}; }
 // 會員「管理者備註」：只有主辦看得到，前台攤商永遠拿不到
 // （前台會員資料走 memberPayloadFromRow 白名單，不含 admin_note）
 async function hSaveMemberNote(env, b) {

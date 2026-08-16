@@ -1894,7 +1894,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 
       <div class="member-edit-card social">
         <div class="member-edit-card-title"><span class="dot">🔗</span><span>社群連結</span></div>
-        <div class="member-edit-required">審核必要，FB 或 IG 至少填一項。</div>
+        <div class="member-edit-required">審核必要，FB、IG 或官網至少填一項。</div>
         <div class="member-edit-grid">
           <div class="member-edit-field">
             <label class="member-edit-label" for="editFb">FB</label>
@@ -3453,10 +3453,10 @@ function renderMemberProfile(){
 
   const hasName   = !!memberVal(m,'name','displayName');
   const hasBrand  = !!memberVal(m,'brand','brandName','brand_name');
-  const hasSocial = !!(fb || ig);
+  const hasSocial = !!(fb || ig || web);
   const warn = (!hasName || !hasBrand || !hasSocial) ? `
     <div style="background:#fff3cd;border:1.5px solid #f0d37a;color:#6b4e00;border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:16px;font-weight:850;line-height:1.65">
-      請補齊會員資料：${!hasName?'姓名 ':''}${!hasBrand?'品牌名稱 ':''}${!hasSocial?'FB 或 IG ':''}<br>
+      請補齊會員資料：${!hasName?'姓名 ':''}${!hasBrand?'品牌名稱 ':''}${!hasSocial?'FB、IG 或官網 ':''}<br>
       補齊並儲存後，報名表會自動帶入資料。
     </div>` : '';
 
@@ -3655,15 +3655,15 @@ async function safeLoadMemberPage(email, opts={}){
       fillMemberCard(ST.member);
 
       const m = ST.member;
-      const hasName   = !!(m.name||m.displayName||'').trim();
-      const hasBrand  = !!(m.brand||m.brand_name||'').trim();
-      const hasSocial = !!(m.fb||m.fb_url||m.ig||m.ig_url||'').trim();
+      const hasName   = !!String(m.name||m.displayName||'').trim();
+      const hasBrand  = !!String(m.brand||m.brand_name||'').trim();
+      const hasSocial = !!String(m.fb||m.fb_url||m.ig||m.ig_url||m.collabUrl||m.collab_url||m.website||m.web||'').trim();
       ST._profileIncomplete = !hasName || !hasBrand || !hasSocial;
       if(ST._profileIncomplete && !opts.forceRegs){
         const missing=[];
         if(!hasName)   missing.push('姓名');
         if(!hasBrand)  missing.push('品牌名稱');
-        if(!hasSocial) missing.push('FB 或 Instagram（審核必要）');
+        if(!hasSocial) missing.push('FB、IG 或官網（至少一項）');
         switchMemberMode('profile');
         toast('請先補齊會員資料：' + missing.join('、'));
       }
@@ -4318,9 +4318,10 @@ function showNewMemberProfileStep(s){
         <input type="text" id="np_sellItem" value="${esc(V.sellCat||V.sell_category||V.sellItem||V.sell_items||'')}" placeholder="例如：手作飾品、甜點、選品…">
         <label style="margin-top:10px">品牌介紹 *</label>
         <textarea id="np_brandIntro" style="min-height:72px" placeholder="簡短介紹您的品牌…">${esc(V.brandIntro||V.brand_intro||'')}</textarea>
-        <label style="margin-top:10px">FB 或 IG（至少填寫一項）*</label>
+        <label style="margin-top:10px">FB、IG 或官網（至少填寫一項）*</label>
         <input type="url" id="np_fb" value="${esc(V.fb||V.fb_url||'')}" placeholder="FB 網址">
         <input type="url" id="np_ig" value="${esc(V.ig||V.ig_url||'')}" placeholder="IG 網址" style="margin-top:8px">
+        <input type="url" id="np_web" value="${esc(V.collabUrl||V.collab_url||V.website||V.web||'')}" placeholder="官網網址" style="margin-top:8px">
         <div id="np_err" class="err" style="font-size:16px;margin-top:8px"></div>
         <div id="np_save_status" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:16px;font-weight:700;line-height:1.6"></div>
         <button id="saveMemberProfileBtn" class="btn-submit" type="button" style="margin-top:14px">儲存</button>
@@ -4343,6 +4344,7 @@ async function saveMemberProfileToDb({silent=false}={}){
   };
   if(!email || !/\S+@\S+\.\S+/.test(email)){ showError('請先填寫正確 Email，才能儲存資料','np_email'); return {success:false}; }
   if(!phone){ showError('請先填寫手機號碼，才能儲存資料','np_phone'); return {success:false}; }
+  if(!g('np_fb')&&!g('np_ig')&&!g('np_web')){ showError('FB、IG 或官網至少需要填寫一項','np_fb'); return {success:false}; }
   if(err) err.textContent='';
   if(!silent && btn){ btn.disabled=true; btn.textContent='儲存中…'; }
   const authPhone=String(ST._verifiedMemberPhone||ST.member?.phone||memberSafePhone()||phone).trim();
@@ -4351,7 +4353,7 @@ async function saveMemberProfileToDb({silent=false}={}){
       action:'saveMember', email, phone, authPhone,
       name:g('np_name'), brand:g('np_brand'),
       sellCat:g('np_sellItem'), brandIntro:g('np_brandIntro'),
-      fb:g('np_fb'), ig:g('np_ig')
+      fb:g('np_fb'), ig:g('np_ig'), collabUrl:g('np_web')
     },20000);
     if(!res || res.error){
       if(!silent && err) err.textContent=(res&&res.error)||'儲存失敗，請稍後再試';
@@ -5064,6 +5066,11 @@ async function saveMemberEdit(){
     company:     ($('editCompany')?.value||'').trim(),
     invoiceEmail:($('editInvoiceEmail')?.value||'').trim(),
   };
+  if(!body.fb&&!body.ig&&!body.collabUrl){
+    toast('請填寫 FB、IG 或官網其中一項');
+    const first=$('editFb'); if(first){try{first.scrollIntoView({behavior:'smooth',block:'center'});first.focus();}catch(e){}}
+    restore(); return;
+  }
   try{
     const res=await apiPost(body);
     if(!res || res.error){ toast('❌ 儲存失敗：'+(res?.error||'請稍後再試')); restore(); return; }
@@ -5083,14 +5090,14 @@ async function saveMemberEdit(){
     toast('✅ 會員資料已更新');
     // 重新檢查完整性
     const m2 = ST.member;
-    const hasName2   = !!(m2.name||m2.displayName||'').trim();
-    const hasBrand2  = !!(m2.brand||m2.brand_name||'').trim();
-    const hasSocial2 = !!(m2.fb||m2.fb_url||m2.ig||m2.ig_url||'').trim();
+    const hasName2   = !!String(m2.name||m2.displayName||'').trim();
+    const hasBrand2  = !!String(m2.brand||m2.brand_name||'').trim();
+    const hasSocial2 = !!String(m2.fb||m2.fb_url||m2.ig||m2.ig_url||m2.collabUrl||m2.collab_url||m2.website||m2.web||'').trim();
     if(!hasName2 || !hasBrand2 || !hasSocial2){
       const missing2=[];
       if(!hasName2)   missing2.push('姓名');
       if(!hasBrand2)  missing2.push('品牌名稱');
-      if(!hasSocial2) missing2.push('FB 或 Instagram（審核必要）');
+      if(!hasSocial2) missing2.push('FB、IG 或官網（至少一項）');
       openMemberEditModal('仍缺少以下資料：' + missing2.join('、'));
     } else {
       ST._profileIncomplete = false;
@@ -5781,7 +5788,7 @@ async function submitReg(ev){
     const body={
       action:'register',sessionId:s.id,email,name,phone,stallCount:ST.stallCount||1,invoiceType,
       invoiceCarrier:($('f_invoiceCarrier')?.value||'').trim(),taxId:($('f_taxId')?.value||'').trim(),invoiceTitle:(($('f_invoiceTitle')?.value||'')||($('f_company')?.value||'')).trim(),invoiceEmail:(($('f_invoiceEmail')?.value||'').trim()||($('f_personalInvoiceEmail')?.value||'').trim()||email),selectedDates,
-      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:($('f_fb')?.value||M.fb||M.fb_url||'').trim(),ig:($('f_ig')?.value||M.ig||M.ig_url||'').trim(),remark:(($('f_note')?.value||'')||($('f_remark')?.value||'')).trim(),stallNumber:'',seatChoiceIntent:(ST.seatChoiceIntent==='paid'?'paid':'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
+      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:($('f_fb')?.value||M.fb||M.fb_url||'').trim(),ig:($('f_ig')?.value||M.ig||M.ig_url||'').trim(),collabUrl:(M.collabUrl||M.collab_url||M.website||M.web||'').trim(),remark:(($('f_note')?.value||'')||($('f_remark')?.value||'')).trim(),stallNumber:'',seatChoiceIntent:(ST.seatChoiceIntent==='paid'?'paid':'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
       // ── 合約同意（後端必須收到這兩個欄位才建立報名）──
       agreementViewed:   ST._agreementViewed   !== false,
       agreementAccepted: ST._agreementAccepted !== false,

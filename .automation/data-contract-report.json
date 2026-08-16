@@ -1,0 +1,224 @@
+{
+  "generated_at": "2026-08-16T01:42:19.851Z",
+  "project_id": "douhmxipedgpfbvfynbq",
+  "formal_files": [
+    "index.html",
+    "admin.html",
+    "onsite.html",
+    "worker.js"
+  ],
+  "frontend_direct_supabase": [],
+  "worker_tables": [
+    "ai_visual_jobs",
+    "announcements",
+    "audit_logs",
+    "email_templates",
+    "error_logs",
+    "events",
+    "finance_items",
+    "invoices",
+    "member_credit_ledger",
+    "member_notifications",
+    "members",
+    "onsite_passcodes",
+    "operation_settlements",
+    "operation_share_settings",
+    "payment_profiles",
+    "payments",
+    "photo_frames",
+    "photo_leads",
+    "platform_staff",
+    "refund_transactions",
+    "registration_day_ops",
+    "registration_day_seats",
+    "registration_items",
+    "registrations",
+    "seat_operation_logs",
+    "session_bundles",
+    "session_visual_assets",
+    "sessions",
+    "short_links",
+    "staff",
+    "staff_action_logs",
+    "staff_session_permissions",
+    "stalls",
+    "tenant_agreement_templates",
+    "tenant_settings",
+    "tenants",
+    "venue_map_templates"
+  ],
+  "worker_routines": [
+    "adjust_member_credit_atomic",
+    "apply_member_credit_atomic",
+    "claim_session_slot",
+    "complete_deposit_refund_atomic",
+    "complete_partial_day_refund_atomic",
+    "create_bundle_registrations_atomic",
+    "purge_error_logs",
+    "release_session_slot",
+    "resolve_registration_atomic",
+    "save_seat_marker_positions_atomic",
+    "set_session_main_visual_atomic",
+    "short_link_hit",
+    "sync_seat_roster_mobile_atomic",
+    "void_manual_member_credit_atomic"
+  ],
+  "unknown_tables": [],
+  "unknown_routines": [],
+  "local_storage": {
+    "allowed_keys": [
+      "2bl_activity_view",
+      "2bl_admin_page_state",
+      "2bl_current_tab",
+      "2bl_member_token",
+      "2bl_onsite_admin_email",
+      "2bl_onsite_admin_token",
+      "2bl_onsite_email",
+      "2bl_onsite_tenant",
+      "2bl_page_state",
+      "tb_member_email",
+      "tb_member_email_v2",
+      "tb_v3"
+    ],
+    "observed": [
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "2bl_page_state"
+      },
+      {
+        "file": "index.html",
+        "method": "setItem",
+        "key": "2bl_current_tab"
+      },
+      {
+        "file": "index.html",
+        "method": "setItem",
+        "key": "2bl_page_state"
+      },
+      {
+        "file": "index.html",
+        "method": "getItem",
+        "key": "tb_member_email"
+      },
+      {
+        "file": "index.html",
+        "method": "setItem",
+        "key": "tb_member_email"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "tb_member"
+      },
+      {
+        "file": "index.html",
+        "method": "getItem",
+        "key": "2bl_activity_view"
+      },
+      {
+        "file": "index.html",
+        "method": "setItem",
+        "key": "2bl_activity_view"
+      },
+      {
+        "file": "index.html",
+        "method": "getItem",
+        "key": "2bl_page_state"
+      },
+      {
+        "file": "index.html",
+        "method": "getItem",
+        "key": "2bl_current_tab"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "2bl_member_token"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "2bl_member_token_pending"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "2bl_display_name"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "2bl_display_name_pending"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "tb_member_email"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "tb_member_email_v2"
+      },
+      {
+        "file": "admin.html",
+        "method": "setItem",
+        "key": "tb_v3"
+      },
+      {
+        "file": "admin.html",
+        "method": "getItem",
+        "key": "tb_v3"
+      },
+      {
+        "file": "admin.html",
+        "method": "setItem",
+        "key": "2bl_admin_page_state"
+      },
+      {
+        "file": "admin.html",
+        "method": "getItem",
+        "key": "2bl_admin_page_state"
+      },
+      {
+        "file": "admin.html",
+        "method": "removeItem",
+        "key": "tb_v3"
+      },
+      {
+        "file": "onsite.html",
+        "method": "removeItem",
+        "key": "2bl_onsite_admin_token"
+      },
+      {
+        "file": "onsite.html",
+        "method": "removeItem",
+        "key": "2bl_onsite_email"
+      },
+      {
+        "file": "onsite.html",
+        "method": "setItem",
+        "key": "2bl_onsite_admin_token"
+      },
+      {
+        "file": "onsite.html",
+        "method": "setItem",
+        "key": "2bl_onsite_tenant"
+      },
+      {
+        "file": "onsite.html",
+        "method": "getItem",
+        "key": "2bl_onsite_admin_token"
+      },
+      {
+        "file": "onsite.html",
+        "method": "setItem",
+        "key": "2bl_onsite_email"
+      }
+    ],
+    "disallowed": []
+  },
+  "blockers": [],
+  "deployment_ready": true
+}
