@@ -22,8 +22,12 @@ assert.match(admin,/async function seatOpsChooseReg[\s\S]*syncSeatRoster[\s\S]*S
 assert.match(admin,/SeatOps\.selectedCode='';SeatOps\.placingCode='';SeatOps\.zoom=\(window\.innerWidth\|\|999\)<=720\?1:/,'手機重新開啟排位必須清除舊選取並回到完整地圖比例');
 assert.match(admin,/function seatOpsFocusMap\(code=''\)[\s\S]*marker\.offsetLeft-vp\.clientWidth\/2/,'選取攤商後必須將正確位置置中');
 assert.doesNotMatch(admin,/@media\(max-width:720px\)\{[^\n]*\.seatops-side\{position:fixed/,'手機操作面板不可固定遮住地圖與名單');
+assert.match(admin,/function seatOpsRenderAndFocus\(code\)\{if\(\(window\.innerWidth\|\|999\)<=720&&Number\(SeatOps\.zoom\|\|1\)<2\.4\)SeatOps\.zoom=2\.4/,'手機選取攤商後必須放大到可操作比例');
+assert.match(admin,/查看／移動 '\+actualNos\.join\('、'\)/,'已排位卡片必須顯示明確的查看／移動位置動作');
+assert.match(admin,/\.seatops-map-stage \.seatops-marker\{width:2\.5cqw;height:auto;aspect-ratio:4\/3;min-width:0;min-height:0/,'方桌必須隨底圖比例縮放，100% 概覽不可固定 48px 互相遮蓋');
+assert.doesNotMatch(admin,/@media\(max-width:720px\)\{\.seatops-map-viewport[^\n]*\.seatops-map-stage \.seatops-marker\{width:48px/,'手機方桌不可固定為 48px');
 
-assert.match(admin,/\.seatops-map-stage \.seatops-marker\{width:58px;height:42px/,'後台必須顯示長方形方桌');
+assert.match(admin,/\.seatops-map-stage \.seatops-marker\{width:2\.5cqw;height:auto;aspect-ratio:4\/3/,'後台必須顯示按底圖縮放的長方形方桌');
 assert.doesNotMatch(admin,/\.seatops-map-stage \.seatops-marker\{[^}]*border-radius:50%/,'排位圖不可再使用圓點');
 assert.match(admin,/function seatOpsGroupForCode/,'缺少連攤群組');
 assert.match(admin,/saveSeatMarkerPositions[^\n]+positions/,'連攤拖曳必須批次儲存');
