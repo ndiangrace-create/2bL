@@ -2046,14 +2046,13 @@ function phoneMatches(a,b){
   return ca === cb;
 }
 // PROFILE_COMPLETE_FIX_20260726：後端漏了完整度判定，導致前台永遠要求補資料、報名被擋。
-// 必填與前台表單 1:1：聯絡人姓名／手機／攤位品牌名稱／販售內容／品牌介紹／FB、IG、官網至少一項。
+// 只有身分與審核必要資料會擋住報名；販售類別、品牌介紹等可稍後補充。
 function _memberProfileStatus(m){
   m=m||{};
   const has=function(v){ return String(v==null?'':v).trim()!==''; };
   const brand = m.brand_name||m.brand;
-  const sell = m.sell_items||m.sell_item||m.sell_category||m.sell_cat;
   const socialOrWebsite = has(m.fb_url)||has(m.ig_url)||has(m.collab_url);
-  const checks=[['聯絡人姓名',has(m.name)],['手機',has(m.phone)],['攤位／品牌名稱',has(brand)],['販售商品／內容',has(sell)],['品牌介紹',has(m.brand_intro)],['FB、IG 或官網（至少一項）',socialOrWebsite]];
+  const checks=[['聯絡人姓名',has(m.name)],['手機',has(m.phone)],['攤位／品牌名稱',has(brand)],['FB、IG 或官網（至少一項）',socialOrWebsite]];
   const missingFields=checks.filter(function(c){return !c[1];}).map(function(c){return c[0];});
   return { profileComplete: missingFields.length===0, missingFields: missingFields };
 }

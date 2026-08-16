@@ -25,13 +25,12 @@ const complete=m=>[
   String(m.name||'').trim(),
   String(m.phone||'').trim(),
   String(m.brand||'').trim(),
-  String(m.sell||'').trim(),
-  String(m.intro||'').trim(),
   String(m.fb||m.ig||m.web||'').trim(),
 ].every(Boolean);
 assert.equal(complete({name:'王小明',phone:'0912345678',brand:'品牌',sell:'飾品',intro:'介紹',fb:'https://facebook.com/a'}),true);
 assert.equal(complete({name:'王小明',phone:'0912345678',brand:'品牌',sell:'飾品',intro:'介紹',ig:'https://instagram.com/a'}),true);
 assert.equal(complete({name:'王小明',phone:'0912345678',brand:'品牌',sell:'飾品',intro:'介紹',web:'https://example.com'}),true);
 assert.equal(complete({name:'王小明',phone:'0912345678',brand:'品牌',sell:'飾品',intro:'介紹'}),false);
+assert.equal(complete({name:'王小明',phone:'0912345678',brand:'品牌',web:'https://example.com'}),true,'非必填資料不可擋住儲存或報名');
 
 console.log('會員資料測試通過：FB／IG／官網三選一、已填不誤擋、部分更新不清空舊資料。');
