@@ -26,6 +26,7 @@ assert.match(index,/res=\{success:true,ok:true,id:committed\.id/,'回查到已�
 assert.match(admin,/async function resumeAdminSession\(/,'後台恢復舊登入前必須先驗證 token');
 assert.match(admin,/showAdminLogin\('登入已過期，請重新使用 Google 登入。'\)/,'過期登入必須回到可操作的登入頁');
 assert.match(admin,/await resumeAdminSession\(s\)/,'開機不得直接信任手機留下的舊 token');
+assert.doesNotMatch(admin,/return \['無權限',/,'一般功能無權限不可誤判為整體登入失效');
 assert.match(admin,/scope_type.*event|scopeEventId|scope_event_id/,'後台仍須保留活動範圍權限，不可因修登入而打破租戶隔離');
 
 console.log('報名／後台隔離測試通過：已入庫不誤報失敗、網路回查、過期登入自動復原。');
