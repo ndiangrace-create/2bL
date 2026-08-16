@@ -3302,7 +3302,10 @@ function seatOpsBoardCfg(){
 }
 function seatOpsDirection(code){const s=seatOpsSeatByCode(code);return s&&s.isCustom?Number(s.direction||0):Number((seatOpsBoardCfg().mapDirections||{})[String(code)]||0);}
 function seatOpsFormatCode(code){const m=String(code||'').toUpperCase().match(/^([A-Z]+)0*(\d+)$/);return m?(m[1]+String(Number(m[2])).padStart(2,'0')):String(code||'');}
-function seatOpsPositionNosForReg(r){return String((r&&r.stallNumber)||'').split(/[,\uff0c\s]+/).map(seatOpsFormatCode).filter(Boolean);}
+function seatOpsPositionNosForReg(r){
+  const day=Array.isArray(r&&r.dayPositions)?r.dayPositions.find(x=>String(x&&x.date||'').slice(0,10)===String(SeatOps.activityDate||'').slice(0,10)):null;
+  return (day&&Array.isArray(day.codes)?day.codes:[]).map(seatOpsFormatCode).filter(Boolean);
+}
 function seatOpsBoardHtml(){return seatOpsMapHtml();}
 function seatOpsSetZoom(next){
   const vp=$('seatOpsMapViewport'),old=Math.max(1,Math.min(4,Number(SeatOps.zoom)||1));
