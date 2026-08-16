@@ -8325,8 +8325,50 @@ async function hAccountingReport(env,p){
 }
 async function hLockFinanceSettlement(env,b){const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');const report=await _sessionFinanceReportData(env,T,String(b.sessionId||''));if(report.settlementLocked)return jsonErr('本場已結算鎖定');const ses=(await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.sessionId)}&select=event_id`))[0]||{};await dbInsert(env,'operation_settlements',{id:crypto.randomUUID(),tenant_id:T,event_id:ses.event_id||null,session_id:String(b.sessionId),snapshot_json:report,locked_at:nowIso(),locked_by:String(b.email||''),updated_at:nowIso()});return jsonOk({success:true});}
 async function hUnlockFinanceSettlement(env,b){const T=b._tenantId;if(!await verifyPlatformSuperAdmin(env,b.email,b.token,T))return jsonErr('僅平台超級管理員可解除結算');await dbUpdate(env,'operation_settlements',`tenant_id=eq.${T}&session_id=eq.${encodeURIComponent(b.sessionId||'')}`,{locked_at:null,locked_by:null,updated_at:nowIso()});return jsonOk({success:true});}
-async function hCreateFinanceShare(env,b){const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');const sid=String(b.sessionId||''),ses=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(sid)}&select=id`);if(!ses.length)return jsonErr('找不到場次');const expiresAt=Date.now()+14*24*3600*1000,token=await signAdminJwt({iss:'2BL-FINANCE-SHARE',type:'finance_share',tenant_id:T,session_id:sid,expires_at:expiresAt},env),ctx=await getTenantCtx(env,T),url=new URL('admin.html',(ctx&&ctx.siteUrl)||FALLBACK_SITE_URL);url.searchParams.set('tenant',T);url.searchParams.set('financeShare',token);return jsonOk({url:url.toString(),expiresAt:new Date(expiresAt).toISOString()});}
-async function hPublicFinanceShare(env,p){const token=String(p.shareToken||'');if(!token)return jsonErr('財報分享連結不完整');const payload=await verifyAdminJwt(token,env);if(!payload||payload.type!=='finance_share'||String(payload.tenant_id)!==String(p._tenantId))return jsonErr('財報分享連結無效或已過期');const finance=await _sessionFinanceReportData(env,p._tenantId,String(payload.session_id));return jsonOk({session:finance.session,finance,expiresAt:new Date(payload.expires_at).toISOString()});}
+const FINANCE_SHARE_CODE_LEN=10;
+function genFinanceShareCode(){
+  const arr=new Uint32Array(FINANCE_SHARE_CODE_LEN);crypto.getRandomValues(arr);let code='';
+  for(let i=0;i<FINANCE_SHARE_CODE_LEN;i++)code+=SHORT_CODE_ALPHABET[arr[i]%SHORT_CODE_ALPHABET.length];
+  return code;
+}
+function financeShareShortUrl(siteUrl,tenantId,code){
+  const url=new URL('admin.html',siteUrl||FALLBACK_SITE_URL);
+  url.searchParams.set('tenant',tenantId);
+  url.searchParams.set('fs',code);
+  return url.toString();
+}
+async function hCreateFinanceShare(env,b){
+  const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');
+  const sid=String(b.sessionId||''),ses=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(sid)}&select=id,name`);if(!ses.length)return jsonErr('找不到場次');
+  const ctx=await getTenantCtx(env,T),active=await dbGet(env,'finance_share_links',`tenant_id=eq.${T}&session_id=eq.${encodeURIComponent(sid)}&is_active=eq.true&expires_at=gt.${encodeURIComponent(nowIso())}&order=expires_at.desc&limit=1&select=code,expires_at`).catch(()=>[]);
+  if(active.length)return jsonOk({url:financeShareShortUrl(ctx&&ctx.siteUrl,T,active[0].code),code:active[0].code,expiresAt:active[0].expires_at,sessionName:ses[0].name||'',created:false});
+  const expiresAt=new Date(Date.now()+14*24*3600*1000).toISOString();let row=null,lastError='';
+  for(let i=0;i<6&&!row;i++){
+    const code=genFinanceShareCode();
+    try{row=await dbInsert(env,'finance_share_links',{code,tenant_id:T,session_id:sid,expires_at:expiresAt,is_active:true,created_by:String(b.email||'')});}
+    catch(e){lastError=e&&e.message?e.message:String(e);if(!/duplicate|unique|23505/i.test(lastError)){logError(env,{source:'hCreateFinanceShare',message:'finance share insert failed',error:lastError,sessionId:sid,tenantId:T});break;}}
+  }
+  if(!row)return jsonErr('財報短網址建立失敗，請稍後再試');
+  return jsonOk({url:financeShareShortUrl(ctx&&ctx.siteUrl,T,row.code),code:row.code,expiresAt:row.expires_at||expiresAt,sessionName:ses[0].name||'',created:true});
+}
+async function hPublicFinanceShare(env,p){
+  const T=p._tenantId,code=String(p.shareCode||'').trim().toLowerCase();
+  if(code){
+    if(!new RegExp(`^[a-z2-9]{${FINANCE_SHARE_CODE_LEN}}$`).test(code))return jsonErr('財報分享連結不存在');
+    const rows=await dbGet(env,'finance_share_links',`tenant_id=eq.${T}&code=eq.${encodeURIComponent(code)}&select=tenant_id,session_id,expires_at,is_active,access_count`).catch(()=>[]),row=rows[0];
+    if(!row)return jsonErr('財報分享連結不存在');
+    if(row.is_active===false)return jsonErr('財報分享連結已停用');
+    if(!row.expires_at||new Date(row.expires_at).getTime()<=Date.now())return jsonErr('分享連結已過期，請向主辦取得新的連結');
+    const finance=await _sessionFinanceReportData(env,T,String(row.session_id));
+    await dbUpdate(env,'finance_share_links',`tenant_id=eq.${T}&code=eq.${encodeURIComponent(code)}`,{access_count:(Number(row.access_count)||0)+1,last_access_at:nowIso()}).catch(()=>{});
+    return jsonOk({session:finance.session,finance,expiresAt:row.expires_at});
+  }
+  // 舊版完整 JWT 連結保留相容，避免先前已傳給夥伴的連結立即失效。
+  const token=String(p.shareToken||'');if(!token)return jsonErr('財報分享連結不完整');
+  const payload=await verifyAdminJwt(token,env);
+  if(!payload||payload.iss!=='2BL-FINANCE-SHARE'||payload.type!=='finance_share'||String(payload.tenant_id)!==String(T))return jsonErr('財報分享連結無效或已過期');
+  const finance=await _sessionFinanceReportData(env,T,String(payload.session_id));return jsonOk({session:finance.session,finance,expiresAt:new Date(payload.expires_at).toISOString()});
+}
 async function verifyPlatformOwner(env,email,token,tenantId){
   if(!await verifyPlatformSuperAdmin(env,email,token,tenantId)) return false;
   const rows=await dbGet(env,'staff',`tenant_id=eq.${tenantId}&email=eq.${encodeURIComponent(email)}&select=perms_json,active,is_active`).catch(()=>[]);
