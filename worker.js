@@ -5007,16 +5007,25 @@ async function hGetForceRefundList(env, p) {
 // ── 場次組合套組（自由組合、同進退；押金/發票/合約等其他規則同單場） ──
 async function hGetBundles(env, p) {
   const T = p._tenantId;
-  if (!await verifyStaff(env, p.email, p.token, T)) return jsonErr('無權限');
+  const auth = p._authz || await loadFreshAdminAuthorization(env, p.email, p.token, T);
+  if (!auth || !['platform_super_admin','organizer_owner','organizer_admin'].includes(auth.role)) return jsonErr('無權限');
   const rows = await dbGet(env, 'session_bundles', `tenant_id=eq.${T}&select=*`).catch(() => []);
-  return jsonOk(rows.map(r => ({ id: r.id, name: r.name, sessionIds: String(r.session_ids || '').split(',').filter(Boolean), bundlePrice: r.bundle_price, active: r.active })));
+  const mapped = rows.map(r => ({ id: r.id, name: r.name, sessionIds: String(r.session_ids || '').split(',').filter(Boolean), bundlePrice: r.bundle_price, active: r.active }));
+  if (auth.allowedSessionIds === null) return jsonOk(mapped);
+  const allowed = new Set(auth.allowedSessionIds || []);
+  return jsonOk(mapped.filter(bundle => bundle.sessionIds.length && bundle.sessionIds.every(id => allowed.has(String(id)))));
 }
 async function hSaveBundle(env, b) {
   const T = b._tenantId;
-  if (!await verifyStaff(env, b.email, b.token, T)) return jsonErr('無權限');
+  const auth = b._authz || await loadFreshAdminAuthorization(env, b.email, b.token, T);
+  if (!auth || !['platform_super_admin','organizer_owner','organizer_admin'].includes(auth.role)) return jsonErr('無權限');
   const name = String(b.name || '').trim(); if (!name) return jsonErr('請填套組名稱');
   const sids = (Array.isArray(b.sessionIds) ? b.sessionIds : String(b.sessionIds || '').split(',')).map(x => String(x).trim()).filter(Boolean);
   if (sids.length < 2) return jsonErr('套組至少要綁 2 個場次');
+  if (auth.allowedSessionIds !== null) {
+    const allowed = new Set(auth.allowedSessionIds || []);
+    if (sids.some(id => !allowed.has(String(id)))) return jsonErr('場次組合只能使用被指定系列的場次');
+  }
   const price = Number(b.bundlePrice) || 0;
   if (b.id) {
     await dbUpdate(env, 'session_bundles', `tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.id)}`, { name, session_ids: sids.join(','), bundle_price: price, active: (b.active !== false), updated_at: nowIso() });
@@ -8883,6 +8892,21 @@ async function routeGet(env, action, p, req) {
   }
 }
 
+async function hTestEmail(env, b) {
+  const tenantId=b._tenantId;
+  if (!await verifyStaff(env,b.email,b.token,tenantId,'superadmin')) return jsonErr('無權限');
+  const to=String(b.to||'').trim();
+  if(!to) return jsonErr('缺少收件地址');
+  const tenantCtx=await getTenantCtx(env,tenantId);
+  const result=await sendEmail(env,to,`【${tenantCtx.name}】信件系統測試`,emailWrap(`
+<p>✅ 這是一封測試信件。</p>
+<p>如果您收到這封信，代表 <strong>${tenantCtx.name}</strong> 的信件系統設定正確！</p>
+<p style="color:#888;font-size:12px">測試時間：${nowIso()}</p>
+`,tenantCtx),tenantCtx);
+  if(result.ok) return jsonOk({ok:true});
+  return jsonErr('寄信失敗：'+(result.error||'未知錯誤'));
+}
+
 async function routePost(env, action, b, ctx, req) {
   // M-02：解析租戶，缺少 tenant 一律回傳 400
   const TENANT = getTenantId(b);
@@ -8914,23 +8938,11 @@ async function routePost(env, action, b, ctx, req) {
     catch(e){ return jsonErr('寄信失敗：'+e.message); }
     return jsonOk({ok:true});
   }
-  if (action==='testEmail') {
-    if (!await verifyStaff(env,b.email,b.token, TENANT)) return jsonErr('無權限');
-    const to = b.to;
-    if(!to) return jsonErr('缺少收件地址');
-    const tcTest = await getTenantCtx(env, TENANT);
-    const result = await sendEmail(env, to, `【${tcTest.name}】信件系統測試`, emailWrap(`
-<p>✅ 這是一封測試信件。</p>
-<p>如果您收到這封信，代表 <strong>${tcTest.name}</strong> 的信件系統設定正確！</p>
-<p style="color:#888;font-size:12px">測試時間：${nowIso()}</p>
-`, tcTest), tcTest);
-    if(result.ok) return jsonOk({ok:true});
-    return jsonErr('寄信失敗：'+(result.error||'未知錯誤'));
-  }
   switch(action) {
     case 'register':            return hRegister(env,b,ctx);
     case 'registerBundle':      return hRegisterBundle(env,b,ctx);
     case 'saveBundle':          return hSaveBundle(env,b);
+    case 'testEmail':           return hTestEmail(env,b);
     case 'createShortLink':     return hCreateShortLink(env,b);
     case 'purgeErrorLogs':      return hPurgeErrorLogs(env,b);
     case 'deleteBundle':        return hDeleteBundle(env,b);
