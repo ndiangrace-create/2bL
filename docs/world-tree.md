@@ -75,7 +75,7 @@
 - 角色：`platform_super_admin`、`organizer_owner`、`organizer_admin`、`session_admin`、`finance_admin`、`onsite_staff`。
 - 主要資料：`staff`、`platform_staff`、`staff_session_permissions`、`staff_action_logs`、`audit_logs`。
 - 正式現況：2 個啟用的最高總管、3 個啟用的指定系列管理者；本階段只做統計，不讀取或保存帳號內容。
-- 持續指令：`system_settings.system_operating_instructions` 已有舊短版紀錄，但與 2026-08-17 確認的完整新版不一致；第一階段禁止寫入，因此標記為 Pending。
+- 持續指令：`system_settings.system_operating_instructions` 已於 2026-08-17 依使用者明確確認更新為唯一正式全文；共 12 節、4,989 個字，重新讀回雜湊一致，狀態為 Verified。修改前後快照保留於既有 `audit_logs`，未新增資料庫結構。
 - 保護：總管保留全平台能力；指定系列管理者不能跨系列、不能刪除、不能管理租戶或取得平台總管權限。
 - 驗證：登入、重新登入、直接網址、重新整理、返回、功能存取及越權阻擋。
 
