@@ -53,6 +53,13 @@ jobs:
           node --check scripts/cloudflare-readonly-audit.mjs
           node --check scripts/cloudflare-deployment-guard.mjs
           node --check scripts/verify-data-contract.mjs
+          node --check scripts/build-governance-catalogs.mjs
+          node --check scripts/verify-project-governance.mjs
+
+      - name: 世界樹與永久紀錄一致性檢查
+        run: |
+          node scripts/build-governance-catalogs.mjs --check
+          node scripts/verify-project-governance.mjs
 
       - name: Cloudflare 唯讀盤點與漂移核對
         run: node scripts/cloudflare-readonly-audit.mjs
