@@ -27,7 +27,9 @@ const cf=json('.automation/cloudflare-baseline.json');
 if(db.project_id!=='douhmxipedgpfbvfynbq'||db.tenant_id!=='tuibile') errors.push('資料結構快照專案邊界錯誤');
 if(db.database_structure_changed!==false) errors.push('第一階段不得變更資料庫結構');
 if(ops.business_data_changed!==false) errors.push('第一階段不得變更正式營運資料');
-if(ops.canonical_instruction_attachment?.matches_database_record!==false) errors.push('持續指令的新舊版本差異未被保留');
+if(ops.canonical_instruction_attachment?.matches_database_record!==true) errors.push('完整持續指令尚未與正式資料庫一致');
+if(ops.canonical_instruction_attachment?.content_stored_in_audit!==true) errors.push('持續指令修改前後內容缺少永久稽核回復點');
+if(ops.canonical_instruction_attachment?.one_time_request_excluded!==true) errors.push('一次性新增要求不應混入正式持續指令');
 if(cf.worker_name!=='2bl-v7'||cf.forbidden_worker_untouched!=='tobeloved-api') errors.push('Cloudflare 正式邊界錯誤');
 if(cf.worker_source_matches_deployment!==true) errors.push('正式 Worker 來源與部署不一致');
 
@@ -44,7 +46,7 @@ for(const expected of [cf.current_version_id,cf.current_deployment?.id,cf.git_sh
 const ledger=read('docs/change-ledger.md');
 if(!ledger.includes('Pending')||!ledger.includes('Verified')) errors.push('永久變更帳本缺少狀態規則或基準紀錄');
 const openItems=read('docs/open-items.md');
-if(!openItems.includes('對話指令資料庫仍是舊短版')) errors.push('未完成事項缺少持續指令同步差異');
+if(!openItems.includes('完整持續指令已同步至專案資料庫')) errors.push('未完成事項尚未標示持續指令同步完成');
 
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1);}
 console.log(JSON.stringify({ok:true,documents:required.length,tables:db.tables.length,routines:db.routines.length,workerVersion:cf.current_version_id}));
