@@ -14,6 +14,7 @@
   - 權限唯一規格：`lib/admin-authorization.js`
   - 正式資料：Supabase `douhmxipedgpfbvfynbq`／`tuibile`
   - 正式部署：Cloudflare `2bl-v7`
+  - 正式畫面標記：前台、管理後台與現場頁的內部版本／修復文字已於 PR `#51` 移除並完成正式驗證。
 
 ## 1. 前台、會員與報名（Verified）
 
