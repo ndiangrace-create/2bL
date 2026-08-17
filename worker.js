@@ -4938,6 +4938,16 @@ async function hGetPhotoActivityConfig(env,p){
   const rows=await dbGet(env,'tenants',`id=eq.${TENANT}&select=config_json`);
   if(!rows.length) return jsonErr('找不到活動主辦設定',404);
   const cfg=safeJson(rows[0].config_json,{});
+  const full=_photoActivityConfig(cfg.photoActivity||DEFAULT_PHOTO_ACTIVITY_CONFIG);
+  const {adminUrl,...publicConfig}=full;
+  return jsonOk(publicConfig);
+}
+async function hGetPhotoActivityAdminConfig(env,p){
+  const TENANT=p&&p._tenantId;
+  if(!await verifyStaff(env,p.email,p.token,TENANT,'superadmin')) return jsonErr('只有總管理者可以讀取互動拍照活動管理設定');
+  const rows=await dbGet(env,'tenants',`id=eq.${TENANT}&select=config_json`);
+  if(!rows.length) return jsonErr('找不到活動主辦設定',404);
+  const cfg=safeJson(rows[0].config_json,{});
   return jsonOk(_photoActivityConfig(cfg.photoActivity||DEFAULT_PHOTO_ACTIVITY_CONFIG));
 }
 async function hGetSiteConfig(env, p) {
@@ -8864,6 +8874,7 @@ async function routeGet(env, action, p, req) {
     case 'getInvoiceList':      return hGetInvoiceList(env,p);
     case 'getSiteConfig':       return hGetSiteConfig(env,p);
     case 'getPhotoActivityConfig': return hGetPhotoActivityConfig(env,p);
+    case 'getPhotoActivityAdminConfig': return hGetPhotoActivityAdminConfig(env,p);
     case 'getAgreementTemplate': return hGetAgreementTemplate(env,p);
     case 'getAgreementTemplates': return hGetAgreementTemplate(env,p);
     case 'getForceRefundList':  return hGetForceRefundList(env,p);
