@@ -31,7 +31,7 @@
 | scripts/test-registration-schedule-system.mjs | 正式名稱 | 7970 | 970c8b906fa9043f5a67217e8286b808399c64bf0a77c4ad2bcf3a7bf0984702 | 驗證與唯讀盤點 |
 | scripts/test-seat-system.mjs | 正式名稱 | 8169 | 2d9c6e78f4f74cd0026c8fff7874676811b07b89529402bbc097d32bf224e673 | 驗證與唯讀盤點 |
 | scripts/verify-data-contract.mjs | 正式名稱 | 4971 | 02dd864fe3516792bd610ca444bb19dc939bf16dcb83cd73cd8734aee20e27a7 | 驗證與唯讀盤點 |
-| scripts/verify-project-governance.mjs | 正式名稱 | 3356 | 6da711483495a8dc8cf9146b6c70c596ea06db27f9dacc112ceff40ced27dd0d | 驗證與唯讀盤點 |
+| scripts/verify-project-governance.mjs | 正式名稱 | 3663 | 71843eeaf04f06c93869e76be2e097599bcdbc02a918aeb0b9ff6f304465347d | 驗證與唯讀盤點 |
 | supabase/backfill_daily_checkins_safe.sql | 正式名稱 | 1730 | a248f7d74f17b057a8e3a7288566b021d1f00ce725f96445110facd409dbb4d3 | 資料庫變更腳本；不得自行執行 |
 | supabase/deposit_return_status_only.sql | 正式名稱 | 3451 | 888019656ead4372bcf3035e093623c35a4c6afd00b63e4cf95289db387cd2e3 | 資料庫變更腳本；不得自行執行 |
 | supabase/enforce_series_manager_scope.sql | 正式名稱 | 773 | 0e1ae1a54d943bda8b1971303102953e80d59685d2be25f1dcde91e5e532c2b5 | 資料庫變更腳本；不得自行執行 |
