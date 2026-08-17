@@ -8,14 +8,14 @@
 | DATA_CONTRACT.md | 正式名稱 | 4961 | 7ca9a05fbcfbbba81bf8eb31987c1c402087f418ca34319c77083529b348abc7 | 正式來源或驗證檔 |
 | about.html | 正式名稱 | 5221 | 930caf24f1369a961f0e58e0055b245ae6369887644397337f340743535d90d2 | 正式頁面 |
 | admin .html | 待確認／不可當正式入口 | 448179 | 4319acab6d46708946247f9042f1d610d4896a143c9f1bae740e7f5e90733c4a | 舊副本候選；引用未確認前禁止刪除 |
-| admin.html | 正式名稱 | 480787 | 617dcb0b51f68a63911951e8ba6ecd0e123a1806f78ef07d7d6f6eb19a43ec38 | 正式頁面 |
+| admin.html | 正式名稱 | 480772 | 3666a25b951837645edbc848f789bf6b64fbeac76fa8ebe076f9070f811e66fc | 正式頁面 |
 | apply.html | 正式名稱 | 7404 | 8bfb19f70556b7ed9f049e19ed4367cd43bc2e2191ba53f5c60925dd4a5799e3 | 正式頁面 |
 | consignment.html | 正式名稱 | 31069 | 9368b37767932930fe7cde7f313e11a69470a20b2520fd7c45fdaa977e732564 | 正式頁面 |
 | index .html | 待確認／不可當正式入口 | 390996 | f0885b3be34ab6bcdf19a1e3c6404f48e484cb9b9af9a079431bdab220b4154c | 舊副本候選；引用未確認前禁止刪除 |
-| index.html | 正式名稱 | 408458 | 5c0848d808e5c701d62be0a4667acce3fb5bdfc6e80d2f4670052638e869aabe | 正式頁面 |
+| index.html | 正式名稱 | 408360 | b968fda2d37754cd2e1d880a6b2eabca08c0a2b944e52bc1612647a5d2994fa4 | 正式頁面 |
 | lib/admin-authorization.js | 正式名稱 | 8471 | 999546bce335dd3f687247cb35e77f6aed511a830f28f7b7581bb4c1d513aaa7 | 正式來源或驗證檔 |
 | manage.html | 正式名稱 | 15073 | 8cc722552279f317315052a74644ab4e3eb5270a291aad3c7f47b6ac8d0f0bc7 | 正式頁面 |
-| onsite.html | 正式名稱 | 56412 | afc856504248024018ed712226d0fb0e012787a1a813941b64ca573b8b8f4a62 | 正式頁面 |
+| onsite.html | 正式名稱 | 56348 | 937e5d47fe1f1489dd21d8db9dce0561b06d3a292ecc776631fd893b742b88d5 | 正式頁面 |
 | pos.html | 正式名稱 | 9690 | a1c640a9a300f76cdac1ebbf6b6c20aa627c73094dd91708037b575e22801ce4 | 正式頁面 |
 | scripts/build-governance-catalogs.mjs | 正式名稱 | 12547 | e2dc6ee59946e33ee3c062416ab254927e037acac5eef89fff9ff4bad9f34109 | 驗證與唯讀盤點 |
 | scripts/cloudflare-deployment-guard.mjs | 正式名稱 | 1773 | f638b095ffd388c4b4c440750e96837f2fefbd2eb6f0c06af4148a4bff8f14fd | 驗證與唯讀盤點 |

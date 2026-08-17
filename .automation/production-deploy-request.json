@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "80c540143ea5e737c85fd97d3aceadaa806131cf",
-  "expected_cloudflare_version": "1644e59e-b090-4a04-ae1f-8ca9c8f82859",
-  "reason": "報名排程改為每階段可自行設定，維持既有登入、權限與前後台隔離"
+  "approved_source_commit": "9ba40e41dd1c7f278604f97e14fa7b6fc31a4db0",
+  "expected_cloudflare_version": "d7110474-6e59-4a67-857d-fe54d3a92db0",
+  "reason": "清除正式畫面的內部版本與工程文字；不變更登入、權限、金流或資料庫"
 }
