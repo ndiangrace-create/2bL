@@ -5058,7 +5058,7 @@ function paShare(url,title){
 }
 async function openPhotoActivitySettings(){
   openPanel('互動拍照活動','保留現有玩法，只在這裡更新主題、文字、圖片、任務與分享網址','<div class="loading">載入中…</div>');
-  try{AdminPhotoActivity=await api({action:'getPhotoActivityConfig'});renderPhotoActivitySettings();}
+  try{AdminPhotoActivity=await api({action:'getPhotoActivityAdminConfig'});renderPhotoActivitySettings();}
   catch(e){$('panelBody').innerHTML='<div class="empty">活動設定載入失敗<div class="sub">'+safe(e&&e.message?e.message:e)+'</div></div>';}
 }
 function renderPhotoActivitySettings(){
