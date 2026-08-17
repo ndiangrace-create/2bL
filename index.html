@@ -3213,17 +3213,23 @@ async function navToTab(tab){
   }
   if(tab==='member'){
     const email=String(ST.memberEmail||memberSafeEmail()||'').trim();
-    const phone=String(memberSafePhone()||(ST.member&&ST.member.phone)||'').trim();
+    const phone=String(memberSafePhone(email)||(ST.member&&ST.member.phone)||'').trim();
+    const token=memberSafeToken();
     navTo('member');
-    if(email){
+    if(token||(email&&phone)){
       memberShowArea('regs');
       await safeLoadMemberPage(email,{phone,forceRegs:true,navOptions:{noPush:true}});
     }else{
       memberShowLogin();
       const mailInput=$('memberLookupEmail');
       const phoneInput=$('memberLookupPhone');
-      if(mailInput) mailInput.value=memberSafeEmail()||'';
-      if(phoneInput) phoneInput.value=memberSafePhone()||'';
+      const err=$('memberLoginErr');
+      if(mailInput) mailInput.value=email||memberSafeEmail()||'';
+      if(phoneInput) phoneInput.value=phone||'';
+      if(err&&email&&!phone){
+        err.style.display='block';
+        err.textContent='請輸入手機號碼完成身分驗證，即可查看原有報名紀錄。';
+      }
     }
     return;
   }
@@ -3359,14 +3365,36 @@ function navTo(tab, opts={}){
 function memberSafeEmail(){
   try{return String(localStorage.getItem('tb_member_email')||'').trim();}catch(e){return '';}
 }
+const MEMBER_TOKEN_KEY='2bl_member_token';
+function memberSafeToken(){
+  try{return String(localStorage.getItem(MEMBER_TOKEN_KEY)||'').trim();}catch(e){return '';}
+}
+function memberSaveToken(token){
+  const value=String(token||'').trim();
+  try{
+    if(value) localStorage.setItem(MEMBER_TOKEN_KEY,value);
+    else localStorage.removeItem(MEMBER_TOKEN_KEY);
+  }catch(e){}
+  ST.memberToken=value;
+}
+function memberClearToken(){
+  memberSaveToken('');
+}
 function memberSaveEmail(email){
-  try{localStorage.setItem('tb_member_email', String(email||'').trim()); localStorage.removeItem('tb_member');}catch(e){}
+  const next=String(email||'').trim();
+  try{localStorage.setItem('tb_member_email', next); localStorage.removeItem('tb_member');}catch(e){}
 }
-function memberSafePhone(){
-  return String((ST&&ST.member&&ST.member.phone)||'').trim();
+function memberSafePhone(email){
+  const expectedEmail=String(email||(ST&&ST.memberEmail)||memberSafeEmail()||'').trim().toLowerCase();
+  const memoryPhone=String((ST&&ST.member&&ST.member.phone)||'').trim();
+  const memoryEmail=String((ST&&ST.member&&ST.member.email)||(ST&&ST.memberEmail)||'').trim().toLowerCase();
+  if(memoryPhone&&(!expectedEmail||!memoryEmail||memoryEmail===expectedEmail)) return memoryPhone;
+  return '';
 }
-function memberSavePhone(phone){
-  ST.member={...(ST.member||{}),phone:String(phone||'').trim()};
+function memberSavePhone(phone,email){
+  const value=String(phone||'').trim();
+  const ownerEmail=String(email||(ST&&ST.member&&ST.member.email)||(ST&&ST.memberEmail)||memberSafeEmail()||'').trim().toLowerCase();
+  ST.member={...(ST.member||{}),email:(ST.member&&ST.member.email)||ownerEmail,phone:value};
 }
 function memberShowLogin(){
   const loginArea=$('memberLoginArea');
@@ -3604,10 +3632,11 @@ function getMemberPhone(){
 async function safeGetMyRegs(email, phone){
   const el=$('myRegsList');
   const helper=$('memberRecordHelper');
+  const token=memberSafeToken();
   // 呼叫端沒帶手機就自動補；補不到才顯示「請補上手機」，不讓後端回誤導紅字。
   const ph = String(phone || getMemberPhone() || '').trim();
   if(helper) helper.classList.remove('show');
-  if(!ph){
+  if(!token&&!ph){
     ST.regs=[];
     if(el) el.innerHTML='<div style="color:#777;font-size:16px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #dfead8;border-radius:18px;margin:0 16px">請補上手機號碼查詢報名紀錄。<br>系統需要 Email＋手機比對，避免資料被其他人看到。</div>';
     if(helper) helper.classList.add('show');
@@ -3615,8 +3644,11 @@ async function safeGetMyRegs(email, phone){
   }
   if(el) el.innerHTML='<div style="color:#999;font-size:16px;text-align:center;padding:22px">報名紀錄載入中…</div>';
   try{
-    const regs=await api({action:'getMyRegs',email,phone:ph,_t:Date.now()});
+    const regs=token
+      ? await apiPost({action:'getMyRegs',memberToken:token})
+      : await api({action:'getMyRegs',email,phone:ph,_t:Date.now()});
     if(regs && regs.error){
+      if(token&&String(regs.error).includes('登入憑證已失效')) memberClearToken();
       ST.regs=[];
       if(el){
         el.innerHTML=`<div style="color:#c0392b;font-size:16px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #f2c7c7;border-radius:18px;margin:0 16px">${escHtml(regs.error)}<br>請確認 Email 與手機是否與報名時一致。</div>`;
@@ -3640,7 +3672,49 @@ async function safeGetMyRegs(email, phone){
 async function safeLoadMemberPage(email, opts={}){
   navTo('member', opts.navOptions||{});
   email=String(email||ST.memberEmail||memberSafeEmail()||'').trim();
-  let lookupPhone=String((opts&&opts.phone)||memberSafePhone()||(ST.member&&ST.member.phone)||'').trim();
+  let lookupPhone=String((opts&&opts.phone)||memberSafePhone(email)||(ST.member&&ST.member.phone)||'').trim();
+  const savedToken=memberSafeToken();
+  if(savedToken){
+    memberShowArea('regs');
+    try{
+      const restored=await apiPost({action:'memberSession',memberToken:savedToken});
+      if(restored&&restored.member&&!restored.error){
+        ST.member={...(restored.member||{})};
+        ST.memberEmail=String(ST.member.email||email||'').trim();
+        memberSaveEmail(ST.memberEmail);
+        memberSavePhone(ST.member.phone||'',ST.memberEmail);
+        if($('loginEmail')) $('loginEmail').value=ST.memberEmail;
+        if($('memberLookupEmail')) $('memberLookupEmail').value=ST.memberEmail;
+        if($('memberLookupPhone')) $('memberLookupPhone').value='';
+        fillMemberCard(ST.member);
+        const list=await safeGetMyRegs(ST.memberEmail);
+        if(opts.forceRegs) switchMemberMode('regs');
+        return list;
+      }
+      const invalidToken=restored&&String(restored.error||'').includes('登入憑證已失效');
+      if(invalidToken){
+        memberClearToken();
+        ST.member=null;
+        memberShowLogin();
+      }else{
+        memberShowArea('regs');
+        const listEl=$('myRegsList');
+        if(listEl) listEl.innerHTML='<div style="color:#777;font-size:16px;text-align:center;padding:22px;line-height:1.8">登入狀態暫時無法確認，請檢查網路後再試一次。<br>憑證仍已保留，不需要重新登入。</div>';
+      }
+      const err=$('memberLoginErr');
+      if(err&&invalidToken){
+        err.style.display='block';
+        err.textContent='30 天登入憑證已失效，請重新輸入 Email 與手機。';
+      }
+      return [];
+    }catch(e){
+      console.warn('[member session restore failed]',e);
+      memberShowArea('regs');
+      const listEl=$('myRegsList');
+      if(listEl) listEl.innerHTML='<div style="color:#777;font-size:16px;text-align:center;padding:22px;line-height:1.8">登入狀態暫時無法確認，請檢查網路後再試一次。<br>憑證仍已保留，不需要重新登入。</div>';
+      return [];
+    }
+  }
   if(!email){
     memberShowLogin();
     const el=$('myRegsList'); if(el) el.innerHTML='';
@@ -3656,7 +3730,17 @@ async function safeLoadMemberPage(email, opts={}){
   memberSaveEmail(email);
   if($('loginEmail')) $('loginEmail').value=email;
   if($('memberLookupEmail')) $('memberLookupEmail').value=email;
-  if($('memberLookupPhone')) $('memberLookupPhone').value=lookupPhone||memberSafePhone()||'';
+  if($('memberLookupPhone')) $('memberLookupPhone').value=lookupPhone||memberSafePhone(email)||'';
+  // 記得 Email 但本次瀏覽尚未完成手機驗證時，回到登入框；不可顯示成空白紀錄。
+  if(!lookupPhone){
+    memberShowLogin();
+    const err=$('memberLoginErr');
+    if(err){
+      err.style.display='block';
+      err.textContent='請輸入手機號碼完成身分驗證，即可查看原有報名紀錄。';
+    }
+    return [];
+  }
   memberShowArea('regs');
   fillMemberCard(ST.member && (ST.member.email||ST.memberEmail) ? ST.member : {email});
 
@@ -3667,7 +3751,7 @@ async function safeLoadMemberPage(email, opts={}){
     if(member && !member.error){
       ST.member={...(ST.member||{}),...member,email:member.email||email};
       lookupPhone=String(lookupPhone||member.phone||'').trim();
-      if(lookupPhone) memberSavePhone(lookupPhone);
+      if(lookupPhone) memberSavePhone(lookupPhone,email);
       if($('memberLookupPhone')) $('memberLookupPhone').value=lookupPhone;
       fillMemberCard(ST.member);
 
@@ -3717,17 +3801,17 @@ async function memberEmailPhoneLogin(){
   if(!phone){ if(err){err.style.display='block';err.textContent='請填寫手機號碼';} return; }
   if(btn){btn.disabled=true;btn.textContent='查詢中…';}
   try{
-    // 會員與報名紀錄並行讀取，避免兩次 20 秒逾時串在一起；新會員無舊紀錄時回空陣列，不再視為錯誤。
-    const [member, regs]=await Promise.all([
-      api({action:'getMember',email,phone,_t:Date.now()}),
-      api({action:'getMyRegs',email,phone,_t:Date.now()})
-    ]);
-    if(member && member.error){ if(err){err.style.display='block';err.textContent=member.error;} return; }
-    if(regs && regs.error){ if(err){err.style.display='block';err.textContent=regs.error;} return; }
-    ST.memberEmail=email; ST.memberToken=''; memberSaveEmail(email); memberSavePhone(phone);
-    ST.member=(member && !member.error && member) ? {...member,email:member.email||email,phone:member.phone||phone} : {email,phone};
+    const login=await apiPost({action:'memberEmailPhoneLogin',email,phone});
+    if(login&&login.error){ if(err){err.style.display='block';err.textContent=login.error;} return; }
+    if(!login||!login.token||!login.member){ if(err){err.style.display='block';err.textContent='登入憑證建立失敗，請稍後再試。';} return; }
+    ST.memberEmail=email;
+    memberSaveEmail(email);
+    memberSaveToken(login.token);
+    ST.member={...login.member,email:login.member.email||email,phone:login.member.phone||phone};
+    memberSavePhone(ST.member.phone||phone,email);
     memberShowArea('regs');
     fillMemberCard(ST.member);
+    const regs=await safeGetMyRegs(email);
     const _list=Array.isArray(regs)?regs:[];
     renderMyRegs(_list);
     navTo('member',{noPush:true});
@@ -3748,7 +3832,7 @@ function showNoRecordHelp(email, phone){
     +'如果您<b>還沒有報名過</b>，請回到「報名」分頁選擇場次報名；這裡只查詢已完成的報名。';
 }
 function goMemberPage(){
-  return safeLoadMemberPage(ST.memberEmail||memberSafeEmail(), {phone: memberSafePhone()});
+  return safeLoadMemberPage(ST.memberEmail||memberSafeEmail());
 }
 window.safeLoadMemberPage=safeLoadMemberPage;
 window.memberLogin=memberLogin;
@@ -5865,8 +5949,8 @@ async function submitReg(ev){
     ST.memberEmail=email;
     ST.currentBundle=null;
     try{ localStorage.setItem('tb_member_email',email||''); }catch(e){}
-    // 手機正式來源為 members；畫面執行期間只同步到目前會員狀態。
-    if(phone) ST.member={...(ST.member||{}),phone:String(phone).trim()};
+    // 手機正式來源為 members；成功報名後只在本次瀏覽階段保留已驗證身分。
+    if(phone) memberSavePhone(phone,email);
     scheduleMemberRecordsSync('after-register',500);
     // 更新本地 member 資料（包含發票資訊，下次報名自動帶入）
     const _brand=($('f_brand')?.value||'').trim();
@@ -5916,6 +6000,7 @@ function memberLogout(){
     localStorage.removeItem('tb_member_email');
     localStorage.removeItem('tb_member_email_v2');
   } catch(e){}
+  memberClearToken();
   ST.memberEmail = '';
   ST.memberToken = '';
   ST.member = null;
@@ -7201,9 +7286,11 @@ if(document.readyState==='loading'){
   window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } setActivitySessions('portal',data); };
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
-  // 前台已改為 Email＋手機會員查詢；不再恢復第三方登入 token
+  // 前台使用固定 30 天的安全登入憑證；憑證不保存手機，頁面載入後向 Worker 重新核對會員。
   const savedEmail = readEmail();
+  const savedMemberToken = memberSafeToken();
   if (savedEmail) ST.memberEmail = savedEmail;
+  if (savedMemberToken) ST.memberToken = savedMemberToken;
 
 
   // 讀取分享連結；若網址有指定場次/主題，必須優先於上次停留頁面
@@ -7225,11 +7312,11 @@ if(document.readyState==='loading'){
 
   if(deepLink.sessionId){ await openSession(deepLink.sessionId); hideDeepLinkLoading(); return; }
   if(deepLink.eventId){ await openEvent(deepLink.eventId); hideDeepLinkLoading(); return; }
-  if(deepLink.isMember){ navTo('member'); hideDeepLinkLoading(); return; }
+  if(deepLink.isMember){ await navToTab('member'); hideDeepLinkLoading(); return; }
   hideDeepLinkLoading();
 
   // 還原頁面：非分享連結一律回到單一首頁；避免上次停留的報名表或舊場次列表蓋回首頁。
-  if(lastTab === 'member' && savedEmail){
+  if(lastTab === 'member' && (savedEmail||savedMemberToken)){
     setTimeout(()=>{ navToTab('member'); }, 200);
   } else if(lastTab === 'support'){
     setTimeout(()=>{ navToTab('support'); }, 200);
