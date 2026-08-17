@@ -1,6 +1,6 @@
 {
-  "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "fd0412e6b8b36c271b904d43245482c7ade98e36",
-  "expected_cloudflare_version": "e3c4a63c-4b75-407e-b7c8-ac6ff1fdc0f9",
-  "reason": "補齊互動拍照活動首次正式入庫，確保 tuibile 後台與活動網站共用同一份 Supabase 設定"
+  "confirmation": "給我復原喔",
+  "approved_source_commit": "6a85a0972cb20f508e4f6e8886d868f15969696a",
+  "expected_cloudflare_version": "aa21a40f-c8fc-4add-a1d6-cf668e87cc18",
+  "reason": "復原原有系統設定名稱與排列，停止自動改寫主辦設定；保留已確認的互動拍照功能"
 }
