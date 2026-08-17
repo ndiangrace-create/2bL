@@ -1755,7 +1755,7 @@
       <button id="tab-finance" class="tab" onclick="switchPage('finance')">財務</button>
       <button id="tab-consignment" class="tab" onclick="switchPage('consignment')">寄賣</button><button id="tab-settings" class="tab" onclick="switchPage('settings')">設定</button>
     </nav>
-    <div class="actions"><button class="btn secondary small hide-sm" onclick="refreshCurrentPage()">重新整理</button><button class="btn secondary small" onclick="window.open('onsite.html','_blank')">現場入口</button><button class="btn gray small" onclick="logout()">登出</button></div>
+    <div class="actions"><button class="btn secondary small hide-sm" onclick="refreshCurrentPage()">重新整理資料</button><button class="btn secondary small hide-sm" onclick="updateAdminVersion()">更新系統版本</button><button class="btn secondary small" onclick="window.open('onsite.html','_blank')">現場入口</button><button class="btn gray small" onclick="logout()">登出</button></div>
   </div></header>
   <main class="app">
 <section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button type="button" class="btn" onclick="openAdminManualRegistrationForSession()">＋ 主辦代報名</button><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
@@ -1765,7 +1765,7 @@
     <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
     <section id="page-finance" class="hidden"><div class="page-title"><div><h2>財務總表</h2><div class="sub">收入、退款、支出分開；月／季／年與各場損益一次看。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadAccountingReport()">重新整理</button><button class="btn secondary" onclick="downloadAccountingCsv()">下載 CSV</button></div></div><div class="filter-row"><select id="acctMode" onchange="acctModeChanged()"><option value="month">月報</option><option value="quarter">季報</option><option value="year">年報</option><option value="custom">自訂區間</option></select><input id="acctAnchor" type="date" onchange="loadAccountingReport()"><input id="acctStart" class="hidden" type="date"><input id="acctEnd" class="hidden" type="date"><button id="acctCustomBtn" class="btn secondary hidden" onclick="loadAccountingReport()">套用區間</button></div><div id="accountingBody"><div class="loading">載入財務總表中…</div></div></section>
     <section id="page-consignment" class="hidden"><div class="page-title"><div><h2>寄賣檔期／商品／POS</h2><div class="sub">寄賣申請、錄取後商品建檔、條碼入庫、庫存與現場結帳共用同一份正式資料。</div></div></div><div class="cards"><div class="card" style="padding:18px"><h3>寄賣檔期與商品管理</h3><p>建立檔期、設定抽成與進撤場、審核品牌、核准商品及列印條碼。</p><button class="btn" onclick="window.open('consignment.html?admin=1&tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟寄賣管理</button></div><div class="card" style="padding:18px"><h3>條碼入庫與 POS</h3><p>支援手機相機、條碼槍及手動輸入；可入庫、結帳、撤場退回及取消交易回補庫存。</p><button class="btn" onclick="window.open('pos.html?tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟 POS／掃碼</button></div></div></section>
-<section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button><button class="settings-tile" onclick="openPhotoActivitySettings()"><div class="ico">🌿</div><b>互動拍照活動</b><span>主題 / 任務 / 相簿</span></button></div></section>
+<section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>模板 / 寄信測試</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openBundleSettings()"><div class="ico">🎫</div><b>場次組合</b><span>多場綁定套組</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button><button class="settings-tile" onclick="openPhotoActivitySettings()"><div class="ico">🌿</div><b>互動拍照活動</b><span>主題 / 任務 / 相簿</span></button></div></section>
   </main>
 </section>
 
@@ -1774,7 +1774,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260714-ai-visual-022';
+const ADMIN_BUILD = '20260818-settings-13';
 const API = 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -1896,14 +1896,24 @@ function startGoogleLogin(){ const t=activeTenant(); if(!t){showLoginError('網�
 async function handleOAuthCallback(){ const token=sessionStorage.getItem('2bl_admin_token_pending'); const loginError=sessionStorage.getItem('2bl_login_error_pending'); sessionStorage.removeItem('2bl_admin_token_pending'); sessionStorage.removeItem('2bl_login_error_pending'); if(loginError){showLoginError({not_authorized:'您的 Google 帳號不在管理員名單內',staff_inactive:'此管理員帳號已停用',id_token_verify_failed:'Google 身份驗證失敗',google_cancelled:'Google 登入已取消',token_exchange_failed:'Google 登入流程錯誤'}[loginError]||('登入失敗：'+loginError));return false;} if(!token) return false; try{ const j=await fetch(endpoint()+'/admin/me?email=_&token='+encodeURIComponent(token)+'&_t='+Date.now(),{cache:'no-store'}).then(r=>r.json()); if(j.error||!j.email){showLoginError('無權限登入後台');return false;} const callbackTenant=String(j.tenant_id||'')==='platform'?activeTenant():(j.tenant_id||activeTenant()); AdminState.tenantId=callbackTenant; sessionStorage.setItem(TENANT_KEY,AdminState.tenantId); saveSession({email:j.email,token,role:j.normalized_role||j.role||'',name:j.display_name||j.name||j.email,tenantId:AdminState.tenantId,authorization:j.authorization||null}); if((j.normalized_role||j.role)==='onsite_staff'){ location.href='onsite.html?admin_token='+encodeURIComponent(token)+'&tenant='+encodeURIComponent(AdminState.tenantId); return true; } await enterAdmin(); return true; }catch(e){showLoginError('登入驗證失敗：'+e.message);return false;} }
 function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classList.remove('hidden');}
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; AdminState.authorization=s.authorization||null; if(s.tenantId) AdminState.tenantId=s.tenantId; }
-function adminCan(key){ return !!(AdminState.authorization&&AdminState.authorization.capabilities&&AdminState.authorization.capabilities[key]); }
+function adminCan(key){
+  const caps=AdminState.authorization&&AdminState.authorization.capabilities;
+  if(caps && typeof caps[key]==='boolean') return caps[key];
+  // 只作畫面顯示的安全備援；正式操作仍由後端重新驗證最新角色與範圍。
+  const role=String((AdminState.authorization&&AdminState.authorization.role)||AdminState.role||'').trim();
+  if(role==='platform_super_admin') return true;
+  if(role==='organizer_owner') return key!=='canDelete' && key!=='canPlatform';
+  return false;
+}
 function applyAdminAuthorizationUI(){
   const ownerOnly=['openPhotoActivitySettings','openEmailTemplates','openPaymentSettings','openAgreementSettings','openStaffSettings','openCompanySettings','openHomepageSettings','openVenueMaps','openErrorLogs','newFeatEvent','createFeatEvent','saveFinanceShare','unlockFinanceSettlement'];
   document.querySelectorAll('[onclick]').forEach(el=>{
     const code=String(el.getAttribute('onclick')||'');
     const destructive=/\b(delete|removeStaff|purgeErrorLogs)/i.test(code);
     const tenantOnly=ownerOnly.some(name=>code.includes(name));
-    if((destructive&&!adminCan('canDelete'))||(tenantOnly&&!adminCan('canManageTenantSettings'))) el.style.display='none';
+    const bundleOnly=code.includes('openBundleSettings')||code.includes('openSessionBundleModal');
+    const shouldHide=(destructive&&!adminCan('canDelete'))||(tenantOnly&&!adminCan('canManageTenantSettings'))||(bundleOnly&&!adminCanManageBundles());
+    el.style.display=shouldHide?'none':'';
   });
   const settingsTab=$('tab-settings');
   if(settingsTab) settingsTab.title=adminCan('canManageTenantSettings')?'系統設定':'僅顯示被指定系列可使用的工具';
@@ -1947,7 +1957,21 @@ async function resumeAdminSession(s){
 function saveAdminPageState(page){ try{ const p=page||AdminState.currentPage||'sessions'; const L=AdminState.currentLayer||'root'; const st={page:p, layer:L, sid:AdminState.currentSessionId||'', filter:AdminState.currentFilter||'', dateKey:(L==='equipment')?(AdminState._navDateKey||''):'', dateLabel:(L==='equipment')?(AdminState._navDateLabel||''):'', activityDate:(L==='seatOps')?String(SeatOps.activityDate||''):'', updatedAt:Date.now()}; localStorage.setItem(ADMIN_PAGE_STATE_KEY, JSON.stringify(st)); }catch(e){} }
 function readAdminPageState(){ try{ const raw=localStorage.getItem(ADMIN_PAGE_STATE_KEY); if(!raw) return null; const st=JSON.parse(raw); if(!st || !['sessions','todos','onsite','members','leads','consignment','settings'].includes(st.page)) return null; return st; }catch(e){return null;} }
 function logout(){ if(AdminState.email&&AdminState.token) apiPost({action:'adminLogout'}).catch(()=>{}); localStorage.removeItem(SESSION_KEY); location.reload(); }
-async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員')+'｜20260816系列隔離版'; applyAdminAuthorizationUI(); await refreshSessionsOverview(); applyAdminAuthorizationUI(); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
+function updateAdminVersion(){
+  const u=new URL(location.href);
+  u.searchParams.set('tenant',activeTenant());
+  u.searchParams.set('_admin_update',String(Date.now()));
+  location.replace(u.toString());
+}
+async function checkAdminVersion(){
+  try{
+    const u=new URL(location.href); u.searchParams.set('_admin_version_check',String(Date.now()));
+    const html=await fetch(u.toString(),{cache:'no-store'}).then(r=>r.ok?r.text():'');
+    const m=html.match(/const ADMIN_BUILD = '([^']+)'/);
+    if(m&&m[1]&&m[1]!==ADMIN_BUILD) updateAdminVersion();
+  }catch(_e){}
+}
+async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員'); applyAdminAuthorizationUI(); await refreshSessionsOverview(); applyAdminAuthorizationUI(); setTimeout(checkAdminVersion,1200); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
 function switchPage(page,opts={}){ AdminState.currentPage=page; if(!opts||!opts.restore){ AdminState.currentSessionId=null; AdminState.currentFilter=null; AdminState.currentLayer=(page==='todos'?'todos':'root'); } if(!opts || !opts.noSave) saveAdminPageState(page); ['sessions','todos','onsite','members','leads','finance','consignment','settings'].forEach(p=>{ const pg=$('page-'+p), tb=$('tab-'+p); if(pg) pg.classList.toggle('hidden',p!==page); if(tb) tb.classList.toggle('active',p===page); }); if(page==='sessions'){ renderSessions(); ensureThemeEventsData(); } if(page==='todos') loadTodos(); if(page==='onsite') loadOnsite(); if(page==='members') loadMembers(); if(page==='leads') loadLeads(); if(page==='finance') loadAccountingReport(); }
 
 // ── 現場報到頁（重用後端 checkin 動作） ──
@@ -5503,7 +5527,8 @@ function renderEmailTemplates(rows){
   const vars='可用變數：[主辦名稱] [顯示名稱] [場次名稱] [報名日期] [活動日期] [攤位數] [設備] [應繳金額] [退費金額] [地點] [原場次] [新場次] [選擇期限]。按鈕可用：[按鈕:前往我的紀錄]、[按鈕:加入官方LINE]。';
   EmailTplState.rows = Array.isArray(rows) ? rows : [];
   EmailTplState.vars = vars;
-  let out='<div class="notice">每封信可單獨開關。關閉後流程照常進行，只是不寄出該封信。點卡片即可編輯。</div>';
+  let out='<div class="report-card" style="margin-bottom:14px"><div class="report-title">寄信測試</div><div class="sub" style="margin:4px 0 10px">只測試寄信服務是否正常，不會修改任何正式模板。</div><div class="form-grid"><div class="form-field full"><label>測試收件 Email</label><input id="testEmailInput" type="email" placeholder="輸入收件 Email"></div></div><div class="card-actions"><button class="btn secondary" onclick="sendTestEmail(this)">寄出測試信</button></div><div id="emailTestResult" class="sub" style="margin-top:8px"></div></div>';
+  out+='<div class="notice">每封信可單獨開關。關閉後流程照常進行，只是不寄出該封信。點卡片即可編輯。</div>';
   out+='<div class="email-tpl-grid">';
   for(const t of EmailTplState.rows){
     const key=String(t.templateKey||t.template_key||'');
@@ -5514,10 +5539,19 @@ function renderEmailTemplates(rows){
       +'<div class="etc-sub">'+safe(t.subject||'（未設定主旨）')+'</div>'
       +'<div class="etc-key">'+safe(key)+'</div></button>';
   }
+  if(!EmailTplState.rows.length) out+='<div class="empty">目前沒有信件模板資料</div>';
   out+='</div>';
-  $('panelBody').innerHTML=EmailTplState.rows.length?out:'<div class="empty">目前沒有信件模板資料</div>';
+  $('panelBody').innerHTML=out;
 }
 const EmailTplState = { rows: [], vars: '' };
+async function sendTestEmail(btn){
+  const to=String(($('testEmailInput')&&$('testEmailInput').value)||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){ toast('請輸入正確的 Email'); return; }
+  const old=btn.textContent; btn.disabled=true; btn.textContent='寄送中…';
+  try{ await apiPost({action:'testEmail',to}); if($('emailTestResult')) $('emailTestResult').textContent='寄信成功，請檢查收件匣與垃圾信件夾。'; }
+  catch(e){ if($('emailTestResult')) $('emailTestResult').textContent='寄信失敗：'+e.message; }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
 // 信件模板：改為卡片清單 → 點卡片才展開單封編輯（原本全部展開，內容很長要一直滑）
 function openEmailTemplateEditor(key){
   const t=(EmailTplState.rows||[]).find(x=>String(x.templateKey||x.template_key||'')===String(key));
@@ -5638,7 +5672,59 @@ async function newSessionFull(){
     toast('已建立空白場次，往下填資料即可',2500);
   }catch(e){ toast('建立失敗：'+e.message,6000); }
 }
+function adminCanManageBundles(){
+  const role=String((AdminState.authorization&&AdminState.authorization.role)||AdminState.role||'').trim();
+  return ['platform_super_admin','organizer_owner','organizer_admin'].includes(role);
+}
+async function openBundleSettings(){
+  if(!adminCanManageBundles()){ toast('場次組合只提供總管理者及指定系列管理者使用'); return; }
+  openPanel('場次組合','管理多場綁定套組；沿用各場既有資料','<div class="loading">載入場次組合…</div>');
+  try{
+    if(!Array.isArray(AdminState.sessions)||!AdminState.sessions.length) await refreshSessionsOverview();
+    const list=await api({action:'getBundles'});
+    AdminState.bundles=Array.isArray(list)?list:[];
+    renderBundlePanel();
+  }catch(e){ $('panelBody').innerHTML='<div class="empty">場次組合載入失敗：'+safe(e.message)+'</div>'; }
+}
+function renderBundlePanel(){
+  const el=$('panelBody'); if(!el) return;
+  const sessions=AdminState.sessions||[], bundles=AdminState.bundles||[];
+  const sessionOptions=sessions.map(s=>'<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:15px"><input type="checkbox" class="bundle-session" value="'+attr(sessionId(s))+'" style="width:18px;height:18px"> '+safe(sessionName(s))+'</label>').join('');
+  let html='<div class="report-card" style="margin-bottom:14px"><div class="report-title">新增場次組合</div>'
+    +'<div class="form-field full"><label>組合名稱</label><input id="bundle_name" placeholder="例如：雙日場次組合"></div>'
+    +'<div class="form-field full"><label>組合攤位費（總額；押金仍依各場規則）</label><input id="bundle_price" type="number" min="0" value="0"></div>'
+    +'<div class="form-field full"><label>綁定場次（至少 2 場）</label><div style="max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:14px;padding:8px 12px;background:#fff">'+(sessionOptions||'目前沒有可用場次')+'</div></div>'
+    +'<div class="card-actions"><button class="btn" onclick="saveBundleFromSettings(this)">建立組合</button></div></div>';
+  html+='<div class="report-card"><div class="report-title">現有場次組合</div>';
+  if(!bundles.length) html+='<div class="empty">目前沒有場次組合</div>';
+  else html+=bundles.map(bundle=>{
+    const names=(bundle.sessionIds||[]).map(id=>{ const s=sessions.find(row=>sessionId(row)===String(id)); return s?sessionName(s):id; }).join('、');
+    const deleteButton=adminCan('canDelete')?'<button class="btn small" style="background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteBundleFromSettings(\''+attr(bundle.id)+'\',this)">刪除組合</button>':'';
+    return '<div class="card" style="padding:14px;margin-bottom:10px"><b>'+safe(bundle.name||'未命名組合')+'</b><div class="sub" style="margin-top:5px">場次：'+safe(names||'未設定')+'</div><div style="font-weight:900;color:#2a6a10;margin-top:5px">組合攤位費 '+money(bundle.bundlePrice||0)+'</div><div class="card-actions">'+deleteButton+'</div></div>';
+  }).join('');
+  html+='</div>'; el.innerHTML=html; applyAdminAuthorizationUI();
+}
+async function saveBundleFromSettings(btn){
+  const name=String(($('bundle_name')&&$('bundle_name').value)||'').trim();
+  const bundlePrice=Number(($('bundle_price')&&$('bundle_price').value)||0)||0;
+  const sessionIds=Array.from(document.querySelectorAll('.bundle-session:checked')).map(x=>x.value);
+  if(!name){ toast('請填組合名稱'); return; }
+  if(sessionIds.length<2){ toast('請至少選擇 2 個場次'); return; }
+  const old=btn.textContent; btn.disabled=true; btn.textContent='建立中…';
+  try{ await apiPost({action:'saveBundle',name,bundlePrice,sessionIds}); toast('場次組合已建立'); await openBundleSettings(); }
+  catch(e){ toast('建立失敗：'+e.message,6000); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
+async function deleteBundleFromSettings(id,btn){
+  if(!adminCan('canDelete')){ toast('只有平台總管理者可以刪除組合'); return; }
+  if(!await uiConfirm('確定刪除這個場次組合？已存在的報名資料不會被刪除。')) return;
+  const old=btn.textContent; btn.disabled=true; btn.textContent='刪除中…';
+  try{ await apiPost({action:'deleteBundle',id}); toast('場次組合已刪除'); await openBundleSettings(); }
+  catch(e){ toast('刪除失敗：'+e.message,6000); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
 function openSessionBundleModal(sid){
+  if(!adminCanManageBundles()){ toast('場次組合只提供總管理者及指定系列管理者使用'); return; }
   let m=document.getElementById('bundleModal');
   if(!m){ m=document.createElement('div'); m.id='bundleModal'; document.body.appendChild(m); }
   m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';

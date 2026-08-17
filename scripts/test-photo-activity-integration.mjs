@@ -18,6 +18,7 @@ const originalSettingLabels = [
   '常用場地圖',
   '活動拍照框',
   '現場通行碼',
+  '場次組合',
   '系統異常',
 ];
 const originalSettingHandlers = [
@@ -31,6 +32,7 @@ const originalSettingHandlers = [
   'openVenueMaps',
   'openPhotoFrames',
   'openOnsitePasscodes',
+  'openBundleSettings',
   'openErrorLogs',
 ];
 
