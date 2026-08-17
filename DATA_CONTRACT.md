@@ -4,7 +4,7 @@
 正式 Supabase：`2bl`／`douhmxipedgpfbvfynbq`  
 正式 Tenant：`tuibile`
 
-本文件記錄唯讀盤點與已授權的 RPC 權限修正。工作分支另有尚未套用正式資料庫的 migration；正式資料目前未改動。
+本文件記錄唯讀盤點與已授權的 RPC 權限修正。個別 SQL 檔案可能是已執行後保存的回復依據，也可能仍是待確認方案；是否已套用必須以 `docs/change-ledger.md` 與 `docs/verified-baseline.md` 為準，不可只看檔案是否存在。
 
 ## 唯一資料流
 
@@ -46,13 +46,13 @@
 2. 瀏覽器已停止保存收藏、電話、拍照完成旗標與現場操作人長期資料。
 3. 五個 SECURITY DEFINER RPC 已撤銷 public、anon、authenticated 的執行權，只保留 Worker 使用的 service_role。
 4. 五個 RPC 的 search_path 均已固定為 public。
-5. 57 個 public table 維持 RLS 開啟且沒有一般使用者 policy；前端不直連 Supabase，資料僅由 Worker 進出。
+5. 正式唯讀盤點已確認 58 個 public table 維持 RLS 開啟且沒有一般使用者 policy；前端不直連 Supabase，資料僅由 Worker 進出。
 
-資料契約阻擋已清除。工作分支新增 `member_notifications` 與押金防呆 trigger，並準備安全回填既有每日報到；都必須先完成差異確認，才能套用正式資料庫、合併與部署。
+資料契約阻擋已清除。正式資料庫目前已有 `member_notifications`；押金防呆、每日報到回填及舊資料整理是否已執行，必須逐項對照永久變更帳本，不得再次直接套用 SQL。
 
-## 工作分支待套用項目
+## 必須逐項查證的資料庫腳本
 
-- `supabase/onsite_daily_finance_integrity.sql`：通知資料表與押金最後一天／撤場完成／不可重複退款的資料庫防呆。
+- `supabase/onsite_daily_finance_integrity.sql`：通知資料表與押金最後一天／撤場完成／不可重複退款的資料庫防呆；其中通知資料表已存在，禁止整份重複執行。
 - `supabase/backfill_daily_checkins_safe.sql`：只把既有「已報到」且日期確實屬於該報名的資料補進每日紀錄；不刪除、不取消、不改金額。
 - `supabase/normalize_daily_deposit_status_safe.sql`：把舊資料中誤標在「非最後參加日」的每日押金狀態改為「不適用」；正式退款交易、全域押金結果與金額都不變。
 - 正式套用前必須先看預覽數量，套用後再核對每日總數與原本總數。

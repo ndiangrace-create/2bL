@@ -1,0 +1,138 @@
+{
+  "mode": "phase_2_instruction_sync_verified",
+  "tenant_id": "tuibile",
+  "project_id": "douhmxipedgpfbvfynbq",
+  "staff_roles": [
+    {
+      "role": "organizer_admin",
+      "count": 3,
+      "is_active": true,
+      "scope_type": "event"
+    },
+    {
+      "role": "platform_super_admin",
+      "count": 2,
+      "is_active": true,
+      "scope_type": "all"
+    }
+  ],
+  "generated_at": "2026-08-17T11:25:35.06177+00:00",
+  "storage_buckets": [
+    {
+      "id": "711",
+      "name": "711",
+      "public": false,
+      "file_size_limit": null
+    },
+    {
+      "id": "covers",
+      "name": "covers",
+      "public": true,
+      "file_size_limit": 5242880
+    },
+    {
+      "id": "session-visuals",
+      "name": "session-visuals",
+      "public": true,
+      "file_size_limit": null
+    }
+  ],
+  "session_statuses": [
+    {
+      "count": 16,
+      "status": "報名中"
+    },
+    {
+      "count": 7,
+      "status": "封存"
+    },
+    {
+      "count": 1,
+      "status": "已關閉"
+    },
+    {
+      "count": 1,
+      "status": "關閉"
+    }
+  ],
+  "system_setting_keys": [
+    "member_profile_reminder_send_20260816",
+    "system_operating_instructions"
+  ],
+  "system_setting_metadata": [
+    {
+      "setting_key": "member_profile_reminder_send_20260816",
+      "value_length": 403,
+      "value_md5": "e02270b7d0ea8559e53b7f6540c9a2f0",
+      "updated_at": "2026-08-16T02:15:53.92183+00:00"
+    },
+    {
+      "setting_key": "system_operating_instructions",
+      "value_length": 5410,
+      "value_md5": "04f4829893611a293ad152213ca7254e",
+      "updated_at": "2026-08-17T11:25:35.06177+00:00"
+    }
+  ],
+  "canonical_instruction_attachment": {
+    "character_count": 4989,
+    "byte_count": 11731,
+    "value_md5": "89ca30fbcf7960a53aa47a7a76b1e47d",
+    "content_stored_in_audit": true,
+    "matches_database_record": true,
+    "one_time_request_excluded": true,
+    "previous_value_md5": "7eeac4f4c41ad070a44cc9d4d5db14da"
+  },
+  "business_data_changed": false,
+  "registration_statuses": [
+    {
+      "count": 3,
+      "review_status": "不錄取",
+      "payment_status": "未繳費"
+    },
+    {
+      "count": 9,
+      "review_status": "已取消",
+      "payment_status": "已取消"
+    },
+    {
+      "count": 1,
+      "review_status": "已取消",
+      "payment_status": "已繳費"
+    },
+    {
+      "count": 2,
+      "review_status": "已取消",
+      "payment_status": "待確認"
+    },
+    {
+      "count": 33,
+      "review_status": "已取消",
+      "payment_status": "未繳費"
+    },
+    {
+      "count": 47,
+      "review_status": "已錄取",
+      "payment_status": "已繳費"
+    },
+    {
+      "count": 17,
+      "review_status": "已錄取",
+      "payment_status": "已退費"
+    },
+    {
+      "count": 1,
+      "review_status": "已錄取",
+      "payment_status": "待確認"
+    },
+    {
+      "count": 2,
+      "review_status": "已錄取",
+      "payment_status": "未繳費"
+    },
+    {
+      "count": 7,
+      "review_status": "待審核",
+      "payment_status": "未繳費"
+    }
+  ]
+}
