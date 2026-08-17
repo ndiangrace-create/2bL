@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "3b62e44c12e39f70a4f29177ef336665ddb5fb85",
-  "expected_cloudflare_version": "80ba70c8-2b93-4eb6-87a0-cb05d74125eb",
-  "reason": "財報分享改用10碼短網址並保留14天唯讀連結"
+  "approved_source_commit": "00994a3154039ab47a18d0c59c1b45e8d95d805c",
+  "expected_cloudflare_version": "ede72cd7-0eec-4830-8066-84eea4c88681",
+  "reason": "新增三階段報名開放排程並維持既有登入與權限"
 }
