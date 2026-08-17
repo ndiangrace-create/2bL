@@ -1,5 +1,5 @@
 {
-  "mode": "read_only_phase_1",
+  "mode": "phase_2_instruction_sync_verified",
   "tenant_id": "tuibile",
   "project_id": "douhmxipedgpfbvfynbq",
   "staff_roles": [
@@ -16,7 +16,7 @@
       "scope_type": "all"
     }
   ],
-  "generated_at": "2026-08-17T11:04:13.139797+00:00",
+  "generated_at": "2026-08-17T11:25:35.06177+00:00",
   "storage_buckets": [
     {
       "id": "711",
@@ -68,17 +68,19 @@
     },
     {
       "setting_key": "system_operating_instructions",
-      "value_length": 698,
-      "value_md5": "7eeac4f4c41ad070a44cc9d4d5db14da",
-      "updated_at": "2026-08-16T01:40:16.449023+00:00"
+      "value_length": 5410,
+      "value_md5": "04f4829893611a293ad152213ca7254e",
+      "updated_at": "2026-08-17T11:25:35.06177+00:00"
     }
   ],
   "canonical_instruction_attachment": {
-    "character_count": 5003,
-    "byte_count": 11769,
-    "value_md5": "7736c0f7081d4aa55673aea4fdcbed94",
-    "content_stored_in_audit": false,
-    "matches_database_record": false
+    "character_count": 4989,
+    "byte_count": 11731,
+    "value_md5": "89ca30fbcf7960a53aa47a7a76b1e47d",
+    "content_stored_in_audit": true,
+    "matches_database_record": true,
+    "one_time_request_excluded": true,
+    "previous_value_md5": "7eeac4f4c41ad070a44cc9d4d5db14da"
   },
   "business_data_changed": false,
   "registration_statuses": [
