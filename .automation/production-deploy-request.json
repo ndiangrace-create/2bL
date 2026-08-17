@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "ec04e5a525098cf12a0fdc316e9b81b44ae60515",
-  "expected_cloudflare_version": "33cbd217-4126-4120-8049-7454016ca306",
-  "reason": "恢復完整 13 項後台設定，修正總管理者設定顯示與後台版本更新"
+  "approved_source_commit": "1149f1527befc9b017671d83a6b37bbc9af69340",
+  "expected_cloudflare_version": "d759ec5c-8415-4ff7-b898-d30489185860",
+  "reason": "修正我的紀錄空白並啟用同一裝置30天安全自動登入"
 }
