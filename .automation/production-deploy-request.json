@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "6a85a0972cb20f508e4f6e8886d868f15969696a",
+  "approved_source_commit": "54a24a58d1ed3c4b6f151bba18110cba89d03c22",
   "expected_cloudflare_version": "aa21a40f-c8fc-4add-a1d6-cf668e87cc18",
   "reason": "復原原有系統設定名稱與排列，停止自動改寫主辦設定；保留已確認的互動拍照功能"
 }
