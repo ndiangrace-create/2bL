@@ -198,19 +198,55 @@ async function issueAdminToken(staffRow, tenantId, env) {
   return signAdminJwt(payload, env);
 }
 
-// 簽發前台會員 JWT（30 天有效）
-async function issueMemberToken(memberInfo, env) {
+const MEMBER_TOKEN_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
+
+function bytesToBase64Url(bytes) {
+  return btoa(String.fromCharCode(...bytes)).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+}
+
+function base64UrlToBytes(value) {
+  const normalized = String(value || '').replace(/-/g,'+').replace(/_/g,'/');
+  const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+  return Uint8Array.from(atob(padded), c=>c.charCodeAt(0));
+}
+
+async function memberIdentitySignature(memberInfo, tenantId, env) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', encoder.encode(jwtSecret(env)), {name:'HMAC', hash:'SHA-256'}, false, ['sign']
+  );
+  const message = `2BL-MEMBER|${String(tenantId||'').trim().toLowerCase()}|${normEmail(memberInfo&&memberInfo.email)}|${normPhone(memberInfo&&memberInfo.phone)}`;
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
+  return bytesToBase64Url(new Uint8Array(signature));
+}
+
+async function verifyMemberIdentitySignature(signature, memberInfo, tenantId, env) {
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw', encoder.encode(jwtSecret(env)), {name:'HMAC', hash:'SHA-256'}, false, ['verify']
+    );
+    const message = `2BL-MEMBER|${String(tenantId||'').trim().toLowerCase()}|${normEmail(memberInfo&&memberInfo.email)}|${normPhone(memberInfo&&memberInfo.phone)}`;
+    return await crypto.subtle.verify('HMAC', key, base64UrlToBytes(signature), encoder.encode(message));
+  } catch(e) { return false; }
+}
+
+// 簽發前台會員 JWT（固定 30 天有效；不在 token 內保存手機）
+async function issueMemberToken(memberInfo, tenantId, env) {
   const now = Date.now();
   const payload = {
     iss: '2BL-V8',
     type: 'member',
     sub: memberInfo.google_sub || memberInfo.email,
-    email: memberInfo.email,
+    email: normEmail(memberInfo.email),
+    tenant_id: tenantId,
+    auth_method: memberInfo.auth_method || (memberInfo.google_sub ? 'google' : 'email_phone'),
+    identity_sig: await memberIdentitySignature(memberInfo, tenantId, env),
     google_sub: memberInfo.google_sub || '',
     display_name: (memberInfo.display_name || '').replace(/[^\x00-\x7F]/g, ''),
     avatar_url: memberInfo.avatar_url || '',
     issued_at: now,
-    expires_at: now + 30 * 24 * 60 * 60 * 1000,  // 30 天
+    expires_at: now + MEMBER_TOKEN_LIFETIME_MS,
   };
   return signAdminJwt(payload, env);
 }
@@ -2428,6 +2464,50 @@ async function findMemberByEmailOrPhone(env, tenantId, email, phone){
   }
   return null;
 }
+
+async function verifyMemberSessionToken(env, tenantId, token){
+  const payload = await verifyAdminJwt(String(token||''), env);
+  if (!payload || payload.iss!=='2BL-V8' || payload.type!=='member') return null;
+  if (String(payload.tenant_id||'') !== String(tenantId||'')) return null;
+  const email = normEmail(payload.email);
+  if (!email || !payload.identity_sig) return null;
+  const rows = await dbGet(env,'members',`tenant_id=eq.${tenantId}&email=ilike.${encodeURIComponent(email)}&select=*`).catch(()=>[]);
+  const member = rows[0] || null;
+  if (!member || !normPhone(member.phone)) return null;
+  const identityOk = await verifyMemberIdentitySignature(payload.identity_sig, member, tenantId, env);
+  if (!identityOk) return null;
+  return {payload, email, phone:normPhone(member.phone), member:{...member,_source:'members'}};
+}
+
+async function ensureMemberForEmailPhone(env, tenantId, email, phone){
+  const [memberRows, regsByEmail] = await Promise.all([
+    dbGet(env,'members',`tenant_id=eq.${tenantId}&email=ilike.${encodeURIComponent(email)}&select=*`),
+    dbGet(env,'registrations',`tenant_id=eq.${tenantId}&email=ilike.${encodeURIComponent(email)}&select=*&order=created_at.desc`),
+  ]);
+  let member = memberRows[0] || null;
+  const regMatched = regsByEmail.find(r=>phoneMatches(r.phone,phone));
+
+  if (member && !phoneMatches(member.phone,phone)) {
+    if (!regMatched) return {error:'Email 已存在，但手機與會員資料不一致，請確認報名時使用的手機號碼。'};
+    try {
+      await upsertMember(env,{_tenantId:tenantId,email,phone,name:regMatched.name||'',brand:regMatched.brand_name||regMatched.brand||'',brandIntro:regMatched.brand_intro||'',sellCat:regMatched.sell_category||'',photo:regMatched.photo_url||'',fb:regMatched.fb_url||'',ig:regMatched.ig_url||'',taxId:regMatched.tax_id||'',invoiceTitle:regMatched.invoice_title||'',invoiceEmail:regMatched.invoice_email||''});
+    } catch(e) {}
+  } else if (!member) {
+    if (regsByEmail.length && !regMatched) return {error:'查無符合 Email 與手機的報名紀錄，請確認是否與報名時一致。'};
+    const source = regMatched || {};
+    try {
+      await upsertMember(env,{_tenantId:tenantId,email,phone,name:source.name||'',brand:source.brand_name||source.brand||'',brandIntro:source.brand_intro||'',sellCat:source.sell_category||'',photo:source.photo_url||'',fb:source.fb_url||'',ig:source.ig_url||'',taxId:source.tax_id||'',invoiceTitle:source.invoice_title||'',invoiceEmail:source.invoice_email||''});
+    } catch(e) {
+      const again=await dbGet(env,'members',`tenant_id=eq.${tenantId}&email=ilike.${encodeURIComponent(email)}&select=phone`).catch(()=>[]);
+      if(again.length && !phoneMatches(again[0].phone,phone)) return {error:'Email 已存在，但手機與會員資料不一致。'};
+    }
+  }
+
+  const refreshed = await dbGet(env,'members',`tenant_id=eq.${tenantId}&email=ilike.${encodeURIComponent(email)}&select=*`).catch(()=>[]);
+  member = refreshed[0] || member || regMatched || {email,phone};
+  if (!phoneMatches(member.phone,phone)) return {error:'身份驗證失敗，請確認 Email 與手機。'};
+  return {member:{...member,_source:member._source||'members'}, regsByEmail};
+}
 // getMember
 // 報名前預檢：這個 Email 是否已有會員、手機是否一致。
 // 只回傳兩個布林值，不吐任何個資，用來提前擋下「填完整張表才被拒」的死路。
@@ -2450,6 +2530,11 @@ async function hCheckMemberEmailPhone(env, p) {
 }
 async function hGetMember(env, p) {
   const TENANT = (p && p._tenantId) ;  // M-02：tenant 已由路由層驗證（見 routeGet/routePost）
+  if (p && p.memberToken) {
+    const session = await verifyMemberSessionToken(env, TENANT, p.memberToken);
+    if (!session) return jsonErr('登入憑證已失效，請重新登入');
+    return jsonOk(memberPayloadFromRow(session.member));
+  }
   const email = normEmail(p && p.email);
   const phone = normPhone(p && p.phone);
   // B-01：只給 Email 就撈得到姓名／手機／統編／發票信箱＝個資外洩。必須成對驗證。
@@ -2459,11 +2544,38 @@ async function hGetMember(env, p) {
   return jsonOk(memberPayloadFromRow(m));
 }
 
+async function hMemberEmailPhoneLogin(env, b) {
+  const TENANT = b && b._tenantId;
+  const email = normEmail(b && b.email);
+  const phone = normPhone(b && b.phone);
+  if (!email || !phone) return jsonErr('請提供 Email 與手機');
+  const verified = await ensureMemberForEmailPhone(env, TENANT, email, phone);
+  if (verified.error) return jsonErr(verified.error);
+  const member = verified.member;
+  const token = await issueMemberToken({...member,email,phone,auth_method:'email_phone'}, TENANT, env);
+  await dbUpdate(env,'members',`tenant_id=eq.${TENANT}&email=ilike.${encodeURIComponent(email)}`,{
+    last_login_at:nowIso(), login_provider:'email_phone'
+  }).catch(()=>{});
+  return jsonOk({token,expiresAt:Date.now()+MEMBER_TOKEN_LIFETIME_MS,member:memberPayloadFromRow(member)});
+}
+
+async function hMemberSession(env, p) {
+  const TENANT = p && p._tenantId;
+  const session = await verifyMemberSessionToken(env, TENANT, p && p.memberToken);
+  if (!session) return jsonErr('登入憑證已失效，請重新登入');
+  return jsonOk({
+    expiresAt:session.payload.expires_at,
+    member:memberPayloadFromRow(session.member),
+  });
+}
+
 // getMyRegs
 async function hGetMyRegs(env, p) {
   const TENANT = (p && p._tenantId);
-  const email = normEmail(p && p.email);
-  const phone = normPhone(p && p.phone);
+  const memberSession = p && p.memberToken ? await verifyMemberSessionToken(env, TENANT, p.memberToken) : null;
+  if (p && p.memberToken && !memberSession) return jsonErr('登入憑證已失效，請重新登入');
+  const email = memberSession ? memberSession.email : normEmail(p && p.email);
+  const phone = memberSession ? memberSession.phone : normPhone(p && p.phone);
   if (!email || !phone) return jsonErr('請提供 Email 與手機，才能查詢我的紀錄');
 
   // 只用同一個 Email 的會員／報名進行驗證，避免「相同電話、不同 Email」被誤認為同一人。
@@ -2642,7 +2754,8 @@ async function hGoogleUnifiedCallback(env, url) {
 
   if (isStaff && isMember && next === 'auto') {
     // 兩種身份都有 → 跳轉到選擇頁
-    const memberToken = await issueMemberToken({ email: googleEmail, google_sub: googleSub, display_name: googleName, avatar_url: googleAvatar }, env);
+    const googleMember = await findMemberByEmailOrPhone(env, tenant, googleEmail, '');
+    const memberToken = await issueMemberToken({ email: googleEmail, phone:googleMember&&googleMember.phone, google_sub: googleSub, display_name: googleName, avatar_url: googleAvatar }, tenant, env);
     const staffToken = await issueStaffTokenByEmail(env, googleEmail, tenant);
     const u = new URL(FRONTEND_SITE_URL || 'https://2b-love.com/');
     u.searchParams.set('choose_role', '1');
@@ -2669,7 +2782,8 @@ async function hGoogleUnifiedCallback(env, url) {
 
   // 報名者 → 進前台
   await updateMemberLastLogin(env, googleEmail, tenant, googleSub, googleName, googleAvatar);
-  const memberToken = await issueMemberToken({ email: googleEmail, google_sub: googleSub, display_name: googleName, avatar_url: googleAvatar }, env);
+  const googleMember = await findMemberByEmailOrPhone(env, tenant, googleEmail, '');
+  const memberToken = await issueMemberToken({ email: googleEmail, phone:googleMember&&googleMember.phone, google_sub: googleSub, display_name: googleName, avatar_url: googleAvatar }, tenant, env);
   const u = new URL(FRONTEND_SITE_URL || 'https://2b-love.com/');
   u.searchParams.set('member_token', memberToken);
   u.searchParams.set('tenant', tenant);
@@ -8829,6 +8943,7 @@ async function routeGet(env, action, p, req) {
     case 'getSessionAgreement': return hGetSessionAgreement(env,p);
     case 'getMember':           return hGetMember(env,p);
     case 'getMyRegs':           return hGetMyRegs(env,p);
+    case 'memberSession':       return hMemberSession(env,p);
     case 'getRegLookup':        return hGetRegLookup(env,p);
     case 'getAnnouncements':    return hGetAnnouncements(env,p);
     case 'getSeatMap':          return hGetSeatMap(env,p);
@@ -8939,6 +9054,10 @@ async function routePost(env, action, b, ctx, req) {
     return jsonOk({ok:true});
   }
   switch(action) {
+    case 'memberEmailPhoneLogin': return hMemberEmailPhoneLogin(env,b);
+    case 'memberSession':       return hMemberSession(env,b);
+    case 'getMember':           return hGetMember(env,b);
+    case 'getMyRegs':           return hGetMyRegs(env,b);
     case 'register':            return hRegister(env,b,ctx);
     case 'registerBundle':      return hRegisterBundle(env,b,ctx);
     case 'saveBundle':          return hSaveBundle(env,b);
