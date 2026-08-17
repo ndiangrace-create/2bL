@@ -321,6 +321,92 @@ function safeJson(str, fallback) {
   if (!str.trim()) return fallback;
   try { return JSON.parse(str); } catch { return fallback; }
 }
+const REGISTRATION_SCHEDULE_TIME_ZONE = 'Asia/Taipei';
+function parseRegistrationSchedule(value) {
+  const raw = safeJson(value, null);
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { enabled:false, windows:[] };
+  const windows = (Array.isArray(raw.windows) ? raw.windows : []).map((w, index) => {
+    const openAt = String((w && w.openAt) || '').trim();
+    const closeAt = String((w && w.closeAt) || '').trim();
+    const openMs = Date.parse(openAt), closeMs = Date.parse(closeAt);
+    if (!Number.isFinite(openMs) || !Number.isFinite(closeMs) || openMs > closeMs) return null;
+    return { stage:Number((w && w.stage) || index + 1), openAt, closeAt, openMs, closeMs };
+  }).filter(Boolean).sort((a,b)=>a.openMs-b.openMs);
+  return {
+    version: Number(raw.version)||1,
+    enabled: raw.enabled === true || raw.enabled === 'true',
+    preset: String(raw.preset||'three_stage'),
+    timezone: String(raw.timezone||REGISTRATION_SCHEDULE_TIME_ZONE),
+    firstOpenAt: String(raw.firstOpenAt||''),
+    activityDate: String(raw.activityDate||''),
+    windows,
+  };
+}
+function shiftRegistrationDate(dateKey, days) {
+  const m = String(dateKey||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return '';
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2])-1, Number(m[3])));
+  d.setUTCDate(d.getUTCDate()+Number(days||0));
+  return d.toISOString().slice(0,10);
+}
+function taipeiScheduleIso(dateKey, timeText) {
+  const raw = String(dateKey||'')+'T'+String(timeText||'00:00:00')+'+08:00';
+  const ms = Date.parse(raw);
+  return Number.isFinite(ms) ? new Date(ms).toISOString() : '';
+}
+function canonicalRegistrationSchedule(input, dates) {
+  const raw = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+  const enabled = raw.enabled === true || raw.enabled === 'true';
+  const dateKeys = (Array.isArray(dates)?dates:[]).map(d=>String((d&&d.date)||d||'').slice(0,10)).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  const activityDate = dateKeys[0]||'';
+  const firstOpenAt = String(raw.firstOpenAt||'').trim();
+  const base = {version:1,enabled,preset:'three_stage',timezone:REGISTRATION_SCHEDULE_TIME_ZONE,firstOpenAt,activityDate,windows:[]};
+  if (!enabled) return {schedule:base};
+  if (!activityDate) return {error:'啟用報名排程前，請先設定活動日期'};
+  const firstOpenMs = /(?:Z|[+-]\d{2}:\d{2})$/.test(firstOpenAt) ? Date.parse(firstOpenAt) : NaN;
+  if (!Number.isFinite(firstOpenMs)) return {error:'請設定第一次開始報名的日期與時間'};
+  const firstCloseAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-21),'23:59:59.999');
+  const secondOpenAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-19),'00:00:00');
+  const secondCloseAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-7),'23:59:59.999');
+  const thirdOpenAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-6),'00:00:00');
+  const thirdCloseAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-1),'23:59:59.999');
+  if (firstOpenMs>Date.parse(firstCloseAt)) return {error:'第一次開始報名時間必須早於活動前三週的截止時間'};
+  base.windows=[
+    {stage:1,openAt:new Date(firstOpenMs).toISOString(),closeAt:firstCloseAt},
+    {stage:2,openAt:secondOpenAt,closeAt:secondCloseAt},
+    {stage:3,openAt:thirdOpenAt,closeAt:thirdCloseAt},
+  ];
+  return {schedule:base};
+}
+function registrationTimeText(iso) {
+  if (!iso) return '';
+  try {
+    return new Intl.DateTimeFormat('zh-TW', {
+      timeZone:REGISTRATION_SCHEDULE_TIME_ZONE, year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', hour12:false,
+    }).format(new Date(iso));
+  } catch (_e) { return String(iso); }
+}
+function registrationAvailability(session, nowMs=Date.now()) {
+  const manualStatus = String((session && session.status)||'').trim();
+  if (['關閉','已關閉','停用','封存','已封存','取消','已取消','已截止'].includes(manualStatus)) {
+    return { open:false, state:'manual_closed', message:'報名已關閉', nextOpenAt:'', nextCloseAt:'' };
+  }
+  const schedule = parseRegistrationSchedule(session && (session.registration_schedule_json ?? session.registrationSchedule));
+  if (!schedule.enabled || !schedule.windows.length) {
+    return { open:true, state:'open', message:'開放報名中', nextOpenAt:'', nextCloseAt:'', schedule };
+  }
+  const active = schedule.windows.find(w=>nowMs>=w.openMs && nowMs<=w.closeMs);
+  if (active) {
+    return { open:true, state:'open', message:'開放報名中｜截止 '+registrationTimeText(active.closeAt), nextOpenAt:'', nextCloseAt:active.closeAt, schedule };
+  }
+  const next = schedule.windows.find(w=>nowMs<w.openMs);
+  if (next) {
+    const state = nowMs < schedule.windows[0].openMs ? 'upcoming' : 'paused';
+    return { open:false, state, message:(state==='upcoming'?'尚未開放｜':'暫停報名｜')+'下次開放 '+registrationTimeText(next.openAt), nextOpenAt:next.openAt, nextCloseAt:'', schedule };
+  }
+  return { open:false, state:'ended', message:'報名已截止', nextOpenAt:'', nextCloseAt:'', schedule };
+}
 function agreementRequiredOn(v) {
   return !(v === false || v === 'false' || v === 0 || v === '0' || String(v || '').toLowerCase() === 'no' || String(v || '').toLowerCase() === 'off');
 }
@@ -965,6 +1051,9 @@ function calcLimit(s) {
   return dates.reduce((sum, d) => sum + (Number(d.limit) || 0), 0);
 }
 function formatSession(s) {
+  const availability = registrationAvailability(s);
+  const parsedSchedule = parseRegistrationSchedule(s.registration_schedule_json);
+  const registrationSchedule = {...parsedSchedule,windows:parsedSchedule.windows.map(w=>({stage:w.stage,openAt:w.openAt,closeAt:w.closeAt}))};
   return {
     id: s.id, eventId: s.event_id,
     name: s.name, type: s.type, region: s.region || '',
@@ -972,6 +1061,12 @@ function formatSession(s) {
     venue: s.venue, fee: safeNum(s.fee), deposit: safeNum(s.deposit),
     limit: calcLimit(s), maxStalls: safeNum(s.max_stalls),
     count: safeNum(s.current_count), status: s.status,
+    registrationSchedule,
+    registrationOpen: availability.open,
+    registrationState: availability.state,
+    registrationMessage: availability.message,
+    registrationNextOpenAt: availability.nextOpenAt,
+    registrationNextCloseAt: availability.nextCloseAt,
     needReview: s.need_review === true || s.need_review === 'true',
     modules: safeJson(s.modules_json, {}),
     equip: safeJson(s.equip_json, {}),
@@ -4810,14 +4905,17 @@ async function hDeleteBundle(env, b) {
 async function hGetBundlesPublic(env, p) {
   const T = p._tenantId;
   const rows = await dbGet(env, 'session_bundles', `tenant_id=eq.${T}&active=eq.true&select=*`).catch(() => []);
-  const sess = await dbGet(env, 'sessions', `tenant_id=eq.${T}&select=id,name,status`).catch(() => []);
+  const sess = await dbGet(env, 'sessions', `tenant_id=eq.${T}&select=id,name,status,dates_json,registration_schedule_json`).catch(() => []);
   const sMap = {}; sess.forEach(s => sMap[s.id] = s);
   return jsonOk(rows.filter(r => {
     const sids = String(r.session_ids || '').split(',').filter(Boolean);
     return sids.length >= 2 && sids.every(id => sMap[id]);
   }).map(r => {
     const sids = String(r.session_ids || '').split(',').filter(Boolean);
-    return { id: r.id, name: r.name, bundlePrice: r.bundle_price, sessions: sids.map(id => ({ id, name: sMap[id].name })) };
+    return { id: r.id, name: r.name, bundlePrice: r.bundle_price, sessions: sids.map(id => {
+      const row=sMap[id], availability=registrationAvailability(row);
+      return {id,name:row.name,status:row.status,dates:safeJson(row.dates_json,[]),available:availability.open,registrationState:availability.state,registrationMessage:availability.message};
+    }) };
   }));
 }
 // ── 報名建立：計算與寫入分離（B-05）────────────────────────────
@@ -4833,7 +4931,8 @@ async function prepareRegistration(env, b) {
   if (!b.phone) return {error:'請填寫手機'};
   const ses = await getSessionRow(env, b.sessionId, TENANT);
   if (!ses) return {error:'找不到場次'};
-  if (ses.status==='關閉'||ses.status==='停用') return {error:'此場次已關閉報名'};
+  const availability = registrationAvailability(ses);
+  if (!availability.open) return {error:availability.message||'此場次目前未開放報名'};
 
   // ── 合約同意驗證（後端硬性規則）──────────────────────────
   const agreementRequired = agreementRequiredOn(ses.agreement_required);
@@ -6554,6 +6653,8 @@ async function hCreateSession(env, b) {
   if (!await verifyStaff(env,b.email,b.token,TENANT,'sessions')) return jsonErr('無權限');
   const limitErr = await checkTrialSessionLimit(env, TENANT);
   if (limitErr) return jsonErr(limitErr);
+  const scheduleResult = canonicalRegistrationSchedule(b.registrationSchedule, b.dates||[]);
+  if (scheduleResult.error) return jsonErr(scheduleResult.error);
   const id = genId('SES');
   await dbInsert(env,'sessions',{
     id, tenant_id:TENANT, event_id:cleanEventId(b.eventId),
@@ -6577,6 +6678,7 @@ async function hCreateSession(env, b) {
     assigned_staff:(b.assignedStaff||[]).join(','),
     force_cancel:false, created_at:nowIso(),
     payment_profile_id:b.paymentProfileId||b.payment_profile_id||null,
+    registration_schedule_json: scheduleResult.schedule,
     // ── 合約同意設定 ──────────────────────────────────
     agreement_required:   agreementRequiredOn(b.agreementRequired),
     agreement_title:      b.agreementTitle || '報名合約／活動細則與攤商規範',
@@ -6648,6 +6750,11 @@ async function hUpdateSession(env, b) {
   if (b.invoiceTax   !== undefined) patch.invoice_tax_json   = JSON.stringify(b.invoiceTax);
   if (b.customFields !== undefined) patch.custom_fields_json = JSON.stringify(b.customFields);
   if (b.basicEquip   !== undefined) patch.basic_equip        = b.basicEquip || '';
+  if (b.registrationSchedule !== undefined) {
+    const scheduleResult = canonicalRegistrationSchedule(b.registrationSchedule, b.dates||[]);
+    if (scheduleResult.error) return jsonErr(scheduleResult.error);
+    patch.registration_schedule_json = scheduleResult.schedule;
+  }
 
   await dbUpdate(env,'sessions',`id=eq.${encodeURIComponent(b.id)}&tenant_id=eq.${TENANT}`, patch);
   return jsonOk({success:true});
@@ -6692,6 +6799,7 @@ async function hCopySession(env, b) {
   const newId = genId('SES');
   src.id=newId; src.name=(src.name||'')+'（複製）';
   src.current_count=0; src.status='報名中';
+  src.registration_schedule_json={version:1,enabled:false,preset:'three_stage',timezone:REGISTRATION_SCHEDULE_TIME_ZONE,windows:[]};
   src.force_cancel=false; src.force_cancel_target_id=null; src.force_cancel_deadline=null;
   src.created_at=nowIso();
   await dbInsert(env,'sessions',src);
