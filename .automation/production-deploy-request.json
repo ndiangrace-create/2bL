@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "00994a3154039ab47a18d0c59c1b45e8d95d805c",
-  "expected_cloudflare_version": "ede72cd7-0eec-4830-8066-84eea4c88681",
-  "reason": "新增三階段報名開放排程並維持既有登入與權限"
+  "approved_source_commit": "80c540143ea5e737c85fd97d3aceadaa806131cf",
+  "expected_cloudflare_version": "1644e59e-b090-4a04-ae1f-8ca9c8f82859",
+  "reason": "報名排程改為每階段可自行設定，維持既有登入、權限與前後台隔離"
 }
