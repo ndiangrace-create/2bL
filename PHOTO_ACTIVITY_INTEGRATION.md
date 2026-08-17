@@ -5,6 +5,7 @@
 ## 專案基準
 
 - 正式設定來源：Supabase `douhmxipedgpfbvfynbq` → `tenants.config_json.photoActivity`。
+- 正式設定尚未存在時，第一次讀取會將已確認的英式花園內容寫入 `tuibile`；後續前台與後台都只讀取同一份正式設定。
 - 存取路徑：2BL 後台 → `2bl-v7` → Supabase；活動網站只讀取公開展示設定。
 - 現有活動網站、拍照、相簿、核銷與管理功能維持不變。
 - 相片原檔與活動執行紀錄仍由既有活動網站的受管儲存空間保存，不複製進 2BL。
