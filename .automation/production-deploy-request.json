@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "a1311a34da4dff231f09f5fd89ac17f059ffb43a",
+  "approved_source_commit": "fd0412e6b8b36c271b904d43245482c7ade98e36",
   "expected_cloudflare_version": "e3c4a63c-4b75-407e-b7c8-ac6ff1fdc0f9",
   "reason": "補齊互動拍照活動首次正式入庫，確保 tuibile 後台與活動網站共用同一份 Supabase 設定"
 }
