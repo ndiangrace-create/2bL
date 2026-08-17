@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "25654f0db032dab433b427d6c7e03eedb30d530d",
-  "expected_cloudflare_version": "3c90045b-8297-452c-96d6-9f96e1c1cad6",
-  "reason": "將既有互動拍照活動接入 2BL 後台設定，保留拍照、相簿、核銷與業主一鍵下載功能"
+  "approved_source_commit": "a1311a34da4dff231f09f5fd89ac17f059ffb43a",
+  "expected_cloudflare_version": "e3c4a63c-4b75-407e-b7c8-ac6ff1fdc0f9",
+  "reason": "補齊互動拍照活動首次正式入庫，確保 tuibile 後台與活動網站共用同一份 Supabase 設定"
 }
