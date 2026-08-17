@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-17T19:57:10.616Z",
+  "generated_at": "2026-08-17T20:49:02.892Z",
   "project_id": "douhmxipedgpfbvfynbq",
   "formal_files": [
     "index.html",
@@ -104,6 +104,21 @@
       },
       {
         "file": "index.html",
+        "method": "getItem",
+        "key": "2bl_member_token"
+      },
+      {
+        "file": "index.html",
+        "method": "setItem",
+        "key": "2bl_member_token"
+      },
+      {
+        "file": "index.html",
+        "method": "removeItem",
+        "key": "2bl_member_token"
+      },
+      {
+        "file": "index.html",
         "method": "setItem",
         "key": "tb_member_email"
       },
@@ -131,11 +146,6 @@
         "file": "index.html",
         "method": "getItem",
         "key": "2bl_current_tab"
-      },
-      {
-        "file": "index.html",
-        "method": "removeItem",
-        "key": "2bl_member_token"
       },
       {
         "file": "index.html",
