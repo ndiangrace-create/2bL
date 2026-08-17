@@ -46,6 +46,8 @@
 ## 回復點
 
 - 部署前 Worker version：`d7110474-6e59-4a67-857d-fe54d3a92db0`
+- 前一個已驗證部署核准 commit：`2988cea09ba9470971921cf9246da42c8d267a8d`
+- 前一個 Cloudflare deployment：`ba1fe844-c673-4a91-836a-0038871157f2`
 - 正式回復必須另行取得人工確認；不得更換 Worker、Route 或 Domain 取代回復流程。
 
 ## 基準限制
