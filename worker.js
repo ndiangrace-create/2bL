@@ -4938,11 +4938,7 @@ async function hGetPhotoActivityConfig(env,p){
   const rows=await dbGet(env,'tenants',`id=eq.${TENANT}&select=config_json`);
   if(!rows.length) return jsonErr('找不到活動主辦設定',404);
   const cfg=safeJson(rows[0].config_json,{});
-  if(!cfg.photoActivity||typeof cfg.photoActivity!=='object'){
-    cfg.photoActivity=_photoActivityConfig(DEFAULT_PHOTO_ACTIVITY_CONFIG);
-    await dbUpdate(env,'tenants',`id=eq.${TENANT}`,{config_json:JSON.stringify(cfg)});
-  }
-  return jsonOk(_photoActivityConfig(cfg.photoActivity));
+  return jsonOk(_photoActivityConfig(cfg.photoActivity||DEFAULT_PHOTO_ACTIVITY_CONFIG));
 }
 async function hGetSiteConfig(env, p) {
   const TENANT = (p && p._tenantId) ;  // M-02：tenant 已由路由層驗證（見 routeGet/routePost）
