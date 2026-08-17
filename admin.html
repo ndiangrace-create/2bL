@@ -1765,7 +1765,7 @@
     <section id="page-leads" class="hidden"><div class="page-title"><div><h2>活動名單</h2><div class="sub">拍照框（民眾）與會員（攤商）以 Email 合併去重，可篩選、匯出，用於再行銷。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadLeads()">重新整理</button></div></div><div class="filter-row"><input id="leadSearch" placeholder="搜尋姓名、Email、手機、品牌" oninput="renderLeads()"></div><div id="leadStats" class="sub" style="margin:6px 0 10px"></div><div id="leadFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div><div id="leadList"><div class="loading">載入活動名單中…</div></div></section>
     <section id="page-finance" class="hidden"><div class="page-title"><div><h2>財務總表</h2><div class="sub">收入、退款、支出分開；月／季／年與各場損益一次看。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadAccountingReport()">重新整理</button><button class="btn secondary" onclick="downloadAccountingCsv()">下載 CSV</button></div></div><div class="filter-row"><select id="acctMode" onchange="acctModeChanged()"><option value="month">月報</option><option value="quarter">季報</option><option value="year">年報</option><option value="custom">自訂區間</option></select><input id="acctAnchor" type="date" onchange="loadAccountingReport()"><input id="acctStart" class="hidden" type="date"><input id="acctEnd" class="hidden" type="date"><button id="acctCustomBtn" class="btn secondary hidden" onclick="loadAccountingReport()">套用區間</button></div><div id="accountingBody"><div class="loading">載入財務總表中…</div></div></section>
     <section id="page-consignment" class="hidden"><div class="page-title"><div><h2>寄賣檔期／商品／POS</h2><div class="sub">寄賣申請、錄取後商品建檔、條碼入庫、庫存與現場結帳共用同一份正式資料。</div></div></div><div class="cards"><div class="card" style="padding:18px"><h3>寄賣檔期與商品管理</h3><p>建立檔期、設定抽成與進撤場、審核品牌、核准商品及列印條碼。</p><button class="btn" onclick="window.open('consignment.html?admin=1&tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟寄賣管理</button></div><div class="card" style="padding:18px"><h3>條碼入庫與 POS</h3><p>支援手機相機、條碼槍及手動輸入；可入庫、結帳、撤場退回及取消交易回補庫存。</p><button class="btn" onclick="window.open('pos.html?tenant='+encodeURIComponent(AdminState.tenantId),'_blank')">開啟 POS／掃碼</button></div></div></section>
-    <section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>活動拍照框</b><span>行銷框 / 名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
+<section id="page-settings" class="hidden"><div class="page-title"><div><h2>系統設定</h2><div class="sub">設定以全螢幕彈窗開啟，不在主畫面堆內容。</div></div></div><div class="settings-grid"><button class="settings-tile" onclick="openPhotoActivitySettings()"><div class="ico">🌿</div><b>互動拍照活動</b><span>主題 / 任務 / 相簿</span></button><button class="settings-tile" onclick="openEmailTemplates()"><div class="ico">✉️</div><b>信件模板</b><span>正式模板管理</span></button><button class="settings-tile" onclick="openPaymentSettings()"><div class="ico">💳</div><b>付款資訊</b><span>銀行 / LINE Pay / 刷卡</span></button><button class="settings-tile" onclick="openAgreementSettings()"><div class="ico">📋</div><b>合約管理</b><span>三個模板可存</span></button><button class="settings-tile" onclick="openStaffSettings()"><div class="ico">🔐</div><b>權限管理</b><span>系列 / 指定場次</span></button><button class="settings-tile" onclick="openCompanySettings()"><div class="ico">🏷️</div><b>公司資料</b><span>登入頁 / 服務資訊</span></button><button class="settings-tile" onclick="openHomepageSettings()"><div class="ico">🏠</div><b>首頁顯示</b><span>公告 / 封面 / LINE</span></button><button class="settings-tile" onclick="openThemeEvents()"><div class="ico">🎪</div><b>主題活動</b><span>首頁精選主題圖</span></button><button class="settings-tile" onclick="openVenueMaps()"><div class="ico">🗺️</div><b>常用場地圖</b><span>存放 / 重用場地圖</span></button><button class="settings-tile" onclick="openPhotoFrames()"><div class="ico">📸</div><b>行銷拍照框</b><span>單框 / 行銷名單</span></button><button class="settings-tile" onclick="openOnsitePasscodes()"><div class="ico">🎟️</div><b>現場通行碼</b><span>工讀生免登入</span></button><button class="settings-tile" onclick="openErrorLogs()"><div class="ico">🚨</div><b>系統異常</b><span>錯誤紀錄 / 查修依據</span></button></div></section>
   </main>
 </section>
 
@@ -1898,7 +1898,7 @@ function showLoginError(msg){const e=$('loginErr'); e.textContent=msg; e.classLi
 function saveSession(s){ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); AdminState.email=s.email; AdminState.token=s.token; AdminState.role=s.role||''; AdminState.name=s.name||s.email; AdminState.authorization=s.authorization||null; if(s.tenantId) AdminState.tenantId=s.tenantId; }
 function adminCan(key){ return !!(AdminState.authorization&&AdminState.authorization.capabilities&&AdminState.authorization.capabilities[key]); }
 function applyAdminAuthorizationUI(){
-  const ownerOnly=['openEmailTemplates','openPaymentSettings','openAgreementSettings','openStaffSettings','openCompanySettings','openHomepageSettings','openVenueMaps','openErrorLogs','newFeatEvent','createFeatEvent','saveFinanceShare','unlockFinanceSettlement'];
+  const ownerOnly=['openPhotoActivitySettings','openEmailTemplates','openPaymentSettings','openAgreementSettings','openStaffSettings','openCompanySettings','openHomepageSettings','openVenueMaps','openErrorLogs','newFeatEvent','createFeatEvent','saveFinanceShare','unlockFinanceSettlement'];
   document.querySelectorAll('[onclick]').forEach(el=>{
     const code=String(el.getAttribute('onclick')||'');
     const destructive=/\b(delete|removeStaff|purgeErrorLogs)/i.test(code);
@@ -5032,6 +5032,71 @@ function exportLeadsCsv(){
   setTimeout(()=>URL.revokeObjectURL(url),1500);
   toast('已匯出 '+list.length+' 筆');
 }
+let AdminPhotoActivity=null;
+function paTaskLines(groups){
+  return (groups||[]).flatMap(g=>(g.actions||[]).map(a=>[g.category,g.target,a].join('｜'))).join('\n');
+}
+function paParseTaskLines(value){
+  const map=new Map();
+  String(value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(line=>{
+    const parts=line.split('｜').map(x=>x.trim()); if(parts.length<3)return;
+    const category=['colleague','leadership','family'].includes(parts[0])?parts[0]:'colleague';
+    const target=parts[1],action=parts.slice(2).join('｜');const key=category+'\n'+target;
+    if(!map.has(key))map.set(key,{category,target,actions:[]});map.get(key).actions.push(action);
+  });
+  return Array.from(map.values());
+}
+function paOpen(url){const value=String(url||'').trim();if(value)window.open(value,'_blank','noopener,noreferrer');}
+async function paCopy(url,label){
+  const value=String(url||'').trim();if(!value)return toast('尚未設定網址');
+  try{await navigator.clipboard.writeText(value);toast('已複製'+label);}catch(e){prompt('請複製'+label,value);}
+}
+function paShare(url,title){
+  const value=String(url||'').trim();if(!value)return toast('尚未設定網址');
+  if(navigator.share){navigator.share({title:title||'活動連結',url:value}).catch(()=>{});return;}
+  window.open('https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(value),'_blank','noopener,noreferrer');
+}
+async function openPhotoActivitySettings(){
+  openPanel('互動拍照活動','保留現有玩法，只在這裡更新主題、文字、圖片、任務與分享網址','<div class="loading">載入中…</div>');
+  try{AdminPhotoActivity=await api({action:'getPhotoActivityConfig'});renderPhotoActivitySettings();}
+  catch(e){$('panelBody').innerHTML='<div class="empty">活動設定載入失敗<div class="sub">'+safe(e&&e.message?e.message:e)+'</div></div>';}
+}
+function renderPhotoActivitySettings(){
+  const c=AdminPhotoActivity||{};const fr=(c.frames||[]).slice(0,3);
+  while(fr.length<3)fr.push({name:'',url:'',tone:'#53644c',description:''});
+  const field=(id,label,value,placeholder='')=>'<div class="form-field full"><label>'+label+'</label><input id="'+id+'" value="'+attr(value||'')+'" placeholder="'+attr(placeholder)+'"></div>';
+  const frameHtml=fr.map((f,i)=>'<div class="report-card" style="margin-bottom:10px"><b>相框 '+(i+1)+'</b>'
+    +field('pa_frame_name_'+i,'名稱',f.name)+field('pa_frame_desc_'+i,'風格說明',f.description)
+    +'<div class="form-field full"><label>相框圖片網址</label><div style="display:flex;gap:8px"><input id="pa_frame_url_'+i+'" value="'+attr(f.url||'')+'"><label class="btn secondary small" style="display:inline-flex;align-items:center">上傳<input type="file" accept="image/png,image/*" hidden onchange="uploadPhotoActivityImage(this,\'pa_frame_url_'+i+'\',true)"></label></div></div>'
+    +'<div class="form-field"><label>識別色</label><input id="pa_frame_tone_'+i+'" type="color" value="'+attr(f.tone||'#53644c')+'"></div>'
+    +(f.url?'<img src="'+attr(f.url)+'" alt="" style="width:72px;height:128px;object-fit:contain;background:#f5f5f5;border-radius:8px">':'')+'</div>').join('');
+  $('panelBody').innerHTML='<div class="notice"><b>目前網站功能全部保留</b><div class="sub">拍照、隨機抽題、三款相框、30天相簿、QR核銷及管理台都不會因修改文字而消失。</div></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><button class="btn small" onclick="paOpen(AdminPhotoActivity.activityUrl)">開啟活動網站</button><button class="btn secondary small" onclick="paShare(AdminPhotoActivity.activityUrl,AdminPhotoActivity.title)">分享活動</button><button class="btn secondary small" onclick="paOpen(AdminPhotoActivity.galleryUrl)">開啟公開相簿</button><button class="btn secondary small" onclick="paShare(AdminPhotoActivity.galleryUrl,AdminPhotoActivity.galleryTitle)">分享相簿</button><button class="btn secondary small" onclick="paOpen(AdminPhotoActivity.adminUrl)">相簿管理／整本下載</button></div>'
+    +'<h3>活動名稱與文字</h3><div class="form-grid">'
+    +field('pa_organizer','主辦／執行單位顯示',c.organizerLabel)+field('pa_theme','主題名稱',c.themeName)
+    +field('pa_title','活動標題',c.title)+field('pa_gallery_title','相簿名稱',c.galleryTitle)
+    +field('pa_subtitle','活動說明',c.subtitle)+field('pa_hero_message','首頁打字訊息',c.heroMessage)
+    +'<div class="form-field full"><label>照片使用同意文字</label><textarea id="pa_consent" rows="3">'+safe(c.consentText||'')+'</textarea></div></div>'
+    +'<h3>網址與分享</h3><div class="form-grid">'+field('pa_activity_url','活動分享網址',c.activityUrl)+field('pa_gallery_url','業主／賓客公開相簿網址',c.galleryUrl)+field('pa_admin_url','活動管理、刪照與整本下載入口',c.adminUrl)+'</div>'
+    +'<h3>首頁底圖</h3><div class="form-grid"><div class="form-field full"><label>電腦版底圖</label><div style="display:flex;gap:8px"><input id="pa_hero_desktop" value="'+attr(c.heroDesktopUrl||'')+'"><label class="btn secondary small" style="display:inline-flex;align-items:center">上傳<input type="file" accept="image/*" hidden onchange="uploadPhotoActivityImage(this,\'pa_hero_desktop\',false)"></label></div></div><div class="form-field full"><label>手機版底圖</label><div style="display:flex;gap:8px"><input id="pa_hero_mobile" value="'+attr(c.heroMobileUrl||'')+'"><label class="btn secondary small" style="display:inline-flex;align-items:center">上傳<input type="file" accept="image/*" hidden onchange="uploadPhotoActivityImage(this,\'pa_hero_mobile\',false)"></label></div></div></div>'
+    +'<h3>主題顏色</h3><div class="form-grid"><div class="form-field"><label>主色</label><input id="pa_primary" type="color" value="'+attr(c.primaryColor||'#53644c')+'"></div><div class="form-field"><label>點綴色</label><input id="pa_accent" type="color" value="'+attr(c.accentColor||'#bf9556')+'"></div><div class="form-field"><label>底色</label><input id="pa_paper" type="color" value="'+attr(c.paperColor||'#fffaf1')+'"></div></div>'
+    +'<h3>三款拍照框</h3>'+frameHtml
+    +'<h3>隨機任務題庫</h3><div class="notice"><div class="sub">每行一題，格式為：分類｜找誰合照｜指定動作。分類只用 colleague、leadership、family。</div></div><textarea id="pa_tasks" rows="18" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:14px">'+safe(paTaskLines(c.tasks))+'</textarea>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" onclick="savePhotoActivitySettings()">儲存全部設定</button><button class="btn secondary" onclick="paCopy(document.getElementById(\'pa_activity_url\').value,\'活動網址\')">複製活動網址</button><button class="btn secondary" onclick="paCopy(document.getElementById(\'pa_gallery_url\').value,\'相簿網址\')">複製相簿網址</button></div>';
+}
+async function uploadPhotoActivityImage(input,targetId,transparent){
+  const f=input&&input.files&&input.files[0];if(!f)return;if(f.size>5*1024*1024){toast('圖片請小於5MB');return;}
+  try{toast('圖片上傳中…');const image=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});const out=await apiPost({action:'uploadCover',image});if(!out.url)throw new Error('沒有取得圖片網址');$(targetId).value=out.url;toast(transparent?'相框已上傳':'底圖已上傳');}
+  catch(e){toast('圖片上傳失敗：'+(e&&e.message?e.message:e),6000);}
+}
+async function savePhotoActivitySettings(){
+  const get=id=>String(($(id)||{}).value||'').trim();
+  const config={enabled:true,organizerLabel:get('pa_organizer'),themeName:get('pa_theme'),title:get('pa_title'),galleryTitle:get('pa_gallery_title'),subtitle:get('pa_subtitle'),heroMessage:get('pa_hero_message'),consentText:get('pa_consent'),activityUrl:get('pa_activity_url'),galleryUrl:get('pa_gallery_url'),adminUrl:get('pa_admin_url'),heroDesktopUrl:get('pa_hero_desktop'),heroMobileUrl:get('pa_hero_mobile'),primaryColor:get('pa_primary'),accentColor:get('pa_accent'),paperColor:get('pa_paper'),frames:[0,1,2].map(i=>({name:get('pa_frame_name_'+i),description:get('pa_frame_desc_'+i),url:get('pa_frame_url_'+i),tone:get('pa_frame_tone_'+i)})),tasks:paParseTaskLines(get('pa_tasks'))};
+  if(!config.title||!config.activityUrl||config.frames.some(x=>!x.name||!x.url)||!config.tasks.length)return toast('請確認活動名稱、網址、三款相框與任務題庫都有填寫',6000);
+  try{const out=await apiPost({action:'savePhotoActivityConfig',config});AdminPhotoActivity=out.config||config;toast('互動拍照活動設定已儲存');renderPhotoActivitySettings();}
+  catch(e){toast('儲存失敗：'+(e&&e.message?e.message:e),7000);}
+}
+
 let AdminPhotoFrames=[]; let AdminPhotoLeads=[];
 function pfScopeLabel(f){
   const t=String(f.scope_type||'none');

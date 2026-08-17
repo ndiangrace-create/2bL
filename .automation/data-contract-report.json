@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T11:06:28.277Z",
+  "generated_at": "2026-08-17T17:37:05.231Z",
   "project_id": "douhmxipedgpfbvfynbq",
   "formal_files": [
     "index.html",
@@ -16,6 +16,7 @@
     "error_logs",
     "events",
     "finance_items",
+    "finance_share_links",
     "invoices",
     "member_credit_ledger",
     "member_notifications",

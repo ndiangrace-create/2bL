@@ -4875,6 +4875,70 @@ async function hGetInvoiceList(env, p) {
 }
 
 // getSiteConfig
+const DEFAULT_PHOTO_ACTIVITY_CONFIG = {
+  enabled:true,
+  organizerLabel:'兔彼樂共創活動',
+  themeName:'英式花園派對',
+  title:'英式花園派對',
+  subtitle:'抽一張好合拍任務，和同事、長官與家人留下今天的共同回憶',
+  heroMessage:'歡迎來到英式花園派對，準備好和大家一起留下今天的美好回憶了嗎？',
+  activityUrl:'https://g.2b-love.com/?openExternalBrowser=1',
+  galleryUrl:'https://g.2b-love.com/?album=1&openExternalBrowser=1',
+  adminUrl:'https://g.2b-love.com/admin',
+  galleryTitle:'花園留影',
+  consentText:'我同意將本張照片用於本次活動相簿，公開30天後停止展示。',
+  primaryColor:'#53644c', accentColor:'#bf9556', paperColor:'#fffaf1',
+  heroDesktopUrl:'https://g.2b-love.com/garden-assets/hero-desktop.jpg',
+  heroMobileUrl:'https://g.2b-love.com/garden-assets/hero-mobile.jpg',
+  frames:[
+    {name:'經典英倫藍',url:'https://g.2b-love.com/garden-assets/frame-blue.png',tone:'#315573',description:'霧藍、海軍藍與古董金，俐落沉穩'},
+    {name:'森林花園綠',url:'https://g.2b-love.com/garden-assets/frame-green.png',tone:'#4f6d57',description:'森林綠、鼠尾草與黃銅金，自然中性'},
+    {name:'奶油玫瑰金',url:'https://g.2b-love.com/garden-assets/frame-rose.png',tone:'#9a6f68',description:'奶油白、灰粉與香檳金，溫暖典雅'}
+  ],
+  tasks:[
+    {category:'colleague',target:'與三名同事一起合照',actions:['四人一起做出英式貴族揮手姿勢','按照身高排列，一起比出勝利手勢','四人用手臂合作拼出一朵花','一人當主角，另外三人一起介紹主角','四人一起做出今天最開心的表情','四人看向不同方向，拍一張花園時尚照']},
+    {category:'colleague',target:'找一位不同單位的同事合照',actions:['一起做出初次見面的正式握手姿勢','背靠背比出勝利手勢','一人指左、一人指右，拍出默契錯亂照','一起做出英式管家迎賓姿勢','一起假裝端著下午茶','一起比出代表公司的手勢']},
+    {category:'colleague',target:'找同部門同事完成團體照',actions:['一起做出團隊加油手勢','按照身高排列完成團體照','每個人做出不同的開心表情','一起比出代表部門的手勢','一人站中間，其他人一起介紹今日主角','一起做出英式花園貴族揮手姿勢']},
+    {category:'leadership',target:'找一位同事及一位主管一起合照',actions:['三人一起比出大拇指','依序擺出嚴肅、微笑、大笑三種表情','一起做出團隊加油手勢','兩位同事一起介紹主管這位今日主角','三人一起做出英式貴族揮手姿勢','三人一起比出代表團隊的手勢']},
+    {category:'leadership',target:'找一位長官完成合照',actions:['一起比出勝利手勢','一起做出英式貴族揮手姿勢','一起比出大拇指，完成今天很可以合照','互相指向對方，完成今天遇見您趣味照','一起做出團隊加油手勢','一起拍一張自然大笑的花園合照']},
+    {category:'family',target:'找另一組家庭，兩組家庭一起合照',actions:['所有人一起比出勝利手勢','大人站後方、孩子站前方完成花園合照','每個人用手比出一朵花','所有人一起做出最開心的表情','兩組家庭一起做出英式貴族揮手姿勢','每個人看向不同方向，完成趣味團體照']}
+  ]
+};
+function _photoActivityConfig(v){
+  const src=(v&&typeof v==='object')?v:{};
+  const pick=(key,max,def)=>String(src[key]===undefined?def:src[key]).trim().slice(0,max);
+  const color=(key,def)=>/^#[0-9a-f]{6}$/i.test(String(src[key]||''))?String(src[key]):def;
+  const frames=(Array.isArray(src.frames)?src.frames:DEFAULT_PHOTO_ACTIVITY_CONFIG.frames).slice(0,3).map((f,i)=>({
+    name:String(f&&f.name||DEFAULT_PHOTO_ACTIVITY_CONFIG.frames[i].name).trim().slice(0,30),
+    url:String(f&&f.url||DEFAULT_PHOTO_ACTIVITY_CONFIG.frames[i].url).trim().slice(0,1000),
+    tone:/^#[0-9a-f]{6}$/i.test(String(f&&f.tone||''))?String(f.tone):DEFAULT_PHOTO_ACTIVITY_CONFIG.frames[i].tone,
+    description:String(f&&f.description||DEFAULT_PHOTO_ACTIVITY_CONFIG.frames[i].description).trim().slice(0,80)
+  }));
+  const categories=new Set(['colleague','leadership','family']);
+  const tasks=(Array.isArray(src.tasks)?src.tasks:DEFAULT_PHOTO_ACTIVITY_CONFIG.tasks).slice(0,30).map((g)=>({
+    category:categories.has(String(g&&g.category))?String(g.category):'colleague',
+    target:String(g&&g.target||'').trim().slice(0,80),
+    actions:(Array.isArray(g&&g.actions)?g.actions:[]).map(x=>String(x||'').trim().slice(0,80)).filter(Boolean).slice(0,20)
+  })).filter(g=>g.target&&g.actions.length);
+  return {
+    enabled:src.enabled!==false,
+    organizerLabel:pick('organizerLabel',40,DEFAULT_PHOTO_ACTIVITY_CONFIG.organizerLabel),
+    themeName:pick('themeName',40,DEFAULT_PHOTO_ACTIVITY_CONFIG.themeName), title:pick('title',50,DEFAULT_PHOTO_ACTIVITY_CONFIG.title),
+    subtitle:pick('subtitle',120,DEFAULT_PHOTO_ACTIVITY_CONFIG.subtitle), heroMessage:pick('heroMessage',100,DEFAULT_PHOTO_ACTIVITY_CONFIG.heroMessage),
+    activityUrl:pick('activityUrl',1000,DEFAULT_PHOTO_ACTIVITY_CONFIG.activityUrl), galleryUrl:pick('galleryUrl',1000,DEFAULT_PHOTO_ACTIVITY_CONFIG.galleryUrl),
+    adminUrl:pick('adminUrl',1000,DEFAULT_PHOTO_ACTIVITY_CONFIG.adminUrl), galleryTitle:pick('galleryTitle',30,DEFAULT_PHOTO_ACTIVITY_CONFIG.galleryTitle),
+    consentText:pick('consentText',160,DEFAULT_PHOTO_ACTIVITY_CONFIG.consentText),
+    primaryColor:color('primaryColor',DEFAULT_PHOTO_ACTIVITY_CONFIG.primaryColor), accentColor:color('accentColor',DEFAULT_PHOTO_ACTIVITY_CONFIG.accentColor), paperColor:color('paperColor',DEFAULT_PHOTO_ACTIVITY_CONFIG.paperColor),
+    heroDesktopUrl:pick('heroDesktopUrl',1000,DEFAULT_PHOTO_ACTIVITY_CONFIG.heroDesktopUrl), heroMobileUrl:pick('heroMobileUrl',1000,DEFAULT_PHOTO_ACTIVITY_CONFIG.heroMobileUrl),
+    frames:frames.length===3?frames:DEFAULT_PHOTO_ACTIVITY_CONFIG.frames, tasks:tasks.length?tasks:DEFAULT_PHOTO_ACTIVITY_CONFIG.tasks
+  };
+}
+async function hGetPhotoActivityConfig(env,p){
+  const TENANT=p&&p._tenantId;
+  const rows=await dbGet(env,'tenants',`id=eq.${TENANT}&select=config_json`);
+  const cfg=rows.length?safeJson(rows[0].config_json,{}):{};
+  return jsonOk(_photoActivityConfig(cfg.photoActivity));
+}
 async function hGetSiteConfig(env, p) {
   const TENANT = (p && p._tenantId) ;  // M-02：tenant 已由路由層驗證（見 routeGet/routePost）
   const rows = await dbGet(env, 'tenants', `id=eq.${TENANT}&select=config_json,line_url,bank_info`);
@@ -7449,6 +7513,16 @@ async function hSaveSiteConfig(env, b) {
   return jsonOk({success:true});
 }
 
+async function hSavePhotoActivityConfig(env,b){
+  const TENANT=b&&b._tenantId;
+  if(!await verifyStaff(env,b.email,b.token,TENANT,'superadmin')) return jsonErr('只有總管理者可以修改互動拍照活動');
+  const existing=await dbGet(env,'tenants',`id=eq.${TENANT}&select=config_json`);
+  const config=existing.length?safeJson(existing[0].config_json,{}):{};
+  config.photoActivity=_photoActivityConfig(b.config);
+  await dbUpdate(env,'tenants',`id=eq.${TENANT}`,{config_json:JSON.stringify(config)});
+  return jsonOk({success:true,config:config.photoActivity});
+}
+
 // ── 本場收款設定：資料庫為唯一來源 ─────────────────────────────
 function _paymentMethodsAllowed(v){
   const x = (v && typeof v === 'object') ? v : safeJson(v, {});
@@ -8788,6 +8862,7 @@ async function routeGet(env, action, p, req) {
     case 'memberNotifications': return hMemberNotifications(env,p);
     case 'getInvoiceList':      return hGetInvoiceList(env,p);
     case 'getSiteConfig':       return hGetSiteConfig(env,p);
+    case 'getPhotoActivityConfig': return hGetPhotoActivityConfig(env,p);
     case 'getAgreementTemplate': return hGetAgreementTemplate(env,p);
     case 'getAgreementTemplates': return hGetAgreementTemplate(env,p);
     case 'getForceRefundList':  return hGetForceRefundList(env,p);
@@ -8939,6 +9014,7 @@ async function routePost(env, action, b, ctx, req) {
     case 'deleteVenueMap':      return hDeleteVenueMap(env,b);
     case 'setFastPass':         return hSetFastPass(env,b);
     case 'saveSiteConfig':      return hSaveSiteConfig(env,b);
+    case 'savePhotoActivityConfig': return hSavePhotoActivityConfig(env,b);
     case 'updateRegistrationAction':       return hUpdateRegistrationAction(env,b);
     case 'savePaymentSettings':       return hSavePaymentSettings(env,b);
     case 'savePaymentProfile':       return hSavePaymentProfile(env,b);
