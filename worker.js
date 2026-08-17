@@ -322,6 +322,11 @@ function safeJson(str, fallback) {
   try { return JSON.parse(str); } catch { return fallback; }
 }
 const REGISTRATION_SCHEDULE_TIME_ZONE = 'Asia/Taipei';
+function registrationScheduleDayValue(value) {
+  if (value === null || value === undefined || String(value).trim() === '') return null;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= 3650 ? n : NaN;
+}
 function parseRegistrationSchedule(value) {
   const raw = safeJson(value, null);
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { enabled:false, windows:[] };
@@ -332,6 +337,20 @@ function parseRegistrationSchedule(value) {
     if (!Number.isFinite(openMs) || !Number.isFinite(closeMs) || openMs > closeMs) return null;
     return { stage:Number((w && w.stage) || index + 1), openAt, closeAt, openMs, closeMs };
   }).filter(Boolean).sort((a,b)=>a.openMs-b.openMs);
+  const stages = (Array.isArray(raw.stages) ? raw.stages : []).map((stage, index) => {
+    if (!stage || typeof stage !== 'object' || Array.isArray(stage)) return null;
+    const stageNumber = Number(stage.stage || index + 1);
+    if (![1,2,3].includes(stageNumber)) return null;
+    const closeDaysBefore = registrationScheduleDayValue(stage.closeDaysBefore);
+    const openDaysBefore = stageNumber === 1 ? null : registrationScheduleDayValue(stage.openDaysBefore);
+    const firstOpenAt = stageNumber === 1 ? String(stage.firstOpenAt || stage.openAt || '').trim() : '';
+    return {
+      stage:stageNumber,
+      firstOpenAt,
+      openDaysBefore:Number.isFinite(openDaysBefore) ? openDaysBefore : null,
+      closeDaysBefore:Number.isFinite(closeDaysBefore) ? closeDaysBefore : null,
+    };
+  }).filter(Boolean).sort((a,b)=>a.stage-b.stage);
   return {
     version: Number(raw.version)||1,
     enabled: raw.enabled === true || raw.enabled === 'true',
@@ -339,6 +358,7 @@ function parseRegistrationSchedule(value) {
     timezone: String(raw.timezone||REGISTRATION_SCHEDULE_TIME_ZONE),
     firstOpenAt: String(raw.firstOpenAt||''),
     activityDate: String(raw.activityDate||''),
+    stages,
     windows,
   };
 }
@@ -356,26 +376,61 @@ function taipeiScheduleIso(dateKey, timeText) {
 }
 function canonicalRegistrationSchedule(input, dates) {
   const raw = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
-  const enabled = raw.enabled === true || raw.enabled === 'true';
+  const requestedEnabled = raw.enabled === true || raw.enabled === 'true';
   const dateKeys = (Array.isArray(dates)?dates:[]).map(d=>String((d&&d.date)||d||'').slice(0,10)).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
   const activityDate = dateKeys[0]||'';
-  const firstOpenAt = String(raw.firstOpenAt||'').trim();
-  const base = {version:1,enabled,preset:'three_stage',timezone:REGISTRATION_SCHEDULE_TIME_ZONE,firstOpenAt,activityDate,windows:[]};
-  if (!enabled) return {schedule:base};
+  const legacyFirstOpenAt = String(raw.firstOpenAt||'').trim();
+  const suppliedStages = Array.isArray(raw.stages) ? raw.stages : [];
+  const legacyEnabledInput = requestedEnabled && !suppliedStages.length && legacyFirstOpenAt;
+  const inputStages = legacyEnabledInput ? [
+    {stage:1,firstOpenAt:legacyFirstOpenAt,closeDaysBefore:21},
+    {stage:2,openDaysBefore:19,closeDaysBefore:7},
+    {stage:3,openDaysBefore:6,closeDaysBefore:1},
+  ] : suppliedStages;
+  const base = {version:2,enabled:false,preset:'custom_stages',timezone:REGISTRATION_SCHEDULE_TIME_ZONE,activityDate,stages:[],windows:[]};
+
+  for (let stageNumber=1; stageNumber<=3; stageNumber++) {
+    const stageRaw = inputStages.find((stage,index)=>Number((stage&&stage.stage)||index+1)===stageNumber) || {};
+    const firstOpenAt = stageNumber===1 ? String(stageRaw.firstOpenAt||stageRaw.openAt||'').trim() : '';
+    const openRaw = stageNumber===1 ? '' : stageRaw.openDaysBefore;
+    const closeRaw = stageRaw.closeDaysBefore;
+    const hasFirstOpen = stageNumber===1 && !!firstOpenAt;
+    const hasOpenDays = stageNumber>1 && openRaw!==null && openRaw!==undefined && String(openRaw).trim()!=='';
+    const hasCloseDays = closeRaw!==null && closeRaw!==undefined && String(closeRaw).trim()!=='';
+    const hasAny = stageNumber===1 ? (hasFirstOpen||hasCloseDays) : (hasOpenDays||hasCloseDays);
+    if (!hasAny) continue;
+    if (stageNumber===1 && (!hasFirstOpen||!hasCloseDays)) return {error:'第 1 段請同時填寫開始時間與截止天數；整段不用時請全部留白'};
+    if (stageNumber>1 && (!hasOpenDays||!hasCloseDays)) return {error:`第 ${stageNumber} 段請同時填寫重開天數與截止天數；整段不用時請全部留白`};
+    const closeDaysBefore = registrationScheduleDayValue(closeRaw);
+    const openDaysBefore = stageNumber===1 ? null : registrationScheduleDayValue(openRaw);
+    if (!Number.isFinite(closeDaysBefore)) return {error:`第 ${stageNumber} 段截止天數請填 1～3650 的整數`};
+    if (stageNumber>1 && !Number.isFinite(openDaysBefore)) return {error:`第 ${stageNumber} 段重開天數請填 1～3650 的整數`};
+    if (stageNumber===1) {
+      const firstOpenMs = /(?:Z|[+-]\d{2}:\d{2})$/.test(firstOpenAt) ? Date.parse(firstOpenAt) : NaN;
+      if (!Number.isFinite(firstOpenMs)) return {error:'第 1 段請設定正確的開始日期與時間'};
+      base.stages.push({stage:1,firstOpenAt:new Date(firstOpenMs).toISOString(),openDaysBefore:null,closeDaysBefore});
+    } else {
+      base.stages.push({stage:stageNumber,firstOpenAt:'',openDaysBefore,closeDaysBefore});
+    }
+  }
+
+  base.enabled = requestedEnabled && base.stages.length > 0;
+  if (!base.enabled) return {schedule:base};
   if (!activityDate) return {error:'啟用報名排程前，請先設定活動日期'};
-  const firstOpenMs = /(?:Z|[+-]\d{2}:\d{2})$/.test(firstOpenAt) ? Date.parse(firstOpenAt) : NaN;
-  if (!Number.isFinite(firstOpenMs)) return {error:'請設定第一次開始報名的日期與時間'};
-  const firstCloseAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-21),'23:59:59.999');
-  const secondOpenAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-19),'00:00:00');
-  const secondCloseAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-7),'23:59:59.999');
-  const thirdOpenAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-6),'00:00:00');
-  const thirdCloseAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-1),'23:59:59.999');
-  if (firstOpenMs>Date.parse(firstCloseAt)) return {error:'第一次開始報名時間必須早於活動前三週的截止時間'};
-  base.windows=[
-    {stage:1,openAt:new Date(firstOpenMs).toISOString(),closeAt:firstCloseAt},
-    {stage:2,openAt:secondOpenAt,closeAt:secondCloseAt},
-    {stage:3,openAt:thirdOpenAt,closeAt:thirdCloseAt},
-  ];
+  for (const stage of base.stages) {
+    const openAt = stage.stage===1
+      ? stage.firstOpenAt
+      : taipeiScheduleIso(shiftRegistrationDate(activityDate,-stage.openDaysBefore),'00:00:00');
+    const closeAt = taipeiScheduleIso(shiftRegistrationDate(activityDate,-stage.closeDaysBefore),'23:59:59.999');
+    if (Date.parse(openAt)>Date.parse(closeAt)) return {error:`第 ${stage.stage} 段開始時間必須早於截止時間`};
+    base.windows.push({stage:stage.stage,openAt,closeAt});
+  }
+  for (let index=1; index<base.windows.length; index++) {
+    const previous = base.windows[index-1], current = base.windows[index];
+    if (Date.parse(current.openAt)<=Date.parse(previous.closeAt)) {
+      return {error:`第 ${current.stage} 段開始時間必須晚於第 ${previous.stage} 段截止時間，階段不可重疊`};
+    }
+  }
   return {schedule:base};
 }
 function registrationTimeText(iso) {
@@ -6799,7 +6854,7 @@ async function hCopySession(env, b) {
   const newId = genId('SES');
   src.id=newId; src.name=(src.name||'')+'（複製）';
   src.current_count=0; src.status='報名中';
-  src.registration_schedule_json={version:1,enabled:false,preset:'three_stage',timezone:REGISTRATION_SCHEDULE_TIME_ZONE,windows:[]};
+  src.registration_schedule_json={version:2,enabled:false,preset:'custom_stages',timezone:REGISTRATION_SCHEDULE_TIME_ZONE,stages:[],windows:[]};
   src.force_cancel=false; src.force_cancel_target_id=null; src.force_cancel_deadline=null;
   src.created_at=nowIso();
   await dbInsert(env,'sessions',src);
