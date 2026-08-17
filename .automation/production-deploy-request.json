@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "3726b7c2d0dd5f81f27c551795c428abdea1d24b",
-  "expected_cloudflare_version": "2af63c19-fc6b-4076-8ff0-10f43f89ddd3",
-  "reason": "恢復全部原系統設定，獨立加入 g.2b-love.com 完整活動頁面管理，並保護公開與管理資料界線"
+  "approved_source_commit": "ec04e5a525098cf12a0fdc316e9b81b44ae60515",
+  "expected_cloudflare_version": "33cbd217-4126-4120-8049-7454016ca306",
+  "reason": "恢復完整 13 項後台設定，修正總管理者設定顯示與後台版本更新"
 }
