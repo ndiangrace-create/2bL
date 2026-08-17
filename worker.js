@@ -4936,7 +4936,12 @@ function _photoActivityConfig(v){
 async function hGetPhotoActivityConfig(env,p){
   const TENANT=p&&p._tenantId;
   const rows=await dbGet(env,'tenants',`id=eq.${TENANT}&select=config_json`);
-  const cfg=rows.length?safeJson(rows[0].config_json,{}):{};
+  if(!rows.length) return jsonErr('找不到活動主辦設定',404);
+  const cfg=safeJson(rows[0].config_json,{});
+  if(!cfg.photoActivity||typeof cfg.photoActivity!=='object'){
+    cfg.photoActivity=_photoActivityConfig(DEFAULT_PHOTO_ACTIVITY_CONFIG);
+    await dbUpdate(env,'tenants',`id=eq.${TENANT}`,{config_json:JSON.stringify(cfg)});
+  }
   return jsonOk(_photoActivityConfig(cfg.photoActivity));
 }
 async function hGetSiteConfig(env, p) {
