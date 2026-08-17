@@ -2438,6 +2438,7 @@ function renderSessionCard(s){
         +thumbHtml
         +'<div class="session3-title">'+safe(sessionName(s))+'</div>'
         +'<div class="meta"><span class="pill green">'+safe(s.venue||s.location||'未填地點')+'</span><span class="pill '+(isClosed(s)?'pink':'green')+'">'+safe(s.status||'報名中')+'</span></div>'
+        +(sessionBool(sessionRegistrationSchedule(s).enabled,false)?'<div class="sub" style="margin-top:5px;font-weight:800;color:'+(s.registrationOpen===false?'#8b5a00':'#276451')+'">⏱ '+safe(s.registrationMessage||'三階段排程已啟用')+'</div>':'')
         +'<div class="session-date-equip-list">'+dateEquip+'</div>'
         +sessionDaySyncHtml(s)
       +'</div>'
@@ -3135,6 +3136,50 @@ function tableFromRows(rows,keys,heads){ if(!Array.isArray(rows)||!rows.length) 
 function sessionField(s, ...keys){ for(const k of keys){ if(s && s[k]!==undefined && s[k]!==null) return s[k]; } return ''; }
 function sessionBool(v, def=false){ if(v===undefined||v===null||v==='') return def; if(typeof v==='boolean') return v; const s=String(v).trim(); return ['1','true','是','開啟','啟用','yes','on'].includes(s); }
 function sessionDates(s){ return safeJson(sessionField(s,'dates','datesJson','dates_json'), []); }
+function sessionRegistrationSchedule(s){ return safeJson(sessionField(s,'registrationSchedule','registration_schedule_json'), {enabled:false,windows:[]})||{enabled:false,windows:[]}; }
+function taipeiIsoToLocalInput(iso){
+  if(!iso)return '';
+  try{
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(iso));
+    const get=t=>parts.find(p=>p.type===t)?.value||'';
+    return get('year')+'-'+get('month')+'-'+get('day')+'T'+get('hour')+':'+get('minute');
+  }catch(_e){return ''}
+}
+function adminShiftDateKey(dateKey,days){
+  const m=String(dateKey||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return '';
+  const d=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3])));d.setUTCDate(d.getUTCDate()+Number(days||0));return d.toISOString().slice(0,10);
+}
+function adminTaipeiIso(dateKey,timeText){const ms=Date.parse(String(dateKey||'')+'T'+String(timeText||'00:00:00')+'+08:00');return Number.isFinite(ms)?new Date(ms).toISOString():''}
+function adminScheduleTimeText(iso){try{return new Intl.DateTimeFormat('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(iso))}catch(_e){return String(iso||'')}}
+function collectRegistrationSchedule(dates=collectSessionDates(),validate=true){
+  const enabled=!!$('set_registrationScheduleEnabled')?.checked;
+  const firstLocal=String($('set_registrationFirstOpen')?.value||'').trim();
+  const activityDate=(Array.isArray(dates)?dates:[]).map(d=>String((d&&d.date)||'').slice(0,10)).filter(Boolean).sort()[0]||'';
+  let firstOpenAt='';
+  if(firstLocal){const ms=Date.parse(firstLocal+':00+08:00');if(Number.isFinite(ms))firstOpenAt=new Date(ms).toISOString();}
+  const out={version:1,enabled,preset:'three_stage',timezone:'Asia/Taipei',firstOpenAt,activityDate,windows:[]};
+  if(!enabled)return out;
+  if(!activityDate){if(validate)throw new Error('啟用報名排程前，請先設定活動日期');return out;}
+  if(!firstOpenAt){if(validate)throw new Error('請設定第一次開始報名的日期與時間');return out;}
+  out.windows=[
+    {stage:1,openAt:firstOpenAt,closeAt:adminTaipeiIso(adminShiftDateKey(activityDate,-21),'23:59:59.999')},
+    {stage:2,openAt:adminTaipeiIso(adminShiftDateKey(activityDate,-19),'00:00:00'),closeAt:adminTaipeiIso(adminShiftDateKey(activityDate,-7),'23:59:59.999')},
+    {stage:3,openAt:adminTaipeiIso(adminShiftDateKey(activityDate,-6),'00:00:00'),closeAt:adminTaipeiIso(adminShiftDateKey(activityDate,-1),'23:59:59.999')},
+  ];
+  if(Date.parse(firstOpenAt)>Date.parse(out.windows[0].closeAt)){if(validate)throw new Error('第一次開始報名時間必須早於活動前三週的截止時間');out.windows=[];}
+  return out;
+}
+function renderRegistrationSchedulePreview(){
+  const box=$('registrationSchedulePreview');if(!box)return;
+  const enabled=!!$('set_registrationScheduleEnabled')?.checked;
+  $('registrationScheduleFields')?.classList.toggle('off',!enabled);
+  if(!enabled){box.innerHTML='<div class="notice">目前沿用手動「報名中／已關閉」狀態，舊場次不受影響。</div>';return;}
+  try{
+    const schedule=collectRegistrationSchedule(collectSessionDates(),true);
+    box.innerHTML='<div class="notice"><b>三階段開放（台灣時間）</b><br>'+schedule.windows.map(w=>'第 '+w.stage+' 段：'+safe(adminScheduleTimeText(w.openAt))+' ～ '+safe(adminScheduleTimeText(w.closeAt))).join('<br>')+'<br><span class="sub">關閉空檔會自動暫停，後端送出時也會再次驗證。</span></div>';
+  }catch(e){box.innerHTML='<div class="notice warn">'+safe(e.message)+'</div>';}
+}
+function toggleRegistrationScheduleBox(){renderRegistrationSchedulePreview()}
 function sessionModules(s){ return safeJson(sessionField(s,'modules','modulesJson','modules_json'), {}); }
 function sessionEquip(s){ return safeJson(sessionField(s,'equip','equipJson','equip_json'), {}); }
 function sessionAddons(s){ return safeJson(sessionField(s,'addons','addonsJson','addons_json'), []); }
@@ -3288,7 +3333,7 @@ function timeOptionsHtml(selected){
 function sessionDateRowHtml(d={},idx){
   d = d || {};
   return '<div class="date-line-row" data-idx="'+idx+'">'
-    +'<input id="set_date_date_'+idx+'" type="date" value="'+attr(d.date||'')+'" title="日期">'
+    +'<input id="set_date_date_'+idx+'" type="date" value="'+attr(d.date||'')+'" title="日期" onchange="renderRegistrationSchedulePreview()">'
     +'<input id="set_date_label_'+idx+'" value="'+attr(d.label||'')+'" placeholder="顯示名" title="顯示名稱，可空白">'
     +'<select id="set_date_start_'+idx+'" title="開始時間">'+timeOptionsHtml(d.start||'10:00')+'</select>'
     +'<select id="set_date_end_'+idx+'" title="結束時間">'+timeOptionsHtml(d.end||'18:00')+'</select>'
@@ -3806,6 +3851,7 @@ async function openSessionSettings(sid){
     renderSessionDateRows(sessionDates(d));
     renderSessionAddonRows(sessionAddons(d));
     toggleSessionFeatureSections();
+    toggleRegistrationScheduleBox();
     try{ await loadSessionBundleInfo(sid); }catch(_e){}
     await loadSessionVisualAssets(sid).catch(()=>{});
   }catch(e){
@@ -3815,6 +3861,7 @@ async function openSessionSettings(sid){
     renderSessionDateRows(sessionDates(s));
     renderSessionAddonRows(sessionAddons(s));
     toggleSessionFeatureSections();
+    toggleRegistrationScheduleBox();
     await loadSessionVisualAssets(sid).catch(()=>{});
   }
 }
@@ -4025,6 +4072,9 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   const seatPricing = s.seatPricingEnabled!==undefined ? s.seatPricingEnabled : s.seat_pricing_enabled;
   const currentAgreementVersion = String(s.agreementVersion||s.agreement_version||'').trim();
   const multiDayTiers=sessionMultiDayTiers(s);
+  const registrationSchedule=sessionRegistrationSchedule(s);
+  const registrationScheduleEnabled=sessionBool(registrationSchedule.enabled,false);
+  const registrationFirstOpen=taipeiIsoToLocalInput(registrationSchedule.firstOpenAt||registrationSchedule.windows?.[0]?.openAt||'');
   const equipmentBody = '<div class="form-field full"><label>基本配備說明</label><input id="set_basicEquip" value="'+attr(s.basicEquip||s.basic_equip||'')+'"><div class="sub"></div></div>'+sessionEquipFormHtml(equip);
   const addonsBody = sessionAddonsFormHtml(addons);
   const invoiceBody = sessionInvoiceFormHtml(tax);
@@ -4048,6 +4098,10 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'</div></div>'
   +sessionAiVisualSectionHtml(s)
   +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
+  +'<div class="report-card"><div class="report-title">報名開放排程</div>'
+  +'<label class="tight-check"><input type="checkbox" id="set_registrationScheduleEnabled" '+(registrationScheduleEnabled?'checked':'')+' onchange="toggleRegistrationScheduleBox()"> 啟用三階段自動開放／截止</label>'
+  +'<div id="registrationScheduleFields" class="feature-body '+(registrationScheduleEnabled?'':'off')+'" style="margin-top:10px"><div class="form-grid"><div class="form-field"><label>第一次開始報名時間（台灣時間）</label><input id="set_registrationFirstOpen" type="datetime-local" value="'+attr(registrationFirstOpen)+'" onchange="renderRegistrationSchedulePreview()"></div><div class="form-field"><label>自動截止規則</label><div class="sub" style="line-height:1.7">第 1 次：活動前 3 週截止<br>隔 2 個日曆日重開，到活動前 1 週<br>隔天再開，到活動前 1 天截止</div></div></div></div>'
+  +'<div id="registrationSchedulePreview" style="margin-top:10px"></div></div>'
   +'<div class="report-card"><div class="report-title">費用與名額</div><div class="form-grid">'
   +'<div class="form-field"><label>多日優惠總價</label><input id="set_fee" type="number" value="'+attr(s.fee||0)+'"><div class="sub">0＝不設優惠</div></div>'
   +'<div class="form-field"><label>保證金 / 押金</label><input id="set_deposit" type="number" value="'+attr(s.deposit||0)+'"></div>'
@@ -4076,7 +4130,8 @@ async function saveSessionSettings(sid,btn){
     const mappedType=entryTypeMap(entry);
     const agreementVersion = $('set_agreementVersion')?.value.trim() || '';
     if(modules.agreement && $('set_agreementRequired')?.checked && !agreementVersion) throw new Error('請先選擇合約版本，或按「＋ 新增本場次合約」建立後再選用');
-    const body={action:'updateSession',id:sid,sessionId:sid,eventId:($('set_eventId')?.value||'').trim(),name,type:mappedType,region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:[entry],dates,multiDayTiers:collectMultiDayTiers(),modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,paymentProfileId:($('set_paymentProfileId')?.value||'').trim()};
+    const registrationSchedule=collectRegistrationSchedule(dates,true);
+    const body={action:'updateSession',id:sid,sessionId:sid,eventId:($('set_eventId')?.value||'').trim(),name,type:mappedType,region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:[entry],dates,multiDayTiers:collectMultiDayTiers(),registrationSchedule,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,paymentProfileId:($('set_paymentProfileId')?.value||'').trim()};
     if(modules.equipment) body.equip=collectSessionEquip();
     if(modules.addons) body.addons=collectSessionAddons();
     if(modules.invoice) body.invoiceTax=collectSessionInvoiceTax();

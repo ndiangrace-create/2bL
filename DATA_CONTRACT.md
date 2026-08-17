@@ -34,6 +34,7 @@
 | stalls | `price_delta` | `price_adjustment` | 9 筆衝突，需先定義轉換規則 |
 | stalls | `map_order` | `sort_order` | 158 筆衝突，需確認兩欄語意是否真的相同 |
 | sessions | `seat_assign_days_before` | `seat_auto_layout_days_before` | 25 筆相同 |
+| sessions | `registration_schedule_json` | 無 | 報名三階段排程唯一來源；未啟用時沿用手動狀態 |
 | tenants | `plan_type` | `plan` | 1 筆衝突，需先定義方案值對照 |
 | sessions / stalls | `stalls` 關聯表 | `sessions.stall_list_json` | 舊 JSON 仍有 1 筆，禁止直接刪除 |
 
