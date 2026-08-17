@@ -117,6 +117,12 @@
 .feature-head input[type=checkbox]{width:18px!important;height:18px!important;min-height:18px!important;accent-color:#6e9f8d;}
 .feature-body{display:block;}
 .feature-body.off{display:none!important;}
+.registration-schedule-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch;}
+.registration-stage-card{border:1px solid var(--line);border-radius:16px;background:#fbfaf7;padding:12px;min-width:0;}
+.registration-stage-title{font-size:16px;font-weight:950;margin-bottom:9px;}
+.registration-stage-fields{display:grid;gap:9px;}
+.registration-stage-fields .form-field input{min-width:0;}
+@media(max-width:860px){.registration-schedule-grid{grid-template-columns:1fr;}}
 .date-head-row,.date-line-row{grid-template-columns:142px minmax(96px,145px) 104px 104px 92px 82px 52px!important;gap:6px!important;}
 .date-line-row input{min-width:0!important;padding-left:8px!important;padding-right:8px!important;}
 .date-line-row input[id^="set_date_label_"]{max-width:145px!important;}
@@ -3151,32 +3157,61 @@ function adminShiftDateKey(dateKey,days){
 }
 function adminTaipeiIso(dateKey,timeText){const ms=Date.parse(String(dateKey||'')+'T'+String(timeText||'00:00:00')+'+08:00');return Number.isFinite(ms)?new Date(ms).toISOString():''}
 function adminScheduleTimeText(iso){try{return new Intl.DateTimeFormat('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(iso))}catch(_e){return String(iso||'')}}
+function adminRegistrationDayValue(value,label,validate){
+  if(value===null||value===undefined||String(value).trim()==='')return null;
+  const n=Number(value);
+  if(!Number.isInteger(n)||n<1||n>3650){if(validate)throw new Error(label+'請填 1～3650 的整數');return null;}
+  return n;
+}
 function collectRegistrationSchedule(dates=collectSessionDates(),validate=true){
-  const enabled=!!$('set_registrationScheduleEnabled')?.checked;
-  const firstLocal=String($('set_registrationFirstOpen')?.value||'').trim();
+  const requestedEnabled=!!$('set_registrationScheduleEnabled')?.checked;
   const activityDate=(Array.isArray(dates)?dates:[]).map(d=>String((d&&d.date)||'').slice(0,10)).filter(Boolean).sort()[0]||'';
-  let firstOpenAt='';
-  if(firstLocal){const ms=Date.parse(firstLocal+':00+08:00');if(Number.isFinite(ms))firstOpenAt=new Date(ms).toISOString();}
-  const out={version:1,enabled,preset:'three_stage',timezone:'Asia/Taipei',firstOpenAt,activityDate,windows:[]};
-  if(!enabled)return out;
+  const out={version:2,enabled:false,preset:'custom_stages',timezone:'Asia/Taipei',activityDate,stages:[],windows:[]};
+  for(let stageNumber=1;stageNumber<=3;stageNumber++){
+    const firstLocal=stageNumber===1?String($('set_registrationFirstOpen')?.value||'').trim():'';
+    const openRaw=stageNumber===1?'':String($('set_registrationStage'+stageNumber+'OpenDays')?.value||'').trim();
+    const closeRaw=String($('set_registrationStage'+stageNumber+'CloseDays')?.value||'').trim();
+    const hasOpen=stageNumber===1?!!firstLocal:openRaw!=='';
+    const hasClose=closeRaw!=='';
+    if(!hasOpen&&!hasClose)continue;
+    if(!hasOpen||!hasClose){
+      if(requestedEnabled&&validate)throw new Error('第 '+stageNumber+' 段請同時填寫'+(stageNumber===1?'開始時間與截止天數':'重開天數與截止天數')+'；整段不用時請全部留白');
+      continue;
+    }
+    const closeDaysBefore=adminRegistrationDayValue(closeRaw,'第 '+stageNumber+' 段截止天數',validate);
+    const openDaysBefore=stageNumber===1?null:adminRegistrationDayValue(openRaw,'第 '+stageNumber+' 段重開天數',validate);
+    if(closeDaysBefore===null||(stageNumber>1&&openDaysBefore===null))continue;
+    if(stageNumber===1){
+      const ms=Date.parse(firstLocal+':00+08:00');
+      if(!Number.isFinite(ms)){if(validate)throw new Error('第 1 段請設定正確的開始日期與時間');continue;}
+      out.stages.push({stage:1,firstOpenAt:new Date(ms).toISOString(),openDaysBefore:null,closeDaysBefore});
+    }else out.stages.push({stage:stageNumber,firstOpenAt:'',openDaysBefore,closeDaysBefore});
+  }
+  out.enabled=requestedEnabled&&out.stages.length>0;
+  if(!out.enabled)return out;
   if(!activityDate){if(validate)throw new Error('啟用報名排程前，請先設定活動日期');return out;}
-  if(!firstOpenAt){if(validate)throw new Error('請設定第一次開始報名的日期與時間');return out;}
-  out.windows=[
-    {stage:1,openAt:firstOpenAt,closeAt:adminTaipeiIso(adminShiftDateKey(activityDate,-21),'23:59:59.999')},
-    {stage:2,openAt:adminTaipeiIso(adminShiftDateKey(activityDate,-19),'00:00:00'),closeAt:adminTaipeiIso(adminShiftDateKey(activityDate,-7),'23:59:59.999')},
-    {stage:3,openAt:adminTaipeiIso(adminShiftDateKey(activityDate,-6),'00:00:00'),closeAt:adminTaipeiIso(adminShiftDateKey(activityDate,-1),'23:59:59.999')},
-  ];
-  if(Date.parse(firstOpenAt)>Date.parse(out.windows[0].closeAt)){if(validate)throw new Error('第一次開始報名時間必須早於活動前三週的截止時間');out.windows=[];}
+  out.windows=out.stages.map(stage=>({
+    stage:stage.stage,
+    openAt:stage.stage===1?stage.firstOpenAt:adminTaipeiIso(adminShiftDateKey(activityDate,-stage.openDaysBefore),'00:00:00'),
+    closeAt:adminTaipeiIso(adminShiftDateKey(activityDate,-stage.closeDaysBefore),'23:59:59.999'),
+  }));
+  for(let index=0;index<out.windows.length;index++){
+    const current=out.windows[index];
+    if(Date.parse(current.openAt)>Date.parse(current.closeAt)){if(validate)throw new Error('第 '+current.stage+' 段開始時間必須早於截止時間');out.windows=[];break;}
+    const previous=out.windows[index-1];
+    if(previous&&Date.parse(current.openAt)<=Date.parse(previous.closeAt)){if(validate)throw new Error('第 '+current.stage+' 段開始時間必須晚於第 '+previous.stage+' 段截止時間，階段不可重疊');out.windows=[];break;}
+  }
   return out;
 }
 function renderRegistrationSchedulePreview(){
   const box=$('registrationSchedulePreview');if(!box)return;
   const enabled=!!$('set_registrationScheduleEnabled')?.checked;
   $('registrationScheduleFields')?.classList.toggle('off',!enabled);
-  if(!enabled){box.innerHTML='<div class="notice">目前沿用手動「報名中／已關閉」狀態，舊場次不受影響。</div>';return;}
+  if(!enabled){box.innerHTML='<div class="notice">目前沿用手動「報名中／已關閉」狀態；已填內容不會自動啟用。</div>';return;}
   try{
     const schedule=collectRegistrationSchedule(collectSessionDates(),true);
-    box.innerHTML='<div class="notice"><b>三階段開放（台灣時間）</b><br>'+schedule.windows.map(w=>'第 '+w.stage+' 段：'+safe(adminScheduleTimeText(w.openAt))+' ～ '+safe(adminScheduleTimeText(w.closeAt))).join('<br>')+'<br><span class="sub">關閉空檔會自動暫停，後端送出時也會再次驗證。</span></div>';
+    if(!schedule.enabled){box.innerHTML='<div class="notice warn"><b>尚未啟用</b><br>至少要完整填寫一個階段；整段未填就不會啟動。</div>';return;}
+    box.innerHTML='<div class="notice"><b>已填寫階段預覽（台灣時間）</b><br>'+schedule.windows.map(w=>'第 '+w.stage+' 段：'+safe(adminScheduleTimeText(w.openAt))+' ～ '+safe(adminScheduleTimeText(w.closeAt))).join('<br>')+'<br><span class="sub">未填的階段不啟用；關閉空檔會自動暫停，後端送出時也會再次驗證。</span></div>';
   }catch(e){box.innerHTML='<div class="notice warn">'+safe(e.message)+'</div>';}
 }
 function toggleRegistrationScheduleBox(){renderRegistrationSchedulePreview()}
@@ -4074,7 +4109,15 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   const multiDayTiers=sessionMultiDayTiers(s);
   const registrationSchedule=sessionRegistrationSchedule(s);
   const registrationScheduleEnabled=sessionBool(registrationSchedule.enabled,false);
-  const registrationFirstOpen=taipeiIsoToLocalInput(registrationSchedule.firstOpenAt||registrationSchedule.windows?.[0]?.openAt||'');
+  const registrationStages=Array.isArray(registrationSchedule.stages)?registrationSchedule.stages:[];
+  const registrationStage=n=>registrationStages.find(stage=>Number(stage&&stage.stage)===n)||{};
+  const legacyRegistrationSchedule=registrationScheduleEnabled&&!registrationStages.length;
+  const registrationFirstOpen=taipeiIsoToLocalInput(registrationStage(1).firstOpenAt||registrationSchedule.firstOpenAt||registrationSchedule.windows?.find(w=>Number(w&&w.stage)===1)?.openAt||'');
+  const registrationStage1Close=registrationStage(1).closeDaysBefore??(legacyRegistrationSchedule?21:'');
+  const registrationStage2Open=registrationStage(2).openDaysBefore??(legacyRegistrationSchedule?19:'');
+  const registrationStage2Close=registrationStage(2).closeDaysBefore??(legacyRegistrationSchedule?7:'');
+  const registrationStage3Open=registrationStage(3).openDaysBefore??(legacyRegistrationSchedule?6:'');
+  const registrationStage3Close=registrationStage(3).closeDaysBefore??(legacyRegistrationSchedule?1:'');
   const equipmentBody = '<div class="form-field full"><label>基本配備說明</label><input id="set_basicEquip" value="'+attr(s.basicEquip||s.basic_equip||'')+'"><div class="sub"></div></div>'+sessionEquipFormHtml(equip);
   const addonsBody = sessionAddonsFormHtml(addons);
   const invoiceBody = sessionInvoiceFormHtml(tax);
@@ -4099,8 +4142,13 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +sessionAiVisualSectionHtml(s)
   +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
   +'<div class="report-card"><div class="report-title">報名開放排程</div>'
-  +'<label class="tight-check"><input type="checkbox" id="set_registrationScheduleEnabled" '+(registrationScheduleEnabled?'checked':'')+' onchange="toggleRegistrationScheduleBox()"> 啟用三階段自動開放／截止</label>'
-  +'<div id="registrationScheduleFields" class="feature-body '+(registrationScheduleEnabled?'':'off')+'" style="margin-top:10px"><div class="form-grid"><div class="form-field"><label>第一次開始報名時間（台灣時間）</label><input id="set_registrationFirstOpen" type="datetime-local" value="'+attr(registrationFirstOpen)+'" onchange="renderRegistrationSchedulePreview()"></div><div class="form-field"><label>自動截止規則</label><div class="sub" style="line-height:1.7">第 1 次：活動前 3 週截止<br>隔 2 個日曆日重開，到活動前 1 週<br>隔天再開，到活動前 1 天截止</div></div></div></div>'
+  +'<label class="tight-check"><input type="checkbox" id="set_registrationScheduleEnabled" '+(registrationScheduleEnabled?'checked':'')+' onchange="toggleRegistrationScheduleBox()"> 啟用已填完整的報名階段</label>'
+  +'<div class="sub" style="margin-top:6px">每段可獨立設定；整段留白就不啟動。第一次活動日期作為「活動前 X 天」的計算基準。</div>'
+  +'<div id="registrationScheduleFields" class="feature-body '+(registrationScheduleEnabled?'':'off')+'" style="margin-top:10px"><div class="registration-schedule-grid">'
+  +'<div class="registration-stage-card"><div class="registration-stage-title">第 1 段</div><div class="registration-stage-fields"><div class="form-field"><label>自訂開始時間（台灣時間）</label><input id="set_registrationFirstOpen" type="datetime-local" value="'+attr(registrationFirstOpen)+'" onchange="renderRegistrationSchedulePreview()"></div><div class="form-field"><label>活動前 X 天 23:59 截止</label><input id="set_registrationStage1CloseDays" type="number" min="1" max="3650" step="1" inputmode="numeric" placeholder="例如 21" value="'+attr(registrationStage1Close)+'" oninput="renderRegistrationSchedulePreview()"></div></div></div>'
+  +'<div class="registration-stage-card"><div class="registration-stage-title">第 2 段</div><div class="registration-stage-fields"><div class="form-field"><label>活動前 X 天 00:00 重開</label><input id="set_registrationStage2OpenDays" type="number" min="1" max="3650" step="1" inputmode="numeric" placeholder="例如 19" value="'+attr(registrationStage2Open)+'" oninput="renderRegistrationSchedulePreview()"></div><div class="form-field"><label>活動前 X 天 23:59 截止</label><input id="set_registrationStage2CloseDays" type="number" min="1" max="3650" step="1" inputmode="numeric" placeholder="例如 7" value="'+attr(registrationStage2Close)+'" oninput="renderRegistrationSchedulePreview()"></div></div></div>'
+  +'<div class="registration-stage-card"><div class="registration-stage-title">第 3 段</div><div class="registration-stage-fields"><div class="form-field"><label>活動前 X 天 00:00 重開</label><input id="set_registrationStage3OpenDays" type="number" min="1" max="3650" step="1" inputmode="numeric" placeholder="例如 6" value="'+attr(registrationStage3Open)+'" oninput="renderRegistrationSchedulePreview()"></div><div class="form-field"><label>活動前 X 天 23:59 截止</label><input id="set_registrationStage3CloseDays" type="number" min="1" max="3650" step="1" inputmode="numeric" placeholder="例如 1" value="'+attr(registrationStage3Close)+'" oninput="renderRegistrationSchedulePreview()"></div></div></div>'
+  +'</div></div>'
   +'<div id="registrationSchedulePreview" style="margin-top:10px"></div></div>'
   +'<div class="report-card"><div class="report-title">費用與名額</div><div class="form-grid">'
   +'<div class="form-field"><label>多日優惠總價</label><input id="set_fee" type="number" value="'+attr(s.fee||0)+'"><div class="sub">0＝不設優惠</div></div>'
