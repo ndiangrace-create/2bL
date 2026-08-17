@@ -14,7 +14,7 @@ assert.match(admin, /adminUrl:get\('pa_admin_url'\)/, '相簿管理入口未納�
 
 assert.match(worker, /id=eq\.\$\{TENANT\}&select=config_json/, '設定讀取未鎖定 tenant');
 assert.match(worker, /id=eq\.\$\{TENANT\}`\s*,\s*\{config_json:/, '設定寫入未鎖定 tenant');
-assert.match(worker, /if\(!cfg\.photoActivity[\s\S]{0,240}dbUpdate\(env,'tenants',`id=eq\.\$\{TENANT\}`/, '初始活動設定未正式寫入 tenant 資料');
+assert.match(worker, /cfg\.photoActivity\|\|DEFAULT_PHOTO_ACTIVITY_CONFIG/, '未儲存前應只讀取安全預設，不得改動既有主辦設定');
 assert.match(worker, /verifyStaff\(env,b\.email,b\.token,TENANT,'superadmin'\)/, '設定寫入未限制最高租戶管理權限');
 assert.match(worker, /case 'getPhotoActivityConfig': return hGetPhotoActivityConfig/, '公開讀取 action 未接線');
 assert.match(worker, /case 'savePhotoActivityConfig': return hSavePhotoActivityConfig/, '管理寫入 action 未接線');
