@@ -123,3 +123,13 @@
 - 資料驗證：以 service role 在交易內完成合作單位寫入與讀回後回滾；驗證資料未留下。既有 129 筆報名、119 位會員、76 筆付款資料保持不變。
 - 邊界：`tobeloved-api` 未修改；既有 Route、Bindings 與九個 Secret 名稱均保持不變。
 - 未完成：Meta App ID、App Secret、Graph API 版本與 Token 加密金鑰尚未設定；尚未完成真實 OAuth、FB／IG 發布、支援標註與不支援標註降級驗收，因此 Meta 部分維持 `Pending`。
+
+## 2026-08-20｜Threads（脆）排程擴充（Pending）
+
+- 新增平台：同一篇貼文可個別勾選 Facebook、Instagram、Threads，三平台各自保存發布結果；某一平台失敗不阻止其他平台。
+- 正式文章：`social_posts.threads_text` 保存人工可直接修改的 Threads 完整文章；AI 會產生較精簡版本，但不得猜測或產生合作帳號。
+- 授權：`social_meta_connections` 新增獨立 Threads 狀態、加密 Token、到期時間及已授權帳號 id／username；不共用 Facebook Page Token。
+- 發布：`social_publish_attempts.platform` 增加 `threads`，仍維持貼文＋平台唯一防重複；Threads 只使用官方 `graph.threads.net` 建立圖片容器及 `threads_publish`。
+- 標註：Threads 第一版不宣稱支援合作帳號自動標註，不送猜測的 `@名稱`；Facebook Page Mentioning 與 Instagram `user_tags` 規則不變。
+- 資料遷移：新增 `supabase/20260819210736_add_threads_social_scheduler.sql`，只追加欄位、constraint 與新版整批排程函式，不刪除或搬移既有 FB／IG 資料。
+- 狀態：`Pending`；已獲「確認執行」進行本機施工，尚未套用正式 Supabase、尚未設定正式 Secrets、尚未合併、尚未部署、尚未完成三平台真實發文驗收。
