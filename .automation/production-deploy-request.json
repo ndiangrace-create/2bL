@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "64306cbca616db5e181ddb3788a25fb5ecfdd5ea",
-  "expected_cloudflare_version": "699037af-367b-4089-be13-67946a6ca283",
-  "reason": "核准 AI 貼文排程先行上線；Meta 未設定時保持未連線，不阻擋文章與 Hashtag 管理"
+  "approved_source_commit": "f9dcecfbc763ac508fafc54bca374e0f2462edbc",
+  "expected_cloudflare_version": "65b047bd-9c1c-42f9-853d-daf407c3d255",
+  "reason": "核准 AI 社群排程正式部署：Facebook、Instagram、Threads、合作帳號標註與 Hashtag；Meta 尚未設定時保持未連線，不阻擋文章管理"
 }
