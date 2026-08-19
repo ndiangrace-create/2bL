@@ -80,3 +80,13 @@
 - 公開面：新增的「我的紀錄」卡片與信件不直接顯示網址，只藏在加入按鈕中；既有 FAQ 與既有大群組入口原樣保留，不因新增功能被刪除或取代。
 - 驗證：Worker 語法、前後台內嵌腳本、完整自動測試、角色操作者模擬與資料契約嚴格檢查均通過。
 - 狀態：`Pending`；尚未合併、尚未部署、尚未改動正式 Supabase 資料。收到「確認部署」並完成正式驗證後，才能追加 `Verified` 紀錄。
+
+## 2026-08-19｜已繳費大群組邀請（Verified）
+
+- 正式來源：PR #55；功能合併 commit `5be1c9118a34e8e71ae268adc1ae58baacfdf6fc`；一次性部署 commit `a798f80d1899149e4fe26057864f62e77736e264`。
+- 正式部署：僅更新既有 Cloudflare Worker `2bl-v7`；部署流程 #34 成功；正式 version ID `699037af-367b-4089-be13-67946a6ca283`；部署後來源 SHA-256 與核准封裝完全一致。
+- 正式資料：未新增 schema、未搬移或覆寫 Supabase 資料；沿用 `tenants.config_json.officialGroup`，其他 tenant config 原值保留。
+- 正式驗證：2b-love.com 前台與 admin.html 均回傳 200；我的紀錄卡片、已繳費狀態接線、既有行前通知入口、後台密碼欄位與儲存動作均存在。
+- 權限驗證：未登入者無法讀取大群組管理設定，回應不含密碼或邀請網址；公開 frontBootstrap 不含大群組受保護設定。
+- 連線驗證：2bl-v7 ping 正常，tuibile Supabase 連線正常；安全稽核、資料契約、角色操作者模擬與完整自動測試通過。
+- 邊界：`tobeloved-api` 未修改、未部署；既有 Routes、Bindings 與 Secrets 名稱均保留。
