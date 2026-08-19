@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "1149f1527befc9b017671d83a6b37bbc9af69340",
-  "expected_cloudflare_version": "d759ec5c-8415-4ff7-b898-d30489185860",
-  "reason": "修正我的紀錄空白並啟用同一裝置30天安全自動登入"
+  "approved_source_commit": "5be1c9118a34e8e71ae268adc1ae58baacfdf6fc",
+  "expected_cloudflare_version": "47f24fed-ff3b-4713-9d3b-a483526ed90a",
+  "reason": "恢復已繳費攤商大群組邀請：我的紀錄、行前通知、繳費確認信與總管理者設定"
 }
