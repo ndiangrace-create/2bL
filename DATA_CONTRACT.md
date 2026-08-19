@@ -112,3 +112,14 @@
 - Facebook Page Mentioning 與 Instagram `user_tags` 分開處理；標註遭 Meta 拒絕時改為不標註並正常發布，錯誤只記在該篇該帳號，不清除貼文或整批排程。
 - 權限由「租戶主要管理者」收緊為「平台最高總管理員」；入口與 Worker 操作都受限制，其他角色無法以直接網址繞過。
 - 狀態：`Deploying`；正式資料庫已套用並驗證，尚未完成真實 Meta 標註驗收，程式尚待合併與部署。
+
+## 2026-08-20｜AI 貼文排程與合作標註（Partially Verified）
+
+- 正式資料庫：migration `20260819174430_ai_social_scheduler_partner_mentions` 已套用；五張表 RLS 開啟，anon／authenticated 無讀寫權，兩個排程 RPC 只有 service role 可執行。
+- 正式來源：功能修正 commit `64306cbca616db5e181ddb3788a25fb5ecfdd5ea`；一次性部署 commit `91b5192f701ceff852f16652a595a6c3cdaffb27`。
+- 正式部署：GitHub Actions run `32284430799` 成功；僅更新 `2bl-v7`，Cloudflare version ID `65b047bd-9c1c-42f9-853d-daf407c3d255`，部署後來源與核准封裝一致。
+- 正式頁面：`social.html` 與 `admin.html` 均回傳 200；正式頁面包含平台總管理員入口、已保存合作單位、活動固定 Hashtag 與分篇編輯功能。
+- 正式連線：workers.dev 與 `2b-love.com/s/` ping 正常，tenant 為 `tuibile`，Supabase 連線正常；未登入呼叫宣傳功能會回傳登入失效。
+- 資料驗證：以 service role 在交易內完成合作單位寫入與讀回後回滾；驗證資料未留下。既有 129 筆報名、119 位會員、76 筆付款資料保持不變。
+- 邊界：`tobeloved-api` 未修改；既有 Route、Bindings 與九個 Secret 名稱均保持不變。
+- 未完成：Meta App ID、App Secret、Graph API 版本與 Token 加密金鑰尚未設定；尚未完成真實 OAuth、FB／IG 發布、支援標註與不支援標註降級驗收，因此 Meta 部分維持 `Pending`。
