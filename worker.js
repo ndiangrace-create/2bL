@@ -70,6 +70,30 @@ const DEFAULT_REFUND_RULES = {
   ]
 };
 
+// 付款完成後的大群組邀請。正式設定保存於 tenants.config_json.officialGroup；
+// tuibile fallback 只用於承接既有正式功能，儲存後即以資料庫內容為準。
+const LEGACY_TUIBILE_OFFICIAL_GROUP = Object.freeze({
+  enabled: true,
+  name: '全台市集藝文資訊中心 大群組',
+  inviteText: '您已被邀請加入「全台市集藝文資訊中心 大群組」！請點選以下連結加入社群！',
+  url: 'https://line.me/ti/g2/cp-K_Los4J2zBc6rGcRA14TJCx3e99v0i4p-hQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default',
+  password: '8825',
+});
+const EMPTY_OFFICIAL_GROUP = Object.freeze({enabled:false,name:'',inviteText:'',url:'',password:''});
+function normalizeOfficialGroupConfig(raw, tenantId='') {
+  const hasStored = raw && typeof raw === 'object' && !Array.isArray(raw);
+  const source = hasStored ? raw : (String(tenantId||'') === 'tuibile' ? LEGACY_TUIBILE_OFFICIAL_GROUP : EMPTY_OFFICIAL_GROUP);
+  const clean = (value, max) => String(value == null ? '' : value).replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, max);
+  const url = clean(source.url, 1200);
+  return {
+    enabled: source.enabled === true || source.enabled === 'true',
+    name: clean(source.name, 80),
+    inviteText: clean(source.inviteText, 240),
+    url: /^https:\/\//i.test(url) ? url : '',
+    password: clean(source.password, 40),
+  };
+}
+
 // ── 付款 API 設定（功能保留、尚未啟用，key 請設定於 Cloudflare Workers 環境變數）──
 const ECPAY_MERCHANT_ID = 'YOUR_ECPAY_MERCHANT_ID';
 const ECPAY_HASH_KEY    = 'YOUR_ECPAY_HASH_KEY';
@@ -1431,7 +1455,11 @@ function defaultEmailTemplates() {
 
 您可回到「我的紀錄」查看最新報名狀態。
 
-[按鈕:前往我的紀錄]`,
+[大群組邀請文字]
+大群組密碼：[大群組密碼]
+
+[按鈕:前往我的紀錄]
+[按鈕:加入大群組]`,
       is_active:false,
       group:'付款流程'
     },
@@ -1605,13 +1633,20 @@ function renderEmailTemplateBody(body, vars, tenantCtx, regId) {
     const line = raw.trim();
     const m = line.match(/^\[按鈕:(.+?)\]$/);
     if (m) {
-      const label = m[1].trim();
+      let label = m[1].trim();
       let href = '';
+      let isGroupButton = false;
       if (label.includes('後台')) href = (tenantCtx && tenantCtx.siteUrl) || FALLBACK_SITE_URL;
       else if (label.includes('繳費') || label.includes('我的紀錄') || label.includes('報名紀錄') || label.includes('會員')) href = memberUrl(regId || null, tenantCtx);
+      else if (label.includes('大群組') || label.includes('加入社群')) {
+        const group = tenantCtx && tenantCtx.officialGroup;
+        href = group && group.enabled ? group.url : '';
+        isGroupButton = !!href;
+        if (href && group.name) label = '加入「' + group.name + '」';
+      }
       else if (label.includes('LINE') || label.includes('客服')) href = (tenantCtx && tenantCtx.lineUrl) || '';
       else if (label.includes('活動')) href = (tenantCtx && tenantCtx.siteUrl) || FALLBACK_SITE_URL;
-      if (href) parts.push(emailBtn(label, href, label.includes('LINE') ? '#06C755' : '#2d6a4f', '#fff'));
+      if (href) parts.push(emailBtn(label, href, (isGroupButton || label.includes('LINE')) ? '#06C755' : '#2d6a4f', '#fff'));
       continue;
     }
     if (!line) { parts.push('<div style="height:8px"></div>'); continue; }
@@ -1664,6 +1699,10 @@ async function logEmailDelivery(env, tenantId, templateKey, to, result, meta={})
 async function sendTemplateEmail(env, tenantId, templateKey, to, vars, tenantCtx, regId='', meta={}) {
   if (!to) return {ok:false, error:'missing recipient'};
   const tpl = await getEmailTemplateOrDefault(env, tenantId, templateKey);
+  // 有啟用大群組的主辦，若尚未另存「繳費確認信」模板，沿用完整安全預設並啟用。
+  if (templateKey === 'payment_confirmed' && tpl.from_db === false && tenantCtx?.officialGroup?.enabled && tenantCtx.officialGroup.url) {
+    tpl.is_active = true;
+  }
   const subject = applyEmailVars(tpl.subject || '【[主辦名稱]】通知', vars);
   if (tpl.is_active === false) {
     const skipped = {ok:true, skipped:true, disabled:true};
@@ -1829,6 +1868,9 @@ async function mailPaymentConfirm(env, email, displayName, sesName, amount, equi
     '應繳金額': emailMoneyText(amount),
     '設備': equipStr || '無',
     '攤位號碼': stallNo || '尚未指定',
+    '大群組名稱': tenantCtx?.officialGroup?.name || '',
+    '大群組邀請文字': tenantCtx?.officialGroup?.inviteText || '',
+    '大群組密碼': tenantCtx?.officialGroup?.password || '無',
   };
   return sendTemplateEmail(env, tenantId, 'payment_confirmed', email, vars, tenantCtx, '', {targetTable:'registrations'});
 }
@@ -2034,6 +2076,7 @@ async function getTenantCtx(env, tenantId) {
   const rows = await dbGet(env, 'tenants', `id=eq.${tid}&select=id,name,slug,config_json,line_url,bank_info,email_from,email_reply_to,footer_text,site_url,default_refund_rules_json,payment_config_json`);
   const t = rows[0] || {};
   const cfg = safeJson(t.config_json, {});
+  const officialGroup = normalizeOfficialGroupConfig(cfg.officialGroup, tid);
   return {
     id:         tid,
     name:       t.name       || FALLBACK_TENANT_NAME,
@@ -2050,6 +2093,7 @@ async function getTenantCtx(env, tenantId) {
     portals:    cfg.portals  || ['市集報名','體驗活動','通路寄賣','合作洽詢'],
     defaultRefundRules: safeJson(t.default_refund_rules_json, DEFAULT_REFUND_RULES),
     paymentConfig: safeJson(t.payment_config_json, {}),
+    officialGroup,
   };
 }
 
@@ -2604,9 +2648,10 @@ async function hGetMyRegs(env, p) {
     }
   }
 
-  const [regsByMember, sessions] = await Promise.all([
+  const [regsByMember, sessions, tenantCtx] = await Promise.all([
     dbGet(env, 'registrations', `tenant_id=eq.${TENANT}&member_id=ilike.${encodeURIComponent(email)}&select=*&order=created_at.desc`).catch(()=>[]),
     dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&select=id,name,event_id,venue,dates_json,equip_json,basic_equip,payment_profile_id,seat_pricing_enabled,seat_hold_hours,seat_map_url,seat_layout_published_at,force_cancel,force_cancel_deadline,force_cancel_target_id`),
+    getTenantCtx(env, TENANT),
   ]);
   const regMap = new Map();
   [...regsByEmail, ...regsByMember].forEach(r=>{ if(r && r.id && phoneMatches(r.phone,phone)) regMap.set(String(r.id), r); });
@@ -2618,6 +2663,7 @@ async function hGetMyRegs(env, p) {
     const payPub = _paymentSnapshotPublic(paySnap);
     const daySeatRows=s.seat_layout_published_at?await dbGet(env,'registration_day_seats',`tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(r.session_id)}&registration_id=eq.${encodeURIComponent(r.id)}&select=activity_date,seat_code&order=activity_date.asc,seat_code.asc`).catch(()=>[]):[];
     const dayPositions=daySeatRows.reduce((out,x)=>{const date=String(x.activity_date||'').slice(0,10);let row=out.find(y=>y.date===date);if(!row){row={date,stallNumber:''};out.push(row);}row.stallNumber=[row.stallNumber,String(x.seat_code||'')].filter(Boolean).join(',');return out;},[]);
+    const officialGroup = officialGroupForMemberRegistration(r, tenantCtx);
     return {
       id:r.id, sessionId:r.session_id, sessionName:s.name||r.session_id,
       eventId:r.event_id||s.event_id||'', status:r.review_status, payStatus:r.payment_status,
@@ -2641,6 +2687,7 @@ async function hGetMyRegs(env, p) {
       agreementAccepted:r.agreement_accepted||false, agreementVersion:r.agreement_version||'',
       paymentProfile:payPub, paymentProfileName:payPub.paymentProfileName, paymentOwnerMode:payPub.paymentOwnerMode,
       allowedPaymentMethods:payPub.allowedMethods, bankAccount:payPub.bankAccount, linepay:payPub.linepay, card:payPub.card,
+      officialGroup,
     };
   })));
 }
@@ -3388,6 +3435,12 @@ function _isCancelledReg(r){
   if (isCapacityInactiveTransferStatus(tr)) return true;
   if (['已退費','已退款'].includes(pay)) return true;
   return false;
+}
+function officialGroupForMemberRegistration(reg, tenantCtx) {
+  const group = tenantCtx && tenantCtx.officialGroup;
+  if (!reg || _isCancelledReg(reg) || !_isPaidReg(reg)) return null;
+  if (!group || group.enabled !== true || !group.url) return null;
+  return {...group};
 }
 function _isApprovedReg(r){ return _reviewStatus(r)==='已錄取'; }
 function _isReceivableReg(r){
@@ -5074,6 +5127,16 @@ async function hGetSiteConfig(env, p) {
     lineUrl:rows[0].line_url||'',
     bankInfo:rows[0].bank_info||'',
   });
+}
+
+// 大群組設定含邀請密碼，只能由租戶總管理者讀寫；前台只會隨「本人已繳費報名」回傳。
+async function hGetOfficialGroupSettings(env, p) {
+  const TENANT = p && p._tenantId;
+  if (!await verifyStaff(env, p.email, p.token, TENANT, 'superadmin')) return jsonErr('只有總管理者可以讀取大群組設定');
+  const rows = await dbGet(env, 'tenants', `id=eq.${TENANT}&select=config_json`);
+  if (!rows.length) return jsonErr('找不到活動主辦設定', 404);
+  const cfg = safeJson(rows[0].config_json, {});
+  return jsonOk(normalizeOfficialGroupConfig(cfg.officialGroup, TENANT));
 }
 
 // getForceRefundList
@@ -7647,6 +7710,31 @@ async function hSaveSiteConfig(env, b) {
   return jsonOk({success:true});
 }
 
+async function hSaveOfficialGroupSettings(env, b) {
+  const TENANT = b && b._tenantId;
+  if (!await verifyStaff(env, b.email, b.token, TENANT, 'superadmin')) return jsonErr('只有總管理者可以修改大群組設定');
+  const next = normalizeOfficialGroupConfig({
+    enabled: b.enabled,
+    name: b.name,
+    inviteText: b.inviteText,
+    url: b.url,
+    password: b.password,
+  });
+  if (next.enabled && !next.name) return jsonErr('啟用前請填寫大群組名稱');
+  if (next.enabled && !next.inviteText) return jsonErr('啟用前請填寫邀請文字');
+  if (next.enabled && !next.url) return jsonErr('啟用前請填寫 https 開頭的安全邀請網址');
+  const rows = await dbGet(env, 'tenants', `id=eq.${TENANT}&select=config_json`);
+  if (!rows.length) return jsonErr('找不到活動主辦設定', 404);
+  const config = safeJson(rows[0].config_json, {});
+  const before = normalizeOfficialGroupConfig(config.officialGroup, TENANT);
+  config.officialGroup = next;
+  await dbUpdate(env, 'tenants', `id=eq.${TENANT}`, {config_json:JSON.stringify(config)});
+  try {
+    await writeAuditLog(env, TENANT, b.email||'', 'organizer_owner', 'official_group_settings_saved', 'tenants', TENANT, before, next, {});
+  } catch(e) {}
+  return jsonOk({success:true, config:next});
+}
+
 async function hSavePhotoActivityConfig(env,b){
   const TENANT=b&&b._tenantId;
   if(!await verifyStaff(env,b.email,b.token,TENANT,'superadmin')) return jsonErr('只有總管理者可以修改互動拍照活動');
@@ -7960,9 +8048,15 @@ async function hSaveCompanySettings(env, b) {
 async function hGetEmailTemplates(env, p) {
   const TENANT = (p && p._tenantId);
   if (!await verifyStaff(env,p.email,p.token,TENANT,'announce')) return jsonErr('無權限');
-  const dbRows = await dbGet(env, 'email_templates', `tenant_id=eq.${TENANT}&select=*&order=template_key.asc`).catch(()=>[]);
+  const [dbRows, tenantCtx] = await Promise.all([
+    dbGet(env, 'email_templates', `tenant_id=eq.${TENANT}&select=*&order=template_key.asc`).catch(()=>[]),
+    getTenantCtx(env, TENANT),
+  ]);
   const map = new Map();
-  for (const d of defaultEmailTemplates()) map.set(d.template_key, {...d, isDefault:true});
+  for (const d of defaultEmailTemplates()) {
+    const enabledByGroup = d.template_key === 'payment_confirmed' && tenantCtx.officialGroup?.enabled && tenantCtx.officialGroup.url;
+    map.set(d.template_key, {...d, is_active:enabledByGroup ? true : d.is_active, isDefault:true});
+  }
   for (const r of (Array.isArray(dbRows)?dbRows:[])) {
     const base = map.get(r.template_key) || {};
     map.set(r.template_key, {
@@ -8997,6 +9091,7 @@ async function routeGet(env, action, p, req) {
     case 'memberNotifications': return hMemberNotifications(env,p);
     case 'getInvoiceList':      return hGetInvoiceList(env,p);
     case 'getSiteConfig':       return hGetSiteConfig(env,p);
+    case 'getOfficialGroupSettings': return hGetOfficialGroupSettings(env,p);
     case 'getPhotoActivityConfig': return hGetPhotoActivityConfig(env,p);
     case 'getPhotoActivityAdminConfig': return hGetPhotoActivityAdminConfig(env,p);
     case 'getAgreementTemplate': return hGetAgreementTemplate(env,p);
@@ -9157,6 +9252,7 @@ async function routePost(env, action, b, ctx, req) {
     case 'deleteVenueMap':      return hDeleteVenueMap(env,b);
     case 'setFastPass':         return hSetFastPass(env,b);
     case 'saveSiteConfig':      return hSaveSiteConfig(env,b);
+    case 'saveOfficialGroupSettings': return hSaveOfficialGroupSettings(env,b);
     case 'savePhotoActivityConfig': return hSavePhotoActivityConfig(env,b);
     case 'updateRegistrationAction':       return hUpdateRegistrationAction(env,b);
     case 'savePaymentSettings':       return hSavePaymentSettings(env,b);
@@ -9188,7 +9284,14 @@ async function routePost(env, action, b, ctx, req) {
 }
 
 // 僅供自動化驗證直接走與正式環境相同的簽章及即時授權流程；HTTP 入口仍由 default export 控制。
-export { issueAdminToken, issueMemberToken, loadFreshAdminAuthorization };
+export {
+  issueAdminToken,
+  issueMemberToken,
+  loadFreshAdminAuthorization,
+  normalizeOfficialGroupConfig,
+  officialGroupForMemberRegistration,
+  renderEmailTemplateBody,
+};
 
 // ── SECTION 16: 主進入點 ────────────────────────────────────────
 export default {

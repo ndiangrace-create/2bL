@@ -1147,6 +1147,11 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-status-pill{ display:inline-flex; align-items:center; gap:5px; height:34px; border-radius:16px; padding:0 12px; font-size:16px; font-weight:900; white-space:nowrap; }
 .m-status-note{ font-size:16px; color:#666; flex:1; }
 .m-action-btn{ height:40px; padding:0 16px; border-radius:14px; border:none; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; white-space:nowrap; margin-left:auto; }
+.official-group-card{margin:12px 0;background:#eef9f2;border:1.5px solid #a8d5b6;border-radius:16px;padding:14px;color:#244b38;line-height:1.65}
+.official-group-card .title{font-size:18px;font-weight:1000;margin-bottom:5px}
+.official-group-card .invite{font-size:15px;font-weight:800}
+.official-group-card .password{margin-top:8px;background:#fff;border:1px dashed #78ad8c;border-radius:10px;padding:8px 10px;font-size:16px;font-weight:1000}
+.official-group-card button{width:100%;margin-top:10px;border:0;border-radius:12px;background:#06c755;color:#fff;padding:11px 12px;font-size:17px;font-weight:1000;cursor:pointer}
 .m-helper-record{ margin:18px 16px 0; border-radius:22px; padding:18px; background:#f3effe; border:1px solid #d8c8f8; display:none; grid-template-columns:100px 1fr; gap:16px; align-items:center; }
 .m-helper-record.show{ display:grid; }
 .m-helper-record-ip{ width:100px; height:120px; object-fit:contain; }
@@ -6304,21 +6309,43 @@ function canViewPreNoticeReg(reg){
   const ps=String(reg.payStatus||reg.paymentStatus||'').trim();
   return isPaidText(ps) || ps==='免費';
 }
-function officialGroupUrl(){
+function officialGroupForReg(regOrId){
+  const reg=typeof regOrId==='object'&&regOrId ? regOrId : findMyRegById(regOrId);
+  const group=reg&&reg.officialGroup&&typeof reg.officialGroup==='object' ? reg.officialGroup : null;
+  if(!group || group.enabled!==true || !/^https:\/\//i.test(String(group.url||''))) return null;
+  return group;
+}
+// 保留既有公開函式與 fallback；新增的已繳費卡片只會優先使用該筆報名的受保護設定。
+function officialGroupUrl(regOrId){
+  const protectedGroup=officialGroupForReg(regOrId);
+  if(protectedGroup&&protectedGroup.url) return protectedGroup.url;
   const t=ST.tenant||{};
   const fromDb=t.officialGroupUrl || t.official_group_url || t.bigGroupUrl || t.big_group_url || t.groupUrl || t.group_url || '';
   if(fromDb) return fromDb;
   if(String(TENANT_ID||'')==='tuibile') return 'https://line.me/ti/g2/cp-K_Los4J2zBc6rGcRA14TJCx3e99v0i4p-hQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default';
   return LINE_URL || '';
 }
-function officialGroupName(){
+function officialGroupName(regOrId){
+  const protectedGroup=officialGroupForReg(regOrId);
+  if(protectedGroup&&protectedGroup.name) return protectedGroup.name;
   const t=ST.tenant||{};
   return t.officialGroupName || t.official_group_name || '全台市集藝文資訊中心 大群組';
 }
-function openOfficialGroup(){
-  const url=officialGroupUrl();
-  if(!url){ toast('此主辦尚未設定官方群組或 LINE，請聯繫主辦'); return; }
+function openOfficialGroup(regId){
+  const group=officialGroupForReg(regId);
+  const url=(group&&group.url)||officialGroupUrl();
+  if(!url){ toast('尚未取得已繳費的大群組邀請，請重新整理我的紀錄'); return; }
   window.open(url,'_blank','noopener');
+}
+function officialGroupCardHtml(reg){
+  const group=officialGroupForReg(reg);
+  if(!group) return '';
+  return `<div class="official-group-card">
+    <div class="title">📣 ${escHtml(group.name||'活動大群組')}</div>
+    <div class="invite">${escHtml(group.inviteText||'請點選以下按鈕加入社群！')}</div>
+    ${group.password?`<div class="password">加入密碼：${escHtml(group.password)}</div>`:''}
+    <button type="button" onclick="openOfficialGroup('${escHtml(reg.id||'')}')">加入大群組</button>
+  </div>`;
 }
 function openPreNoticeSupport(id){
   // 直接把說明疊在「行前通知」上面（不關閉行前通知，其 z-index 8000 > 5000）。
@@ -6340,8 +6367,8 @@ async function openPreEventNotice(regId){
   if(!r){ toast('找不到報名資料，請重新整理我的紀錄'); return; }
   const body=$('preNoticeBody');
   if(!body) return;
-  const groupUrl=officialGroupUrl();
-  const groupBtn=groupUrl?`<button class="line" onclick="openOfficialGroup()">${escHtml(officialGroupName())}</button>`:'';
+  const group=officialGroupForReg(r);
+  const groupBtn=group?`<button class="line" onclick="openOfficialGroup('${escHtml(r.id||'')}')">${escHtml(group.name||'加入大群組')}${group.password?`（密碼 ${escHtml(group.password)}）`:''}</button>`:'';
   body.innerHTML=`
     <div class="pre-notice-card">
       <div class="pre-notice-row"><b>場次</b><span>${escHtml(r.sessionName||r.sesName||'場次')}</span></div>
@@ -6532,6 +6559,7 @@ function renderMyRegs(regs){
     const canCancel=legs.every(x=>canDirectCancelReg(x));
     const refundTarget=legs.find(x=>canRefundReg(x))||r;
     const canRefund=legs.some(x=>canRefundReg(x)), canPreNotice=legs.some(x=>canViewPreNoticeReg(x));
+    const groupReg=legs.find(x=>officialGroupForReg(x))||null;
     const resolution=r.resolution||null;
     const resolutionMsg=resolution?`<div class="m-record-alert ${String(resolution.mode||'')==='transfer'?'':'muted'}"><b>${String(resolution.mode||'')==='transfer'?'已轉移至其他場次':'已轉為活動金'}</b><br>${Number(resolution.credit_created||0)>0?'活動金增加 NT$ '+Number(resolution.credit_created).toLocaleString()+'<br>':''}${Number(resolution.due_amount||0)>0?'新場待補 NT$ '+Number(resolution.due_amount).toLocaleString()+'<br>':''}${Number(resolution.deposit_refund_due||0)>0?'待退押金 NT$ '+Number(resolution.deposit_refund_due).toLocaleString()+'<br>':''}<span style="font-size:13px">目前活動金餘額：NT$ ${Number(r.activityCreditBalance||0).toLocaleString()}</span></div>`:'';
     const statusMsg = resolutionMsg || (isCancelledReg(r)
@@ -6579,6 +6607,7 @@ function renderMyRegs(regs){
       </div>
       ${bodyBlock}
       ${statusMsg}
+      ${groupReg?officialGroupCardHtml(groupReg):''}
       ${seatBlock}
       ${cartBox}
       ${actions?`<div class="m-record-actions">${actions}</div>`:''}
@@ -6845,6 +6874,7 @@ function openRegDetail(regId){
     <div style="font-size:16px;color:var(--lt);margin-bottom:12px">報名編號：${reg.id}</div>
     ${canPay?`<button onclick="document.getElementById('regDetailModal').remove();showPayPage('${reg.id}',this.dataset.ses,'${Number(reg.total||0)}');" data-ses="${escHtml(reg.sessionName||reg.sesName||'場次')}" style="width:100%;background:var(--g);color:#fff;border:none;padding:13px;border-radius:10px;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:8px">前往繳費</button>`:''}
     ${isCancelledReg(reg)?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已取消，報名紀錄保留</div>`:(isPendingPayText(reg.payStatus)?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已回報，等待主辦確認</div>`:'')}
+    ${officialGroupCardHtml(reg)}
     ${stallSelectionHtml(reg)}
     ${canPreNotice?`<button onclick="openPreEventNotice('${reg.id}');document.getElementById('regDetailModal').remove();" style="width:100%;background:var(--g);color:#fff;border:none;padding:13px;border-radius:10px;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:8px">查看行前通知</button>`:''}
     ${canCancel?`<button onclick="cancelMyReg('${reg.id}',this.dataset.ses,false);document.getElementById('regDetailModal').remove();" data-ses="${escHtml(reg.sessionName||reg.sesName||'')}" style="width:100%;background:var(--rdp);color:var(--rd);border:1.5px solid var(--rd);padding:12px;border-radius:10px;font-size:17px;font-weight:900;cursor:pointer;margin-bottom:8px">取消報名</button>`:''}
