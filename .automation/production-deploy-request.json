@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "f6eecc803d5f3e58467891dfb89c452b0474ea83",
+  "approved_source_commit": "64306cbca616db5e181ddb3788a25fb5ecfdd5ea",
   "expected_cloudflare_version": "699037af-367b-4089-be13-67946a6ca283",
-  "reason": "重新核准完整 AI 貼文排程來源：合作帳號、分篇標註、Hashtag 與 FB／IG 排程"
+  "reason": "核准 AI 貼文排程先行上線；Meta 未設定時保持未連線，不阻擋文章與 Hashtag 管理"
 }
