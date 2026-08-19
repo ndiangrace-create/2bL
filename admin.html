@@ -5524,7 +5524,7 @@ async function deleteVenueMapFromPanel(id){
 }
 async function openEmailTemplates(){ openPanel('信件模板','正式模板管理，不是測試信','<div class="loading">載入信件模板…</div>'); try{ const rows=await api({action:'getEmailTemplates'}); renderEmailTemplates(rows); }catch(e){$('panelBody').innerHTML='<div class="empty">信件模板載入失敗，請稍後再試。</div>'; } }
 function renderEmailTemplates(rows){
-  const vars='可用變數：[主辦名稱] [顯示名稱] [場次名稱] [報名日期] [活動日期] [攤位數] [設備] [應繳金額] [退費金額] [地點] [原場次] [新場次] [選擇期限]。按鈕可用：[按鈕:前往我的紀錄]、[按鈕:加入官方LINE]。';
+  const vars='可用變數：[主辦名稱] [顯示名稱] [場次名稱] [報名日期] [活動日期] [攤位數] [設備] [應繳金額] [退費金額] [地點] [原場次] [新場次] [選擇期限] [大群組名稱] [大群組邀請文字] [大群組密碼]。按鈕可用：[按鈕:前往我的紀錄]、[按鈕:加入官方LINE]、[按鈕:加入大群組]。';
   EmailTplState.rows = Array.isArray(rows) ? rows : [];
   EmailTplState.vars = vars;
   let out='<div class="report-card" style="margin-bottom:14px"><div class="report-title">寄信測試</div><div class="sub" style="margin:4px 0 10px">只測試寄信服務是否正常，不會修改任何正式模板。</div><div class="form-grid"><div class="form-field full"><label>測試收件 Email</label><input id="testEmailInput" type="email" placeholder="輸入收件 Email"></div></div><div class="card-actions"><button class="btn secondary" onclick="sendTestEmail(this)">寄出測試信</button></div><div id="emailTestResult" class="sub" style="margin-top:8px"></div></div>';
@@ -5578,8 +5578,46 @@ async function saveStaffScope(email,btn){ const ses=[]; document.querySelectorAl
 function openCompanySettings(){ openPanel('公司資料','系統提供者與登入頁資訊','<div class="form-grid"><div class="form-field"><label>系統名稱</label><input id="co_system"></div><div class="form-field"><label>公司名稱</label><input id="co_name"></div><div class="form-field"><label>客服 Email</label><input id="co_email"></div><div class="form-field"><label>客服 LINE</label><input id="co_line"></div><div class="form-field"><label>聯絡電話</label><input id="co_phone"></div><div class="form-field"><label>官方網站</label><input id="co_site"></div><div class="form-field full"><label>登入頁顯示文字</label><textarea id="co_login"></textarea></div></div><div class="card-actions"><button class="btn" onclick="saveCompanySettings(this)">儲存公司資料</button></div>'); loadCompanySettings(); }
 async function loadCompanySettings(){ try{ const c=await api({action:'getCompanySettings'}); $('co_system').value=c.systemName||''; $('co_name').value=c.companyName||''; $('co_email').value=c.serviceEmail||''; $('co_line').value=c.serviceLine||''; $('co_phone').value=c.phone||''; $('co_site').value=c.website||''; $('co_login').value=c.loginText||''; }catch(e){ toast('公司資料載入失敗：'+e.message,5000); } }
 async function saveCompanySettings(btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'saveCompanySettings',systemName:$('co_system').value,companyName:$('co_name').value,serviceEmail:$('co_email').value,serviceLine:$('co_line').value,phone:$('co_phone').value,website:$('co_site').value,loginText:$('co_login').value}); toast('公司資料已儲存'); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
-function openHomepageSettings(){ openPanel('公告 / 首頁顯示','首頁封面、公告與小圖（主題活動圖片已移至「場次」頁上方）','<div class="form-grid"><div class="form-field full"><label>登入頁 / 品牌 Logo 網址</label><input id="home_logo"></div><div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div><div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div><div class="form-field full" style="border-top:1px dashed var(--line);padding-top:12px"><b>前台小圖 / IP 圖片網址</b><div class="sub">這些會存進資料庫 tenant config，不寫死在 index.html；之後換檔小圖不會消失。</div></div><div class="form-field"><label>首頁歡迎小圖 URL</label><input id="home_mascotHome" placeholder="IP歡迎.png 或圖片網址"></div><div class="form-field"><label>市集/指引小圖 URL</label><input id="home_mascotPortal" placeholder="IP指引.png 或圖片網址"></div><div class="form-field"><label>會員資料小圖 URL</label><input id="home_mascotMember" placeholder="IP資料.png 或圖片網址"></div><div class="form-field"><label>客服小圖 URL</label><input id="home_mascotSupport" placeholder="IP客服.png 或圖片網址"></div><div class="form-field"><label>我的紀錄小圖 URL</label><input id="home_mascotProfile" placeholder="IP會員.png 或圖片網址"></div><div class="form-field"><label>報名彈窗小圖 URL</label><input id="home_mascotModal" placeholder="IP報名.png 或圖片網址"></div></div><div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div>'); loadHomepageSettings(); }
-async function loadHomepageSettings(){ try{ const c=await api({action:'getSiteConfig'}); $('home_hero').value=c.heroImg||''; $('home_info').value=c.infoText||''; $('home_logo').value=c.logoUrl||''; const set=(id,v)=>{ const el=$(id); if(el) el.value=v||''; }; set('home_mascotHome',c.mascotHome); set('home_mascotPortal',c.mascotPortal); set('home_mascotMember',c.mascotMember); set('home_mascotSupport',c.mascotSupport); set('home_mascotProfile',c.mascotProfile); set('home_mascotModal',c.mascotModal); }catch(e){toast('首頁設定載入失敗：'+e.message,6000)} }
+function openHomepageSettings(){
+  openPanel('公告 / 首頁顯示','首頁顯示與已繳費攤商的大群組邀請分區保存，不會互相覆蓋',`
+    <div class="form-grid">
+      <div class="form-field full"><label>登入頁 / 品牌 Logo 網址</label><input id="home_logo"></div>
+      <div class="form-field full"><label>首頁封面圖 URL</label><input id="home_hero"></div>
+      <div class="form-field full"><label>首頁歡迎詞 / 公告</label><textarea id="home_info"></textarea></div>
+      <div class="form-field full" style="border-top:1px dashed var(--line);padding-top:12px"><b>已繳費攤商大群組</b><div class="sub">只有主辦確認已繳費或免費的有效報名，才會在「我的紀錄」、行前通知與繳費確認信看到；邀請網址不直接顯示。</div></div>
+      <div class="form-field full"><label class="tight-check"><input id="group_enabled" type="checkbox"> 啟用大群組邀請</label></div>
+      <div class="form-field full"><label>大群組名稱</label><input id="group_name" placeholder="全台市集藝文資訊中心 大群組"></div>
+      <div class="form-field full"><label>邀請文字</label><textarea id="group_invite" placeholder="您已被邀請加入…"></textarea></div>
+      <div class="form-field full"><label>加入網址（只藏在按鈕中）</label><input id="group_url" type="url" placeholder="https://line.me/..."></div>
+      <div class="form-field"><label>加入密碼</label><input id="group_password" autocomplete="off" placeholder="例如 8825"></div>
+      <div class="form-field full"><button class="btn" type="button" onclick="saveOfficialGroupSettings(this)">儲存大群組設定</button></div>
+      <div class="form-field full" style="border-top:1px dashed var(--line);padding-top:12px"><b>前台小圖 / IP 圖片網址</b><div class="sub">這些會存進資料庫 tenant config，不寫死在 index.html；之後換檔小圖不會消失。</div></div>
+      <div class="form-field"><label>首頁歡迎小圖 URL</label><input id="home_mascotHome" placeholder="IP歡迎.png 或圖片網址"></div>
+      <div class="form-field"><label>市集/指引小圖 URL</label><input id="home_mascotPortal" placeholder="IP指引.png 或圖片網址"></div>
+      <div class="form-field"><label>會員資料小圖 URL</label><input id="home_mascotMember" placeholder="IP資料.png 或圖片網址"></div>
+      <div class="form-field"><label>客服小圖 URL</label><input id="home_mascotSupport" placeholder="IP客服.png 或圖片網址"></div>
+      <div class="form-field"><label>我的紀錄小圖 URL</label><input id="home_mascotProfile" placeholder="IP會員.png 或圖片網址"></div>
+      <div class="form-field"><label>報名彈窗小圖 URL</label><input id="home_mascotModal" placeholder="IP報名.png 或圖片網址"></div>
+    </div>
+    <div class="card-actions"><button class="btn" onclick="saveHomepageSettings(this)">儲存首頁顯示</button></div>`);
+  loadHomepageSettings();
+}
+async function loadHomepageSettings(){
+  try{
+    const [c,g]=await Promise.all([api({action:'getSiteConfig'}),api({action:'getOfficialGroupSettings'})]);
+    $('home_hero').value=c.heroImg||''; $('home_info').value=c.infoText||''; $('home_logo').value=c.logoUrl||'';
+    const set=(id,v)=>{ const el=$(id); if(el) el.value=v||''; };
+    set('home_mascotHome',c.mascotHome); set('home_mascotPortal',c.mascotPortal); set('home_mascotMember',c.mascotMember); set('home_mascotSupport',c.mascotSupport); set('home_mascotProfile',c.mascotProfile); set('home_mascotModal',c.mascotModal);
+    $('group_enabled').checked=g.enabled===true; set('group_name',g.name); set('group_invite',g.inviteText); set('group_url',g.url); set('group_password',g.password);
+  }catch(e){toast('首頁設定載入失敗：'+e.message,6000)}
+}
+async function saveOfficialGroupSettings(btn){
+  const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
+  try{
+    await apiPost({action:'saveOfficialGroupSettings',enabled:!!$('group_enabled').checked,name:$('group_name').value,inviteText:$('group_invite').value,url:$('group_url').value,password:$('group_password').value});
+    toast('大群組設定已儲存');
+  }catch(e){toast('大群組設定儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;}
+}
 async function deleteSessionUI(sid){
   // 場次刪除僅限平台總管理員；後端也會再擋一次（前端隱藏只是輔助）。
   if(!isPlatformSuperAdmin()){ toast('場次刪除僅限平台總管理員，請改用「封存」',5000); return; }
