@@ -90,3 +90,25 @@
 - 權限驗證：未登入者無法讀取大群組管理設定，回應不含密碼或邀請網址；公開 frontBootstrap 不含大群組受保護設定。
 - 連線驗證：2bl-v7 ping 正常，tuibile Supabase 連線正常；安全稽核、資料契約、角色操作者模擬與完整自動測試通過。
 - 邊界：`tobeloved-api` 未修改、未部署；既有 Routes、Bindings 與 Secrets 名稱均保留。
+
+## 2026-08-20｜AI 貼文排程小幫手（Pending）
+
+- 新增資料：`social_campaigns`（宣傳批次）、`social_posts`（正式貼文與排程）、`social_meta_connections`（加密 Meta 授權狀態與選定帳號）、`social_publish_attempts`（逐平台發布與防重複紀錄）。
+- 租戶：四張表與所有 Worker 查詢皆固定包含 `tenant_id = tuibile`；沒有跨租戶讀寫。
+- 活動來源：只從 `sessions` 讀取名稱、日期、時間、地點、公開介紹、公開圖片、主辦與合作單位；不讀會員、攤商私人資料、付款、財務或後台備註。
+- 圖片：沿用正式 `covers` Storage bucket，路徑固定在 `tuibile/social-posts/...`；資料庫保存圖片 URL 與 Storage path。
+- 文字 AI：整批第一次主動產生時只呼叫一次 OpenAI Responses API；成功後立即保存。重新整理、查看、儲存、切頁或上傳圖片不會再次生成。
+- 圖片 AI：本功能第一版不呼叫 OpenAI Image API，只保存每篇不同的完整圖片 Prompt；既有 AI 主視覺功能維持原狀。
+- 整批排程：`schedule_social_campaign` 在單一資料庫交易內驗證並寫入全部貼文；缺漏時回傳對應篇次與欄位，整批不清空。
+- 自動發布：`claim_due_social_posts` 使用鎖定與跳過已鎖資料的方式原子認領；`social_publish_attempts` 以貼文＋平台唯一約束防止同一平台重複發布。
+- 權限：四張表 RLS 開啟，撤銷 anon/authenticated，僅 Worker service role 可存取。Meta Token 由 Worker 以獨立金鑰加密後保存；App Secret 與加密金鑰不進資料庫。
+- 狀態：`Deploying`；正式 Supabase migration `20260819174430_ai_social_scheduler_partner_mentions` 已套用並驗證，分支尚未合併，`2bl-v7` 與正式網站尚待部署。
+
+## 2026-08-20｜合作帳號標註／Hashtag 擴充（Pending）
+
+- 新增 `social_partners` 作為已確認合作單位帳號的唯一正式來源；保存名稱、Facebook 粉專網址／ID、Instagram username／ID 與驗證狀態。
+- `social_campaigns.partner_ids` 保存該批可使用的合作單位；`social_posts` 分開保存 Facebook／Instagram 選擇、活動固定 Hashtag、該篇專屬 Hashtag 與 Meta 標註結果。
+- AI 只取得合作單位 id 與名稱並建議該篇適合標註誰；正式帳號只能來自平台總管理員輸入或已保存資料，任何 AI 回傳的不明 id 都會被丟棄。
+- Facebook Page Mentioning 與 Instagram `user_tags` 分開處理；標註遭 Meta 拒絕時改為不標註並正常發布，錯誤只記在該篇該帳號，不清除貼文或整批排程。
+- 權限由「租戶主要管理者」收緊為「平台最高總管理員」；入口與 Worker 操作都受限制，其他角色無法以直接網址繞過。
+- 狀態：`Deploying`；正式資料庫已套用並驗證，尚未完成真實 Meta 標註驗收，程式尚待合併與部署。

@@ -4,7 +4,7 @@ import path from "node:path";
 const strict = process.argv.includes("--strict");
 const root = process.env.DATA_CONTRACT_ROOT || process.cwd();
 const auditPath = path.join(root, ".automation", "supabase-schema-audit.json");
-const formalFiles = ["index.html", "admin.html", "onsite.html", "worker.js"];
+const formalFiles = ["index.html", "admin.html", "onsite.html", "social.html", "worker.js"];
 
 if (!fs.existsSync(auditPath)) throw new Error("缺少 Supabase 唯讀盤點基準");
 const audit = JSON.parse(fs.readFileSync(auditPath, "utf8"));

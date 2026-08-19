@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>2BL｜AI 貼文排程小幫手</title>
+  <style>
+    :root{--bg:#f8f6f0;--paper:#fff;--ink:#292621;--muted:#6f6a62;--line:#ded8ce;--sage:#dbe8df;--blue:#dce8f1;--yellow:#f8ebbd;--danger:#b54b43;--shadow:0 8px 24px rgba(45,39,32,.08);--safe:env(safe-area-inset-bottom,0px)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+    header{position:sticky;top:0;z-index:20;background:rgba(248,246,240,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+    .head{max-width:1180px;margin:auto;padding:10px 14px;display:flex;align-items:center;gap:10px}.head img{width:42px;height:42px;border-radius:10px;object-fit:contain;background:#fff}.head-title{flex:1}.head-title b{font-size:18px}.sub{color:var(--muted);font-size:13px;line-height:1.5}.wrap{max-width:1180px;margin:auto;padding:14px 14px calc(92px + var(--safe))}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.tab{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 8px;font-weight:900;min-height:46px}.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}.card h2,.card h3{margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:13px;font-weight:900;color:var(--muted)}
+    input,select,textarea{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;padding:10px 11px;color:var(--ink)}textarea{min-height:104px;resize:vertical}.short{min-height:76px}
+    .btn{border:1px solid var(--ink);border-radius:11px;background:var(--ink);color:#fff;padding:10px 14px;font-weight:900;min-height:44px}.btn.secondary{background:#fff;color:var(--ink);border-color:var(--line)}.btn.soft{background:var(--sage);color:#24362c;border-color:#bfd0c4}.btn.danger{background:#fff;color:var(--danger);border-color:#d9aaa6}.btn.small{min-height:38px;padding:7px 10px;font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.main-action{position:sticky;bottom:calc(8px + var(--safe));z-index:15;width:100%;font-size:17px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+    .choice{display:flex;gap:8px;flex-wrap:wrap}.choice label{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;font-weight:850}.choice input{width:auto;margin-right:5px}.campaign{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:4px 8px;background:var(--sage);font-size:12px;font-weight:900}.badge.warn{background:var(--yellow)}.badge.bad{background:#f8d9d6}.notice{border-left:6px solid #88a99a;background:#fff;padding:12px 14px;border-radius:12px;margin-bottom:12px}.error{border-left-color:var(--danger);background:#fff5f4}
+    .post{border-left:7px solid #adc5b7}.post-head{display:flex;justify-content:space-between;gap:10px;align-items:start}.post-title{font-size:19px;font-weight:950}.post-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(250px,.75fr);gap:12px;margin-top:12px}.image-box{aspect-ratio:1/1;border:1px dashed var(--line);border-radius:14px;background:#f6f4ef;display:grid;place-items:center;overflow:hidden;text-align:center;color:var(--muted);padding:12px}.image-box img{width:100%;height:100%;object-fit:cover}.prompt{white-space:pre-wrap;background:#f7f4ed;border:1px solid var(--line);border-radius:11px;padding:10px;font-size:13px;line-height:1.55;max-height:220px;overflow:auto}.platforms{display:flex;gap:12px;flex-wrap:wrap}.platforms label{font-weight:850}.platforms input{width:auto}.save-state{min-height:20px;color:#4d7161;font-size:13px;font-weight:850}
+    .calendar-day{display:grid;grid-template-columns:110px 1fr;gap:10px;border-top:1px solid var(--line);padding:12px 0}.calendar-day:first-child{border-top:0}.calendar-items{display:grid;gap:7px}.calendar-item{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}.empty{text-align:center;padding:24px;color:var(--muted);border:1px dashed var(--line);border-radius:14px;background:#fff}
+    .toast{position:fixed;left:50%;bottom:calc(76px + var(--safe));transform:translate(-50%,20px);opacity:0;transition:.2s;background:#222;color:#fff;padding:10px 14px;border-radius:999px;z-index:50;max-width:92vw;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+    .busy{pointer-events:none;opacity:.6}
+    .partner-box{border:1px solid var(--line);border-radius:14px;padding:12px;background:#faf9f5;margin-top:12px}.partner-list{display:grid;gap:8px;margin:10px 0}.partner-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff}.partner-check{display:flex;gap:8px;align-items:flex-start}.partner-check input{width:auto;margin-top:4px}.mention-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mention-group{border:1px solid var(--line);border-radius:11px;padding:9px;background:#faf9f5}.mention-group label{display:block;margin:5px 0;font-weight:750}.mention-group input{width:auto;margin-right:6px}.mention-state{font-size:12px;line-height:1.45;margin-top:6px;color:var(--muted)}
+    @media(max-width:760px){.head-title .sub{display:none}.wrap{padding:10px 10px calc(94px + var(--safe))}.grid,.post-grid,.mention-grid{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:13px;border-radius:15px}.campaign,.partner-row{grid-template-columns:1fr}.tabs{position:sticky;top:63px;z-index:12;background:var(--bg);padding:6px 0}.tab{font-size:14px;padding:9px 4px}.actions .btn{flex:1;min-width:125px}.post-head{display:block}.post-head .badge{margin-top:6px}.calendar-day{grid-template-columns:1fr}.calendar-day>strong{font-size:18px}.main-action{min-height:54px}}
+  </style>
+</head>
+<body>
+<header><div class="head"><img src="logo.jpg" alt="2BL"><div class="head-title"><b>AI 貼文排程小幫手</b><div class="sub">完整文章、圖片語法、整批審核與 FB／IG 排程</div></div><button class="btn secondary small" onclick="location.href='admin.html'">← 回後台</button></div></header>
+<main class="wrap">
+  <div class="tabs"><button id="tab-create" class="tab active" onclick="showTab('create')">新增宣傳</button><button id="tab-calendar" class="tab" onclick="showTab('calendar')">貼文排程</button><button id="tab-meta" class="tab" onclick="showTab('meta')">FB／IG 連接</button></div>
+  <div id="message"></div>
+
+  <section id="view-create">
+    <div class="card">
+      <h2>新增宣傳</h2><div class="sub">從現有活動帶入公開資料，或自己輸入宣傳內容。</div>
+      <div class="choice" style="margin:12px 0"><label><input type="radio" name="source" value="session" checked onchange="sourceChanged()">從 2BL 活動帶入</label><label><input type="radio" name="source" value="manual" onchange="sourceChanged()">自己建立宣傳</label></div>
+      <div id="sessionSource" class="field"><label>選擇活動</label><select id="sourceSession" onchange="fillSessionPreview()"><option value="">載入中…</option></select><div id="sessionPreview" class="notice hidden"></div></div>
+      <div id="manualSource" class="grid hidden">
+        <div class="field full"><label>宣傳名稱</label><input id="manualTitle"></div><div class="field"><label>日期</label><input id="manualDate" placeholder="例如 2026/09/19–09/20"></div><div class="field"><label>時間</label><input id="manualTime" placeholder="例如 11:00–18:00"></div><div class="field full"><label>地點</label><input id="manualLocation"></div><div class="field full"><label>活動內容</label><textarea id="manualDescription"></textarea></div><div class="field"><label>主辦／合作單位</label><input id="manualOrganizer"></div><div class="field"><label>重要資訊</label><input id="manualImportant"></div><div class="field full"><label>補充說明</label><textarea id="manualNotes" class="short"></textarea></div>
+      </div>
+      <div class="partner-box">
+        <div class="actions" style="justify-content:space-between"><div><h3>合作帳號</h3><div class="sub">使用已保存的合作單位；只會使用你保存並勾選的官方帳號，AI 不會猜帳號。</div></div><button class="btn secondary small" onclick="openPartnerForm()">＋ 新增合作單位</button></div>
+        <div id="partnerList" class="partner-list"><div class="empty">尚未建立合作帳號</div></div>
+        <div id="partnerForm" class="grid hidden">
+          <input id="partnerId" type="hidden">
+          <div class="field full"><label>合作單位／品牌名稱</label><input id="partnerName"></div>
+          <div class="field full"><label>Facebook 官方粉專網址</label><input id="partnerFacebook" placeholder="https://www.facebook.com/..."></div>
+          <div class="field"><label>Facebook 粉專 ID（自動標註需要）</label><input id="partnerFacebookId" inputmode="numeric"><div class="sub">不知道可先留空，系統會標示無法自動標註。</div></div>
+          <div class="field"><label>Instagram 官方帳號</label><input id="partnerInstagram" placeholder="例如 genesis.tw，不用輸入 @"></div>
+          <div class="field"><label>Instagram 帳號 ID（選填）</label><input id="partnerInstagramId" inputmode="numeric"></div>
+          <div class="field full"><div class="actions"><button class="btn soft small" onclick="savePartner()">儲存合作單位</button><button class="btn secondary small" onclick="closePartnerForm()">取消</button></div></div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>宣傳篇數</label><div class="choice"><label><input type="radio" name="count" value="5" checked>5 篇</label><label><input type="radio" name="count" value="10">10 篇</label><label><input type="radio" name="count" value="14">14 篇</label><label><input type="radio" name="count" value="20">20 篇</label><label><input type="radio" name="count" value="until_end">幫我安排到活動結束</label></div></div>
+      <div class="notice" style="margin-top:12px"><b>圖片第一版不會自動扣費</b><div class="sub">每篇會準備不同的完整圖片語法；你到 ChatGPT 產圖後，再回來上傳到該篇。</div></div>
+      <button id="createBtn" class="btn" onclick="createCampaign()">幫我產生宣傳</button>
+    </div>
+    <div class="card"><div class="actions" style="justify-content:space-between"><div><h2>我的宣傳</h2><div class="sub">已生成內容會保存在正式資料庫，重新整理不會再次產生費用。</div></div><button class="btn secondary small" onclick="loadCampaigns()">重新整理</button></div><div id="campaignList" style="margin-top:12px"><div class="empty">載入中…</div></div></div>
+    <div id="review"></div>
+  </section>
+
+  <section id="view-calendar" class="hidden"><div class="card"><div class="actions" style="justify-content:space-between"><div><h2>貼文排程</h2><div class="sub">可直接開啟該批貼文修改或取消排程。</div></div><button class="btn secondary small" onclick="loadCalendar()">重新整理</button></div><div id="calendarBody" style="margin-top:10px"><div class="empty">載入中…</div></div></div></section>
+  <section id="view-meta" class="hidden"><div class="card"><h2>FB／IG 連接</h2><div class="sub">使用 Meta 官方登入，不會要求或保存你的 Facebook、Instagram 密碼。</div><div id="metaBody" style="margin-top:14px"><div class="empty">載入中…</div></div></div></section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+const API='https://2bl-v7.ndiangrace.workers.dev';
+const SESSION_KEY='tb_v3';
+const TENANT_KEY='2bl_tenant';
+const State={session:null,tenant:'tuibile',sessions:[],partners:[],campaignPartners:[],campaigns:[],current:null,posts:[],meta:null};
+const $=id=>document.getElementById(id); const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch{return null}}
+function toast(msg,dur=2800){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),dur)}
+function message(msg,bad=false){$('message').innerHTML=msg?'<div class="notice '+(bad?'error':'')+'">'+safe(msg)+'</div>':''}
+async function api(action,params={}){const q=new URLSearchParams({...params,action,tenant:State.tenant,email:State.session.email,token:State.session.token,_t:Date.now()});const r=await fetch(API+'?'+q,{cache:'no-store'});const j=await r.json().catch(()=>({error:'後端回傳異常'}));if(j.error)throw new Error(j.error);return j.data!==undefined?j.data:j}
+async function post(action,body={}){const r=await fetch(API+'?_t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-store'},cache:'no-store',body:JSON.stringify({...body,action,tenant:State.tenant,email:State.session.email,token:State.session.token})});const j=await r.json().catch(()=>({error:'後端回傳異常'}));if(j.error)throw new Error(j.error);return j.data!==undefined?j.data:j}
+function showTab(name){['create','calendar','meta'].forEach(x=>{$('view-'+x).classList.toggle('hidden',x!==name);$('tab-'+x).classList.toggle('active',x===name)});if(name==='calendar')loadCalendar();if(name==='meta')loadMeta()}
+function sourceChanged(){const manual=document.querySelector('input[name=source]:checked').value==='manual';$('manualSource').classList.toggle('hidden',!manual);$('sessionSource').classList.toggle('hidden',manual)}
+function fillSessionPreview(){const s=State.sessions.find(x=>x.id===$('sourceSession').value);$('sessionPreview').classList.toggle('hidden',!s);if(s)$('sessionPreview').innerHTML='<b>'+safe(s.name)+'</b><div>'+safe(s.dateText||'')+'　'+safe(s.timeText||'')+'</div><div>'+safe(s.venue||'')+'</div>'}
+function selectedValue(name){return document.querySelector('input[name='+name+']:checked')?.value||''}
+function renderPartners(){const el=$('partnerList');if(!State.partners.length){el.innerHTML='<div class="empty">尚未建立合作帳號</div>';return}el.innerHTML=State.partners.map(p=>'<div class="partner-row"><label class="partner-check"><input type="checkbox" class="campaign-partner" value="'+safe(p.id)+'"><span><b>'+safe(p.name)+'</b><div class="sub">FB：'+safe(p.facebookPageUrl||'未設定')+(p.facebookPageId?'｜ID '+safe(p.facebookPageId):'｜缺少粉專 ID')+'<br>IG：'+safe(p.instagramUsername?'@'+p.instagramUsername:'未設定')+'</div></span></label><button class="btn secondary small" onclick="editPartner(\''+safe(p.id)+'\')">修改帳號</button></div>').join('')}
+function openPartnerForm(p=null){$('partnerForm').classList.remove('hidden');$('partnerId').value=p?.id||'';$('partnerName').value=p?.name||'';$('partnerFacebook').value=p?.facebookPageUrl||'';$('partnerFacebookId').value=p?.facebookPageId||'';$('partnerInstagram').value=p?.instagramUsername||'';$('partnerInstagramId').value=p?.instagramUserId||'';$('partnerName').focus()}
+function closePartnerForm(){$('partnerForm').classList.add('hidden')}
+function editPartner(id){openPartnerForm(State.partners.find(x=>x.id===id)||State.campaignPartners.find(x=>x.id===id)||null)}
+async function savePartner(){try{const selected=new Set(selectedPartnerIds()),out=await post('socialSavePartner',{id:$('partnerId').value,name:$('partnerName').value.trim(),facebookPageUrl:$('partnerFacebook').value.trim(),facebookPageId:$('partnerFacebookId').value.trim(),instagramUsername:$('partnerInstagram').value.trim(),instagramUserId:$('partnerInstagramId').value.trim()});selected.add(out.id);const i=State.partners.findIndex(x=>x.id===out.id);if(i>=0)State.partners[i]=out;else State.partners.push(out);

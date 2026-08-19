@@ -1,10 +1,11 @@
 {
-  "generated_at": "2026-08-19T10:54:48.868Z",
+  "generated_at": "2026-08-19T17:46:12.099Z",
   "project_id": "douhmxipedgpfbvfynbq",
   "formal_files": [
     "index.html",
     "admin.html",
     "onsite.html",
+    "social.html",
     "worker.js"
   ],
   "frontend_direct_supabase": [],
@@ -39,6 +40,11 @@
     "session_visual_assets",
     "sessions",
     "short_links",
+    "social_campaigns",
+    "social_meta_connections",
+    "social_partners",
+    "social_posts",
+    "social_publish_attempts",
     "staff",
     "staff_action_logs",
     "staff_session_permissions",
@@ -51,6 +57,7 @@
   "worker_routines": [
     "adjust_member_credit_atomic",
     "apply_member_credit_atomic",
+    "claim_due_social_posts",
     "claim_session_slot",
     "complete_partial_day_refund_atomic",
     "create_bundle_registrations_atomic",
@@ -58,6 +65,7 @@
     "release_session_slot",
     "resolve_registration_atomic",
     "save_seat_marker_positions_atomic",
+    "schedule_social_campaign",
     "set_deposit_return_status_atomic",
     "set_session_main_visual_atomic",
     "short_link_hit",
@@ -226,6 +234,11 @@
         "file": "onsite.html",
         "method": "setItem",
         "key": "2bl_onsite_email"
+      },
+      {
+        "file": "social.html",
+        "method": "getItem",
+        "key": "tb_v3"
       }
     ],
     "disallowed": []
