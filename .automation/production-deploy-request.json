@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "5be1c9118a34e8e71ae268adc1ae58baacfdf6fc",
-  "expected_cloudflare_version": "47f24fed-ff3b-4713-9d3b-a483526ed90a",
-  "reason": "恢復已繳費攤商大群組邀請：我的紀錄、行前通知、繳費確認信與總管理者設定"
+  "approved_source_commit": "690ad71acf2295e4840daac366ea4822dc7ae2e6",
+  "expected_cloudflare_version": "699037af-367b-4089-be13-67946a6ca283",
+  "reason": "平台總管理員專用 AI 貼文排程：合作帳號、分篇標註、Hashtag、整批審核與 FB／IG 排程"
 }
