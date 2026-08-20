@@ -120,6 +120,7 @@ const AI_VISUAL_DEFAULT_QUALITY = '4-steps';
 const SOCIAL_TEXT_MODEL_DEFAULT = '@cf/meta/llama-3.1-8b-instruct-fast';
 const SOCIAL_IMAGE_MODEL_DEFAULT = '@cf/bytedance/stable-diffusion-xl-lightning';
 const SOCIAL_IMAGE_BUCKET = 'covers';
+const SOCIAL_REFERENCE_BUCKET = 'social-references';
 const SOCIAL_TENANT_ID = 'tuibile';
 const SOCIAL_VISUAL_STYLES = Object.freeze([
   {key:'editorial_photo',label:'自然紀實攝影',palette:'清透自然光、鼠尾草綠與米白',composition:'廣角環境敘事，人物與活動空間有前中後景'},
@@ -9052,6 +9053,7 @@ function socialCampaignView(c, postCount) {
     description:c.description||'', organizer:c.organizer||'', coOrganizer:c.co_organizer||'',
     importantInfo:c.important_info||'', notes:c.notes||'', partnerIds:socialStringArray(c.partner_ids), requestedMode:c.requested_mode||'5',
     requestedCount:c.requested_count||null, status:c.status||'draft', postCount:Number(postCount||0),
+    defaultDestinations:safeJson(c.default_destinations,{}), lastError:c.last_error||'',
     createdAt:c.created_at||'', updatedAt:c.updated_at||''
   };
 }
@@ -9065,7 +9067,7 @@ function socialPostView(p) {
     fixedHashtags:socialHashtags(p.fixed_hashtags), topicHashtags:socialHashtags(p.topic_hashtags),
     facebookPartnerIds:socialStringArray(p.facebook_partner_ids), instagramPartnerIds:socialStringArray(p.instagram_partner_ids),
     mentionStatus:safeJson(p.mention_status,{}),
-    scheduledAt:p.scheduled_at||'', platforms:socialStringArray(p.platforms,['facebook','instagram','threads']),
+    scheduledAt:p.scheduled_at||'', platforms:socialStringArray(p.platforms,['facebook','instagram','threads']), destinations:safeJson(p.destinations,{}),
     imagePrompt:p.image_prompt||'', imageStyleMeta:safeJson(p.image_style_meta,{}), imageUrl:p.image_url||'',
     imageStoragePath:p.image_storage_path||'', status:p.status||'draft', statusLabel:socialPostStatusLabel(p.status),
     platformStatus:safeJson(p.platform_status,{}), lastError:p.last_error||'', publishedAt:p.published_at||'',
@@ -9191,7 +9193,7 @@ async function hSocialSavePartner(env,b) {
 }
 async function hSocialListCampaigns(env,p) {
   if (!await socialRequireOwner(env,p)) return jsonErr('此工具僅限平台總管理員使用');
-  const campaigns=await dbGet(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=*&order=updated_at.desc&limit=100`);
+  const campaigns=await dbGet(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&archived_at=is.null&select=*&order=updated_at.desc&limit=100`);
   const posts=campaigns.length?await dbGet(env,'social_posts',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=campaign_id`):[];
   const counts={}; for(const row of posts) counts[row.campaign_id]=(counts[row.campaign_id]||0)+1;
   return jsonOk(campaigns.map(c=>socialCampaignView(c,counts[c.id]||0)));
@@ -9222,7 +9224,8 @@ async function hSocialCreateCampaign(env,b) {
   }
   const partnerRows=await dbGet(env,'social_partners',`tenant_id=eq.${SOCIAL_TENANT_ID}&is_active=eq.true&select=id`),partnerIds=socialPartnerIds(b.partnerIds,partnerRows.map(x=>x.id));
   const id=genId('SOC');
-  await dbInsert(env,'social_campaigns',{id,tenant_id:SOCIAL_TENANT_ID,source_type:sourceType,...source,partner_ids:partnerIds,requested_mode:requestedMode,requested_count:requestedMode==='until_end'?null:Number(requestedMode),status:'draft',created_by:b.email,created_at:nowIso(),updated_at:nowIso()});
+  const defaultDestinations=safeJson(b.defaultDestinations,{});
+  await dbInsert(env,'social_campaigns',{id,tenant_id:SOCIAL_TENANT_ID,source_type:sourceType,...source,partner_ids:partnerIds,requested_mode:requestedMode,requested_count:requestedMode==='until_end'?null:Number(requestedMode),default_destinations:defaultDestinations,status:'draft',created_by:b.email,created_at:nowIso(),updated_at:nowIso()});
   await writeAuditLog(env,SOCIAL_TENANT_ID,b.email,'admin','create_social_campaign','social_campaigns',id,{},source,{requestedMode});
   return jsonOk({id});
 }
@@ -9250,7 +9253,9 @@ async function hSocialGenerateCampaign(env,b) {
       'scheduledAt 使用 ISO 8601 並包含 +08:00；不得早於今天，也不得晚於活動最後一天。',
       'platforms 只能使用 facebook、instagram、threads。Hashtag 每個項目以 # 開頭。'
     ].join('\n');
-    const input='今天（Asia/Taipei）：'+new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'})+'\n唯一正式活動資料：\n'+JSON.stringify(socialOfficialSource(c),null,2)+'\n可建議標註的合作單位（只有 id 與名稱，不含帳號；禁止猜帳號）：\n'+JSON.stringify(partnerRows.map(x=>({id:x.id,name:x.name})),null,2);
+    const referenceRows=await dbGet(env,'social_campaign_references',`tenant_id=eq.${SOCIAL_TENANT_ID}&campaign_id=eq.${encodeURIComponent(id)}&conversion_status=eq.ready&select=original_name,extracted_markdown&order=created_at.asc`).catch(()=>[]);
+    const referenceText=referenceRows.map(x=>`【${x.original_name}】\n${x.extracted_markdown||''}`).join('\n\n').slice(0,40000);
+    const input='今天（Asia/Taipei）：'+new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'})+'\n唯一正式活動資料：\n'+JSON.stringify(socialOfficialSource(c),null,2)+'\n使用者上傳的參考資料（只能輔助理解；若與正式活動資料衝突，以正式活動資料為準）：\n'+(referenceText||'無')+'\n可建議標註的合作單位（只有 id 與名稱，不含帳號；禁止猜帳號）：\n'+JSON.stringify(partnerRows.map(x=>({id:x.id,name:x.name})),null,2);
     const result=await socialWorkersAIJson(env,'social_campaign_plan',instructions,input,socialCampaignSchema(requested),12000);
     let rows=Array.isArray(result.data.posts)?result.data.posts:[];
     if(requested!=='until_end'&&rows.length!==Number(requested)) throw new Error('AI 回傳篇數不正確，未寫入也不會重複扣費；請再按一次產生');
@@ -9259,14 +9264,14 @@ async function hSocialGenerateCampaign(env,b) {
     const inserts=rows.map((p,index)=>{
       const style=SOCIAL_VISUAL_STYLES[index%SOCIAL_VISUAL_STYLES.length];
       const topicHashtags=socialHashtags(p.topicHashtags).filter(x=>!fixedHashtags.includes(x)).slice(0,20),hashtags=[...fixedHashtags,...topicHashtags].slice(0,30);
-      return {id:genId('SPOST'),tenant_id:SOCIAL_TENANT_ID,campaign_id:id,sequence_no:index+1,angle:socialText(p.angle,240),facebook_text:socialText(p.facebookText,12000),instagram_text:socialText(p.instagramText,12000),threads_text:socialText(p.threadsText,500),hashtags,fixed_hashtags:fixedHashtags,topic_hashtags:topicHashtags,facebook_partner_ids:socialPartnerIds(p.facebookPartnerIds,validPartnerIds),instagram_partner_ids:socialPartnerIds(p.instagramPartnerIds,validPartnerIds),mention_status:{facebook:{state:'pending',items:[]},instagram:{state:'pending',items:[]},threads:{state:'unsupported',items:[],message:'Threads 暫不自動標註合作帳號'}},scheduled_at:socialNormalizeSchedule(p.scheduledAt,index,rows.length,c),platforms:socialStringArray(p.platforms,['facebook','instagram','threads']),image_prompt:socialBuildImagePrompt(c,p,style,index,rows.length),image_style_meta:{key:style.key,label:style.label,palette:style.palette,composition:style.composition,visualConcept:socialText(p.visualConcept,500),focalSubject:socialText(p.focalSubject,240)},status:'draft',platform_status:{},missing_fields:['圖片'],revision:1,ai_model:result.model,ai_response_id:result.responseId,ai_usage:{batch:result.usage},created_at:nowIso(),updated_at:nowIso()};
+      return {id:genId('SPOST'),tenant_id:SOCIAL_TENANT_ID,campaign_id:id,sequence_no:index+1,angle:socialText(p.angle,240),facebook_text:socialText(p.facebookText,12000),instagram_text:socialText(p.instagramText,12000),threads_text:socialText(p.threadsText,500),hashtags,fixed_hashtags:fixedHashtags,topic_hashtags:topicHashtags,facebook_partner_ids:socialPartnerIds(p.facebookPartnerIds,validPartnerIds),instagram_partner_ids:socialPartnerIds(p.instagramPartnerIds,validPartnerIds),mention_status:{facebook:{state:'pending',items:[]},instagram:{state:'pending',items:[]},threads:{state:'unsupported',items:[],message:'Threads 暫不自動標註合作帳號'}},scheduled_at:socialNormalizeSchedule(p.scheduledAt,index,rows.length,c),platforms:socialStringArray(p.platforms,['facebook','instagram','threads']),destinations:safeJson(c.default_destinations,{}),image_prompt:socialBuildImagePrompt(c,p,style,index,rows.length),image_style_meta:{key:style.key,label:style.label,palette:style.palette,composition:style.composition,visualConcept:socialText(p.visualConcept,500),focalSubject:socialText(p.focalSubject,240)},status:'draft',platform_status:{},missing_fields:['圖片'],revision:1,ai_model:result.model,ai_response_id:result.responseId,ai_usage:{batch:result.usage},created_at:nowIso(),updated_at:nowIso()};
     });
     await dbInsert(env,'social_posts',inserts);
-    await dbUpdate(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(id)}`,{status:'review',requested_count:inserts.length,ai_model:result.model,ai_response_id:result.responseId,ai_usage:result.usage,updated_at:nowIso()});
+    await dbUpdate(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(id)}`,{status:'review',last_error:null,requested_count:inserts.length,ai_model:result.model,ai_response_id:result.responseId,ai_usage:result.usage,updated_at:nowIso()});
     await writeAuditLog(env,SOCIAL_TENANT_ID,b.email,'admin','generate_social_campaign','social_campaigns',id,{}, {postCount:inserts.length},{model:result.model,responseId:result.responseId,imageApiCalled:false});
     return jsonOk({id,postCount:inserts.length});
   }catch(e){
-    await dbUpdate(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(id)}`,{status:'generation_failed',updated_at:nowIso()}).catch(()=>{});
+    await dbUpdate(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(id)}`,{status:'generation_failed',last_error:socialText(e&&e.message,2000),updated_at:nowIso()}).catch(()=>{});
     return jsonErr(e&&e.message?e.message:'AI 產生失敗');
   }
 }
@@ -9282,7 +9287,7 @@ async function hSocialUpdatePost(env,b) {
   const campaigns=await dbGet(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.campaign_id)}&select=partner_ids`),allowedPartnerIds=socialStringArray(campaigns[0]&&campaigns[0].partner_ids);
   const fixedHashtags=socialHashtags(b.fixedHashtags),topicHashtags=socialHashtags(b.topicHashtags).filter(x=>!fixedHashtags.includes(x)),hashtags=[...fixedHashtags,...topicHashtags].slice(0,30),oldMention=safeJson(row.mention_status,{}),oldPlatform=safeJson(row.platform_status,{});
   const mentionStatus={facebook:oldPlatform.facebook&&oldPlatform.facebook.ok?(oldMention.facebook||{state:'published',items:[]}):{state:'pending',items:[]},instagram:oldPlatform.instagram&&oldPlatform.instagram.ok?(oldMention.instagram||{state:'published',items:[]}):{state:'pending',items:[]},threads:{state:'unsupported',items:[],message:'Threads 暫不自動標註合作帳號'}};
-  const patch={facebook_text:socialText(b.facebookText,12000),instagram_text:socialText(b.instagramText,12000),threads_text:socialText(b.threadsText,500),hashtags,fixed_hashtags:fixedHashtags,topic_hashtags:topicHashtags,facebook_partner_ids:oldPlatform.facebook&&oldPlatform.facebook.ok?socialStringArray(row.facebook_partner_ids):socialPartnerIds(b.facebookPartnerIds,allowedPartnerIds),instagram_partner_ids:oldPlatform.instagram&&oldPlatform.instagram.ok?socialStringArray(row.instagram_partner_ids):socialPartnerIds(b.instagramPartnerIds,allowedPartnerIds),mention_status:mentionStatus,scheduled_at:b.scheduledAt||null,platforms,image_url:socialText(b.imageUrl,2000)||null,image_storage_path:socialText(b.imageStoragePath,1000)||null,revision:Number(row.revision||1)+1,updated_at:nowIso()};
+  const patch={facebook_text:socialText(b.facebookText,12000),instagram_text:socialText(b.instagramText,12000),threads_text:socialText(b.threadsText,500),hashtags,fixed_hashtags:fixedHashtags,topic_hashtags:topicHashtags,facebook_partner_ids:oldPlatform.facebook&&oldPlatform.facebook.ok?socialStringArray(row.facebook_partner_ids):socialPartnerIds(b.facebookPartnerIds,allowedPartnerIds),instagram_partner_ids:oldPlatform.instagram&&oldPlatform.instagram.ok?socialStringArray(row.instagram_partner_ids):socialPartnerIds(b.instagramPartnerIds,allowedPartnerIds),mention_status:mentionStatus,scheduled_at:b.scheduledAt||null,platforms,destinations:safeJson(b.destinations,{}),image_url:socialText(b.imageUrl,2000)||null,image_storage_path:socialText(b.imageStoragePath,1000)||null,revision:Number(row.revision||1)+1,updated_at:nowIso()};
   const updated=await dbUpdateReturning(env,'social_posts',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.id)}&status=in.(draft,scheduled,failed,cancelled)`,patch);
   if(!updated.length) return jsonErr('貼文已進入發布流程，這次修改未覆蓋發布內容');
   return jsonOk(socialPostView({...row,...patch}));
@@ -9339,6 +9344,46 @@ async function socialStorageUploadBytes(env,row,bytes,mime='image/jpeg') {
   const res=await fetch(base+'/storage/v1/object/'+SOCIAL_IMAGE_BUCKET+'/'+path,{method:'POST',headers:{Authorization:'Bearer '+key,apikey:key,'Content-Type':mime,'x-upsert':'false'},body:bytes});
   if(!res.ok)throw new Error('圖片儲存失敗：'+(await res.text()).slice(0,160));
   return {path,url:base+'/storage/v1/object/public/'+SOCIAL_IMAGE_BUCKET+'/'+path};
+}
+async function socialReferenceStorageUpload(env,campaignId,fileName,bytes,mime) {
+  const safeName=String(fileName||'reference').normalize('NFKC').replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g,'_').slice(-120);
+  const path=`${SOCIAL_TENANT_ID}/social-references/${campaignId}/${Date.now()}_${crypto.randomUUID()}_${safeName}`;
+  const base=String(env.SUPABASE_URL||'').replace(/\/$/,'');const key=supabaseServiceRoleKey(env);
+  const res=await fetch(base+'/storage/v1/object/'+SOCIAL_REFERENCE_BUCKET+'/'+path,{method:'POST',headers:{Authorization:'Bearer '+key,apikey:key,'Content-Type':mime,'x-upsert':'false'},body:bytes});
+  if(!res.ok)throw new Error('參考檔儲存失敗：'+(await res.text()).slice(0,160));
+  return path;
+}
+async function hSocialUploadCampaignReference(env,b) {
+  if(!await socialRequireOwner(env,b))return jsonErr('此工具僅限平台總管理員使用');
+  const campaignId=socialText(b.campaignId,120),name=socialText(b.name,240),raw=String(b.file||'');
+  const campaigns=await dbGet(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(campaignId)}&archived_at=is.null&select=id,status`);
+  if(!campaigns.length)return jsonErr('找不到這批宣傳');
+  if(!['draft','generation_failed'].includes(campaigns[0].status))return jsonErr('參考檔只能在產生文章前上傳');
+  const m=raw.match(/^data:([a-zA-Z0-9.+\-\/]+);base64,(.+)$/);if(!m||!name)return jsonErr('參考檔格式錯誤');
+  const allowed=new Set(['application/pdf','text/plain','text/csv','text/html','application/json','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel','application/vnd.oasis.opendocument.text','application/vnd.oasis.opendocument.spreadsheet','image/jpeg','image/png','image/webp']);
+  const mime=m[1].toLowerCase();if(!allowed.has(mime))return jsonErr('此檔案格式目前不支援');
+  let bin;try{bin=atob(m[2]);}catch{return jsonErr('參考檔內容無法讀取');}
+  if(!bin.length||bin.length>5*1024*1024)return jsonErr('每個參考檔須小於 5MB');
+  const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  let converted;try{
+    if(!env.AI||typeof env.AI.toMarkdown!=='function')throw new Error('免費文件轉換尚未綁定');
+    converted=await env.AI.toMarkdown({name,blob:new Blob([bytes],{type:mime})});
+    if(Array.isArray(converted))converted=converted[0];
+    if(!converted||converted.format==='error'||!String(converted.data||'').trim())throw new Error(converted&&converted.error||'檔案沒有可讀文字');
+  }catch(e){return jsonErr('參考檔解析失敗：'+publicErrorMessage(e.message));}
+  let path;try{path=await socialReferenceStorageUpload(env,campaignId,name,bytes,mime);}catch(e){return jsonErr(e.message);}
+  const row={id:genId('SREF'),tenant_id:SOCIAL_TENANT_ID,campaign_id:campaignId,storage_path:path,original_name:name,mime_type:mime,size_bytes:bytes.length,extracted_markdown:socialText(converted.data,100000),conversion_status:'ready',conversion_error:null,created_by:b.email,created_at:nowIso()};
+  try{await dbInsert(env,'social_campaign_references',row);}catch(e){const base=String(env.SUPABASE_URL||'').replace(/\/$/,'');const key=supabaseServiceRoleKey(env);await fetch(base+'/storage/v1/object/'+SOCIAL_REFERENCE_BUCKET+'/'+path,{method:'DELETE',headers:{Authorization:'Bearer '+key,apikey:key}}).catch(()=>{});return jsonErr('參考檔資料保存失敗');}
+  await writeAuditLog(env,SOCIAL_TENANT_ID,b.email,'platform_super_admin','upload_social_campaign_reference','social_campaign_references',row.id,{}, {campaignId,name,sizeBytes:bytes.length},{});
+  return jsonOk({id:row.id,name,sizeBytes:bytes.length});
+}
+async function hSocialArchiveCampaign(env,b) {
+  if(!await socialRequireOwner(env,b))return jsonErr('此工具僅限平台總管理員使用');
+  const id=socialText(b.campaignId,120),now=nowIso();
+  const rows=await dbUpdateReturning(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(id)}&status=in.(draft,generation_failed,review)&archived_at=is.null`,{archived_at:now,updated_at:now});
+  if(!rows.length)return jsonErr('只有未發布的宣傳可以移除');
+  await writeAuditLog(env,SOCIAL_TENANT_ID,b.email,'platform_super_admin','archive_social_campaign','social_campaigns',id,{}, {archivedAt:now},{});
+  return jsonOk({ok:true});
 }
 async function hSocialUploadPostImage(env,b) {
   const row=await socialOwnedPost(env,b,b.postId); if(!row) return jsonErr('找不到貼文或沒有權限');
@@ -9419,14 +9464,17 @@ async function hSocialScheduleCampaign(env,b) {
   const campaignId=socialText(b.campaignId,120), posts=Array.isArray(b.posts)?b.posts:[];
   const campaigns=await dbGet(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(campaignId)}&select=partner_ids`);if(!campaigns.length)return jsonErr('找不到這批宣傳');
   const allowedPartnerIds=socialStringArray(campaigns[0].partner_ids),partners=allowedPartnerIds.length?await dbGet(env,'social_partners',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=in.(${allowedPartnerIds.map(encodeURIComponent).join(',')})&is_active=eq.true&select=*`):[];
-  const conn=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=status,selected_page_id,selected_instagram_id,threads_status,selected_threads_id`),connection=conn[0]||{};
+  const conn=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=status,available_accounts,threads_status,selected_threads_id,selected_threads_username`),connection=conn[0]||{},available=safeJson(connection.available_accounts,[]);
   const requestedPlatforms=new Set(posts.flatMap(p=>socialStringArray(p.platforms,['facebook','instagram','threads'])));
-  if((requestedPlatforms.has('facebook')||requestedPlatforms.has('instagram'))&&(connection.status!=='connected'||!connection.selected_page_id))return jsonErr('有貼文選擇 Facebook／Instagram，請先完成 Meta 授權並選擇粉絲專頁');
-  if(requestedPlatforms.has('instagram')&&!connection.selected_instagram_id)return jsonErr('有貼文選擇 Instagram，但尚未選擇 Instagram 專業帳號');
+  if((requestedPlatforms.has('facebook')||requestedPlatforms.has('instagram'))&&(connection.status!=='connected'||!available.length))return jsonErr('有貼文選擇 Facebook／Instagram，請先完成 Meta 授權並同步可用粉專');
   if(requestedPlatforms.has('threads')&&(connection.threads_status!=='connected'||!connection.selected_threads_id))return jsonErr('有貼文選擇 Threads，但尚未連接 Threads 帳號');
   const normalized=posts.map(p=>{
     const fixedHashtags=socialHashtags(p.fixedHashtags),topicHashtags=socialHashtags(p.topicHashtags).filter(x=>!fixedHashtags.includes(x)),facebookPartnerIds=socialPartnerIds(p.facebookPartnerIds,allowedPartnerIds),instagramPartnerIds=socialPartnerIds(p.instagramPartnerIds,allowedPartnerIds);
-    return {id:socialText(p.id,120),facebookText:socialText(p.facebookText,12000),instagramText:socialText(p.instagramText,12000),threadsText:socialText(p.threadsText,500),hashtags:[...fixedHashtags,...topicHashtags].slice(0,30),fixedHashtags,topicHashtags,facebookPartnerIds,instagramPartnerIds,mentionStatus:{...socialMentionStatus(env,partners,facebookPartnerIds,instagramPartnerIds),threads:{state:'unsupported',items:[],message:'Threads 暫不自動標註合作帳號'}},scheduledAt:socialText(p.scheduledAt,80),platforms:socialStringArray(p.platforms,['facebook','instagram','threads']),imageUrl:socialText(p.imageUrl,2000),imageStoragePath:socialText(p.imageStoragePath,1000)};
+    const destinations=safeJson(p.destinations,{}),fb=available.find(x=>x.pageId===String(destinations.facebookPageId||'')),igOwner=available.find(x=>(x.instagramAccounts||[]).some(y=>y.id===String(destinations.instagramId||'')));
+    if(destinations.facebookPageId&&!fb)destinations.facebookPageId='';
+    if(destinations.instagramId&&!igOwner)destinations.instagramId='';
+    if(connection.threads_status==='connected'&&connection.selected_threads_id){destinations.threadsId=connection.selected_threads_id;destinations.threadsUsername=connection.selected_threads_username||'';}
+    return {id:socialText(p.id,120),facebookText:socialText(p.facebookText,12000),instagramText:socialText(p.instagramText,12000),threadsText:socialText(p.threadsText,500),hashtags:[...fixedHashtags,...topicHashtags].slice(0,30),fixedHashtags,topicHashtags,facebookPartnerIds,instagramPartnerIds,mentionStatus:{...socialMentionStatus(env,partners,facebookPartnerIds,instagramPartnerIds),threads:{state:'unsupported',items:[],message:'Threads 暫不自動標註合作帳號'}},scheduledAt:socialText(p.scheduledAt,80),platforms:socialStringArray(p.platforms,['facebook','instagram','threads']),destinations,imageUrl:socialText(p.imageUrl,2000),imageStoragePath:socialText(p.imageStoragePath,1000)};
   });
   const result=await dbRpc(env,'schedule_social_campaign',{p_tenant_id:SOCIAL_TENANT_ID,p_campaign_id:campaignId,p_posts:normalized,p_actor_email:b.email});
   if(result&&result.ok){result.mentionWarnings=normalized.map((p,index)=>({sequenceNo:index+1,items:[...(p.mentionStatus.facebook.items||[]),...(p.mentionStatus.instagram.items||[])].filter(x=>x.state!=='ready')})).filter(x=>x.items.length);}
@@ -9447,6 +9495,7 @@ async function hSocialCancelPost(env,b) {
 async function hSocialRetryPost(env,b) {
   const row=await socialOwnedPost(env,b,b.postId);if(!row)return jsonErr('找不到貼文或沒有權限');
   if(row.status!=='failed')return jsonErr('只有發布失敗的貼文可以重新發布');
+  await dbDelete(env,'social_publish_attempts',`tenant_id=eq.${SOCIAL_TENANT_ID}&post_id=eq.${encodeURIComponent(row.id)}&status=eq.failed`).catch(()=>{});
   const updated=await dbUpdateReturning(env,'social_posts',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.id)}&status=eq.failed`,{status:'scheduled',scheduled_at:nowIso(),last_error:null,updated_at:nowIso()});
   if(!updated.length)return jsonErr('貼文狀態已改變，未重複加入發布');
   return jsonOk({ok:true});
@@ -9457,17 +9506,29 @@ async function socialTokenKey(env){if(!env.META_TOKEN_ENCRYPTION_KEY)throw new E
 async function socialEncryptToken(env,value){const iv=crypto.getRandomValues(new Uint8Array(12)),key=await socialTokenKey(env),data=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(String(value||'')));return 'v1.'+socialBase64Url(iv)+'.'+socialBase64Url(new Uint8Array(data));}
 async function socialDecryptToken(env,value){const parts=String(value||'').split('.');if(parts.length!==3||parts[0]!=='v1')throw new Error('Meta 授權資料無法解密');const key=await socialTokenKey(env),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:socialBase64UrlBytes(parts[1])},key,socialBase64UrlBytes(parts[2]));return new TextDecoder().decode(plain);}
 function socialMetaConfig(env){const version=socialText(env.META_GRAPH_VERSION,20),appId=socialText(env.META_APP_ID,120),appSecret=socialText(env.META_APP_SECRET,300),redirect=SOCIAL_META_REDIRECT_URI,configId=socialText(env.META_BUSINESS_LOGIN_CONFIG_ID,160);if(!version||!appId||!appSecret)throw new Error('Meta App 尚未完成設定');return {version,appId,appSecret,redirect,configId,base:`https://graph.facebook.com/${version}`};}
-async function socialMetaJson(url,options){const res=await fetch(url,options);const text=await res.text();let data;try{data=JSON.parse(text);}catch{data={error:{message:text.slice(0,200)}}}if(!res.ok||data.error)throw new Error(data.error&&data.error.message?data.error.message:'Meta API 連線失敗');return data;}
-async function socialMetaAccounts(env,userToken){const cfg=socialMetaConfig(env),url=new URL(cfg.base+'/me/accounts');url.searchParams.set('fields','id,name,access_token,instagram_business_account{id,username,name}');url.searchParams.set('limit','100');url.searchParams.set('access_token',userToken);const data=await socialMetaJson(url);return (data.data||[]).map(p=>({pageId:String(p.id||''),pageName:String(p.name||''),pageToken:String(p.access_token||''),instagramAccounts:p.instagram_business_account?[{id:String(p.instagram_business_account.id||''),username:String(p.instagram_business_account.username||''),name:String(p.instagram_business_account.name||p.instagram_business_account.username||'')}]:[]}));}
-async function hSocialMetaStart(env,url){const p=Object.fromEntries(url.searchParams);p._tenantId=getTenantId(p);if(!await socialRequireOwner(env,p))return new Response('此工具限平台總管理員使用',{status:403});let cfg;try{cfg=socialMetaConfig(env);}catch(e){return new Response(e.message,{status:500});}const state=await signAdminJwt({type:'meta_oauth',tenant_id:SOCIAL_TENANT_ID,email:p.email,issued_at:Date.now(),expires_at:Date.now()+10*60*1000},env);const auth=new URL('https://www.facebook.com/'+cfg.version+'/dialog/oauth');auth.searchParams.set('client_id',cfg.appId);auth.searchParams.set('redirect_uri',cfg.redirect);auth.searchParams.set('state',state);auth.searchParams.set('response_type','code');auth.searchParams.set('scope','pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish,business_management');if(cfg.configId)auth.searchParams.set('config_id',cfg.configId);return Response.redirect(auth.toString(),302);}
+async function socialMetaJson(url,options){const res=await fetch(url,options);const text=await res.text();let data;try{data=JSON.parse(text);}catch{data={error:{message:text.slice(0,200)}}}if(!res.ok||data.error){const e=data.error||{};throw new Error([e.message||'Meta API 連線失敗',e.code?`code ${e.code}`:'',e.error_subcode?`subcode ${e.error_subcode}`:''].filter(Boolean).join('（')+(e.code||e.error_subcode?'）':''));}return data;}
+async function socialMetaAccounts(env,userToken){
+  const cfg=socialMetaConfig(env),pages=[];let next=new URL(cfg.base+'/me/accounts');
+  next.searchParams.set('fields','id,name,access_token');next.searchParams.set('limit','100');next.searchParams.set('access_token',userToken);
+  for(let pageNo=0;next&&pageNo<10;pageNo++){
+    const data=await socialMetaJson(next);for(const p of data.data||[])pages.push({pageId:String(p.id||''),pageName:String(p.name||''),pageToken:String(p.access_token||''),instagramAccounts:[]});
+    next=data.paging&&data.paging.next?new URL(data.paging.next):null;
+  }
+  await Promise.all(pages.map(async page=>{try{const url=new URL(cfg.base+'/'+page.pageId);url.searchParams.set('fields','instagram_business_account{id,username,name}');url.searchParams.set('access_token',page.pageToken);const data=await socialMetaJson(url),ig=data.instagram_business_account;page.instagramAccounts=ig?[{id:String(ig.id||''),username:String(ig.username||''),name:String(ig.name||ig.username||'')}]:[];}catch(e){page.accountWarning='Instagram 資料暫時無法讀取：'+publicErrorMessage(e.message);}}));
+  return pages.filter(x=>x.pageId&&x.pageToken);
+}
+async function socialEncryptedAccounts(env,accounts){return Promise.all(accounts.map(async({pageToken,...rest})=>({...rest,encryptedPageToken:await socialEncryptToken(env,pageToken)})));}
+function socialSafeAccounts(raw){return safeJson(raw,[]).map(({encryptedPageToken,...rest})=>rest);}
+async function hSocialMetaStart(env,url){const p=Object.fromEntries(url.searchParams);p._tenantId=getTenantId(p);if(!await socialRequireOwner(env,p))return new Response('此工具限平台總管理員使用',{status:403});let cfg;try{cfg=socialMetaConfig(env);}catch(e){return new Response(e.message,{status:500});}const state=await signAdminJwt({type:'meta_oauth',tenant_id:SOCIAL_TENANT_ID,email:p.email,issued_at:Date.now(),expires_at:Date.now()+10*60*1000},env);const auth=new URL('https://www.facebook.com/'+cfg.version+'/dialog/oauth');auth.searchParams.set('client_id',cfg.appId);auth.searchParams.set('redirect_uri',cfg.redirect);auth.searchParams.set('state',state);auth.searchParams.set('response_type','code');if(cfg.configId)auth.searchParams.set('config_id',cfg.configId);else auth.searchParams.set('scope','pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish,business_management');return Response.redirect(auth.toString(),302);}
 function socialOAuthCallbackError(url,platform){
   const message=socialText(url.searchParams.get('error_message')||url.searchParams.get('error_description'),1000);
   const code=socialText(url.searchParams.get('error_code')||url.searchParams.get('error'),80);
   if(message||code)throw new Error(`${platform} 授權失敗${code?`（${code}）`:''}${message?`：${message}`:''}`);
 }
-async function hSocialMetaCallback(env,url){try{socialOAuthCallbackError(url,'Facebook／Instagram');const state=await verifyAdminJwt(url.searchParams.get('state')||'',env);if(!state||state.type!=='meta_oauth'||state.tenant_id!==SOCIAL_TENANT_ID)throw new Error('Meta 登入狀態已失效，請重新連接');const code=url.searchParams.get('code');if(!code)throw new Error('Meta 未回傳授權碼');const cfg=socialMetaConfig(env),tokenUrl=new URL(cfg.base+'/oauth/access_token');tokenUrl.searchParams.set('client_id',cfg.appId);tokenUrl.searchParams.set('client_secret',cfg.appSecret);tokenUrl.searchParams.set('redirect_uri',cfg.redirect);tokenUrl.searchParams.set('code',code);const short=await socialMetaJson(tokenUrl),longUrl=new URL(cfg.base+'/oauth/access_token');longUrl.searchParams.set('grant_type','fb_exchange_token');longUrl.searchParams.set('client_id',cfg.appId);longUrl.searchParams.set('client_secret',cfg.appSecret);longUrl.searchParams.set('fb_exchange_token',short.access_token);const long=await socialMetaJson(longUrl),accounts=await socialMetaAccounts(env,long.access_token),existing=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=id`);const record={id:existing[0]&&existing[0].id||genId('META'),tenant_id:SOCIAL_TENANT_ID,status:'connected',encrypted_user_token:await socialEncryptToken(env,long.access_token),encrypted_page_token:null,token_expires_at:long.expires_in?new Date(Date.now()+Number(long.expires_in)*1000).toISOString():null,available_accounts:accounts.map(({pageToken,...rest})=>rest),selected_page_id:null,selected_page_name:null,selected_instagram_id:null,selected_instagram_name:null,created_by:state.email,updated_at:nowIso()};if(!existing.length)record.created_at=nowIso();await dbUpsert(env,'social_meta_connections',record,'tenant_id');return Response.redirect('https://2b-love.com/social.html?meta=connected',302);}catch(e){return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><h2>Meta 連接未完成</h2><p>'+publicErrorMessage(e.message)+'</p><p><a href="https://2b-love.com/social.html">返回 AI 貼文排程小幫手</a></p>',{status:400,headers:{'Content-Type':'text/html;charset=utf-8'}});}}
-async function hSocialMetaStatus(env,p){if(!await socialRequireOwner(env,p))return jsonErr('此工具限平台總管理員使用');const oauthSetup={appDomain:SOCIAL_OAUTH_APP_DOMAIN,facebookInstagramRedirectUri:SOCIAL_META_REDIRECT_URI,threadsRedirectUri:SOCIAL_THREADS_REDIRECT_URI,threadsDeauthorizeUri:SOCIAL_THREADS_DEAUTHORIZE_URI,threadsDeleteUri:SOCIAL_THREADS_DELETE_URI};const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=status,token_expires_at,available_accounts,selected_page_id,selected_page_name,selected_instagram_id,selected_instagram_name,threads_status,threads_token_expires_at,selected_threads_id,selected_threads_username,updated_at`);if(!rows.length)return jsonOk({status:'disconnected',availableAccounts:[],threadsStatus:'disconnected',oauthSetup});const r=rows[0];return jsonOk({status:r.status,tokenExpiresAt:r.token_expires_at||'',availableAccounts:safeJson(r.available_accounts,[]),selectedPageId:r.selected_page_id||'',selectedPageName:r.selected_page_name||'',selectedInstagramId:r.selected_instagram_id||'',selectedInstagramName:r.selected_instagram_name||'',threadsStatus:r.threads_status||'disconnected',threadsTokenExpiresAt:r.threads_token_expires_at||'',selectedThreadsId:r.selected_threads_id||'',selectedThreadsUsername:r.selected_threads_username||'',updatedAt:r.updated_at||'',oauthSetup});}
-async function hSocialSelectMetaAccounts(env,b){if(!await socialRequireOwner(env,b))return jsonErr('此工具限平台總管理員使用');const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&status=eq.connected&select=*`);if(!rows.length)return jsonErr('請先連接 Meta');const conn=rows[0],accounts=await socialMetaAccounts(env,await socialDecryptToken(env,conn.encrypted_user_token)),page=accounts.find(x=>x.pageId===String(b.pageId||''));if(!page)return jsonErr('找不到選擇的 Facebook 粉絲專頁');const ig=page.instagramAccounts.find(x=>x.id===String(b.instagramId||''))||null;if(b.instagramId&&!ig)return jsonErr('Instagram 帳號不屬於選擇的粉絲專頁');await dbUpdate(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(conn.id)}`,{encrypted_page_token:await socialEncryptToken(env,page.pageToken),available_accounts:accounts.map(({pageToken,...rest})=>rest),selected_page_id:page.pageId,selected_page_name:page.pageName,selected_instagram_id:ig&&ig.id||null,selected_instagram_name:ig&&(ig.name||ig.username)||null,updated_at:nowIso()});return jsonOk({ok:true});}
+async function hSocialMetaCallback(env,url){let state;try{socialOAuthCallbackError(url,'Facebook／Instagram');state=await verifyAdminJwt(url.searchParams.get('state')||'',env);if(!state||state.type!=='meta_oauth'||state.tenant_id!==SOCIAL_TENANT_ID)throw new Error('Meta 登入狀態已失效，請重新連接');const code=url.searchParams.get('code');if(!code)throw new Error('Meta 未回傳授權碼');const cfg=socialMetaConfig(env),tokenUrl=new URL(cfg.base+'/oauth/access_token');tokenUrl.searchParams.set('client_id',cfg.appId);tokenUrl.searchParams.set('client_secret',cfg.appSecret);tokenUrl.searchParams.set('redirect_uri',cfg.redirect);tokenUrl.searchParams.set('code',code);const short=await socialMetaJson(tokenUrl),longUrl=new URL(cfg.base+'/oauth/access_token');longUrl.searchParams.set('grant_type','fb_exchange_token');longUrl.searchParams.set('client_id',cfg.appId);longUrl.searchParams.set('client_secret',cfg.appSecret);longUrl.searchParams.set('fb_exchange_token',short.access_token);const long=await socialMetaJson(longUrl),token=long.access_token||short.access_token,accounts=await socialMetaAccounts(env,token),existing=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=*`),old=existing[0]||{},savedAccounts=await socialEncryptedAccounts(env,accounts);const selectedPage=accounts.find(x=>x.pageId===old.selected_page_id)||accounts[0]||null,selectedIg=selectedPage&&selectedPage.instagramAccounts.find(x=>x.id===old.selected_instagram_id)||selectedPage&&selectedPage.instagramAccounts[0]||null;const record={id:old.id||genId('META'),tenant_id:SOCIAL_TENANT_ID,status:'connected',encrypted_user_token:await socialEncryptToken(env,token),encrypted_page_token:selectedPage?await socialEncryptToken(env,selectedPage.pageToken):null,token_expires_at:long.expires_in?new Date(Date.now()+Number(long.expires_in)*1000).toISOString():null,available_accounts:savedAccounts,selected_page_id:selectedPage&&selectedPage.pageId||null,selected_page_name:selectedPage&&selectedPage.pageName||null,selected_instagram_id:selectedIg&&selectedIg.id||null,selected_instagram_name:selectedIg&&(selectedIg.name||selectedIg.username)||null,created_by:state.email,updated_at:nowIso()};if(!old.id)record.created_at=nowIso();await dbUpsert(env,'social_meta_connections',record,'tenant_id');await writeAuditLog(env,SOCIAL_TENANT_ID,state.email,'platform_super_admin','connect_social_meta','social_meta_connections',record.id,{}, {pageCount:accounts.length},{});return Response.redirect('https://2b-love.com/social.html?meta=connected'+(accounts.length?'':'&warning=no_pages'),302);}catch(e){if(state&&state.email)await writeAuditLog(env,SOCIAL_TENANT_ID,state.email,'platform_super_admin','connect_social_meta_failed','social_meta_connections','',{}, {},{error:publicErrorMessage(e.message)}).catch(()=>{});return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><h2>Meta 連接未完成</h2><p>'+publicErrorMessage(e.message)+'</p><p><a href="https://2b-love.com/social.html">返回 AI 貼文排程小幫手</a></p>',{status:400,headers:{'Content-Type':'text/html;charset=utf-8'}});}}
+async function hSocialMetaStatus(env,p){if(!await socialRequireOwner(env,p))return jsonErr('此工具限平台總管理員使用');const oauthSetup={appDomain:SOCIAL_OAUTH_APP_DOMAIN,facebookInstagramRedirectUri:SOCIAL_META_REDIRECT_URI,threadsRedirectUri:SOCIAL_THREADS_REDIRECT_URI,threadsDeauthorizeUri:SOCIAL_THREADS_DEAUTHORIZE_URI,threadsDeleteUri:SOCIAL_THREADS_DELETE_URI};const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=status,token_expires_at,available_accounts,selected_page_id,selected_page_name,selected_instagram_id,selected_instagram_name,threads_status,threads_token_expires_at,selected_threads_id,selected_threads_username,updated_at`);if(!rows.length)return jsonOk({status:'disconnected',availableAccounts:[],threadsStatus:'disconnected',oauthSetup});const r=rows[0];return jsonOk({status:r.status,tokenExpiresAt:r.token_expires_at||'',availableAccounts:socialSafeAccounts(r.available_accounts),selectedPageId:r.selected_page_id||'',selectedPageName:r.selected_page_name||'',selectedInstagramId:r.selected_instagram_id||'',selectedInstagramName:r.selected_instagram_name||'',threadsStatus:r.threads_status||'disconnected',threadsTokenExpiresAt:r.threads_token_expires_at||'',selectedThreadsId:r.selected_threads_id||'',selectedThreadsUsername:r.selected_threads_username||'',updatedAt:r.updated_at||'',oauthSetup});}
+async function hSocialRefreshMetaAccounts(env,b){if(!await socialRequireOwner(env,b))return jsonErr('此工具限平台總管理員使用');const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&status=eq.connected&select=*`);if(!rows.length)return jsonErr('請先連接 Meta');const conn=rows[0],accounts=await socialMetaAccounts(env,await socialDecryptToken(env,conn.encrypted_user_token)),saved=await socialEncryptedAccounts(env,accounts),selected=accounts.find(x=>x.pageId===conn.selected_page_id)||accounts[0]||null,ig=selected&&selected.instagramAccounts.find(x=>x.id===conn.selected_instagram_id)||selected&&selected.instagramAccounts[0]||null;await dbUpdate(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(conn.id)}`,{available_accounts:saved,encrypted_page_token:selected?await socialEncryptToken(env,selected.pageToken):null,selected_page_id:selected&&selected.pageId||null,selected_page_name:selected&&selected.pageName||null,selected_instagram_id:ig&&ig.id||null,selected_instagram_name:ig&&(ig.name||ig.username)||null,updated_at:nowIso()});return jsonOk({ok:true,count:accounts.length});}
+async function hSocialSelectMetaAccounts(env,b){if(!await socialRequireOwner(env,b))return jsonErr('此工具限平台總管理員使用');const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&status=eq.connected&select=*`);if(!rows.length)return jsonErr('請先連接 Meta');const conn=rows[0],accounts=safeJson(conn.available_accounts,[]),page=accounts.find(x=>x.pageId===String(b.pageId||''));if(!page||!page.encryptedPageToken)return jsonErr('找不到選擇的 Facebook 粉絲專頁，請先重新整理可用粉專');const ig=(page.instagramAccounts||[]).find(x=>x.id===String(b.instagramId||''))||null;if(b.instagramId&&!ig)return jsonErr('Instagram 帳號不屬於選擇的粉絲專頁');await dbUpdate(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(conn.id)}`,{encrypted_page_token:page.encryptedPageToken,selected_page_id:page.pageId,selected_page_name:page.pageName,selected_instagram_id:ig&&ig.id||null,selected_instagram_name:ig&&(ig.name||ig.username)||null,updated_at:nowIso()});return jsonOk({ok:true});}
 async function hSocialMetaDisconnect(env,b){if(!await socialRequireOwner(env,b))return jsonErr('此工具限平台總管理員使用');const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=id`);if(rows.length)await dbUpdate(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(rows[0].id)}`,{status:'disconnected',encrypted_user_token:await socialEncryptToken(env,''),encrypted_page_token:null,available_accounts:[],selected_page_id:null,selected_page_name:null,selected_instagram_id:null,selected_instagram_name:null,updated_at:nowIso()});return jsonOk({ok:true});}
 function socialThreadsConfig(env){
   const appId=socialText(env.THREADS_APP_ID||env.META_APP_ID,120);
@@ -9609,14 +9670,17 @@ async function cronSocialPublish(env){
   if(!Array.isArray(due)||!due.length)return;
   const conns=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=*`),conn=conns[0]||null;
   for(const post of due){
-    const wanted=socialStringArray(post.platforms,['facebook','instagram','threads']),results={},tokens={};
-    if(wanted.some(x=>x==='facebook'||x==='instagram')&&conn&&conn.status==='connected'&&conn.encrypted_page_token){try{tokens.page=await socialDecryptToken(env,conn.encrypted_page_token);}catch{tokens.page='';}}
+    const wanted=socialStringArray(post.platforms,['facebook','instagram','threads']),results={},tokens={},destinations=safeJson(post.destinations,{}),accounts=safeJson(conn&&conn.available_accounts,[]),targetConn={...conn};
+    const fbPage=accounts.find(x=>x.pageId===String(destinations.facebookPageId||''));
+    const igPage=accounts.find(x=>(x.instagramAccounts||[]).some(y=>y.id===String(destinations.instagramId||'')));
+    if(fbPage){targetConn.selected_page_id=fbPage.pageId;targetConn.selected_page_name=fbPage.pageName;try{tokens.facebook=await socialDecryptToken(env,fbPage.encryptedPageToken);}catch{tokens.facebook='';}}
+    if(igPage){targetConn.selected_instagram_id=String(destinations.instagramId||'');try{tokens.instagram=await socialDecryptToken(env,igPage.encryptedPageToken);}catch{tokens.instagram='';}}
     if(wanted.includes('threads')&&conn&&conn.threads_status==='connected'&&conn.encrypted_threads_token){try{tokens.threads=await socialThreadsAccessToken(env,conn);}catch{tokens.threads='';}}
     for(const platform of wanted){
-      if((platform==='facebook'||platform==='instagram')&&!tokens.page){results[platform]={ok:false,error:'Facebook／Instagram 授權資料無法使用'};continue;}
-      if(platform==='instagram'&&!conn?.selected_instagram_id){results[platform]={ok:false,error:'尚未選擇 Instagram 專業帳號'};continue;}
+      if((platform==='facebook'||platform==='instagram')&&!tokens[platform]){results[platform]={ok:false,error:'此篇選擇的 Facebook／Instagram 帳號授權資料無法使用'};continue;}
+      if(platform==='instagram'&&!targetConn.selected_instagram_id){results[platform]={ok:false,error:'這篇尚未選擇 Instagram 專業帳號'};continue;}
       if(platform==='threads'&&(!tokens.threads||!conn?.selected_threads_id)){results[platform]={ok:false,error:'Threads 尚未連接或授權已失效'};continue;}
-      results[platform]=await socialPublishPlatform(env,post,conn,platform,platform==='threads'?tokens.threads:tokens.page);
+      results[platform]=await socialPublishPlatform(env,post,targetConn,platform,platform==='threads'?tokens.threads:tokens[platform]);
     }
     const allOk=wanted.length>0&&wanted.every(x=>results[x]&&results[x].ok),error=wanted.filter(x=>!results[x]||!results[x].ok).map(x=>`${x}：${results[x]&&results[x].error||'失敗'}`).join('；'),mentionStatus=safeJson(post.mention_status,{});
     for(const platform of wanted){if(results[platform]&&results[platform].mentionResult)mentionStatus[platform]=results[platform].mentionResult;}
@@ -9903,6 +9967,8 @@ async function routePost(env, action, b, ctx, req) {
     case 'socialCreateCampaign': return hSocialCreateCampaign(env,b);
     case 'socialSavePartner': return hSocialSavePartner(env,b);
     case 'socialGenerateCampaign': return hSocialGenerateCampaign(env,b);
+    case 'socialUploadCampaignReference': return hSocialUploadCampaignReference(env,b);
+    case 'socialArchiveCampaign': return hSocialArchiveCampaign(env,b);
     case 'socialUpdatePost': return hSocialUpdatePost(env,b);
     case 'socialRegeneratePost': return hSocialRegeneratePost(env,b);
     case 'socialRegenerateHashtags': return hSocialRegenerateHashtags(env,b);
@@ -9914,6 +9980,7 @@ async function routePost(env, action, b, ctx, req) {
     case 'socialCancelPost': return hSocialCancelPost(env,b);
     case 'socialRetryPost': return hSocialRetryPost(env,b);
     case 'socialSelectMetaAccounts': return hSocialSelectMetaAccounts(env,b);
+    case 'socialRefreshMetaAccounts': return hSocialRefreshMetaAccounts(env,b);
     case 'socialMetaDisconnect': return hSocialMetaDisconnect(env,b);
     case 'socialThreadsDisconnect': return hSocialThreadsDisconnect(env,b);
     case 'savePhotoActivityConfig': return hSavePhotoActivityConfig(env,b);

@@ -29,7 +29,7 @@ assert.match(page,/Facebook 粉專 ID/); assert.match(page,/此工具僅限平�
 assert.match(page,/自訂 1～20 篇/); assert.match(page,/免費 AI 產圖/); assert.match(page,/Cloudflare 免費 AI/);
 assert.match(page,/應用程式網域/); assert.match(page,/facebookInstagramRedirectUri/); assert.match(page,/threadsRedirectUri/);
 
-for(const action of ['socialCreateCampaign','socialSavePartner','socialGenerateCampaign','socialUpdatePost','socialRegeneratePost','socialRegenerateHashtags','socialRegenerateImagePrompt','socialUploadPostImage','socialGeneratePostImage','socialScheduleCampaign','socialSelectMetaAccounts','socialThreadsDisconnect']){
+for(const action of ['socialCreateCampaign','socialSavePartner','socialGenerateCampaign','socialUploadCampaignReference','socialArchiveCampaign','socialUpdatePost','socialRegeneratePost','socialRegenerateHashtags','socialRegenerateImagePrompt','socialUploadPostImage','socialGeneratePostImage','socialScheduleCampaign','socialSelectMetaAccounts','socialRefreshMetaAccounts','socialThreadsDisconnect']){
   assert.match(worker,new RegExp(`case '${action}'`),`${action} 必須接到 Worker`);
   assert.match(auth,new RegExp(`'${action}'`),`${action} 必須接到既有管理權限`);
 }
@@ -47,6 +47,10 @@ assert.match(worker,/socialOAuthCallbackError\(url,'Threads'\)/);
 assert.match(worker,/threads_basic,threads_content_publish/); assert.match(worker,/graph\.threads\.net\/me\/threads_publish/);
 assert.match(worker,/graph\.threads\.net\/refresh_access_token/); assert.match(worker,/th_refresh_token/);
 assert.match(worker,/claim_due_social_posts/); assert.match(worker,/social_publish_attempts/);
+assert.match(worker,/socialUploadCampaignReference/); assert.match(worker,/AI\.toMarkdown/);
+assert.match(worker,/socialArchiveCampaign/); assert.match(worker,/socialRefreshMetaAccounts/);
+assert.match(worker,/encryptedPageToken/); assert.match(worker,/post\.destinations/);
+assert.match(page,/每平台只能選一個/); assert.match(page,/參考資料檔案/); assert.match(page,/重新整理可用粉專/);
 assert.match(worker,/event\.cron === '\* \* \* \* \*'/);
 assert.match(wrangler,/"\* \* \* \* \*"/);
 assert.match(wrangler,/"ai"\s*:\s*\{\s*"binding"\s*:\s*"AI"/);
@@ -65,6 +69,9 @@ for(const table of ['social_partners','social_campaigns','social_posts','social_
   assert.match(sql,new RegExp(`revoke all on public\\.${table} from anon, authenticated`));
 }
 assert.match(sql,/schedule_social_campaign/); assert.match(sql,/claim_due_social_posts/);
+const newestMigration=fs.readFileSync(new URL('../supabase/20260820183000_social_scheduler_destinations_references.sql',import.meta.url),'utf8');
+assert.match(newestMigration,/social_campaign_references/); assert.match(newestMigration,/social-references/);
+assert.match(newestMigration,/default_destinations/); assert.match(newestMigration,/destinations/);
 assert.match(sql,/for update skip locked/); assert.match(sql,/unique \(tenant_id, post_id, platform\)/);
 assert.match(sql,/facebook_partner_ids/); assert.match(sql,/instagram_partner_ids/); assert.match(sql,/mention_status/);
 assert.match(sql,/fixed_hashtags/); assert.match(sql,/topic_hashtags/);
