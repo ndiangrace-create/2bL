@@ -97,9 +97,9 @@ jobs:
           npx --yes wrangler@4.102.0 --version
           npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --dry-run --strict --outdir .automation/wrangler-dry-run
 
-      - name: 部署既有 Worker（不管理 Routes／Domains／Bindings）
+      - name: 部署既有 Worker（保留 Vars／Secrets 與核准路由）
         run: |
-          npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --strict --keep-vars \
+          npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --keep-vars \
             --message "GitHub ${GITHUB_SHA}; approved manual production deployment"
 
       - name: 移除已停用的 OpenAI 密鑰

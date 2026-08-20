@@ -7,6 +7,12 @@
   "keep_vars": true,
   "workers_dev": true,
   "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "2b-love.com/s/*",
+      "zone_name": "2b-love.com"
+    }
+  ],
   "ai": {
     "binding": "AI"
   },
