@@ -133,3 +133,16 @@
 - 標註：Threads 第一版不宣稱支援合作帳號自動標註，不送猜測的 `@名稱`；Facebook Page Mentioning 與 Instagram `user_tags` 規則不變。
 - 資料遷移：新增 `supabase/20260819210736_add_threads_social_scheduler.sql`，只追加欄位、constraint 與新版整批排程函式，不刪除或搬移既有 FB／IG 資料。
 - 狀態：`Pending`；已獲「確認執行」進行本機施工，尚未套用正式 Supabase、尚未設定正式 Secrets、尚未合併、尚未部署、尚未完成三平台真實發文驗收。
+
+## 2026-08-21｜後台協助修正會員資料（Pending）
+
+- 入口：`admin.html` 會員搜尋 → 資料／修改。
+- 可修改：姓名、手機、品牌、販售類別、FB、IG、官網／作品連結、品牌介紹。
+- Email：唯讀；不得由一般會員資料修正直接變更。
+- 正式寫入：只更新 `members`；歷史報名、付款、退款、活動金與排位維持原紀錄。
+- Audit：管理者修改寫 `audit_logs.action=admin_member_profile_update`；會員本人修改寫 `member_profile_self_update`。
+- 權限：沿用 `canManageMembers`；系列管理者僅能處理自己系列內曾有報名的會員。
+- 防誤改：前台背景儲存禁止改登入手機；本人明確修改手機必須再次確認。
+- 相容修正：舊 `saveMemberCategory` 改寫正式 `members.sell_category`。
+- 狀態：Pending；未合併、未部署、未修改正式 Supabase 資料。
+
