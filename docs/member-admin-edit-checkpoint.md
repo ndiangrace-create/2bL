@@ -1,4 +1,16 @@
-Checkpoint only. No production merge or deployment has been authorized.
+# 會員協助修正 Checkpoint
 
-2026-08-21 pre-deploy revalidation: Cloudflare baseline refreshed from read-only audit evidence before rerunning safety gates.
-2026-08-21 deployment authorization received; merge/deploy only after safety gates pass.
+2026-08-21
+
+- PR #62 已合併正式 main。
+- 正式 `2bl-v7` 已部署並完成來源精確比對。
+- 正式 Worker version：`3b383dff-d161-41bb-bd55-5e1942107c1f`。
+- 正式 Worker SHA-256：`65262f02565e938a03bf8a9e660f7d4ff62e221797a1081809a56231ea858bd3`。
+- 正式 tenant：`tuibile`。
+- 管理者已於正式後台完成一次會員資料修正操作。
+- 目前營運狀態：`VERIFY`（已上線可用，持續真人情境驗證；若發現問題立即降級並修正）。
+- 保護規則：Email 不在一般修正流程直接修改；會員基本資料更新不得覆寫歷史報名、付款、退款、活動金、排位、每日現場或財務紀錄。
+- 背景自動儲存不得靜默更換登入手機。
+- 管理者與會員本人修改基本資料均需保留 audit_logs 修改前後紀錄。
+- 2BL 世界樹正式定義改為「營運世界樹」：以角色實際操作路徑為主，工程模組只作為節點展開細節。
+- 本節點已寫入 `docs/2BL_OPERATION_WORLD_TREE.md`。
