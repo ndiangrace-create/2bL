@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "bd6d88fbdca950ac15506b4250f33a851d04d2e5",
-  "expected_cloudflare_version": "98b9d837-eb18-4c11-b854-38db5e83bda3",
-  "reason": "核准部署社群排程參考檔、失敗重試移除、目前及未來商家同步與每篇單一目的地；僅限 2bl-v7"
+  "approved_source_commit": "d38b3ca121553a3c16b571d4d2c13881f97746cf",
+  "expected_cloudflare_version": "8d6cd1f7-7977-4518-8fb5-4878157232e2",
+  "reason": "核准部署後台協助修正會員基本資料、會員修改 audit 與登入手機防靜默覆寫；僅限 2bl-v7"
 }
