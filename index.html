@@ -4447,10 +4447,12 @@ async function saveMemberProfileToDb({silent=false}={}){
   const err=$('np_err');
   const status=$('np_save_status');
   const btn=$('saveMemberProfileBtn');
-  const email=g('np_email'), phone=g('np_phone');
+  const email=g('np_email'), requestedPhone=g('np_phone');
   const verifiedPhone=String(ST._verifiedMemberPhone||ST.member?.phone||memberSafePhone()||'').trim();
-  if(!silent && verifiedPhone && phone && phone!==verifiedPhone){
-    if(!await uiConfirm('你正在修改登入用手機：\n'+verifiedPhone+' → '+phone+'\n\n修改後，下次登入要使用新手機。確定要修改嗎？')){if(btn){btn.disabled=false;btn.textContent='儲存資料';}return;}
+  // 背景儲存不得改登入手機；只有使用者明確儲存並確認後才採用畫面中的新手機。
+  const phone=(silent&&verifiedPhone)?verifiedPhone:requestedPhone;
+  if(!silent && verifiedPhone && requestedPhone && requestedPhone!==verifiedPhone){
+    if(!await uiConfirm('你正在修改登入用手機：\n'+verifiedPhone+' → '+requestedPhone+'\n\n修改後，下次登入要使用新手機。確定要修改嗎？')){if(btn){btn.disabled=false;btn.textContent='儲存資料';}return;}
   }
   const showError=(msg,focusId)=>{
     if(!silent && err) err.textContent=msg;
