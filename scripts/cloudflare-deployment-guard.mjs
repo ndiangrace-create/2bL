@@ -2,7 +2,6 @@ import fs from "node:fs";
 
 const mode = process.argv[2] || "pre";
 const expectedVersion = process.env.EXPECTED_CLOUDFLARE_VERSION_ID || "";
-const allowWorkersAiMigration = process.env.ALLOW_WORKERS_AI_MIGRATION === "true";
 const baseline = JSON.parse(fs.readFileSync(".automation/cloudflare-baseline.json", "utf8"));
 const audit = JSON.parse(fs.readFileSync(".automation/cloudflare-audit.json", "utf8"));
 
@@ -14,19 +13,7 @@ if (audit.worker_name !== "2bl-v7" || audit.forbidden_worker_untouched !== "tobe
 const normalize = value => JSON.stringify(value ?? null);
 const protectedFields = ["routes", "custom_domains", "workers_dev", "bindings", "secret_names"];
 for (const field of protectedFields) {
-  let actual = audit[field];
-  if (mode === "pre" && allowWorkersAiMigration && field === "secret_names") {
-    actual = (Array.isArray(actual) ? actual : []).filter(name => name !== "OPENAI_API_KEY");
-  }
-  if (mode === "pre" && allowWorkersAiMigration && field === "bindings") {
-    actual = (Array.isArray(actual) ? actual : [])
-      .filter(binding => binding?.name !== "OPENAI_API_KEY");
-    if (!actual.some(binding => binding?.name === "AI" && binding?.type === "ai")) {
-      actual.push({ name: "AI", type: "ai" });
-    }
-    actual.sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
-  }
-  if (normalize(actual) !== normalize(baseline[field])) {
+  if (normalize(audit[field]) !== normalize(baseline[field])) {
     throw new Error(`安全阻斷：Cloudflare ${field} 已偏離核准基準`);
   }
 }
