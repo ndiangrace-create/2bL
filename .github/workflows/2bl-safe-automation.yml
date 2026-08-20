@@ -80,6 +80,21 @@ jobs:
           npx --yes wrangler@4.102.0 --version
           npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --dry-run --strict --outdir .automation/wrangler-dry-run
 
+      - name: 部署後封裝來源精確比對（唯讀）
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const audit = JSON.parse(fs.readFileSync('.automation/cloudflare-audit.json','utf8'));
+          const p = '.automation/wrangler-dry-run/worker.js';
+          const sha = crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const deployed = String(audit.deployed_content_sha256 || '');
+          console.log(JSON.stringify({worker:audit.worker_name,dryRunSha256:sha,deployedContentSha256:deployed,match:sha===deployed}));
+          if (!deployed || sha !== deployed) throw new Error('部署後驗證失敗：Wrangler dry-run 封裝與正式 2bl-v7 來源不一致');
+          NODE
+
       - name: 顯示部署阻擋狀態
         shell: bash
         run: |
@@ -95,5 +110,6 @@ jobs:
             .automation/cloudflare-audit.json
             .automation/data-contract-report.json
             .automation/supabase-schema-audit.json
+            .automation/wrangler-dry-run/worker.js
           if-no-files-found: warn
           retention-days: 14
