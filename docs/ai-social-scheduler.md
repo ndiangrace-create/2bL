@@ -4,9 +4,9 @@
 
 ## 第一版結果
 
-平台總管理員選擇 2BL 活動或自行輸入宣傳資料，系統一次產生不同角度的完整 Facebook／Instagram／Threads 文章、Hashtag、建議日期時間與每篇不同視覺方向的完整圖片 Prompt。平台總管理員在同一頁整批審核，直接修改文章、圖片、日期、時間、平台、合作帳號標註與 Hashtag；圖片由管理員把 Prompt 複製到 ChatGPT 等工具產生後上傳。完成後只按一次「確認全部並發布排程」，Worker 到時間依每篇勾選的平台分別發布。
+平台總管理員選擇 2BL 活動或自行輸入宣傳資料，系統使用 Cloudflare Workers AI 一次產生不同角度的完整 Facebook／Instagram／Threads 文章、Hashtag、建議日期時間與每篇不同視覺方向的完整圖片 Prompt。平台總管理員在同一頁整批審核，直接修改文章、圖片、日期、時間、平台、合作帳號標註與 Hashtag；圖片只有在管理員按下單篇「免費 AI 產圖」時才會生成，也可自行上傳。完成後只按一次「確認全部並發布排程」，Worker 到時間依每篇勾選的平台分別發布。
 
-第一版禁止從此功能自動呼叫付費圖片 API。既有 AI 主視覺功能保留且不受影響。
+系統沒有付費 AI 備援；免費服務額度不足或暫時失敗時直接顯示錯誤，不會自動改走付費服務。既有活動主視覺也已改用相同免費產圖模型。
 
 ## 正式資料與依賴
 
@@ -17,7 +17,8 @@
 - 活動來源：只讀取 `sessions` 的公開宣傳欄位。
 - 正式資料：`social_partners`、`social_campaigns`、`social_posts`、`social_meta_connections`、`social_publish_attempts`。
 - 圖片：沿用 Supabase Storage `covers`，以 `tuibile/social-posts/...` 分層保存。
-- 文字 AI：OpenAI Responses API Structured Outputs；已生成內容先保存，再讀取時不重新生成。
+- 文字 AI：Cloudflare Workers AI JSON Schema；已生成內容先保存，再讀取時不重新生成。
+- 圖片 AI：Cloudflare Workers AI SDXL Lightning；只有明確按下產圖按鈕時執行。
 - Meta：使用「兔彼樂社群自動發文」App；Facebook／Instagram 與 Threads 各走官方 OAuth，不保存任何社群密碼；Token 分開加密保存。
 - 排程：Cloudflare Cron 每分鐘只認領到期貼文；原有每日工作保留原時間。
 
@@ -45,14 +46,16 @@
 - 只有平台最高總管理員可操作 Meta 授權與宣傳工具。
 - AI 只收到活動公開宣傳欄位，不含會員、攤商私人資料、付款、財務與後台備註。
 - 正式貼文、圖片、排程、授權狀態與發布結果不使用 localStorage。
-- `META_APP_SECRET`、`THREADS_APP_SECRET`、OpenAI Key、Token 加密金鑰只放 Cloudflare Secrets。若 Threads 與 Meta 使用同一組 App 憑證，可省略 Threads 專用 secret，Worker 會回退使用 Meta App secret。
+- `META_APP_SECRET`、`THREADS_APP_SECRET` 與 Token 加密金鑰只放 Cloudflare Secrets。若 Threads 與 Meta 使用同一組 App 憑證，可省略 Threads 專用 secret，Worker 會回退使用 Meta App secret。
 
 ## 上線與驗收項目
 
 - `supabase/ai_social_scheduler.sql` 已套用；五張新表均開啟 RLS，一般使用者無權讀寫，既有會員、報名與付款筆數保持不變。
 - 先套用 `supabase/20260819210736_add_threads_social_scheduler.sql`，再設定 Meta App ID、App Secret、Graph API 版本、Redirect URI 與 Token 加密金鑰。
 - Threads 回呼網址固定為 `https://2bl-v7.ndiangrace.workers.dev/auth/threads/callback`；如 Meta 控制台提供獨立 Threads App ID／Secret，設定 `THREADS_APP_ID`、`THREADS_APP_SECRET`，否則沿用 `META_APP_ID`、`META_APP_SECRET`。
+- Threads 解除授權回呼為 `https://2bl-v7.ndiangrace.workers.dev/auth/threads/deauthorize`，資料刪除要求網址為 `https://2bl-v7.ndiangrace.workers.dev/auth/threads/delete`；兩者會驗證 Meta `signed_request`，並清除已保存的 Threads Token。
 - Facebook／Instagram 回呼網址為 `https://2bl-v7.ndiangrace.workers.dev/auth/meta/callback`；若新版商家專用 Facebook 登入要求 configuration ID，設定 `META_BUSINESS_LOGIN_CONFIG_ID`。
+- Meta「基本資料」的應用程式網域必須加入 `2bl-v7.ndiangrace.workers.dev`；Facebook 登入與 Threads 各自的 OAuth 允許清單必須逐字加入上面對應 URI，不能只填在測試欄位。
 - Meta App 權限、測試帳號及 App Review 完成。
 - 以真實 Facebook 粉專、Instagram Professional Account 及 Threads 帳號完成 OAuth、選帳號、三平台發布、FB／IG 標註、標註失敗降級與逐平台失敗重試測試。
 - 確認 Facebook Page Mentioning 是否已獲 App 使用權；未確認前保持關閉。

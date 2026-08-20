@@ -97,8 +97,8 @@
 - 租戶：四張表與所有 Worker 查詢皆固定包含 `tenant_id = tuibile`；沒有跨租戶讀寫。
 - 活動來源：只從 `sessions` 讀取名稱、日期、時間、地點、公開介紹、公開圖片、主辦與合作單位；不讀會員、攤商私人資料、付款、財務或後台備註。
 - 圖片：沿用正式 `covers` Storage bucket，路徑固定在 `tuibile/social-posts/...`；資料庫保存圖片 URL 與 Storage path。
-- 文字 AI：整批第一次主動產生時只呼叫一次 OpenAI Responses API；成功後立即保存。重新整理、查看、儲存、切頁或上傳圖片不會再次生成。
-- 圖片 AI：本功能第一版不呼叫 OpenAI Image API，只保存每篇不同的完整圖片 Prompt；既有 AI 主視覺功能維持原狀。
+- 文字 AI：整批第一次主動產生時只呼叫一次 Cloudflare Workers AI；成功後立即保存。重新整理、查看、儲存、切頁或上傳圖片不會再次生成。
+- 圖片 AI：保存每篇不同的完整圖片 Prompt；只有平台總管理員按下單篇免費產圖按鈕時才呼叫 Workers AI，既有活動主視覺也使用相同免費模型。免費服務失敗時不切換付費 AI。
 - 整批排程：`schedule_social_campaign` 在單一資料庫交易內驗證並寫入全部貼文；缺漏時回傳對應篇次與欄位，整批不清空。
 - 自動發布：`claim_due_social_posts` 使用鎖定與跳過已鎖資料的方式原子認領；`social_publish_attempts` 以貼文＋平台唯一約束防止同一平台重複發布。
 - 權限：四張表 RLS 開啟，撤銷 anon/authenticated，僅 Worker service role 可存取。Meta Token 由 Worker 以獨立金鑰加密後保存；App Secret 與加密金鑰不進資料庫。
