@@ -1140,7 +1140,7 @@ async function _assertSeriesManagerScope(env, action, input, auth) {
     if (!rows || rows.some(r => !_authAllowsSession(auth, r.session_id))) return '此帳號不能管理其他系列的報名資料';
   }
 
-  if (['saveMemberNote','getMemberHistory'].includes(action)) {
+  if (['saveMemberNote','getMemberHistory','adminUpdateMemberProfile','getMemberEditHistory'].includes(action)) {
     const memberEmail = String(input.memberEmail || input.targetEmail || input.emailQuery || '').trim().toLowerCase();
     if (memberEmail) {
       const rows = await dbGet(env, 'registrations', `tenant_id=eq.${tenantId}&email=ilike.${encodeURIComponent(memberEmail)}&select=session_id`).catch(()=>[]);
@@ -5719,7 +5719,12 @@ async function hSaveMember(env, b) {
   const socialOrWebsite=String(b.fb||'').trim()||String(b.ig||'').trim()||String(b.collabUrl||b.website||b.web||'').trim();
   if(!socialOrWebsite) return jsonErr('FB、IG 或官網至少需要填寫一項');
   b.email = email;
+  const memberBeforeAudit=memberProfileAuditSnapshot(verified);
   await upsertMember(env, b);
+  const memberAfterRows=await dbGet(env,'members',`tenant_id=eq.${TENANT}&email=ilike.${encodeURIComponent(email)}&select=*`).catch(()=>[]);
+  const memberAfterAudit=memberProfileAuditSnapshot(memberAfterRows[0]||{});
+  const memberChangedFields=Object.keys(memberAfterAudit).filter(k=>String(memberBeforeAudit[k]??'')!==String(memberAfterAudit[k]??''));
+  if(memberChangedFields.length){await writeAuditLog(env,TENANT,email,'member','member_profile_self_update','members',email,memberBeforeAudit,memberAfterAudit,{changed_fields:memberChangedFields,source:'member_profile'});}
   const savedRows = await dbGet(env,'members',`tenant_id=eq.${TENANT}&email=ilike.${encodeURIComponent(email)}&select=*`).catch(()=>[]);
   const saved = savedRows.length ? {...savedRows[0], _source:'members'} : null;
   const _ps = _memberProfileStatus(saved||{});
@@ -8122,6 +8127,28 @@ async function hSaveEmailTemplate(env, b) {
   return jsonOk({success:true, template:saved});
 }
 function formatMemberRow(r){ const fastPass=r.fast_pass===true||r.fast_pass==='true',ps=_memberProfileStatus(r); return {id:r.id||'', email:r.email||'', name:r.name||r.display_name||'', phone:r.phone||'', brand:r.brand_name||r.brand||'', brandName:r.brand_name||r.brand||'', fb:r.fb_url||r.facebook||r.fb||'', ig:r.ig_url||r.instagram||r.ig||'', website:r.collab_url||'', web:r.collab_url||'', collabUrl:r.collab_url||'', category:r.category||r.sell_category||r.sale_category||'', sellCategory:r.sell_category||'', intro:r.intro||r.brand_intro||r.description||'', profileComplete:ps.profileComplete,missingFields:ps.missingFields, fastPass, fast_pass:fastPass, adminNote:r.admin_note||'', admin_note:r.admin_note||'', adminNoteAt:r.admin_note_updated_at||'', createdAt:r.created_at||'', updatedAt:r.updated_at||''}; }
+function memberProfileAuditSnapshot(row){
+  const r=row&&typeof row==='object'?row:{};
+  return {name:String(r.name||r.display_name||''),phone:String(r.phone||''),brand_name:String(r.brand_name||r.brand||''),sell_category:String(r.sell_category||r.sale_category||''),fb_url:String(r.fb_url||''),ig_url:String(r.ig_url||''),collab_url:String(r.collab_url||''),brand_intro:String(r.brand_intro||'')};
+}
+async function hAdminUpdateMemberProfile(env,b){
+  const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'members'))return jsonErr('無權限');
+  const target=normEmail(b.targetEmail||b.memberEmail||'');if(!target)return jsonErr('缺少會員 Email');
+  const rows=await dbGet(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(target)}&select=*`).catch(()=>[]);const current=rows&&rows[0];if(!current)return jsonErr('找不到會員資料');
+  const input=b.profile&&typeof b.profile==='object'?b.profile:{};const clean=(v,max)=>String(v==null?'':v).replace(/[\u0000-\u001F\u007F]/g,' ').trim().slice(0,max);const phone=normPhone(input.phone||'');
+  if(phone && !/^09\d{8}$/.test(phone))return jsonErr('手機格式不正確，請輸入 09 開頭共 10 碼');
+  const patch={name:clean(input.name,100),phone,brand_name:clean(input.brandName,160),sell_category:clean(input.sellCategory,80),fb_url:clean(input.fb,1000),ig_url:clean(input.ig,1000),collab_url:clean(input.collabUrl,1000),brand_intro:clean(input.brandIntro,2000),updated_at:nowIso()};
+  const before=memberProfileAuditSnapshot(current),after=memberProfileAuditSnapshot({...current,...patch});const changed=Object.keys(after).filter(k=>String(before[k]??'')!==String(after[k]??''));if(!changed.length)return jsonOk({success:true,changed:false,member:formatMemberRow(current)});
+  await dbUpdate(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(target)}`,patch);
+  await writeAuditLog(env,T,String(b.email||''),String(b._authz?.normalizedRole||b._authz?.role||'admin'),'admin_member_profile_update','members',target,before,after,{changed_fields:changed,source:'admin_member_detail'});
+  const saved=(await dbGet(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(target)}&select=*`).catch(()=>[]))[0]||{...current,...patch};return jsonOk({success:true,changed:true,changedFields:changed,member:formatMemberRow(saved)});
+}
+async function hGetMemberEditHistory(env,p){
+  const T=p._tenantId;if(!await verifyStaff(env,p.email,p.token,T,'members'))return jsonErr('無權限');const target=normEmail(p.memberEmail||p.targetEmail||'');if(!target)return jsonErr('缺少會員 Email');
+  const rows=await dbGet(env,'audit_logs',`tenant_id=eq.${T}&target_table=eq.members&target_id=eq.${encodeURIComponent(target)}&select=action,before_json,after_json,actor_email,actor_role,created_at&order=created_at.desc&limit=80`).catch(()=>[]);
+  return jsonOk((rows||[]).filter(r=>['admin_member_profile_update','member_profile_self_update'].includes(String(r.action||''))).map(r=>({action:r.action,actionLabel:r.action==='admin_member_profile_update'?'管理者協助修改':'會員本人修改',before:r.before_json||{},after:r.after_json||{},actorEmail:r.actor_email||'',actorRole:r.actor_role||'',createdAt:r.created_at||''})));
+}
+
 // 會員「管理者備註」：只有主辦看得到，前台攤商永遠拿不到
 // （前台會員資料走 memberPayloadFromRow 白名單，不含 admin_note）
 async function hSaveMemberNote(env, b) {
@@ -8159,7 +8186,7 @@ async function hVoidMemberCredit(env,b){
 }
 async function hSaveMemberCategory(env,b){
   const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'members'))return jsonErr('無權限');const target=normEmail(b.memberEmail);if(!target)return jsonErr('缺少會員 Email');
-  await dbUpdate(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(target)}`,{category:String(b.category||'').slice(0,80),updated_at:nowIso()});return jsonOk({success:true,category:String(b.category||'')});
+  await dbUpdate(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(target)}`,{sell_category:String(b.category||'').slice(0,80),updated_at:nowIso()});return jsonOk({success:true,category:String(b.category||'')});
 }
 async function hGetMemberHistory(env, p) {
   const TENANT = (p && p._tenantId);
@@ -9771,6 +9798,7 @@ async function routeGet(env, action, p, req) {
     case 'getFinancePaymentGroups': return hGetFinancePaymentGroups(env,p);
     case 'getEmailTemplates': return hGetEmailTemplates(env,p);
     case 'getMembers': return hGetMembers(env,p);
+    case 'getMemberEditHistory': return hGetMemberEditHistory(env,p);
     case 'getMemberHistory': return hGetMemberHistory(env,p);
     case 'getCompanySettings': return hGetCompanySettings(env,p);
     case 'downloadSession':     return hDownloadSession(env,p);
@@ -9872,6 +9900,7 @@ async function routePost(env, action, b, ctx, req) {
     case 'purgeErrorLogs':      return hPurgeErrorLogs(env,b);
     case 'deleteBundle':        return hDeleteBundle(env,b);
     case 'saveMember':          return hSaveMember(env,b);
+    case 'adminUpdateMemberProfile': return hAdminUpdateMemberProfile(env,b);
     case 'saveMemberNote':      return hSaveMemberNote(env,b);
     case 'saveMemberCategory':  return hSaveMemberCategory(env,b);
     case 'adjustMemberCredit':  return hAdjustMemberCredit(env,b);

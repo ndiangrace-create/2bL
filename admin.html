@@ -4595,13 +4595,56 @@ async function toggleFastPass(email, enable, btn){
     await loadMembers();
   }catch(err){ toast('設定失敗：'+err.message,6000); btn.disabled=false; btn.textContent=old; }
 }
+function memberEditCard(m){
+  const email=String(m.email||'').trim();
+  const v=(x)=>attr(String(x==null?'':x));
+  return '<div class="report-card" style="margin-bottom:12px;background:#f7fbf7">'
+    +'<div class="report-title">協助修正會員基本資料</div>'
+    +'<div class="sub" style="margin:4px 0 10px">適合協助不熟悉手機操作的會員。Email 是目前登入與歷史資料的重要識別，不在這裡直接修改；其他資料儲存後會由正式資料庫重新讀取。</div>'
+    +'<div class="form-grid">'
+      +'<div class="form-field"><label>Email（唯讀）</label><input value="'+v(email)+'" disabled></div>'
+      +'<div class="form-field"><label>姓名</label><input id="me_name" value="'+v(m.name||m.displayName||'')+'"></div>'
+      +'<div class="form-field"><label>手機</label><input id="me_phone" inputmode="tel" value="'+v(m.phone||m.mobile||'')+'" placeholder="09xxxxxxxx"></div>'
+      +'<div class="form-field"><label>品牌名稱</label><input id="me_brand" value="'+v(m.brandName||m.brand_name||m.brand||'')+'"></div>'
+      +'<div class="form-field"><label>販售類別</label><input id="me_category" value="'+v(m.sellCategory||m.sell_category||m.category||'')+'" placeholder="文創／美食／二手／其他"></div>'
+      +'<div class="form-field"><label>Facebook</label><input id="me_fb" value="'+v(m.fb||m.fbUrl||m.fb_url||'')+'"></div>'
+      +'<div class="form-field"><label>Instagram</label><input id="me_ig" value="'+v(m.ig||m.igUrl||m.ig_url||'')+'"></div>'
+      +'<div class="form-field"><label>官網／作品連結</label><input id="me_web" value="'+v(memberOfficialUrl(m))+'"></div>'
+      +'<div class="form-field full"><label>品牌介紹</label><textarea id="me_intro">'+safe(String(m.intro||m.brandIntro||m.brand_intro||''))+'</textarea></div>'
+    +'</div>'
+    +'<div class="notice" style="margin-top:10px"><b>手機變更會影響下一次登入。</b><div class="sub">系統會保留修改前後紀錄；歷史報名、付款、退款、活動金與排位不會因修改會員基本資料而被覆寫。</div></div>'
+    +'<div class="card-actions"><button class="btn" onclick="saveAdminMemberProfile(\''+attr(email)+'\')">儲存會員資料</button><button class="btn secondary" onclick="openMemberEditHistory(\''+attr(email)+'\')">查看修改紀錄</button></div>'
+  +'</div>';
+}
+async function saveAdminMemberProfile(email){
+  const m=(AdminState.members||[]).find(x=>String(x.email||'').toLowerCase()===String(email||'').toLowerCase());
+  if(!m){toast('找不到這位會員');return;}
+  const profile={name:String(($('me_name')||{}).value||'').trim(),phone:String(($('me_phone')||{}).value||'').trim(),brandName:String(($('me_brand')||{}).value||'').trim(),sellCategory:String(($('me_category')||{}).value||'').trim(),fb:String(($('me_fb')||{}).value||'').trim(),ig:String(($('me_ig')||{}).value||'').trim(),collabUrl:String(($('me_web')||{}).value||'').trim(),brandIntro:String(($('me_intro')||{}).value||'').trim()};
+  const labels={name:'姓名',phone:'手機',brandName:'品牌',sellCategory:'販售類別',fb:'Facebook',ig:'Instagram',collabUrl:'官網／作品連結',brandIntro:'品牌介紹'};
+  const before={name:m.name||m.displayName||'',phone:m.phone||m.mobile||'',brandName:m.brandName||m.brand_name||m.brand||'',sellCategory:m.sellCategory||m.sell_category||m.category||'',fb:m.fb||m.fbUrl||m.fb_url||'',ig:m.ig||m.igUrl||m.ig_url||'',collabUrl:memberOfficialUrl(m),brandIntro:m.intro||m.brandIntro||m.brand_intro||''};
+  const changed=Object.keys(profile).filter(k=>String(profile[k]||'')!==String(before[k]||''));
+  if(!changed.length){toast('資料沒有變更');return;}
+  const summary=changed.map(k=>labels[k]+'：'+String(before[k]||'（空白）')+' → '+String(profile[k]||'（空白）')).join('\n');
+  if(!await uiConfirm('確定協助修改這位會員資料？\n\n'+summary+'\n\n修改後會保留紀錄；Email 與歷史報名不會被更動。'))return;
+  try{const r=await apiPost({action:'adminUpdateMemberProfile',targetEmail:email,profile});if(r&&r.error){toast('儲存失敗：'+r.error,7000);return;}toast('✅ 會員資料已更新並留下修改紀錄',6000);await loadMembers();openMemberDetail(email);}catch(e){toast('會員資料更新失敗：'+(e.message||e),8000);}
+}
+function memberAuditDiff(row){
+  const before=row.before||row.beforeJson||row.before_json||{},after=row.after||row.afterJson||row.after_json||{};
+  const labels={name:'姓名',phone:'手機',brand_name:'品牌',sell_category:'販售類別',fb_url:'Facebook',ig_url:'Instagram',collab_url:'官網／作品連結',brand_intro:'品牌介紹'};
+  return Object.keys(labels).filter(k=>String(before[k]??'')!==String(after[k]??'')).map(k=>'<div class="info-line"><span>'+safe(labels[k])+'</span><span>'+safe(String(before[k]??'（空白）'))+' → '+safe(String(after[k]??'（空白）'))+'</span></div>').join('');
+}
+async function openMemberEditHistory(email){
+  openPanel('會員修改紀錄｜'+safe(email),'只顯示正式資料庫保存的會員基本資料修改歷程','<div class="loading">載入修改紀錄中…</div>');
+  try{const rows=await api({action:'getMemberEditHistory',memberEmail:email,_t:Date.now()});const list=Array.isArray(rows)?rows:[];const box=document.querySelector('.panel.show .panel-body');if(!box)return;if(!list.length){box.innerHTML='<div class="empty">目前沒有會員基本資料修改紀錄</div>';return;}box.innerHTML=list.map(r=>'<div class="report-card" style="margin-bottom:10px"><div class="report-title">'+safe(r.actionLabel||'會員資料修改')+'</div><div class="sub">'+safe(String(r.createdAt||'').replace('T',' ').slice(0,19))+'｜操作：'+safe(r.actorEmail||'系統／會員本人')+'</div><div style="margin-top:8px">'+(memberAuditDiff(r)||'<div class="sub">沒有基本欄位差異</div>')+'</div></div>').join('');}catch(e){const box=document.querySelector('.panel.show .panel-body');if(box)box.innerHTML='<div class="empty">修改紀錄載入失敗：'+safe(e.message||e)+'</div>';}
+}
+
 function openMemberDetail(email){
   const m=(AdminState.members||[]).find(x=>String(x.email||'').toLowerCase()===String(email||'').toLowerCase());
   if(!m){ toast('找不到這位會員'); return; }
   const note=String(m.adminNote||m.admin_note||'');
   const noteAt=String(m.adminNoteAt||m.admin_note_updated_at||'');
   const row=(k,v)=> v ? ('<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed #eee"><div style="min-width:92px;color:#777">'+k+'</div><div style="flex:1;word-break:break-all">'+safe(String(v))+'</div></div>') : '';
-  const html=''
+  const html=memberEditCard(m)+''
     +'<div class="report-card">'
       +row('品牌', memberBrand(m))
       +row('聯絡人', memberName(m))
@@ -4698,7 +4741,7 @@ function renderMembers(){
       +'<div class="member-meta"><span class="tag purple">類別：'+safe(cat)+'</span><span class="tag green">更新：'+safe(adminShortDateRange(updated))+'</span><span class="tag '+(credit>0?'ok':'')+'">活動金：'+money(credit)+'</span></div>'
       +'<div class="member-note">'+safe(intro)+'</div>'
       +'<div class="member-actions"><button class="btn secondary small" onclick="openMemberHistory(\''+key+'\')">歷史報名</button>'
-      +'<button class="btn secondary small" onclick="openMemberDetail(\''+attr(email)+'\')">詳情／備註</button>'
+      +'<button class="btn secondary small" onclick="openMemberDetail(\''+attr(email)+'\')">資料／修改</button>'
       +'<button class="btn small" onclick="openAdminManualRegistration(\''+attr(email)+'\')">代報名</button></div>'
     +'</article>';
   }

@@ -1,172 +1,58 @@
 {
-  "generated_at": "2026-08-20T07:24:59.150Z",
+  "generated_at": "2026-08-20T20:52:56.053Z",
   "repository": "ndiangrace-create/2bL",
-  "git_ref": "refs/heads/main",
-  "git_sha": "2272f636b3d7b5ddc85d1b5b45a60b07d1aff0fb",
+  "git_ref": "refs/pull/62/merge",
+  "git_sha": "6918f8704a93340305cab026673f28e1cedc6f7d",
   "cloudflare_account_suffix": "925c44",
   "token_status": "active",
   "worker_name": "2bl-v7",
   "forbidden_worker_untouched": "tobeloved-api",
-  "deployed_bundle_sha256": "f678c5f1323c3522fa78ee41b48817e99df593a36e171a2f2174ec55add5367e",
-  "deployed_bundle_content_type": "multipart/form-data; boundary=633053a564d1f4d629c1205e8c92674c940f11d31da8080edac7be65c3f8",
-  "deployed_content_sha256": "c5bb73560e77de10c4c24cd398614634f7a433ed01c308f2c47b129a18d11695",
+  "deployed_bundle_sha256": "fd6e2bce4a403fd5067b8164c2127dab731805fb00300e2edd4b0fc3e9061a76",
+  "deployed_bundle_content_type": "multipart/form-data; boundary=082640a50c1eb90845ce958204e8be7a300e0ddf7ac8c32a3e9c1eb20757",
+  "deployed_content_sha256": "8711b4de3b5eb0b00f4ba0595b37c0dbc4ce09dd6e6afdcee70b22f175e01b85",
   "deployed_content_type": "application/javascript+module",
   "deployed_entrypoint": "worker.js",
-  "deployed_parts": [
-    {
-      "name": "worker.js",
-      "content_type": "application/javascript+module",
-      "size": 707233
-    }
-  ],
+  "deployed_parts": [{"name":"worker.js","content_type":"application/javascript+module","size":719186}],
   "compatibility_date": "2026-06-25",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "usage_model": "standard",
   "bindings": [
-    {
-      "name": "ADMIN_SITE_URL",
-      "type": "plain_text"
-    },
-    {
-      "name": "AI",
-      "type": "ai"
-    },
-    {
-      "name": "AUTH_SECRET",
-      "type": "secret_text"
-    },
-    {
-      "name": "FRONTEND_SITE_URL",
-      "type": "plain_text"
-    },
-    {
-      "name": "GOOGLE_CLIENT_ID",
-      "type": "plain_text"
-    },
-    {
-      "name": "GOOGLE_CLIENT_SECRET",
-      "type": "secret_text"
-    },
-    {
-      "name": "GOOGLE_REDIRECT_URI",
-      "type": "plain_text"
-    },
-    {
-      "name": "GOOGLE_UNIFIED_REDIRECT_URI",
-      "type": "plain_text"
-    },
-    {
-      "name": "JWT_SECRET",
-      "type": "secret_text"
-    },
-    {
-      "name": "MAIL_FROM",
-      "type": "secret_text"
-    },
-    {
-      "name": "META_APP_ID",
-      "type": "plain_text"
-    },
-    {
-      "name": "META_APP_SECRET",
-      "type": "secret_text"
-    },
-    {
-      "name": "META_FACEBOOK_PAGE_MENTIONING_ENABLED",
-      "type": "plain_text"
-    },
-    {
-      "name": "META_GRAPH_VERSION",
-      "type": "plain_text"
-    },
-    {
-      "name": "META_REDIRECT_URI",
-      "type": "plain_text"
-    },
-    {
-      "name": "META_TOKEN_ENCRYPTION_KEY",
-      "type": "secret_text"
-    },
-    {
-      "name": "ONSITE_SITE_URL",
-      "type": "plain_text"
-    },
-    {
-      "name": "PLATFORM_ADMIN_EMAIL",
-      "type": "secret_text"
-    },
-    {
-      "name": "RESEND_KEY",
-      "type": "secret_text"
-    },
-    {
-      "name": "SUPABASE_KEY",
-      "type": "secret_text"
-    },
-    {
-      "name": "SUPABASE_SERVICE_ROLE_KEY",
-      "type": "secret_text"
-    },
-    {
-      "name": "SUPABASE_URL",
-      "type": "plain_text"
-    },
-    {
-      "name": "THREADS_APP_ID",
-      "type": "plain_text"
-    },
-    {
-      "name": "THREADS_APP_SECRET",
-      "type": "secret_text"
-    },
-    {
-      "name": "THREADS_REDIRECT_URI",
-      "type": "plain_text"
-    }
+    {"name":"ADMIN_SITE_URL","type":"plain_text"},
+    {"name":"AI","type":"ai"},
+    {"name":"AUTH_SECRET","type":"secret_text"},
+    {"name":"FRONTEND_SITE_URL","type":"plain_text"},
+    {"name":"GOOGLE_CLIENT_ID","type":"plain_text"},
+    {"name":"GOOGLE_CLIENT_SECRET","type":"secret_text"},
+    {"name":"GOOGLE_REDIRECT_URI","type":"plain_text"},
+    {"name":"GOOGLE_UNIFIED_REDIRECT_URI","type":"plain_text"},
+    {"name":"JWT_SECRET","type":"secret_text"},
+    {"name":"MAIL_FROM","type":"secret_text"},
+    {"name":"META_APP_ID","type":"secret_text"},
+    {"name":"META_APP_SECRET","type":"secret_text"},
+    {"name":"META_FACEBOOK_PAGE_MENTIONING_ENABLED","type":"plain_text"},
+    {"name":"META_GRAPH_VERSION","type":"plain_text"},
+    {"name":"META_REDIRECT_URI","type":"plain_text"},
+    {"name":"META_TOKEN_ENCRYPTION_KEY","type":"secret_text"},
+    {"name":"ONSITE_SITE_URL","type":"plain_text"},
+    {"name":"PLATFORM_ADMIN_EMAIL","type":"secret_text"},
+    {"name":"RESEND_KEY","type":"secret_text"},
+    {"name":"SUPABASE_KEY","type":"secret_text"},
+    {"name":"SUPABASE_SERVICE_ROLE_KEY","type":"secret_text"},
+    {"name":"SUPABASE_URL","type":"plain_text"},
+    {"name":"THREADS_APP_ID","type":"plain_text"},
+    {"name":"THREADS_APP_SECRET","type":"secret_text"},
+    {"name":"THREADS_REDIRECT_URI","type":"plain_text"}
   ],
-  "secret_names": [
-    "AUTH_SECRET",
-    "GOOGLE_CLIENT_SECRET",
-    "JWT_SECRET",
-    "MAIL_FROM",
-    "META_APP_SECRET",
-    "META_TOKEN_ENCRYPTION_KEY",
-    "PLATFORM_ADMIN_EMAIL",
-    "RESEND_KEY",
-    "SUPABASE_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "THREADS_APP_SECRET"
-  ],
+  "secret_names": ["AUTH_SECRET","GOOGLE_CLIENT_SECRET","JWT_SECRET","MAIL_FROM","META_APP_ID","META_APP_SECRET","META_TOKEN_ENCRYPTION_KEY","PLATFORM_ADMIN_EMAIL","RESEND_KEY","SUPABASE_KEY","SUPABASE_SERVICE_ROLE_KEY","THREADS_APP_SECRET"],
   "secrets_endpoint_available": true,
-  "workers_dev": {
-    "endpoint_available": true,
-    "enabled": true,
-    "previews_enabled": true
-  },
-  "routes": [
-    {
-      "zone_name": "2b-love.com",
-      "pattern": "2b-love.com/s/*"
-    }
-  ],
+  "workers_dev": {"endpoint_available":true,"enabled":true,"previews_enabled":true},
+  "routes": [{"zone_name":"2b-love.com","pattern":"2b-love.com/s/*"}],
   "custom_domains": [],
-  "current_version_id": "98b9d837-eb18-4c11-b854-38db5e83bda3",
-  "current_version_created_on": "2026-08-20T07:24:57.479231Z",
-  "current_deployment": {
-    "id": "b728e2bb-d35e-49db-8737-8f4702abeae7",
-    "created_on": "2026-08-20T07:24:57.479231Z",
-    "source": "wrangler",
-    "versions": [
-      {
-        "version_id": "98b9d837-eb18-4c11-b854-38db5e83bda3",
-        "percentage": 100
-      }
-    ]
-  },
-  "expected_worker_source_path": ".automation/wrangler-dry-run/worker.js",
-  "expected_worker_source_sha256": "c5bb73560e77de10c4c24cd398614634f7a433ed01c308f2c47b129a18d11695",
-  "github_worker_sha256": "ff248810bfb443a398e82ae5b047bd7ef26c40011a7f6f1a0c5672e8c654c507",
-  "worker_source_matches_deployment": true
+  "current_version_id": "8d6cd1f7-7977-4518-8fb5-4878157232e2",
+  "current_version_created_on": "2026-08-20T15:13:09.700649Z",
+  "current_deployment": {"id":"7b4c9cca-5d28-46de-9ab6-aa2a2860eb53","created_on":"2026-08-20T15:12:53.018275Z","source":"dash","versions":[{"version_id":"b5202ddf-dc5d-4317-943e-ec1c27f9c9d1","percentage":100}]},
+  "expected_worker_source_path": "worker.js",
+  "expected_worker_source_sha256": "126502a74172c6ed470012e4bf010f742e4be79bc12805f28f82a83fad18525a",
+  "github_worker_sha256": "126502a74172c6ed470012e4bf010f742e4be79bc12805f28f82a83fad18525a",
+  "worker_source_matches_deployment": false
 }

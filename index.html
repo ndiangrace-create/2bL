@@ -4447,7 +4447,13 @@ async function saveMemberProfileToDb({silent=false}={}){
   const err=$('np_err');
   const status=$('np_save_status');
   const btn=$('saveMemberProfileBtn');
-  const email=g('np_email'), phone=g('np_phone');
+  const email=g('np_email'), requestedPhone=g('np_phone');
+  const verifiedPhone=String(ST._verifiedMemberPhone||ST.member?.phone||memberSafePhone()||'').trim();
+  // 背景儲存不得改登入手機；只有使用者明確儲存並確認後才採用畫面中的新手機。
+  const phone=(silent&&verifiedPhone)?verifiedPhone:requestedPhone;
+  if(!silent && verifiedPhone && requestedPhone && requestedPhone!==verifiedPhone){
+    if(!await uiConfirm('你正在修改登入用手機：\n'+verifiedPhone+' → '+requestedPhone+'\n\n修改後，下次登入要使用新手機。確定要修改嗎？')){if(btn){btn.disabled=false;btn.textContent='儲存資料';}return;}
+  }
   const showError=(msg,focusId)=>{
     if(!silent && err) err.textContent=msg;
     const el=$(focusId); if(!silent && el){ try{ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); }catch(e){} }
@@ -4574,7 +4580,8 @@ let _memberProfileBackgroundSaving=false;
 async function saveVisibleMemberProfileOnBackground(){
   if(_memberProfileBackgroundSaving || !$('np_email') || !$('np_phone')) return;
   const email=String(($('np_email')||{}).value||'').trim();
-  const phone=String(($('np_phone')||{}).value||'').trim();
+  // 背景儲存只能沿用已驗證手機，禁止把尚未正式送出的輸入值變成登入手機。
+  const phone=String(ST._verifiedMemberPhone||ST.member?.phone||memberSafePhone()||'').trim();
   if(!email || !/\S+@\S+\.\S+/.test(email) || !phone) return;
   _memberProfileBackgroundSaving=true;
   try{ await saveMemberProfileToDb({silent:true}); }catch(e){}
@@ -5157,6 +5164,9 @@ async function saveMemberEdit(){
   const restore=()=>{ if(btn){ btn.disabled=false; btn.textContent='儲存資料'; } };
   const email = String(ST.memberEmail||memberSafeEmail()||'').trim();
   if(!email){ toast('請先登入'); restore(); return; }
+  const requestedPhone=String(($('editPhone')?.value||'').trim());
+  const verifiedPhone=String(ST._verifiedMemberPhone||ST.member?.phone||memberSafePhone()||'').trim();
+  if(verifiedPhone && requestedPhone && requestedPhone!==verifiedPhone){if(!await uiConfirm('你正在修改登入用手機：\n'+verifiedPhone+' → '+requestedPhone+'\n\n修改後，下次登入要使用新手機。確定要修改嗎？')){restore();return;}}
   const body = {
     action:'saveMember', email,
     // authPhone＝目前已驗證的舊手機（用來證明是本人）；phone＝要存進去的新手機。
