@@ -26,8 +26,7 @@ import {
 //   SUPABASE_SERVICE_ROLE_KEY — Supabase service_role key（SUPABASE_KEY 相容備援）
 //   RESEND_KEY    — Resend API key
 //   AUTH_SECRET   — token 鹽值（自訂字串，改後管理員需重新登入）
-//   OPENAI_API_KEY — OpenAI API 金鑰（AI 主視覺生成模組）
-//   OPENAI_IMAGE_MODEL — 可選，預設 gpt-image-1.5
+//   AI — Cloudflare Workers AI binding（文字與圖片生成）
 // wrangler.toml cron：
 //   [[triggers.crons]]
 //   crons = ["0 1 * * *", "0 2 * * *"]
@@ -104,16 +103,22 @@ const LINEPAY_CHANNEL_ID = 'YOUR_LINEPAY_CHANNEL_ID';
 const LINEPAY_SECRET     = 'YOUR_LINEPAY_SECRET';
 const LINEPAY_API_URL    = 'https://api-pay.line.me';
 const WORKER_PUBLIC_URL  = 'https://2bl-v7.ndiangrace.workers.dev';
+const SOCIAL_OAUTH_APP_DOMAIN = '2bl-v7.ndiangrace.workers.dev';
+const SOCIAL_META_REDIRECT_URI = `${WORKER_PUBLIC_URL}/auth/meta/callback`;
+const SOCIAL_THREADS_REDIRECT_URI = `${WORKER_PUBLIC_URL}/auth/threads/callback`;
+const SOCIAL_THREADS_DEAUTHORIZE_URI = `${WORKER_PUBLIC_URL}/auth/threads/deauthorize`;
+const SOCIAL_THREADS_DELETE_URI = `${WORKER_PUBLIC_URL}/auth/threads/delete`;
 
 // ── AI 主視覺生成模組（022）────────────────────────────────────
 const AI_VISUAL_BUCKET = 'session-visuals';
 const AI_VISUAL_COUNT = 1;
 const AI_VISUAL_SIZE = '1024x1024'; // 全部固定 1:1
-const AI_VISUAL_DEFAULT_MODEL = 'gpt-image-1.5';
-const AI_VISUAL_DEFAULT_QUALITY = 'medium';
-// AI 貼文排程小幫手：第一版只使用文字模型產文與圖片 Prompt，
-// 絕不從此模組呼叫付費圖片 API。
-const SOCIAL_TEXT_MODEL_DEFAULT = 'gpt-5.6-terra';
+const AI_VISUAL_DEFAULT_MODEL = '@cf/bytedance/stable-diffusion-xl-lightning';
+const AI_VISUAL_DEFAULT_QUALITY = '4-steps';
+// AI 貼文排程小幫手：文字與使用者手動觸發的產圖都使用 Workers AI。
+// 免費 AI 失敗時直接停止，不改呼叫任何付費 AI。
+const SOCIAL_TEXT_MODEL_DEFAULT = '@cf/meta/llama-3.1-8b-instruct-fast';
+const SOCIAL_IMAGE_MODEL_DEFAULT = '@cf/bytedance/stable-diffusion-xl-lightning';
 const SOCIAL_IMAGE_BUCKET = 'covers';
 const SOCIAL_TENANT_ID = 'tuibile';
 const SOCIAL_VISUAL_STYLES = Object.freeze([
@@ -2259,39 +2264,27 @@ function _aiVisualAssetPublic(row) {
     createdAt: row.created_at || '',
   };
 }
-async function _openAiGenerateSquareVisual(env, prompt) {
-  if (!env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY 環境變數未設定');
-  const model = String(env.OPENAI_IMAGE_MODEL || AI_VISUAL_DEFAULT_MODEL).trim();
-  const quality = String(env.OPENAI_IMAGE_QUALITY || AI_VISUAL_DEFAULT_QUALITY).trim();
-  const payload = {
-    model,
-    prompt,
-    n: 1,
-    size: AI_VISUAL_SIZE,
-    quality,
-    output_format: 'png',
-  };
-  const res = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + env.OPENAI_API_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
-  const text = await res.text();
-  let data = null;
-  try { data = JSON.parse(text); } catch {}
-  if (!res.ok) {
-    const msg = data && data.error && data.error.message ? data.error.message : text.slice(0, 700);
-    throw new Error('OpenAI 產圖失敗（' + res.status + '）：' + msg);
+async function _workersAiGenerateSquareVisual(env, prompt) {
+  if (!env.AI || typeof env.AI.run !== 'function') throw new Error('Workers AI binding 尚未設定');
+  const model = String(env.AI_IMAGE_MODEL || AI_VISUAL_DEFAULT_MODEL).trim();
+  const quality = AI_VISUAL_DEFAULT_QUALITY;
+  const seedBytes = new Uint32Array(1); crypto.getRandomValues(seedBytes);
+  let generated;
+  try {
+    generated = await env.AI.run(model, {
+      prompt,
+      negative_prompt:'text, Chinese characters, letters, numbers, date, logo, watermark, gibberish, misspelled words',
+      width:1024, height:1024, num_steps:4, guidance:7.5, seed:seedBytes[0],
+    });
+  } catch (error) {
+    console.error('Workers AI visual error', error);
+    throw new Error('免費 AI 額度已用完或產圖服務暫時忙碌，請稍後再試');
   }
-  const b64 = data && data.data && data.data[0] && data.data[0].b64_json;
-  if (!b64) throw new Error('OpenAI 產圖成功但未回傳圖像資料');
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return { bytes, model, quality, usage: data.usage || null };
+  const stream = generated && generated.response instanceof ReadableStream ? generated.response : generated;
+  if (!(stream instanceof ReadableStream)) throw new Error('免費 AI 產圖格式無法讀取');
+  const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+  if (!bytes.byteLength) throw new Error('免費 AI 沒有回傳圖片');
+  return { bytes, model, quality, usage:{provider:'cloudflare_workers_ai',steps:4} };
 }
 async function _aiVisualStorageUpload(env, storagePath, bytes, mime = 'image/png') {
   const base = String(env.SUPABASE_URL || '').replace(/\/$/, '');
@@ -6806,13 +6799,13 @@ async function hGenerateSessionVisual(env, b) {
   const sessionId = String(b.sessionId || b.session_id || '').trim();
   if (!sessionId) return jsonErr('缺少 sessionId');
   if (!await verifyPlatformSuperAdmin(env, b.email, b.token, TENANT)) return jsonErr('無權限');
-  if (!env.OPENAI_API_KEY) return jsonErr('尚未設定 OPENAI_API_KEY，無法產圖');
+  if (!env.AI || typeof env.AI.run !== 'function') return jsonErr('Workers AI 尚未綁定，無法產圖');
 
   const sesRows = await dbGet(env, 'sessions', `tenant_id=eq.${TENANT}&id=eq.${encodeURIComponent(sessionId)}&select=*`);
   if (!sesRows.length) return jsonErr('找不到場次');
   const s = sesRows[0];
 
-  // 防重複扣費：同場次 30 分鐘內已有 processing 任務時，不重複送 OpenAI。
+  // 防重複用量：同場次 30 分鐘內已有 processing 任務時，不重複送出免費 AI。
   // 超過 30 分鐘視為中斷任務，標記 failed 後允許重新生成。
   const runningJobs = await dbGet(env, 'ai_visual_jobs', `tenant_id=eq.${TENANT}&session_id=eq.${encodeURIComponent(sessionId)}&status=eq.processing&select=id,created_at`).catch(()=>[]);
   const nowMs = Date.now();
@@ -6839,8 +6832,8 @@ async function hGenerateSessionVisual(env, b) {
   const createdAt = nowIso();
   const visualThemeNote = String(b.visualThemeNote || b.visual_theme_note || '').trim();
   const prompt1 = _buildAiVisualPrompt(s, evt, presetKey, 1, visualThemeNote);
-  const model = String(env.OPENAI_IMAGE_MODEL || AI_VISUAL_DEFAULT_MODEL).trim();
-  const quality = String(env.OPENAI_IMAGE_QUALITY || AI_VISUAL_DEFAULT_QUALITY).trim();
+  const model = String(env.AI_IMAGE_MODEL || AI_VISUAL_DEFAULT_MODEL).trim();
+  const quality = AI_VISUAL_DEFAULT_QUALITY;
 
   try {
     await dbInsert(env, 'ai_visual_jobs', {
@@ -6861,9 +6854,9 @@ async function hGenerateSessionVisual(env, b) {
   const uploadedPaths = [];
   const insertedAssetIds = [];
   try {
-    // 耶市集先確認正式 Logo 可讀，再呼叫付費產圖 API，避免 Logo 壞掉卻已先產生費用。
+    // 耶市集先確認正式 Logo 可讀，再呼叫免費產圖，避免產生無法使用的半成品。
     const yeLogoBytes = presetKey === 'ye_market' ? await _fetchYeMarketOfficialLogo() : null;
-    const generated = [await _openAiGenerateSquareVisual(env, prompt1)];
+    const generated = [await _workersAiGenerateSquareVisual(env, prompt1)];
     if (generated.length !== AI_VISUAL_COUNT) throw new Error('產圖數量不是 1 張');
 
     const assets = [];
@@ -9084,39 +9077,28 @@ async function socialRequireOwner(env, input) {
   if (tenantId !== SOCIAL_TENANT_ID) return false;
   return verifyPlatformSuperAdmin(env, input.email, input.token, tenantId);
 }
-function socialExtractResponseText(result) {
-  if (typeof result.output_text === 'string' && result.output_text.trim()) return result.output_text.trim();
-  for (const item of (Array.isArray(result.output) ? result.output : [])) {
-    for (const content of (Array.isArray(item.content) ? item.content : [])) {
-      if ((content.type === 'output_text' || content.type === 'text') && typeof content.text === 'string') return content.text.trim();
-    }
+async function socialWorkersAIJson(env, name, instructions, input, schema, maxOutputTokens=12000) {
+  if (!env.AI || typeof env.AI.run !== 'function') throw new Error('免費 AI 尚未綁定，請先部署 Workers AI binding');
+  const model=socialText(env.SOCIAL_TEXT_MODEL || SOCIAL_TEXT_MODEL_DEFAULT, 120);
+  let result;
+  try {
+    result=await env.AI.run(model,{
+      messages:[{role:'system',content:instructions},{role:'user',content:input}],
+      response_format:{type:'json_schema',json_schema:schema},
+      max_tokens:Math.max(512,Math.min(Number(maxOutputTokens)||12000,12000))
+    });
+  } catch (error) {
+    console.error('Workers AI text error',name,error);
+    throw new Error('免費 AI 額度已用完或服務暫時忙碌，請稍後再試；系統不會改用付費 AI');
   }
-  return '';
-}
-async function socialOpenAIJson(env, name, instructions, input, schema, maxOutputTokens=24000) {
-  if (!env.OPENAI_API_KEY) throw new Error('文字 AI 尚未設定，請先設定 OpenAI API 金鑰');
-  const model=socialText(env.OPENAI_TEXT_MODEL || SOCIAL_TEXT_MODEL_DEFAULT, 80);
-  const response=await fetch('https://api.openai.com/v1/responses',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model,
-      store:false,
-      max_output_tokens:maxOutputTokens,
-      input:[
-        {role:'developer',content:[{type:'input_text',text:instructions}]},
-        {role:'user',content:[{type:'input_text',text:input}]}
-      ],
-      text:{format:{type:'json_schema',name,strict:true,schema}}
-    })
-  });
-  const raw=await response.text();
-  if (!response.ok) throw new Error('文字 AI 產生失敗（'+response.status+'）：'+raw.slice(0,220));
-  let result; try{result=JSON.parse(raw);}catch{throw new Error('文字 AI 回傳格式無法讀取');}
-  const text=socialExtractResponseText(result);
-  if (!text) throw new Error('文字 AI 沒有回傳文章內容');
-  let data; try{data=JSON.parse(text);}catch{throw new Error('文字 AI 回傳內容不是完整資料');}
-  return {data,responseId:result.id||'',model,usage:safeJson(result.usage,{})};
+  const payload=result && Object.prototype.hasOwnProperty.call(result,'response') ? result.response : result;
+  let data=payload;
+  if(typeof data==='string'){
+    const clean=data.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+    try{data=JSON.parse(clean);}catch{throw new Error('免費 AI 回傳內容不是完整資料，請再試一次');}
+  }
+  if(!data||typeof data!=='object'||Array.isArray(data)) throw new Error('免費 AI 沒有回傳可用的文章內容');
+  return {data,responseId:socialText(result&&((result.request_id||result.id)),160),model,usage:{provider:'cloudflare_workers_ai',...safeJson(result&&result.usage,{})}};
 }
 function socialCampaignSchema(countMode) {
   const item={
@@ -9225,7 +9207,9 @@ async function hSocialGetCampaign(env,p) {
 }
 async function hSocialCreateCampaign(env,b) {
   if (!await socialRequireOwner(env,b)) return jsonErr('此工具僅限平台總管理員使用');
-  const sourceType=b.sourceType==='manual'?'manual':'session', requestedMode=['5','10','14','20','until_end'].includes(String(b.requestedMode))?String(b.requestedMode):'5';
+  const sourceType=b.sourceType==='manual'?'manual':'session', requestedRaw=String(b.requestedMode||''), requestedNumber=Number(requestedRaw);
+  const requestedMode=requestedRaw==='until_end'?'until_end':(Number.isInteger(requestedNumber)&&requestedNumber>=1&&requestedNumber<=20?String(requestedNumber):'');
+  if(!requestedMode)return jsonErr('宣傳篇數請填 1 至 20 篇，或選擇安排到活動結束');
   let source={};
   if(sourceType==='session'){
     const sessionId=socialText(b.sessionId,120);
@@ -9267,7 +9251,7 @@ async function hSocialGenerateCampaign(env,b) {
       'platforms 只能使用 facebook、instagram、threads。Hashtag 每個項目以 # 開頭。'
     ].join('\n');
     const input='今天（Asia/Taipei）：'+new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'})+'\n唯一正式活動資料：\n'+JSON.stringify(socialOfficialSource(c),null,2)+'\n可建議標註的合作單位（只有 id 與名稱，不含帳號；禁止猜帳號）：\n'+JSON.stringify(partnerRows.map(x=>({id:x.id,name:x.name})),null,2);
-    const result=await socialOpenAIJson(env,'social_campaign_plan',instructions,input,socialCampaignSchema(requested),requested==='20'?32000:26000);
+    const result=await socialWorkersAIJson(env,'social_campaign_plan',instructions,input,socialCampaignSchema(requested),12000);
     let rows=Array.isArray(result.data.posts)?result.data.posts:[];
     if(requested!=='until_end'&&rows.length!==Number(requested)) throw new Error('AI 回傳篇數不正確，未寫入也不會重複扣費；請再按一次產生');
     if(!rows.length||rows.length>20) throw new Error('AI 沒有產生可用的宣傳篇數');
@@ -9311,7 +9295,7 @@ async function hSocialRegeneratePost(env,b) {
   if(!c) return jsonErr('找不到所屬宣傳');
   const mode={rewrite:'換一個完全不同的寫法，但保留相同宣傳目的',shorter:'縮短約三成，仍是可直接發布的完整文章',lively:'改得更活潑、有邀約感，但不要浮誇或發明優惠',regenerate:'依相同角度重新完成一篇全新文章'}[b.mode]||'重新完成';
   try{
-    const result=await socialOpenAIJson(env,'social_single_post','只依正式資料修改單篇。不得增加不存在的日期、時間、地點、價格、優惠、贈品、合作單位或規則。Facebook、Instagram 與 Threads 都要給完整文章；Threads 要精簡、像真人對話。只產生該篇專屬 Hashtag，不修改活動固定 Hashtag，也不猜任何社群帳號。','修改要求：'+mode+'\n正式資料：'+JSON.stringify(socialOfficialSource(c))+'\n原貼文：'+JSON.stringify({angle:row.angle,facebookText:row.facebook_text,instagramText:row.instagram_text,threadsText:row.threads_text,topicHashtags:row.topic_hashtags}),socialSinglePostSchema(),9000);
+    const result=await socialWorkersAIJson(env,'social_single_post','只依正式資料修改單篇。不得增加不存在的日期、時間、地點、價格、優惠、贈品、合作單位或規則。Facebook、Instagram 與 Threads 都要給完整文章；Threads 要精簡、像真人對話。只產生該篇專屬 Hashtag，不修改活動固定 Hashtag，也不猜任何社群帳號。','修改要求：'+mode+'\n正式資料：'+JSON.stringify(socialOfficialSource(c))+'\n原貼文：'+JSON.stringify({angle:row.angle,facebookText:row.facebook_text,instagramText:row.instagram_text,threadsText:row.threads_text,topicHashtags:row.topic_hashtags}),socialSinglePostSchema(),9000);
     const p=result.data, fixedHashtags=socialHashtags(row.fixed_hashtags),topicHashtags=socialHashtags(p.topicHashtags).filter(x=>!fixedHashtags.includes(x)),usage=safeJson(row.ai_usage,{}), patch={angle:socialText(p.angle,240),facebook_text:socialText(p.facebookText,12000),instagram_text:socialText(p.instagramText,12000),threads_text:socialText(p.threadsText,500),fixed_hashtags:fixedHashtags,topic_hashtags:topicHashtags,hashtags:[...fixedHashtags,...topicHashtags].slice(0,30),revision:Number(row.revision||1)+1,ai_model:result.model,ai_response_id:result.responseId,ai_usage:{...usage,lastRegeneration:result.usage},updated_at:nowIso()};
     const updated=await dbUpdateReturning(env,'social_posts',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.id)}&status=in.(draft,scheduled,failed,cancelled)`,patch);
     if(!updated.length) return jsonErr('貼文已進入發布流程，未重新產生');
@@ -9324,7 +9308,7 @@ async function hSocialRegenerateHashtags(env,b) {
   if(['publishing','published'].includes(row.status))return jsonErr('發布中或已發布的貼文不可修改 Hashtag');
   const campaigns=await dbGet(env,'social_campaigns',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.campaign_id)}&select=*`),c=campaigns[0];if(!c)return jsonErr('找不到所屬宣傳');
   try{
-    const result=await socialOpenAIJson(env,'social_post_hashtags','只依文章主題產生這一篇專屬 Hashtag。不得猜社群帳號，不得重複整串活動固定 Hashtag，不得發明活動資訊。','正式資料：'+JSON.stringify(socialOfficialSource(c))+'\n本篇 Facebook：'+row.facebook_text+'\n本篇 Instagram：'+row.instagram_text+'\n本篇 Threads：'+(row.threads_text||'')+'\n活動固定 Hashtag：'+JSON.stringify(socialHashtags(row.fixed_hashtags)),socialHashtagSchema(),3000);
+    const result=await socialWorkersAIJson(env,'social_post_hashtags','只依文章主題產生這一篇專屬 Hashtag。不得猜社群帳號，不得重複整串活動固定 Hashtag，不得發明活動資訊。','正式資料：'+JSON.stringify(socialOfficialSource(c))+'\n本篇 Facebook：'+row.facebook_text+'\n本篇 Instagram：'+row.instagram_text+'\n本篇 Threads：'+(row.threads_text||'')+'\n活動固定 Hashtag：'+JSON.stringify(socialHashtags(row.fixed_hashtags)),socialHashtagSchema(),3000);
     const fixedHashtags=socialHashtags(row.fixed_hashtags),topicHashtags=socialHashtags(result.data.topicHashtags).filter(x=>!fixedHashtags.includes(x)),patch={fixed_hashtags:fixedHashtags,topic_hashtags:topicHashtags,hashtags:[...fixedHashtags,...topicHashtags].slice(0,30),revision:Number(row.revision||1)+1,ai_model:result.model,ai_response_id:result.responseId,ai_usage:{...safeJson(row.ai_usage,{}),lastHashtagRegeneration:result.usage},updated_at:nowIso()};
     const updated=await dbUpdateReturning(env,'social_posts',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.id)}&status=in.(draft,scheduled,failed,cancelled)`,patch);if(!updated.length)return jsonErr('貼文已進入發布流程，Hashtag 未修改');
     return jsonOk(socialPostView({...row,...patch}));
@@ -9346,22 +9330,62 @@ async function socialStorageDelete(env,path) {
   const base=String(env.SUPABASE_URL||'').replace(/\/$/,''); const key=supabaseServiceRoleKey(env);
   await fetch(base+'/storage/v1/object/'+SOCIAL_IMAGE_BUCKET+'/'+path,{method:'DELETE',headers:{Authorization:'Bearer '+key,apikey:key}}).catch(()=>{});
 }
+async function socialStorageUploadBytes(env,row,bytes,mime='image/jpeg') {
+  if(!(bytes instanceof Uint8Array)) bytes=new Uint8Array(bytes);
+  if(!bytes.byteLength||bytes.byteLength>8*1024*1024) throw new Error('產生的圖片大小不正確');
+  const ext=(mime.split('/')[1]||'jpg').toLowerCase().replace('jpeg','jpg').replace('+xml','');
+  const path=`${SOCIAL_TENANT_ID}/social-posts/${row.campaign_id}/${row.id}_${Date.now()}.${ext}`;
+  const base=String(env.SUPABASE_URL||'').replace(/\/$/,''); const key=supabaseServiceRoleKey(env);
+  const res=await fetch(base+'/storage/v1/object/'+SOCIAL_IMAGE_BUCKET+'/'+path,{method:'POST',headers:{Authorization:'Bearer '+key,apikey:key,'Content-Type':mime,'x-upsert':'false'},body:bytes});
+  if(!res.ok)throw new Error('圖片儲存失敗：'+(await res.text()).slice(0,160));
+  return {path,url:base+'/storage/v1/object/public/'+SOCIAL_IMAGE_BUCKET+'/'+path};
+}
 async function hSocialUploadPostImage(env,b) {
   const row=await socialOwnedPost(env,b,b.postId); if(!row) return jsonErr('找不到貼文或沒有權限');
   if(['publishing','published'].includes(row.status)) return jsonErr('發布中或已發布的貼文不可更換圖片');
   const m=String(b.image||'').match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/); if(!m)return jsonErr('圖片格式錯誤');
   const mime=m[1], bin=atob(m[2]); if(bin.length>8*1024*1024)return jsonErr('圖片請小於 8MB');
   const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-  const ext=(mime.split('/')[1]||'jpg').toLowerCase().replace('jpeg','jpg').replace('+xml','');
-  const path=`${SOCIAL_TENANT_ID}/social-posts/${row.campaign_id}/${row.id}_${Date.now()}.${ext}`;
-  const base=String(env.SUPABASE_URL||'').replace(/\/$/,''); const key=supabaseServiceRoleKey(env);
-  const res=await fetch(base+'/storage/v1/object/'+SOCIAL_IMAGE_BUCKET+'/'+path,{method:'POST',headers:{Authorization:'Bearer '+key,apikey:key,'Content-Type':mime,'x-upsert':'false'},body:bytes});
-  if(!res.ok)return jsonErr('圖片上傳失敗：'+(await res.text()).slice(0,160));
-  const url=base+'/storage/v1/object/public/'+SOCIAL_IMAGE_BUCKET+'/'+path;
+  let stored;try{stored=await socialStorageUploadBytes(env,row,bytes,mime);}catch(e){return jsonErr(e.message||'圖片上傳失敗');}
+  const {path,url}=stored;
   const updated=await dbUpdateReturning(env,'social_posts',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.id)}&status=in.(draft,scheduled,failed,cancelled)`,{image_url:url,image_storage_path:path,revision:Number(row.revision||1)+1,updated_at:nowIso()});
   if(!updated.length){await socialStorageDelete(env,path);return jsonErr('貼文已進入發布流程，圖片未更換');}
   if(row.image_storage_path&&row.image_storage_path!==path) await socialStorageDelete(env,row.image_storage_path);
   return jsonOk({imageUrl:url,imageStoragePath:path});
+}
+async function hSocialGeneratePostImage(env,b) {
+  const row=await socialOwnedPost(env,b,b.postId); if(!row) return jsonErr('找不到貼文或沒有權限');
+  if(['publishing','published'].includes(row.status)) return jsonErr('發布中或已發布的貼文不可更換圖片');
+  if(!env.AI||typeof env.AI.run!=='function')return jsonErr('免費 AI 尚未綁定，請先部署 Workers AI binding');
+  if(!socialText(row.image_prompt,8000))return jsonErr('這篇尚未準備圖片語法');
+  const model=socialText(env.SOCIAL_IMAGE_MODEL||SOCIAL_IMAGE_MODEL_DEFAULT,120);
+  const seedBytes=new Uint32Array(1);crypto.getRandomValues(seedBytes);
+  let generated;
+  try{
+    generated=await env.AI.run(model,{
+      prompt:socialText(row.image_prompt,8000),
+      negative_prompt:'text, Chinese characters, letters, numbers, date, logo, watermark, gibberish, misspelled words, pink gradient, repeated template',
+      width:1024,height:1024,num_steps:4,guidance:7.5,seed:seedBytes[0]
+    });
+  }catch(error){
+    console.error('Workers AI image error',error);
+    return jsonErr('免費 AI 額度已用完或產圖服務暫時忙碌，請稍後再試；系統不會改用付費 AI');
+  }
+  let bytes;
+  try{
+    const stream=generated&&generated.response instanceof ReadableStream?generated.response:generated;
+    if(stream instanceof ReadableStream) bytes=new Uint8Array(await new Response(stream).arrayBuffer());
+    else if(generated&&typeof generated.image==='string'){
+      const bin=atob(generated.image);bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    }else throw new Error('unsupported image response');
+  }catch(error){console.error('Workers AI image decode error',error);return jsonErr('免費 AI 圖片格式無法讀取，請稍後再試');}
+  let stored;try{stored=await socialStorageUploadBytes(env,row,bytes,'image/png');}catch(e){return jsonErr(e.message||'圖片儲存失敗');}
+  const usage={...safeJson(row.ai_usage,{}),lastImageGeneration:{provider:'cloudflare_workers_ai',model,steps:4,generatedAt:nowIso()}},patch={image_url:stored.url,image_storage_path:stored.path,revision:Number(row.revision||1)+1,ai_usage:usage,updated_at:nowIso()};
+  const updated=await dbUpdateReturning(env,'social_posts',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(row.id)}&status=in.(draft,scheduled,failed,cancelled)`,patch);
+  if(!updated.length){await socialStorageDelete(env,stored.path);return jsonErr('貼文已進入發布流程，圖片未更換');}
+  if(row.image_storage_path&&row.image_storage_path!==stored.path)await socialStorageDelete(env,row.image_storage_path);
+  await writeAuditLog(env,SOCIAL_TENANT_ID,b.email,'platform_super_admin','generate_social_post_image','social_posts',row.id,{imageStoragePath:row.image_storage_path||''},{imageStoragePath:stored.path},{provider:'cloudflare_workers_ai',model,paidFallback:false});
+  return jsonOk(socialPostView({...row,...patch}));
 }
 async function hSocialDeletePostImage(env,b) {
   const row=await socialOwnedPost(env,b,b.postId); if(!row) return jsonErr('找不到貼文或沒有權限');
@@ -9432,18 +9456,23 @@ function socialBase64UrlBytes(value){const s=String(value||'').replace(/-/g,'+')
 async function socialTokenKey(env){if(!env.META_TOKEN_ENCRYPTION_KEY)throw new Error('META_TOKEN_ENCRYPTION_KEY 尚未設定');const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(env.META_TOKEN_ENCRYPTION_KEY));return crypto.subtle.importKey('raw',hash,{name:'AES-GCM'},false,['encrypt','decrypt']);}
 async function socialEncryptToken(env,value){const iv=crypto.getRandomValues(new Uint8Array(12)),key=await socialTokenKey(env),data=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(String(value||'')));return 'v1.'+socialBase64Url(iv)+'.'+socialBase64Url(new Uint8Array(data));}
 async function socialDecryptToken(env,value){const parts=String(value||'').split('.');if(parts.length!==3||parts[0]!=='v1')throw new Error('Meta 授權資料無法解密');const key=await socialTokenKey(env),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:socialBase64UrlBytes(parts[1])},key,socialBase64UrlBytes(parts[2]));return new TextDecoder().decode(plain);}
-function socialMetaConfig(env){const version=socialText(env.META_GRAPH_VERSION,20),appId=socialText(env.META_APP_ID,120),appSecret=socialText(env.META_APP_SECRET,300),redirect=socialText(env.META_REDIRECT_URI||`${WORKER_PUBLIC_URL}/auth/meta/callback`,1000),configId=socialText(env.META_BUSINESS_LOGIN_CONFIG_ID,160);if(!version||!appId||!appSecret)throw new Error('Meta App 尚未完成設定');return {version,appId,appSecret,redirect,configId,base:`https://graph.facebook.com/${version}`};}
+function socialMetaConfig(env){const version=socialText(env.META_GRAPH_VERSION,20),appId=socialText(env.META_APP_ID,120),appSecret=socialText(env.META_APP_SECRET,300),redirect=SOCIAL_META_REDIRECT_URI,configId=socialText(env.META_BUSINESS_LOGIN_CONFIG_ID,160);if(!version||!appId||!appSecret)throw new Error('Meta App 尚未完成設定');return {version,appId,appSecret,redirect,configId,base:`https://graph.facebook.com/${version}`};}
 async function socialMetaJson(url,options){const res=await fetch(url,options);const text=await res.text();let data;try{data=JSON.parse(text);}catch{data={error:{message:text.slice(0,200)}}}if(!res.ok||data.error)throw new Error(data.error&&data.error.message?data.error.message:'Meta API 連線失敗');return data;}
 async function socialMetaAccounts(env,userToken){const cfg=socialMetaConfig(env),url=new URL(cfg.base+'/me/accounts');url.searchParams.set('fields','id,name,access_token,instagram_business_account{id,username,name}');url.searchParams.set('limit','100');url.searchParams.set('access_token',userToken);const data=await socialMetaJson(url);return (data.data||[]).map(p=>({pageId:String(p.id||''),pageName:String(p.name||''),pageToken:String(p.access_token||''),instagramAccounts:p.instagram_business_account?[{id:String(p.instagram_business_account.id||''),username:String(p.instagram_business_account.username||''),name:String(p.instagram_business_account.name||p.instagram_business_account.username||'')}]:[]}));}
 async function hSocialMetaStart(env,url){const p=Object.fromEntries(url.searchParams);p._tenantId=getTenantId(p);if(!await socialRequireOwner(env,p))return new Response('此工具限平台總管理員使用',{status:403});let cfg;try{cfg=socialMetaConfig(env);}catch(e){return new Response(e.message,{status:500});}const state=await signAdminJwt({type:'meta_oauth',tenant_id:SOCIAL_TENANT_ID,email:p.email,issued_at:Date.now(),expires_at:Date.now()+10*60*1000},env);const auth=new URL('https://www.facebook.com/'+cfg.version+'/dialog/oauth');auth.searchParams.set('client_id',cfg.appId);auth.searchParams.set('redirect_uri',cfg.redirect);auth.searchParams.set('state',state);auth.searchParams.set('response_type','code');auth.searchParams.set('scope','pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish,business_management');if(cfg.configId)auth.searchParams.set('config_id',cfg.configId);return Response.redirect(auth.toString(),302);}
-async function hSocialMetaCallback(env,url){try{const state=await verifyAdminJwt(url.searchParams.get('state')||'',env);if(!state||state.type!=='meta_oauth'||state.tenant_id!==SOCIAL_TENANT_ID)throw new Error('Meta 登入狀態已失效，請重新連接');const code=url.searchParams.get('code');if(!code)throw new Error('Meta 未回傳授權碼');const cfg=socialMetaConfig(env),tokenUrl=new URL(cfg.base+'/oauth/access_token');tokenUrl.searchParams.set('client_id',cfg.appId);tokenUrl.searchParams.set('client_secret',cfg.appSecret);tokenUrl.searchParams.set('redirect_uri',cfg.redirect);tokenUrl.searchParams.set('code',code);const short=await socialMetaJson(tokenUrl),longUrl=new URL(cfg.base+'/oauth/access_token');longUrl.searchParams.set('grant_type','fb_exchange_token');longUrl.searchParams.set('client_id',cfg.appId);longUrl.searchParams.set('client_secret',cfg.appSecret);longUrl.searchParams.set('fb_exchange_token',short.access_token);const long=await socialMetaJson(longUrl),accounts=await socialMetaAccounts(env,long.access_token),existing=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=id`);const record={id:existing[0]&&existing[0].id||genId('META'),tenant_id:SOCIAL_TENANT_ID,status:'connected',encrypted_user_token:await socialEncryptToken(env,long.access_token),encrypted_page_token:null,token_expires_at:long.expires_in?new Date(Date.now()+Number(long.expires_in)*1000).toISOString():null,available_accounts:accounts.map(({pageToken,...rest})=>rest),selected_page_id:null,selected_page_name:null,selected_instagram_id:null,selected_instagram_name:null,created_by:state.email,updated_at:nowIso()};if(!existing.length)record.created_at=nowIso();await dbUpsert(env,'social_meta_connections',record,'tenant_id');return Response.redirect('https://2b-love.com/social.html?meta=connected',302);}catch(e){return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><h2>Meta 連接未完成</h2><p>'+publicErrorMessage(e.message)+'</p><p><a href="https://2b-love.com/social.html">返回 AI 貼文排程小幫手</a></p>',{status:400,headers:{'Content-Type':'text/html;charset=utf-8'}});}}
-async function hSocialMetaStatus(env,p){if(!await socialRequireOwner(env,p))return jsonErr('此工具限平台總管理員使用');const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=status,token_expires_at,available_accounts,selected_page_id,selected_page_name,selected_instagram_id,selected_instagram_name,threads_status,threads_token_expires_at,selected_threads_id,selected_threads_username,updated_at`);if(!rows.length)return jsonOk({status:'disconnected',availableAccounts:[],threadsStatus:'disconnected'});const r=rows[0];return jsonOk({status:r.status,tokenExpiresAt:r.token_expires_at||'',availableAccounts:safeJson(r.available_accounts,[]),selectedPageId:r.selected_page_id||'',selectedPageName:r.selected_page_name||'',selectedInstagramId:r.selected_instagram_id||'',selectedInstagramName:r.selected_instagram_name||'',threadsStatus:r.threads_status||'disconnected',threadsTokenExpiresAt:r.threads_token_expires_at||'',selectedThreadsId:r.selected_threads_id||'',selectedThreadsUsername:r.selected_threads_username||'',updatedAt:r.updated_at||''});}
+function socialOAuthCallbackError(url,platform){
+  const message=socialText(url.searchParams.get('error_message')||url.searchParams.get('error_description'),1000);
+  const code=socialText(url.searchParams.get('error_code')||url.searchParams.get('error'),80);
+  if(message||code)throw new Error(`${platform} 授權失敗${code?`（${code}）`:''}${message?`：${message}`:''}`);
+}
+async function hSocialMetaCallback(env,url){try{socialOAuthCallbackError(url,'Facebook／Instagram');const state=await verifyAdminJwt(url.searchParams.get('state')||'',env);if(!state||state.type!=='meta_oauth'||state.tenant_id!==SOCIAL_TENANT_ID)throw new Error('Meta 登入狀態已失效，請重新連接');const code=url.searchParams.get('code');if(!code)throw new Error('Meta 未回傳授權碼');const cfg=socialMetaConfig(env),tokenUrl=new URL(cfg.base+'/oauth/access_token');tokenUrl.searchParams.set('client_id',cfg.appId);tokenUrl.searchParams.set('client_secret',cfg.appSecret);tokenUrl.searchParams.set('redirect_uri',cfg.redirect);tokenUrl.searchParams.set('code',code);const short=await socialMetaJson(tokenUrl),longUrl=new URL(cfg.base+'/oauth/access_token');longUrl.searchParams.set('grant_type','fb_exchange_token');longUrl.searchParams.set('client_id',cfg.appId);longUrl.searchParams.set('client_secret',cfg.appSecret);longUrl.searchParams.set('fb_exchange_token',short.access_token);const long=await socialMetaJson(longUrl),accounts=await socialMetaAccounts(env,long.access_token),existing=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=id`);const record={id:existing[0]&&existing[0].id||genId('META'),tenant_id:SOCIAL_TENANT_ID,status:'connected',encrypted_user_token:await socialEncryptToken(env,long.access_token),encrypted_page_token:null,token_expires_at:long.expires_in?new Date(Date.now()+Number(long.expires_in)*1000).toISOString():null,available_accounts:accounts.map(({pageToken,...rest})=>rest),selected_page_id:null,selected_page_name:null,selected_instagram_id:null,selected_instagram_name:null,created_by:state.email,updated_at:nowIso()};if(!existing.length)record.created_at=nowIso();await dbUpsert(env,'social_meta_connections',record,'tenant_id');return Response.redirect('https://2b-love.com/social.html?meta=connected',302);}catch(e){return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><h2>Meta 連接未完成</h2><p>'+publicErrorMessage(e.message)+'</p><p><a href="https://2b-love.com/social.html">返回 AI 貼文排程小幫手</a></p>',{status:400,headers:{'Content-Type':'text/html;charset=utf-8'}});}}
+async function hSocialMetaStatus(env,p){if(!await socialRequireOwner(env,p))return jsonErr('此工具限平台總管理員使用');const oauthSetup={appDomain:SOCIAL_OAUTH_APP_DOMAIN,facebookInstagramRedirectUri:SOCIAL_META_REDIRECT_URI,threadsRedirectUri:SOCIAL_THREADS_REDIRECT_URI,threadsDeauthorizeUri:SOCIAL_THREADS_DEAUTHORIZE_URI,threadsDeleteUri:SOCIAL_THREADS_DELETE_URI};const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=status,token_expires_at,available_accounts,selected_page_id,selected_page_name,selected_instagram_id,selected_instagram_name,threads_status,threads_token_expires_at,selected_threads_id,selected_threads_username,updated_at`);if(!rows.length)return jsonOk({status:'disconnected',availableAccounts:[],threadsStatus:'disconnected',oauthSetup});const r=rows[0];return jsonOk({status:r.status,tokenExpiresAt:r.token_expires_at||'',availableAccounts:safeJson(r.available_accounts,[]),selectedPageId:r.selected_page_id||'',selectedPageName:r.selected_page_name||'',selectedInstagramId:r.selected_instagram_id||'',selectedInstagramName:r.selected_instagram_name||'',threadsStatus:r.threads_status||'disconnected',threadsTokenExpiresAt:r.threads_token_expires_at||'',selectedThreadsId:r.selected_threads_id||'',selectedThreadsUsername:r.selected_threads_username||'',updatedAt:r.updated_at||'',oauthSetup});}
 async function hSocialSelectMetaAccounts(env,b){if(!await socialRequireOwner(env,b))return jsonErr('此工具限平台總管理員使用');const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&status=eq.connected&select=*`);if(!rows.length)return jsonErr('請先連接 Meta');const conn=rows[0],accounts=await socialMetaAccounts(env,await socialDecryptToken(env,conn.encrypted_user_token)),page=accounts.find(x=>x.pageId===String(b.pageId||''));if(!page)return jsonErr('找不到選擇的 Facebook 粉絲專頁');const ig=page.instagramAccounts.find(x=>x.id===String(b.instagramId||''))||null;if(b.instagramId&&!ig)return jsonErr('Instagram 帳號不屬於選擇的粉絲專頁');await dbUpdate(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(conn.id)}`,{encrypted_page_token:await socialEncryptToken(env,page.pageToken),available_accounts:accounts.map(({pageToken,...rest})=>rest),selected_page_id:page.pageId,selected_page_name:page.pageName,selected_instagram_id:ig&&ig.id||null,selected_instagram_name:ig&&(ig.name||ig.username)||null,updated_at:nowIso()});return jsonOk({ok:true});}
 async function hSocialMetaDisconnect(env,b){if(!await socialRequireOwner(env,b))return jsonErr('此工具限平台總管理員使用');const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=id`);if(rows.length)await dbUpdate(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(rows[0].id)}`,{status:'disconnected',encrypted_user_token:await socialEncryptToken(env,''),encrypted_page_token:null,available_accounts:[],selected_page_id:null,selected_page_name:null,selected_instagram_id:null,selected_instagram_name:null,updated_at:nowIso()});return jsonOk({ok:true});}
 function socialThreadsConfig(env){
   const appId=socialText(env.THREADS_APP_ID||env.META_APP_ID,120);
   const appSecret=socialText(env.THREADS_APP_SECRET||env.META_APP_SECRET,300);
-  const redirect=socialText(env.THREADS_REDIRECT_URI||`${WORKER_PUBLIC_URL}/auth/threads/callback`,1000);
+  const redirect=SOCIAL_THREADS_REDIRECT_URI;
   if(!appId||!appSecret)throw new Error('Threads App 尚未完成設定');
   return {appId,appSecret,redirect,apiBase:'https://graph.threads.net'};
 }
@@ -9485,6 +9514,7 @@ async function hSocialThreadsStart(env,url){
 }
 async function hSocialThreadsCallback(env,url){
   try{
+    socialOAuthCallbackError(url,'Threads');
     const state=await verifyAdminJwt(url.searchParams.get('state')||'',env);
     if(!state||state.type!=='threads_oauth'||state.tenant_id!==SOCIAL_TENANT_ID)throw new Error('Threads 登入狀態已失效，請重新連接');
     const code=url.searchParams.get('code');if(!code)throw new Error('Threads 未回傳授權碼');
@@ -9505,6 +9535,29 @@ async function hSocialThreadsCallback(env,url){
     await dbUpsert(env,'social_meta_connections',record,'tenant_id');
     return Response.redirect('https://2b-love.com/social.html?threads=connected',302);
   }catch(e){return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><h2>Threads 連接未完成</h2><p>'+publicErrorMessage(e.message)+'</p><p><a href="https://2b-love.com/social.html">返回 AI 貼文排程小幫手</a></p>',{status:400,headers:{'Content-Type':'text/html;charset=utf-8'}});}
+}
+async function socialThreadsSignedPayload(env,request){
+  const form=await request.formData(),signed=String(form.get('signed_request')||'').trim(),parts=signed.split('.');
+  if(parts.length!==2)throw new Error('Threads signed_request 格式錯誤');
+  const cfg=socialThreadsConfig(env),key=await crypto.subtle.importKey('raw',new TextEncoder().encode(cfg.appSecret),{name:'HMAC',hash:'SHA-256'},false,['verify']);
+  const valid=await crypto.subtle.verify('HMAC',key,socialBase64UrlBytes(parts[0]),new TextEncoder().encode(parts[1]));
+  if(!valid)throw new Error('Threads signed_request 驗證失敗');
+  return JSON.parse(new TextDecoder().decode(socialBase64UrlBytes(parts[1])));
+}
+async function socialDisconnectThreadsConnection(env){
+  const rows=await dbGet(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&select=id`);
+  if(rows.length)await dbUpdate(env,'social_meta_connections',`tenant_id=eq.${SOCIAL_TENANT_ID}&id=eq.${encodeURIComponent(rows[0].id)}`,{threads_status:'disconnected',encrypted_threads_token:null,threads_token_expires_at:null,selected_threads_id:null,selected_threads_username:null,updated_at:nowIso()});
+}
+async function hSocialThreadsDeauthorize(env,request){
+  try{await socialThreadsSignedPayload(env,request);await socialDisconnectThreadsConnection(env);return new Response('OK',{status:200});}
+  catch(e){return new Response(publicErrorMessage(e.message),{status:400});}
+}
+async function hSocialThreadsDelete(env,request){
+  try{
+    await socialThreadsSignedPayload(env,request);await socialDisconnectThreadsConnection(env);
+    const confirmationCode=crypto.randomUUID();
+    return Response.json({url:`https://2b-love.com/social.html?threads_delete=${encodeURIComponent(confirmationCode)}`,confirmation_code:confirmationCode});
+  }catch(e){return Response.json({error:publicErrorMessage(e.message)},{status:400});}
 }
 async function hSocialThreadsDisconnect(env,b){
   if(!await socialRequireOwner(env,b))return jsonErr('此工具限平台總管理員使用');
@@ -9855,6 +9908,7 @@ async function routePost(env, action, b, ctx, req) {
     case 'socialRegenerateHashtags': return hSocialRegenerateHashtags(env,b);
     case 'socialRegenerateImagePrompt': return hSocialRegenerateImagePrompt(env,b);
     case 'socialUploadPostImage': return hSocialUploadPostImage(env,b);
+    case 'socialGeneratePostImage': return hSocialGeneratePostImage(env,b);
     case 'socialDeletePostImage': return hSocialDeletePostImage(env,b);
     case 'socialScheduleCampaign': return hSocialScheduleCampaign(env,b);
     case 'socialCancelPost': return hSocialCancelPost(env,b);
@@ -9906,6 +9960,7 @@ export {
   socialMentionStatus,
   socialNormalizeSchedule,
   socialPostView,
+  socialWorkersAIJson,
   socialEncryptToken,
   socialDecryptToken,
 };
@@ -9951,6 +10006,12 @@ export default {
       }
       if (request.method==='GET' && pathname.endsWith('/auth/threads/callback')) {
         return await hSocialThreadsCallback(env, url);
+      }
+      if (request.method==='POST' && pathname.endsWith('/auth/threads/deauthorize')) {
+        return await hSocialThreadsDeauthorize(env, request);
+      }
+      if (request.method==='POST' && pathname.endsWith('/auth/threads/delete')) {
+        return await hSocialThreadsDelete(env, request);
       }
 
       // ── 短網址轉址：/s/<code> ──

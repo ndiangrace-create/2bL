@@ -7,6 +7,7 @@ import {
   socialMentionStatus,
   socialNormalizeSchedule,
   socialPostView,
+  socialWorkersAIJson,
   socialEncryptToken,
   socialDecryptToken,
 } from '../worker.js';
@@ -25,24 +26,37 @@ assert.match(page,/新增宣傳/); assert.match(page,/貼文排程/); assert.mat
 assert.match(page,/確認全部並發布排程/); assert.match(page,/複製圖片語法/); assert.match(page,/上傳／更換圖片/);
 assert.match(page,/合作帳號/); assert.match(page,/活動固定 Hashtag/); assert.match(page,/該篇專屬 Hashtag/);
 assert.match(page,/Facebook 粉專 ID/); assert.match(page,/此工具僅限平台總管理員使用/);
-assert.match(page,/第一版只產圖片語法/); assert.doesNotMatch(page,/AI 直接產圖（會產生 API 費用）/);
+assert.match(page,/自訂 1～20 篇/); assert.match(page,/免費 AI 產圖/); assert.match(page,/Cloudflare 免費 AI/);
+assert.match(page,/應用程式網域/); assert.match(page,/facebookInstagramRedirectUri/); assert.match(page,/threadsRedirectUri/);
 
-for(const action of ['socialCreateCampaign','socialSavePartner','socialGenerateCampaign','socialUpdatePost','socialRegeneratePost','socialRegenerateHashtags','socialRegenerateImagePrompt','socialUploadPostImage','socialScheduleCampaign','socialSelectMetaAccounts','socialThreadsDisconnect']){
+for(const action of ['socialCreateCampaign','socialSavePartner','socialGenerateCampaign','socialUpdatePost','socialRegeneratePost','socialRegenerateHashtags','socialRegenerateImagePrompt','socialUploadPostImage','socialGeneratePostImage','socialScheduleCampaign','socialSelectMetaAccounts','socialThreadsDisconnect']){
   assert.match(worker,new RegExp(`case '${action}'`),`${action} 必須接到 Worker`);
   assert.match(auth,new RegExp(`'${action}'`),`${action} 必須接到既有管理權限`);
 }
 assert.match(worker,/\/auth\/meta\/start/); assert.match(worker,/\/auth\/meta\/callback/);
 assert.match(worker,/\/auth\/threads\/start/); assert.match(worker,/\/auth\/threads\/callback/);
+assert.match(worker,/const SOCIAL_OAUTH_APP_DOMAIN = '2bl-v7\.ndiangrace\.workers\.dev'/);
+assert.match(worker,/const SOCIAL_META_REDIRECT_URI = `\$\{WORKER_PUBLIC_URL\}\/auth\/meta\/callback`/);
+assert.match(worker,/const SOCIAL_THREADS_REDIRECT_URI = `\$\{WORKER_PUBLIC_URL\}\/auth\/threads\/callback`/);
+assert.match(worker,/const SOCIAL_THREADS_DEAUTHORIZE_URI = `\$\{WORKER_PUBLIC_URL\}\/auth\/threads\/deauthorize`/);
+assert.match(worker,/const SOCIAL_THREADS_DELETE_URI = `\$\{WORKER_PUBLIC_URL\}\/auth\/threads\/delete`/);
+assert.match(worker,/hSocialThreadsDeauthorize\(env, request\)/);
+assert.match(worker,/hSocialThreadsDelete\(env, request\)/);
+assert.match(worker,/socialOAuthCallbackError\(url,'Facebook／Instagram'\)/);
+assert.match(worker,/socialOAuthCallbackError\(url,'Threads'\)/);
 assert.match(worker,/threads_basic,threads_content_publish/); assert.match(worker,/graph\.threads\.net\/me\/threads_publish/);
 assert.match(worker,/graph\.threads\.net\/refresh_access_token/); assert.match(worker,/th_refresh_token/);
 assert.match(worker,/claim_due_social_posts/); assert.match(worker,/social_publish_attempts/);
 assert.match(worker,/event\.cron === '\* \* \* \* \*'/);
 assert.match(wrangler,/"\* \* \* \* \*"/);
+assert.match(wrangler,/"ai"\s*:\s*\{\s*"binding"\s*:\s*"AI"/);
 
 const socialSection=worker.slice(worker.indexOf('// ── AI 貼文排程小幫手（成本控制第一版）'));
-assert.doesNotMatch(socialSection,/_openAiGenerateSquareVisual/,'貼文工具不得呼叫既有付費圖片函式');
-assert.doesNotMatch(socialSection,/\/v1\/images\/generations/,'貼文工具不得呼叫付費圖片 API');
-assert.match(socialSection,/store:false/,'文字回應不得由 OpenAI 代為保存');
+assert.match(socialSection,/env\.AI\.run/,'貼文文字與圖片必須使用 Workers AI binding');
+assert.match(worker,/@cf\/meta\/llama-3\.1-8b-instruct-fast/);
+assert.match(worker,/@cf\/bytedance\/stable-diffusion-xl-lightning/);
+assert.doesNotMatch(worker,new RegExp('api\\.'+'open'+'ai\\.com'),'不得保留付費 AI 網路端點');
+assert.doesNotMatch(wrangler,new RegExp('OPEN'+'AI_API_KEY'),'不得再要求付費 AI secret');
 assert.match(socialSection,/existing\.length/,'重新整理或重按不得重複生成整批');
 
 for(const table of ['social_partners','social_campaigns','social_posts','social_meta_connections','social_publish_attempts']){
@@ -73,10 +87,17 @@ assert.notEqual(a,b); assert.match(a,/測試活動/); assert.match(a,/不得自�
 
 const fixed=socialCampaignSchema('5');
 assert.equal(fixed.properties.posts.minItems,5); assert.equal(fixed.properties.posts.maxItems,5);
+const custom=socialCampaignSchema('7'); assert.equal(custom.properties.posts.minItems,7); assert.equal(custom.properties.posts.maxItems,7);
 assert.ok(fixed.properties.fixedHashtags); assert.ok(fixed.properties.posts.items.properties.facebookPartnerIds); assert.ok(fixed.properties.posts.items.properties.instagramPartnerIds);
 assert.ok(fixed.properties.posts.items.properties.threadsText); assert.deepEqual(fixed.properties.posts.items.properties.platforms.items.enum,['facebook','instagram','threads']);
 const dynamic=socialCampaignSchema('until_end');
 assert.equal(dynamic.properties.posts.minItems,1); assert.equal(dynamic.properties.posts.maxItems,20);
+
+let workersAiRequest=null;
+const workersAiResult=await socialWorkersAIJson({AI:{run:async(model,request)=>{workersAiRequest={model,request};return {response:JSON.stringify({topicHashtags:['#免費AI']}),usage:{prompt_tokens:10}};}}},'hashtags','規則','文章',socialHashtagSchemaForTest(),900);
+assert.equal(workersAiRequest.model,'@cf/meta/llama-3.1-8b-instruct-fast');
+assert.equal(workersAiRequest.request.response_format.type,'json_schema');
+assert.deepEqual(workersAiResult.data.topicHashtags,['#免費AI']);
 
 const future=socialNormalizeSchedule('2099-01-01T19:00:00+08:00',0,5,{event_date:'2099/01/10'});
 assert.ok(!Number.isNaN(Date.parse(future)));
@@ -106,3 +127,5 @@ assert.notEqual(encrypted,'meta-token-value');
 assert.equal(await socialDecryptToken({META_TOKEN_ENCRYPTION_KEY:'test-only-secret'},encrypted),'meta-token-value');
 
 console.log('AI social scheduler contract tests: OK');
+
+function socialHashtagSchemaForTest(){return {type:'object',additionalProperties:false,required:['topicHashtags'],properties:{topicHashtags:{type:'array',items:{type:'string'}}}};}
