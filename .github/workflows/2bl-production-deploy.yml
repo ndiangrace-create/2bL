@@ -39,7 +39,6 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       ALLOW_WORKER_DIFF: "true"
-      ALLOW_WORKERS_AI_MIGRATION: "true"
 
     steps:
       - name: 讀取 main 的指定版本
@@ -101,11 +100,6 @@ jobs:
         run: |
           npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --keep-vars \
             --message "GitHub ${GITHUB_SHA}; approved manual production deployment"
-
-      - name: 移除已停用的 OpenAI 密鑰
-        run: |
-          printf 'y\n' | npx --yes wrangler@4.102.0 secret delete OPENAI_API_KEY \
-            --config wrangler.jsonc --name 2bl-v7
 
       - name: 部署後核對來源與受保護設定
         env:
