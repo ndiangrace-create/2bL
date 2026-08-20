@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "f6f6010a40c1a1ff2eb46cbab377a6d0a6c08229",
-  "expected_cloudflare_version": "d0e342f7-d877-4532-8235-50989c805e4f",
-  "reason": "核准保留正式路由的 Workers AI、可自訂篇數、Meta OAuth 修正與移除 OpenAI 密鑰正式部署；僅限 2bl-v7"
+  "approved_source_commit": "bd6d88fbdca950ac15506b4250f33a851d04d2e5",
+  "expected_cloudflare_version": "98b9d837-eb18-4c11-b854-38db5e83bda3",
+  "reason": "核准部署社群排程參考檔、失敗重試移除、目前及未來商家同步與每篇單一目的地；僅限 2bl-v7"
 }
