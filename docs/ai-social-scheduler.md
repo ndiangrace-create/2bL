@@ -15,7 +15,8 @@
 - Worker：`worker.js`。
 - 權限：只允許正式 `platform_super_admin`；租戶主要管理者、系列管理者與其他角色都不能操作，後端每次重新核對正式權限。
 - 活動來源：只讀取 `sessions` 的公開宣傳欄位。
-- 正式資料：`social_partners`、`social_campaigns`、`social_posts`、`social_meta_connections`、`social_publish_attempts`。
+- 正式資料：`social_partners`、`social_campaigns`、`social_campaign_references`、`social_posts`、`social_meta_connections`、`social_publish_attempts`。
+- 參考資料：每個宣傳批次最多上傳 5 個、單檔 5 MB；原始檔放在私有 `social-references` bucket，Worker 轉成文字後才交給 AI，正式頁面不公開檔案網址。
 - 圖片：沿用 Supabase Storage `covers`，以 `tuibile/social-posts/...` 分層保存。
 - 文字 AI：Cloudflare Workers AI JSON Schema；已生成內容先保存，再讀取時不重新生成。
 - 圖片 AI：Cloudflare Workers AI SDXL Lightning；只有明確按下產圖按鈕時執行。
@@ -27,7 +28,9 @@
 - 貼文：待審核、已排程、發布中、已發布、發布失敗、已取消。
 - 每篇每平台只有一筆正式發布嘗試；成功平台不會因另一平台重試而再次發布。
 - 同一篇可選 Facebook、Instagram、Threads 任意組合；某平台失敗只記錄該平台，其他平台照常發布。
+- Meta 授權採「目前及未來所有可管理商家」時，系統同步其下所有可用粉專與已連結 Instagram 帳號；每一篇、每個平台仍只能選一個發布目的地，不會把同一篇廣播到所有粉專。
 - 外部平台已成功但本地回寫不確定時，不自動重試，避免重複貼文；需人工確認後再操作。
+- 產生失敗或尚未產生的宣傳可重新執行；草稿、產生失敗與待審核宣傳可從「我的宣傳」移除。發布失敗重試只清除該平台的失敗嘗試，已成功的平台不重發。
 - 整批排程由單一資料庫交易驗證並寫入；缺漏只回報對應貼文與欄位，不清空資料。
 
 ## 合作帳號標註與 Hashtag
@@ -50,7 +53,7 @@
 
 ## 上線與驗收項目
 
-- `supabase/ai_social_scheduler.sql` 已套用；五張新表均開啟 RLS，一般使用者無權讀寫，既有會員、報名與付款筆數保持不變。
+- `supabase/ai_social_scheduler.sql` 與後續社群排程 migration 已套用；所有社群排程表均開啟 RLS，一般使用者無權讀寫，既有會員、報名與付款筆數保持不變。
 - 先套用 `supabase/20260819210736_add_threads_social_scheduler.sql`，再設定 Meta App ID、App Secret、Graph API 版本、Redirect URI 與 Token 加密金鑰。
 - Threads 回呼網址固定為 `https://2bl-v7.ndiangrace.workers.dev/auth/threads/callback`；如 Meta 控制台提供獨立 Threads App ID／Secret，設定 `THREADS_APP_ID`、`THREADS_APP_SECRET`，否則沿用 `META_APP_ID`、`META_APP_SECRET`。
 - Threads 解除授權回呼為 `https://2bl-v7.ndiangrace.workers.dev/auth/threads/deauthorize`，資料刪除要求網址為 `https://2bl-v7.ndiangrace.workers.dev/auth/threads/delete`；兩者會驗證 Meta `signed_request`，並清除已保存的 Threads Token。
