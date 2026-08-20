@@ -1,0 +1,32 @@
+name: member-silent-phone-fix
+on:
+  push:
+    branches: [agent/member-admin-edit]
+    paths: ['docs/_member_silent_phone_trigger']
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/member-admin-edit
+          fetch-depth: 0
+      - run: python3 scripts/_fix_member_silent_phone.py
+      - name: Test
+        shell: bash
+        run: |
+          node scripts/test-member-admin-edit.mjs
+          node --check worker.js
+          for f in scripts/test-*.mjs; do node "$f"; done
+          node scripts/verify-data-contract.mjs --strict
+      - name: Commit branch-only result
+        shell: bash
+        run: |
+          git config user.name "2BL Safe Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f docs/_member_silent_phone_trigger scripts/_fix_member_silent_phone.py .github/workflows/_member_silent_phone_fix.yml || true
+          git add index.html scripts/test-member-admin-edit.mjs
+          git commit -m "fix: prevent silent member phone overwrite"
+          git push origin HEAD:agent/member-admin-edit
