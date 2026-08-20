@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "ef361c02bc836bf0b599f29978722d097d81e7ef",
-  "expected_cloudflare_version": "e88c65f0-1858-40e3-8f4a-4682d9d9d3de",
-  "reason": "核准 Workers AI、可自訂篇數與 Meta OAuth 修正正式部署；僅限 2bl-v7"
+  "approved_source_commit": "8329633d9c64e598c897b511d9ae5528b5686655",
+  "expected_cloudflare_version": "d0e342f7-d877-4532-8235-50989c805e4f",
+  "reason": "核准 Workers AI、可自訂篇數、Meta OAuth 修正與移除 OpenAI 密鑰正式部署；僅限 2bl-v7"
 }
