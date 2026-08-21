@@ -1,0 +1,34 @@
+name: temp apply reminder schedule review
+on:
+  push:
+    branches: [agent/reminder-schedule-review-20260821]
+    paths:
+      - scripts/_apply_reminder_schedule_review_fix.mjs
+      - .github/workflows/_temp_apply_reminder_schedule_review.yml
+permissions:
+  contents: write
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    if: github.repository == 'ndiangrace-create/2bL'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/reminder-schedule-review-20260821
+          fetch-depth: 0
+      - name: Apply closed-loop patch
+        run: node scripts/_apply_reminder_schedule_review_fix.mjs
+      - name: Syntax and feature tests
+        run: |
+          node --check worker.js
+          node scripts/test-reminder-schedule-review.mjs
+          for f in scripts/test-*.mjs; do echo "== $f =="; node "$f"; done
+          node scripts/verify-data-contract.mjs --strict
+      - name: Commit formal files and remove temporary patch machinery
+        run: |
+          rm -f scripts/_apply_reminder_schedule_review_fix.mjs .github/workflows/_temp_apply_reminder_schedule_review.yml
+          git config user.name "2BL Safe Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add worker.js admin.html index.html scripts/test-reminder-schedule-review.mjs scripts/_apply_reminder_schedule_review_fix.mjs .github/workflows/_temp_apply_reminder_schedule_review.yml
+          git commit -m "fix: payment reminder and staged review schedule"
+          git push origin HEAD:agent/reminder-schedule-review-20260821
