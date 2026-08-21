@@ -1,0 +1,1 @@
+Temporary implementation helper only. It runs exclusively on `agent/reminder-schedule-review-20260821`, performs branch tests, and does not deploy, migrate, modify Cloudflare, Supabase, Routes, Domains, or production data. Remove after the feature branch is patched and verified.
