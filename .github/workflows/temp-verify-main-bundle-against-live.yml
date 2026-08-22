@@ -1,0 +1,34 @@
+name: temp verify main bundle against live 2bl-v7
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/member-social-review-deploy-clean-20260822'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      BOOTSTRAP_SOURCE: "false"
+      ALLOW_WORKER_DIFF: "false"
+      EXPECTED_WORKER_SOURCE_PATH: ".automation/wrangler-main/worker.js"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Bundle current main without deploy
+        run: npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --dry-run --strict --outdir .automation/wrangler-main
+      - name: Compare bundled main with live 2bl-v7
+        run: node scripts/cloudflare-readonly-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: main-vs-live-${{ github.run_id }}
+          path: .automation/cloudflare-audit.json
+          if-no-files-found: warn
+          retention-days: 3
