@@ -2805,27 +2805,46 @@ async function openRegistrationTransferPanel(regId,sid){
     if(!opts){toast('目前沒有可轉入的有效場次',6000);return;}
     const html='<div class="readable-detail"><div class="report-card"><div class="report-title">原報名款項</div><div class="kv">'
       +'<div class="k">已確認現金</div><div>'+money(p.paidAmount||0)+'</div><div class="k">已使用活動金</div><div>'+money(p.activityCreditApplied||0)+'</div><div class="k">可轉資金總額</div><div>'+money(p.fundedAmount||0)+'</div><div class="k">可轉活動費</div><div>'+money(p.activityPaid||0)+'</div><div class="k">押金（獨立處理）</div><div>'+money(p.depositPaid||0)+'</div><div class="k">攤位數</div><div>'+num(p.stallCount||1)+' 攤</div></div></div>'
-      +'<div class="report-card"><div class="form-grid"><div class="form-field full"><label>轉入場次</label><select id="resolutionTarget" onchange="refreshTransferPreview(\''+attr(regId)+'\',\''+attr(sid)+'\')"><option value="">請選擇</option>'+opts+'</select></div></div>'
-      +'<div id="resolutionCalc" class="notice">選擇場次後，由系統計算應補差額、活動金及押金。</div>'
+      +'<div class="report-card"><div class="form-grid"><div class="form-field full"><label>轉入場次</label><select id="resolutionTarget" onchange="refreshTransferPreview(\''+attr(regId)+'\',\''+attr(sid)+'\',true)"><option value="">請選擇</option>'+opts+'</select></div>'
+      +'<div class="form-field full"><label>轉入日期</label><div id="resolutionTargetDates" class="notice" style="margin:0">請先選擇轉入場次。</div></div></div>'
+      +'<div id="resolutionCalc" class="notice">選擇場次與日期後，由系統依正式場次費用計算差額、活動金及押金。</div>'
       +'<div class="form-field full" style="margin-top:12px"><label>處理備註</label><textarea id="resolutionNote" placeholder="例如：攤商來訊希望延期"></textarea></div>'
       +'<div class="card-actions"><button id="resolutionSubmit" class="btn" disabled onclick="confirmRegistrationTransfer(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認轉移場次</button><button class="btn secondary" onclick="panelBack()">返回</button></div></div></div>';
-    openPanel('延期／轉移場次','原報名保留，新場另建報名；設備須於新場重新確認',html);
+    openPanel('延期／轉移場次','原報名保留，新場另建報名；多日場次可選實際轉入日期，設備須於新場重新確認',html);
   }catch(e){toast('轉場資料載入失敗：'+(e.message||e),7000);}
 }
-async function refreshTransferPreview(regId,sid){
-  const targetSessionId=$('resolutionTarget')?.value||''; if(!targetSessionId)return;
+function selectedResolutionTargetDates(){
+  return [...document.querySelectorAll('.resolution-target-date:checked')].map(x=>String(x.value||'').slice(0,10)).filter(Boolean);
+}
+async function refreshTransferPreview(regId,sid,resetDates=false){
+  const targetSessionId=$('resolutionTarget')?.value||'';
+  const dateBox=$('resolutionTargetDates'),calc=$('resolutionCalc'),submit=$('resolutionSubmit');
+  if(submit)submit.disabled=true;
+  if(!targetSessionId){if(dateBox)dateBox.innerHTML='請先選擇轉入場次。';return;}
+  const selected=resetDates?[]:selectedResolutionTargetDates();
+  if(resetDates&&dateBox)dateBox.innerHTML='讀取日期中…';
   try{
-    const p=normalizedResolutionPreview(await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid,targetSessionId}),regId);
-    $('resolutionCalc').innerHTML='<b>新場應繳：</b>'+money(p.targetTotal||0)+'（活動費 '+money(p.targetActivityFee||0)+'＋押金 '+money(p.targetDeposit||0)+'）<br>'
-      +'<b>已轉入：</b>'+money(p.appliedTotal||0)+'｜<b>應補差額：</b>'+money(p.dueAmount||0)+'<br>'
-      +'<b>轉後活動金：</b>'+money(p.creditCreated||0)+'｜<b>待退押金：</b>'+money(p.depositRefundDue||0)+'<br><span class="sub">設備不沿用，會員可在新場報名紀錄看到完整計算。</span>';
-    $('resolutionSubmit').disabled=false;
-  }catch(e){$('resolutionSubmit').disabled=true;toast('計算失敗：'+(e.message||e),7000);}
+    const raw=await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid,targetSessionId,targetDates:selected});
+    const options=Array.isArray(raw.availableTargetDates)?raw.availableTargetDates:[];
+    let effective=selected.slice();
+    if(options.length===1&&!effective.length)effective=[String(options[0].date||'').slice(0,10)];
+    if(dateBox)dateBox.innerHTML=options.length?options.map(o=>{
+      const day=String(o.date||'').slice(0,10),checked=effective.includes(day);
+      return '<label style="display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;padding:11px 12px!important;margin:6px 0!important;border:1px solid var(--line)!important;border-radius:13px!important;background:#fff!important;cursor:pointer!important"><input type="checkbox" class="resolution-target-date" value="'+attr(day)+'" '+(checked?'checked':'')+' onchange="refreshTransferPreview(\''+attr(regId)+'\',\''+attr(sid)+'\')" style="width:20px!important;height:20px!important;margin:0!important"><span style="font-weight:900">'+safe(day)+(o.label&&o.label!==day?'｜'+safe(o.label):'')+'</span><strong style="white-space:nowrap;color:var(--main2)">'+(Number(o.fee)>0?money(o.fee):'依場次費用')+'</strong></label>';
+    }).join(''):'<span class="sub">這個場次沒有可用日期，無法轉入。</span>';
+    if(options.length>1&&!effective.length){if(calc)calc.innerHTML='<b>請勾選要轉入的日期。</b><br><span class="sub">可以選一天或多天；未勾選不會建立轉場報名。</span>';return;}
+    if(!effective.length){if(calc)calc.textContent='這個場次沒有可用日期，無法計算。';return;}
+    const finalRaw=(selected.length||options.length!==1)?raw:await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid,targetSessionId,targetDates:effective});
+    const p=normalizedResolutionPreview(finalRaw,regId);
+    if(calc)calc.innerHTML='<b>選擇日期：</b>'+effective.map(safe).join('、')+'<br><b>新場應繳：</b>'+money(p.targetTotal||0)+'（活動費 '+money(p.targetActivityFee||0)+'＋押金 '+money(p.targetDeposit||0)+'）<br><b>已轉入：</b>'+money(p.appliedTotal||0)+'｜<b>應補差額：</b>'+money(p.dueAmount||0)+'<br><b>轉後活動金：</b>'+money(p.creditCreated||0)+'｜<b>待退押金：</b>'+money(p.depositRefundDue||0)+'<br><span class="sub">設備不沿用；新報名只保存本次勾選日期。</span>';
+    if(submit)submit.disabled=false;
+  }catch(e){if(calc)calc.textContent='計算失敗：'+(e.message||e);toast('計算失敗：'+(e.message||e),7000);}
 }
 async function confirmRegistrationTransfer(regId,sid){
-  const targetSessionId=$('resolutionTarget')?.value||''; if(!targetSessionId){toast('請選擇轉入場次');return;}
-  if(!await uiConfirm('確定轉移到所選場次？原場名額與排位會釋出，新場設備需重新確認。'))return;
-  try{const r=await apiPost({action:'resolveRegistration',mode:'transfer',regId,sessionId:sid,targetSessionId,note:$('resolutionNote')?.value||''});toast('已完成轉場；應補 '+money(r.dueAmount||0)+'，活動金 '+money(r.creditCreated||0),7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('轉場失敗：'+(e.message||e),8000);}
+  const targetSessionId=$('resolutionTarget')?.value||'';if(!targetSessionId){toast('請選擇轉入場次');return;}
+  const targetDates=selectedResolutionTargetDates();if(!targetDates.length){toast('請至少選擇一個轉入日期');return;}
+  if(!await uiConfirm('確定轉移到所選場次？\n\n轉入日期：'+targetDates.join('、')+'\n原場名額與排位會釋出，新場設備需重新確認。'))return;
+  try{const r=await apiPost({action:'resolveRegistration',mode:'transfer',regId,sessionId:sid,targetSessionId,targetDates,note:$('resolutionNote')?.value||''});toast('已完成轉場；應補 '+money(r.dueAmount||0)+'，活動金 '+money(r.creditCreated||0),7000);closeAllPanels();await refreshSessionsOverview();if(AdminState.currentPage==='todos')await loadTodos();}catch(e){toast('轉場失敗：'+(e.message||e),8000);}
 }
 async function confirmRegistrationCredit(regId,sid){
   let p;try{p=normalizedResolutionPreview(await apiPost({action:'previewRegistrationResolution',regId,sessionId:sid}),regId);}catch(e){toast('無法取得正式金額與攤位數，已阻斷操作：'+(e.message||e),8000);return;}
@@ -4843,7 +4862,7 @@ async function loadAdminManualSession(sid){
     const dateHtml=dates.length?dates.map(d=>{
       const day=String((d&&typeof d==='object')?(d.date||d.day||''):d);
       const fee=(d&&typeof d==='object')?Number(d.fee||0):0;
-      return `<label style="display:flex;gap:7px;align-items:center;margin:6px 0"><input type="checkbox" class="amrDate" value="${attr(day)}"> ${safe(day)}${fee?`｜${money(fee)}`:''}</label>`;
+      return `<label class="amr-date-option" style="display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;width:100%!important;padding:12px 14px!important;margin:7px 0!important;border:1px solid var(--line)!important;border-radius:14px!important;background:#fff!important;cursor:pointer!important"><input type="checkbox" class="amrDate" value="${attr(day)}" style="width:20px!important;height:20px!important;margin:0!important;justify-self:start!important"><span style="min-width:0;font-weight:900;color:var(--ink)">${safe(day)}</span><strong style="white-space:nowrap;color:var(--main2)">${fee?money(fee):'依場次費用'}</strong></label>`;
     }).join(''):'<div class="sub">此場次沒有多日選項，使用場次單場費用。</div>';
 
     const equip=s.equip&&typeof s.equip==='object'?s.equip:{};
