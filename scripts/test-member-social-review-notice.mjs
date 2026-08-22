@@ -21,3 +21,4 @@ assert.match(worker,/prepareRegistration/);
 assert.match(worker,/upsertMember/);
 
 console.log('member social review notice tests: PASS');
+// trigger clean guarded patch
