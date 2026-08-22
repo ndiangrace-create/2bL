@@ -1,38 +1,54 @@
-name: temp reminder schedule branch patcher
+name: temp manual registration transfer branch patcher
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [ready_for_review]
 permissions:
   contents: write
 jobs:
   patch-test-commit:
-    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/reminder-schedule-review-20260821'
+    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/manual-reg-transfer-date-fix-20260822'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: agent/reminder-schedule-review-20260821
+          ref: agent/manual-reg-transfer-date-fix-20260822
           fetch-depth: 0
       - name: Guard target
         run: |
+          set -euo pipefail
           test "$GITHUB_REPOSITORY" = "ndiangrace-create/2bL"
-          test "$GITHUB_HEAD_REF" = "agent/reminder-schedule-review-20260821"
-          test -f scripts/_apply_reminder_schedule_review_fix.mjs
-      - name: Apply patch
-        run: node scripts/_apply_reminder_schedule_review_fix.mjs
-      - name: Validate
+          test "$GITHUB_HEAD_REF" = "agent/manual-reg-transfer-date-fix-20260822"
+          test -f scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs
+          test -f scripts/test-manual-reg-transfer-dates.mjs
+      - name: Apply scoped patch
+        run: node scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs
+      - name: Validate syntax and closed-loop markers
         run: |
+          set -euo pipefail
           node --check worker.js
-          node scripts/test-reminder-schedule-review.mjs
-          for f in scripts/test-*.mjs; do echo "== $f =="; node "$f"; done
+          node scripts/test-manual-reg-transfer-dates.mjs
+          node scripts/test-admin-operator-simulation.mjs
+          node scripts/test-member-admin-edit.mjs
+          node scripts/test-member-login-token.mjs
+          node scripts/test-member-profile-system.mjs
           node scripts/verify-data-contract.mjs --strict
-      - name: Commit patched formal files
+      - name: Block unrelated working-tree changes
         run: |
-          rm -f scripts/_apply_reminder_schedule_review_fix.mjs .github/workflows/_temp_apply_reminder_schedule_review.yml .github/workflows/temp-reminder-schedule-patcher.yml docs/reminder-schedule-patcher-trigger.md
+          set -euo pipefail
+          { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u | tee /tmp/changed.txt
+          grep -qx 'admin.html' /tmp/changed.txt
+          grep -qx 'worker.js' /tmp/changed.txt
+          grep -qx 'supabase/migrations/20260822200500_transfer_selected_dates_day_ops.sql' /tmp/changed.txt
+          if grep -Ev '^(admin\.html|worker\.js|supabase/migrations/20260822200500_transfer_selected_dates_day_ops\.sql)$' /tmp/changed.txt | grep -q .; then echo 'Unexpected file changed'; exit 1; fi
+      - name: Commit only tested feature files
+        run: |
+          set -euo pipefail
+          rm -f scripts/_apply_manual_reg_transfer_dates_fix.mjs scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs .github/workflows/_temp_manual_reg_transfer_dates.yml .github/workflows/_temp_manual_reg_transfer_dates_v2.yml docs/manual-reg-transfer-fix-trigger.md
           git config user.name "2BL Safe Automation"
           git config user.email "actions@users.noreply.github.com"
-          git add -A worker.js admin.html index.html scripts/test-reminder-schedule-review.mjs scripts/_apply_reminder_schedule_review_fix.mjs .github/workflows/_temp_apply_reminder_schedule_review.yml .github/workflows/temp-reminder-schedule-patcher.yml docs/reminder-schedule-patcher-trigger.md
+          git add admin.html worker.js supabase/migrations/20260822200500_transfer_selected_dates_day_ops.sql scripts/test-manual-reg-transfer-dates.mjs
+          git add -u scripts/_apply_manual_reg_transfer_dates_fix.mjs scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs .github/workflows/_temp_manual_reg_transfer_dates.yml .github/workflows/_temp_manual_reg_transfer_dates_v2.yml docs/manual-reg-transfer-fix-trigger.md
           git diff --cached --quiet && { echo 'no patch output'; exit 1; }
-          git commit -m "fix: payment reminder and staged review schedule"
-          git push origin HEAD:agent/reminder-schedule-review-20260821
+          git commit -m "fix: repair manual registration and multi-day transfer selection"
+          git push origin HEAD:agent/manual-reg-transfer-date-fix-20260822
