@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "1931ca52aecfcdda008aa54cb0c963ec7a080510",
-  "expected_cloudflare_version": "3b383dff-d161-41bb-bd55-5e1942107c1f",
-  "reason": "修正主辦代報名多日日期介面與轉場多日選日期；保留既有會員、報名、付款、退款、活動金、押金、排位、設備與財務資料，只部署 2bl-v7"
+  "approved_source_commit": "443396cbc123331456399012221e4ddb5e4bfc7b",
+  "expected_cloudflare_version": "3c6f5a45-8aa2-4097-b572-8e114834510b",
+  "reason": "會員申請與會員資料填寫新增 FB／IG／官網審核提醒；tuibile 社群三項皆空可儲存與送出但不自動通過審核；不寄信、不改既有會員、報名、付款、退款、活動金、押金、排位與財務資料；只部署 2bl-v7"
 }
