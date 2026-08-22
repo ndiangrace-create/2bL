@@ -5320,7 +5320,7 @@ async function prepareRegistration(env, b) {
   try {
     const tsRows = await dbGet(env, 'tenant_settings', `tenant_id=eq.${TENANT}&select=module_flags_json`);
     const mf = safeJson(tsRows.length ? tsRows[0].module_flags_json : '{}', {});
-    if (mf.requireSocialLinks === true) {
+    if (mf.requireSocialLinks === true && TENANT !== 'tuibile') {
       const hasSocial = String(b.fb || b.fb_url || '').trim() || String(b.ig || b.ig_url || '').trim() || String(b.collabUrl || b.collab_url || b.website || b.web || '').trim();
       if (!hasSocial) return {error:'FB、IG 或官網至少需要填寫一項'};
     }
@@ -5727,8 +5727,6 @@ async function hSaveMember(env, b) {
   if (!email || !authPhone) return jsonErr('請先以 Email 與手機完成身份驗證');
   const verified = await findVerifiedMemberByEmailPhone(env, TENANT, email, authPhone);
   if (!verified || normEmail(verified.email) !== email) return jsonErr('身份驗證失敗，無權限修改此會員資料');
-  const socialOrWebsite=String(b.fb||'').trim()||String(b.ig||'').trim()||String(b.collabUrl||b.website||b.web||'').trim();
-  if(!socialOrWebsite) return jsonErr('FB、IG 或官網至少需要填寫一項');
   b.email = email;
   const memberBeforeAudit=memberProfileAuditSnapshot(verified);
   await upsertMember(env, b);
