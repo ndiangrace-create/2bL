@@ -1,13 +1,12 @@
 name: temp manual registration transfer branch patcher
 on:
-  pull_request:
+  push:
     branches: [main]
-    types: [ready_for_review]
 permissions:
   contents: write
 jobs:
   patch-test-commit:
-    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/manual-reg-transfer-date-fix-20260822'
+    if: github.repository == 'ndiangrace-create/2bL'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +17,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = "ndiangrace-create/2bL"
-          test "$GITHUB_HEAD_REF" = "agent/manual-reg-transfer-date-fix-20260822"
+          test "$(git branch --show-current)" = "agent/manual-reg-transfer-date-fix-20260822"
           test -f scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs
           test -f scripts/test-manual-reg-transfer-dates.mjs
       - name: Apply scoped patch
