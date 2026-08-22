@@ -1,28 +1,39 @@
 name: temp manual registration transfer branch patcher
 on:
-  push:
+  pull_request:
     branches: [main]
+    types: [synchronize]
 permissions:
   contents: write
 jobs:
   patch-test-commit:
-    if: github.repository == 'ndiangrace-create/2bL'
+    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/manual-reg-transfer-date-fix-20260822'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: agent/manual-reg-transfer-date-fix-20260822
           fetch-depth: 0
-      - name: Guard target
+      - name: Guard target and detect prior completion
+        id: guard
+        shell: bash
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = "ndiangrace-create/2bL"
+          test "$GITHUB_HEAD_REF" = "agent/manual-reg-transfer-date-fix-20260822"
           test "$(git branch --show-current)" = "agent/manual-reg-transfer-date-fix-20260822"
-          test -f scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs
-          test -f scripts/test-manual-reg-transfer-dates.mjs
+          if [ ! -f scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Patch already applied; nothing to do."
+          else
+            test -f scripts/test-manual-reg-transfer-dates.mjs
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Apply scoped patch
+        if: steps.guard.outputs.skip != 'true'
         run: node scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs
       - name: Validate syntax and closed-loop markers
+        if: steps.guard.outputs.skip != 'true'
         run: |
           set -euo pipefail
           node --check worker.js
@@ -33,6 +44,7 @@ jobs:
           node scripts/test-member-profile-system.mjs
           node scripts/verify-data-contract.mjs --strict
       - name: Block unrelated working-tree changes
+        if: steps.guard.outputs.skip != 'true'
         run: |
           set -euo pipefail
           { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u | tee /tmp/changed.txt
@@ -41,6 +53,7 @@ jobs:
           grep -qx 'supabase/migrations/20260822200500_transfer_selected_dates_day_ops.sql' /tmp/changed.txt
           if grep -Ev '^(admin\.html|worker\.js|supabase/migrations/20260822200500_transfer_selected_dates_day_ops\.sql)$' /tmp/changed.txt | grep -q .; then echo 'Unexpected file changed'; exit 1; fi
       - name: Commit only tested feature files
+        if: steps.guard.outputs.skip != 'true'
         run: |
           set -euo pipefail
           rm -f scripts/_apply_manual_reg_transfer_dates_fix.mjs scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs .github/workflows/_temp_manual_reg_transfer_dates.yml .github/workflows/_temp_manual_reg_transfer_dates_v2.yml docs/manual-reg-transfer-fix-trigger.md
