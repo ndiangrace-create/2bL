@@ -1,0 +1,41 @@
+name: temp member social review notice patcher
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: write
+jobs:
+  patch-test-commit:
+    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/member-social-review-notice-20260822'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/member-social-review-notice-20260822
+          fetch-depth: 0
+      - name: Apply and test scoped patch
+        run: |
+          set -euo pipefail
+          test "$GITHUB_HEAD_REF" = "agent/member-social-review-notice-20260822"
+          node scripts/_apply_member_social_review_notice.mjs
+          node --check worker.js
+          node scripts/test-member-social-review-notice.mjs
+          node scripts/test-member-profile-system.mjs
+          node scripts/test-member-login-token.mjs
+          node scripts/test-admin-operator-simulation.mjs
+          node scripts/verify-data-contract.mjs --strict
+          git restore .automation/data-contract-report.json 2>/dev/null || true
+          changed="$({ git diff --name-only; git ls-files --others --exclude-standard; } | sort -u)"
+          printf '%s\n' "$changed"
+          test "$changed" = $'index.html\nworker.js'
+      - name: Commit tested runtime files only
+        run: |
+          set -euo pipefail
+          rm -f scripts/_apply_member_social_review_notice.mjs .github/workflows/_temp_member_social_review_notice.yml
+          git config user.name "2BL Safe Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html worker.js scripts/test-member-social-review-notice.mjs
+          git add -u scripts/_apply_member_social_review_notice.mjs .github/workflows/_temp_member_social_review_notice.yml
+          git commit -m "fix: make social links advisory at member application"
+          git push origin HEAD:agent/member-social-review-notice-20260822
