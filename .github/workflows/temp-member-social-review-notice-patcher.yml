@@ -24,4 +24,5 @@ jobs:
           node scripts/test-member-login-token.mjs
           node scripts/test-admin-operator-simulation.mjs
           node scripts/verify-data-contract.mjs --strict
+          git restore .automation/data-contract-report.json 2>/dev/null || true
           git diff --exit-code
