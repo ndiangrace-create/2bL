@@ -1,4 +1,4 @@
-name: temp manual registration transfer branch patcher
+name: temp manual registration transfer clean branch patcher
 on:
   pull_request:
     branches: [main]
@@ -7,12 +7,12 @@ permissions:
   contents: write
 jobs:
   patch-test-commit:
-    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/manual-reg-transfer-date-fix-20260822'
+    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/manual-reg-transfer-date-fix-clean-20260822'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: agent/manual-reg-transfer-date-fix-20260822
+          ref: agent/manual-reg-transfer-date-fix-clean-20260822
           fetch-depth: 0
       - name: Guard target and detect prior completion
         id: guard
@@ -20,9 +20,9 @@ jobs:
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = "ndiangrace-create/2bL"
-          test "$GITHUB_HEAD_REF" = "agent/manual-reg-transfer-date-fix-20260822"
-          test "$(git branch --show-current)" = "agent/manual-reg-transfer-date-fix-20260822"
-          if [ ! -f scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs ]; then
+          test "$GITHUB_HEAD_REF" = "agent/manual-reg-transfer-date-fix-clean-20260822"
+          test "$(git branch --show-current)" = "agent/manual-reg-transfer-date-fix-clean-20260822"
+          if [ ! -f scripts/_apply_manual_reg_transfer_dates_fix_v3.mjs ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Patch already applied; nothing to do."
           else
@@ -31,7 +31,7 @@ jobs:
           fi
       - name: Apply scoped patch
         if: steps.guard.outputs.skip != 'true'
-        run: node scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs
+        run: node scripts/_apply_manual_reg_transfer_dates_fix_v3.mjs
       - name: Validate syntax and closed-loop markers
         if: steps.guard.outputs.skip != 'true'
         run: |
@@ -56,11 +56,11 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: |
           set -euo pipefail
-          rm -f scripts/_apply_manual_reg_transfer_dates_fix.mjs scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs .github/workflows/_temp_manual_reg_transfer_dates.yml .github/workflows/_temp_manual_reg_transfer_dates_v2.yml docs/manual-reg-transfer-fix-trigger.md
+          rm -f scripts/_apply_manual_reg_transfer_dates_fix_v3.mjs docs/manual-reg-transfer-fix-clean-trigger.md
           git config user.name "2BL Safe Automation"
           git config user.email "actions@users.noreply.github.com"
           git add admin.html worker.js supabase/migrations/20260822200500_transfer_selected_dates_day_ops.sql scripts/test-manual-reg-transfer-dates.mjs
-          git add -u scripts/_apply_manual_reg_transfer_dates_fix.mjs scripts/_apply_manual_reg_transfer_dates_fix_v2.mjs .github/workflows/_temp_manual_reg_transfer_dates.yml .github/workflows/_temp_manual_reg_transfer_dates_v2.yml docs/manual-reg-transfer-fix-trigger.md
+          git add -u scripts/_apply_manual_reg_transfer_dates_fix_v3.mjs docs/manual-reg-transfer-fix-clean-trigger.md
           git diff --cached --quiet && { echo 'no patch output'; exit 1; }
           git commit -m "fix: repair manual registration and multi-day transfer selection"
-          git push origin HEAD:agent/manual-reg-transfer-date-fix-20260822
+          git push origin HEAD:agent/manual-reg-transfer-date-fix-clean-20260822
