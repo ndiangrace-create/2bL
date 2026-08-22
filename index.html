@@ -3336,6 +3336,24 @@ function shareSessionCard(id, name, event){
 }
 
 // ── openSessionById（開啟單場報名表）──
+function uiNotice(message){
+  return new Promise(function(resolve){
+    var old=document.getElementById('uiNoticeOverlay'); if(old){ try{old.remove();}catch(e){} }
+    var ov=document.createElement('div'); ov.id='uiNoticeOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+    var box=document.createElement('div'); box.style.cssText='width:min(100%,420px);background:#fff;border-radius:18px;padding:20px;box-shadow:0 18px 48px rgba(0,0,0,.22)';
+    var msg=document.createElement('div'); msg.style.cssText='white-space:pre-wrap;margin-bottom:18px;font-weight:800;line-height:1.7;color:#222'; msg.textContent=String(message||'');
+    var ok=document.createElement('button'); ok.type='button'; ok.textContent='知道了'; ok.style.cssText='width:100%;padding:13px;border-radius:12px;border:none;background:#628E87;color:#fff;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit';
+    var done=function(){ try{ov.remove();}catch(e){} resolve(true); }; ok.onclick=done; ov.onclick=function(e){ if(e.target===ov) done(); };
+    box.appendChild(msg); box.appendChild(ok); ov.appendChild(box); document.body.appendChild(ov);
+  });
+}
+function showMemberSocialReviewNoticeOnce(){
+  if(ST._memberSocialReviewNoticeShown) return Promise.resolve();
+  ST._memberSocialReviewNoticeShown=true;
+  return uiNotice('FB、IG 或官網至少建議填寫一項\n方便主辦審核品牌與商品內容。\n若完全未填寫，審核將不會通過。');
+}
+
 function openSessionById(id){
   if(!id) return;
   openSession(id);
@@ -3764,12 +3782,11 @@ async function safeLoadMemberPage(email, opts={}){
       const hasName   = !!String(m.name||m.displayName||'').trim();
       const hasBrand  = !!String(m.brand||m.brand_name||'').trim();
       const hasSocial = !!String(m.fb||m.fb_url||m.ig||m.ig_url||m.collabUrl||m.collab_url||m.website||m.web||'').trim();
-      ST._profileIncomplete = !hasName || !hasBrand || !hasSocial;
+      ST._profileIncomplete = !hasName || !hasBrand;
       if(ST._profileIncomplete && !opts.forceRegs){
         const missing=[];
         if(!hasName)   missing.push('姓名');
         if(!hasBrand)  missing.push('品牌名稱');
-        if(!hasSocial) missing.push('FB、IG 或官網（至少一項）');
         switchMemberMode('profile');
         toast('請先補齊會員資料：' + missing.join('、'));
       }
@@ -4428,7 +4445,8 @@ function showNewMemberProfileStep(s){
         <input type="text" id="np_sellItem" value="${esc(V.sellCat||V.sell_category||V.sellItem||V.sell_items||'')}" placeholder="例如：手作飾品、甜點、選品…">
         <label style="margin-top:10px">品牌介紹（選填）</label>
         <textarea id="np_brandIntro" style="min-height:72px" placeholder="簡短介紹您的品牌…">${esc(V.brandIntro||V.brand_intro||'')}</textarea>
-        <label style="margin-top:10px">FB、IG 或官網（至少填寫一項）*</label>
+        <div class="member-social-review-notice" style="margin:10px 0 12px;padding:10px 12px;border:1.5px solid #FAEEC7;border-radius:12px;background:#fffdf5;line-height:1.65;color:#555;font-size:16px"><strong style="display:block;color:#111;margin-bottom:2px">FB、IG 或官網至少建議填寫一項</strong>方便主辦審核品牌與商品內容。<br><strong style="color:#8b1c1c">若完全未填寫，審核將不會通過。</strong></div>
+        <label style="margin-top:10px">FB、IG 或官網（建議至少填寫一項）</label>
         <input type="url" id="np_fb" value="${esc(V.fb||V.fb_url||'')}" placeholder="FB 網址">
         <input type="url" id="np_ig" value="${esc(V.ig||V.ig_url||'')}" placeholder="IG 網址" style="margin-top:8px">
         <input type="url" id="np_web" value="${esc(V.collabUrl||V.collab_url||V.website||V.web||'')}" placeholder="官網網址" style="margin-top:8px">
@@ -4440,6 +4458,7 @@ function showNewMemberProfileStep(s){
     </div>`;
   const btn=$('saveMemberProfileBtn');
   if(btn) btn.addEventListener('click',()=>saveMemberProfileToDb({silent:false}));
+  showMemberSocialReviewNoticeOnce();
   try{ dynEl.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
 }
 async function saveMemberProfileToDb({silent=false}={}){
@@ -4460,7 +4479,7 @@ async function saveMemberProfileToDb({silent=false}={}){
   };
   if(!email || !/\S+@\S+\.\S+/.test(email)){ showError('請先填寫正確 Email，才能儲存資料','np_email'); return {success:false}; }
   if(!phone){ showError('請先填寫手機號碼，才能儲存資料','np_phone'); return {success:false}; }
-  if(!g('np_fb')&&!g('np_ig')&&!g('np_web')){ showError('FB、IG 或官網至少需要填寫一項','np_fb'); return {success:false}; }
+  if(!silent && !g('np_fb')&&!g('np_ig')&&!g('np_web')) await showMemberSocialReviewNoticeOnce();
   if(err) err.textContent='';
   if(!silent && btn){ btn.disabled=true; btn.textContent='儲存中…'; }
   const authPhone=String(ST._verifiedMemberPhone||ST.member?.phone||memberSafePhone()||phone).trim();
@@ -4811,6 +4830,7 @@ function renderDynFormFull(s, isNew=false){
       <label>手機 *</label><input type="tel" id="f_phone" value="${esc(V.phone||'')}" inputmode="tel" placeholder="09xxxxxxxx">
       <label>攤位／品牌名稱 *</label><input type="text" id="f_brand" value="${esc(V.brand||V.brand_name||'')}" placeholder="品牌名稱">
       <label>聯絡人姓名 *</label><input type="text" id="f_name" value="${esc(V.name||'')}" placeholder="聯絡人姓名">
+      <div class="member-social-review-notice" style="margin:10px 0 12px;padding:10px 12px;border:1.5px solid #FAEEC7;border-radius:12px;background:#fffdf5;line-height:1.65;color:#555;font-size:16px"><strong style="display:block;color:#111;margin-bottom:2px">FB、IG 或官網至少建議填寫一項</strong>方便主辦審核品牌與商品內容。<br><strong style="color:#8b1c1c">若完全未填寫，審核將不會通過。</strong></div>
       <label>FB</label><input type="url" id="f_fb" value="${esc(vFb)}" placeholder="https://facebook.com/...">
       <label>IG</label><input type="url" id="f_ig" value="${esc(vIg)}" placeholder="https://instagram.com/...">
       <label>品牌介紹</label><textarea id="f_brandIntro" style="min-height:72px" placeholder="簡短介紹您的品牌…">${esc(V.brandIntro||V.brand_intro||'')}</textarea>
