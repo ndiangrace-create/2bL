@@ -1,0 +1,33 @@
+name: temp recover live 2bl worker
+on:
+  push:
+    branches: [main]
+    paths: [docs/live-worker-recovery-trigger.md]
+permissions:
+  contents: read
+jobs:
+  recover:
+    if: github.repository == 'ndiangrace-create/2bL'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      BOOTSTRAP_SOURCE: "true"
+      ALLOW_WORKER_DIFF: "true"
+      EXPECTED_WORKER_SOURCE_PATH: ".automation/live-worker.js"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover live 2bl-v7 source read-only
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "ndiangrace-create/2bL"
+          node scripts/cloudflare-readonly-audit.mjs
+          node --check .automation/live-worker.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: live-2bl-v7-source-${{ github.run_id }}
+          path: |
+            .automation/live-worker.js
+            .automation/cloudflare-audit.json
+          if-no-files-found: error
+          retention-days: 3
