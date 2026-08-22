@@ -1,0 +1,51 @@
+name: temp manual registration transfer dates patch
+on:
+  push:
+    branches: [agent/manual-reg-transfer-date-fix-20260822]
+permissions:
+  contents: write
+jobs:
+  patch-test-commit:
+    if: github.repository == 'ndiangrace-create/2bL' && github.ref == 'refs/heads/agent/manual-reg-transfer-date-fix-20260822'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Guard formal project and branch
+        run: |
+          test "$GITHUB_REPOSITORY" = "ndiangrace-create/2bL"
+          test "$GITHUB_REF" = "refs/heads/agent/manual-reg-transfer-date-fix-20260822"
+          test -f scripts/_apply_manual_reg_transfer_dates_fix.mjs
+          test -f worker.js
+          test -f admin.html
+      - name: Apply scoped patch
+        run: node scripts/_apply_manual_reg_transfer_dates_fix.mjs
+      - name: Syntax and targeted tests
+        run: |
+          node --check worker.js
+          node scripts/test-manual-reg-transfer-dates.mjs
+          node scripts/test-admin-operator-simulation.mjs
+          node scripts/test-member-admin-edit.mjs
+          node scripts/test-member-login-token.mjs
+          node scripts/test-member-profile-system.mjs
+          if [ -f scripts/verify-data-contract.mjs ]; then node scripts/verify-data-contract.mjs --strict; fi
+      - name: Protect unrelated formal files
+        run: |
+          git diff --name-only | tee /tmp/changed.txt
+          grep -qx 'admin.html' /tmp/changed.txt
+          grep -qx 'worker.js' /tmp/changed.txt
+          grep -qx 'supabase/migrations/20260822200500_transfer_selected_dates_day_ops.sql' /tmp/changed.txt
+          if grep -Ev '^(admin\.html|worker\.js|supabase/migrations/20260822200500_transfer_selected_dates_day_ops\.sql)$' /tmp/changed.txt | grep -q .; then
+            echo 'Unexpected file changed'; exit 1;
+          fi
+      - name: Commit tested feature files only
+        run: |
+          rm -f scripts/_apply_manual_reg_transfer_dates_fix.mjs .github/workflows/_temp_manual_reg_transfer_dates.yml
+          git config user.name "2BL Safe Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add admin.html worker.js supabase/migrations/20260822200500_transfer_selected_dates_day_ops.sql scripts/test-manual-reg-transfer-dates.mjs
+          git add -u scripts/_apply_manual_reg_transfer_dates_fix.mjs .github/workflows/_temp_manual_reg_transfer_dates.yml
+          git diff --cached --quiet && { echo 'no patch output'; exit 1; }
+          git commit -m "fix: repair manual registration and multi-day transfer selection"
+          git push origin HEAD:agent/manual-reg-transfer-date-fix-20260822
