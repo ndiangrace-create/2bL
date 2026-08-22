@@ -1,0 +1,1 @@
+Guarded branch-only implementation trigger for manual registration / transfer date fix. No deployment, no production data write.
