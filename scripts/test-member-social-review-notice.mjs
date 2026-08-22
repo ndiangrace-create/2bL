@@ -21,4 +21,4 @@ assert.match(worker,/prepareRegistration/);
 assert.match(worker,/upsertMember/);
 
 console.log('member social review notice tests: PASS');
-// final validation trigger
+// final validation trigger 2
