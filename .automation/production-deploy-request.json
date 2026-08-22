@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "d38b3ca121553a3c16b571d4d2c13881f97746cf",
-  "expected_cloudflare_version": "8d6cd1f7-7977-4518-8fb5-4878157232e2",
-  "reason": "核准部署後台協助修正會員基本資料、會員修改 audit 與登入手機防靜默覆寫；僅限 2bl-v7"
+  "approved_source_commit": "1931ca52aecfcdda008aa54cb0c963ec7a080510",
+  "expected_cloudflare_version": "3b383dff-d161-41bb-bd55-5e1942107c1f",
+  "reason": "修正主辦代報名多日日期介面與轉場多日選日期；保留既有會員、報名、付款、退款、活動金、押金、排位、設備與財務資料，只部署 2bl-v7"
 }
