@@ -4699,10 +4699,20 @@ async function hPreviewRegistrationResolution(env,b){
   if(!await verifyStaff(env,b.email,b.token,T,'finance',b.sessionId))return jsonErr('無權限');
   const rows=await dbGet(env,'registrations',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.regId||'')}&select=*`);if(!rows.length)return jsonErr('找不到報名');
   const reg=rows[0],paidAmount=Math.max(await _formalPaidAmount(env,T,reg.id),safeNum(reg.paid_amount)),credit=safeNum(reg.activity_credit_applied),funded=paidAmount+credit,depositPaid=Math.min(funded,safeNum(reg.deposit)),activityPaid=Math.max(0,funded-depositPaid);
-  const sessions=await dbGet(env,'sessions',`tenant_id=eq.${T}&select=*`),targetSessions=sessions.filter(s=>String(s.id)!==String(reg.session_id)&&!['封存','已取消'].includes(String(s.status||''))).map(s=>({id:s.id,name:s.name||s.id,dateText:_sessionDateValue(s)}));
+  const sessions=await dbGet(env,'sessions',`tenant_id=eq.${T}&select=*`),targetSessions=sessions.filter(s=>String(s.id)!==String(reg.session_id)&&!['封存','已取消'].includes(String(s.status||''))).map(s=>({id:s.id,name:s.name||s.id,dateText:_sessionDateValue(s),dateCount:_sessionDates(s).length}));
   const out={regId:reg.id,stallCount:Math.max(1,safeNum(reg.stall_count)||1),paidAmount,activityCreditApplied:credit,fundedAmount:funded,activityPaid,depositPaid,creditCreated:funded,targetSessions};
   const target=sessions.find(s=>String(s.id)===String(b.targetSessionId||''));
-  if(target){const dates=_sessionDates(target),activityFee=calcFee(target,dates,out.stallCount),targetDeposit=safeNum(target.deposit),targetTotal=activityFee+targetDeposit;Object.assign(out,{targetActivityFee:activityFee,targetDeposit,targetTotal,appliedTotal:Math.min(funded,targetTotal),creditCreated:Math.max(0,activityPaid-activityFee),depositRefundDue:Math.max(0,depositPaid-targetDeposit),dueAmount:Math.max(0,activityFee-activityPaid)+Math.max(0,targetDeposit-depositPaid),targetDates:dates});}
+  if(target){
+    const rawDates=safeJson(target.dates_json,[])||[];
+    const availableTargetDates=rawDates.map(d=>{const obj=(d&&typeof d==='object')?d:{date:d};const date=String(obj.date||obj.value||obj.key||'').slice(0,10);return date?{date,label:String(obj.label||obj.name||date),fee:safeNum(obj.fee)}:null;}).filter(Boolean).filter((x,i,a)=>a.findIndex(y=>y.date===x.date)===i).sort((a,b)=>a.date.localeCompare(b.date));
+    const validDates=availableTargetDates.map(x=>x.date);
+    const requested=Array.isArray(b.targetDates)?b.targetDates.map(x=>String((x&&typeof x==='object')?(x.date||x.value||x.key||''):x).slice(0,10)).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i):[];
+    if(requested.some(x=>!validDates.includes(x)))return jsonErr('轉入日期不屬於目標場次，請重新選擇');
+    const dates=requested.length?requested:validDates;
+    if(!dates.length)return jsonErr('轉入場次沒有可用日期');
+    const activityFee=calcFee(target,dates,out.stallCount),targetDeposit=safeNum(target.deposit),targetTotal=activityFee+targetDeposit;
+    Object.assign(out,{targetActivityFee:activityFee,targetDeposit,targetTotal,appliedTotal:Math.min(funded,targetTotal),creditCreated:Math.max(0,activityPaid-activityFee),depositRefundDue:Math.max(0,depositPaid-targetDeposit),dueAmount:Math.max(0,activityFee-activityPaid)+Math.max(0,targetDeposit-depositPaid),targetDates:dates,availableTargetDates});
+  }
   return jsonOk(out);
 }
 async function hResolveRegistration(env,b){
@@ -4712,7 +4722,8 @@ async function hResolveRegistration(env,b){
   if(previewBody.ok===false)return previewResponse;const p=previewBody.data||previewBody;
   let target=null;if(mode==='transfer'){const rows=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.targetSessionId||'')}&select=*`);target=rows[0];if(!target)return jsonErr('找不到轉入場次');}
   if(!['transfer','credit'].includes(mode))return jsonErr('請選擇轉場或轉活動金');
-  const targetDates=target?_sessionDates(target):[];
+  const targetDates=target?(Array.isArray(p.targetDates)?p.targetDates:[]):[];
+  if(target&&!targetDates.length)return jsonErr('請至少選擇一個轉入日期');
   const result=await dbRpc(env,'resolve_registration_atomic',{
     p_tenant_id:T,p_registration_id:String(b.regId),p_mode:mode,p_target_session_id:target?target.id:null,p_new_registration_id:target?genId('REG'):null,p_target_event_id:target?target.event_id:null,p_target_dates:targetDates,
     p_target_activity_fee:target?calcFee(target,targetDates,p.stallCount):0,p_target_deposit:target?safeNum(target.deposit):0,p_paid_amount:p.paidAmount,p_activity_paid:p.activityPaid,p_deposit_paid:p.depositPaid,p_credit_created:p.creditCreated,p_deposit_refund_due:p.depositRefundDue||0,p_due_amount:p.dueAmount||0,p_note:String(b.note||''),p_actor_email:String(b.email||'')
