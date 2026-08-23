@@ -32,3 +32,4 @@ assert.equal(decide({members:[],regs:[{phone:'0912345678'}],authPhone:'098765432
 assert.equal(decide({members:[{phone:'0912345678'}],regs:[],authPhone:'0912345678',requestedPhone:'0912345678'}),'existing-ok');
 console.log(JSON.stringify({ok:true,feature:'first-member-registration',cases:7}));
 // final validation trigger only
+// validator rerun
