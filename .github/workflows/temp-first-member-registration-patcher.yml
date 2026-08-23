@@ -14,20 +14,19 @@ jobs:
         with:
           ref: agent/fix-first-member-registration-20260824
           fetch-depth: 0
-      - name: Apply scoped patch
+      - name: Apply scoped patch if still staged
         id: patch
         shell: bash
         run: |
           set -euo pipefail
           test "$GITHUB_HEAD_REF" = "agent/fix-first-member-registration-20260824"
-          if [ ! -f scripts/_apply_first_member_registration_fix.mjs ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
+          if [ -f scripts/_apply_first_member_registration_fix.mjs ]; then
+            echo "applied=true" >> "$GITHUB_OUTPUT"
+            node scripts/_apply_first_member_registration_fix.mjs
+          else
+            echo "applied=false" >> "$GITHUB_OUTPUT"
           fi
-          echo "skip=false" >> "$GITHUB_OUTPUT"
-          node scripts/_apply_first_member_registration_fix.mjs
-      - name: Validate closed loop and regressions
-        if: steps.patch.outputs.skip != 'true'
+      - name: Validate final branch closed loop and regressions
         run: |
           set -euo pipefail
           node --check worker.js
@@ -39,11 +38,15 @@ jobs:
           node scripts/test-admin-operator-simulation.mjs
           node scripts/verify-data-contract.mjs --strict
           git restore .automation/data-contract-report.json 2>/dev/null || true
-          changed="$({ git diff --name-only; git ls-files --others --exclude-standard; } | sort -u)"
-          printf '%s\n' "$changed"
-          test "$changed" = 'worker.js'
+          if [ "${{ steps.patch.outputs.applied }}" = "true" ]; then
+            changed="$({ git diff --name-only; git ls-files --others --exclude-standard; } | sort -u)"
+            printf '%s\n' "$changed"
+            test "$changed" = 'worker.js'
+          else
+            git diff --exit-code
+          fi
       - name: Commit tested runtime file
-        if: steps.patch.outputs.skip != 'true'
+        if: steps.patch.outputs.applied == 'true'
         run: |
           set -euo pipefail
           rm -f scripts/_apply_first_member_registration_fix.mjs
