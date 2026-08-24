@@ -1,6 +1,6 @@
 {
   "confirmation": "確認部署 2bl-v7",
-  "approved_source_commit": "443396cbc123331456399012221e4ddb5e4bfc7b",
+  "approved_source_commit": "631f3beb34c5eda1dd30439f8fd9209c1e2608c2",
   "expected_cloudflare_version": "3c6f5a45-8aa2-4097-b572-8e114834510b",
-  "reason": "會員申請與會員資料填寫新增 FB／IG／官網審核提醒；tuibile 社群三項皆空可儲存與送出但不自動通過審核；不寄信、不改既有會員、報名、付款、退款、活動金、押金、排位與財務資料；只部署 2bl-v7"
+  "reason": "修復 tuibile 真正首次會員建立與報名閉環：全新 Email＋手機可建立第一筆 member；既有 Email＋錯手機仍阻擋；歷史報名會員保留原手機驗證；profileComplete 僅由姓名＋手機＋品牌阻擋，FB／IG／官網維持提醒、不阻擋報名；不改付款、退款、活動金、押金、排位與既有會員資料；只部署 2bl-v7"
 }
