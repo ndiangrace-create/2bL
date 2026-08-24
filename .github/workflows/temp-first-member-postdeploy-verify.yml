@@ -1,0 +1,52 @@
+name: temp first member postdeploy verify
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    if: github.repository == 'ndiangrace-create/2bL' && github.head_ref == 'agent/verify-first-member-deploy-20260824'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      BOOTSTRAP_SOURCE: "false"
+      ALLOW_WORKER_DIFF: "false"
+      EXPECTED_WORKER_SOURCE_PATH: ".automation/wrangler-first-member-postdeploy/worker.js"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Validate final main feature
+        run: |
+          node --check worker.js
+          node scripts/test-first-member-registration.mjs
+          node scripts/test-member-profile-system.mjs
+          node scripts/test-member-login-token.mjs
+          node scripts/test-member-record-session.mjs
+          node scripts/test-member-social-review-notice.mjs
+      - name: Build exact main bundle
+        run: npx --yes wrangler@4.102.0 deploy --config wrangler.jsonc --dry-run --strict --outdir .automation/wrangler-first-member-postdeploy
+      - name: Verify live 2bl-v7 equals current main bundle
+        run: |
+          node scripts/cloudflare-readonly-audit.mjs
+          node - <<'NODE'
+          const fs=require('node:fs'); const d=JSON.parse(fs.readFileSync('.automation/cloudflare-audit.json','utf8'));
+          if(!d.worker_source_matches_deployment) throw new Error('live worker does not match main bundle');
+          if(d.worker_name!=='2bl-v7') throw new Error('wrong worker');
+          if(!d.routes.some(x=>x.pattern==='2b-love.com/s/*')) throw new Error('route missing');
+          console.log(JSON.stringify({ok:true,version:d.current_version_id,sha256:d.deployed_content_sha256,size:d.deployed_parts?.[0]?.size||0}));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: first-member-postdeploy-verify-${{ github.run_id }}
+          path: |
+            .automation/cloudflare-audit.json
+            .automation/wrangler-first-member-postdeploy/worker.js
+          if-no-files-found: warn
+          retention-days: 30
