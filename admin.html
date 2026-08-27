@@ -4393,12 +4393,32 @@ async function saveGroupBuyBulkPricing(sessionId){
 async function downloadSupplierOrders(sessionId){const d=await api({action:'sessionSupplierExport',sessionId}),rows=d&&d.rows||[];if(!rows.length){toast('目前沒有可供出貨的已付款訂單');return;}const heads=['訂單編號','收件人','電話','地址','取貨方式','商品','數量','出貨備註','轉單狀態','物流單號'],keys=['order_no','recipient_name','recipient_phone','shipping_address','fulfillment_type','product_name','quantity','fulfillment_note','transfer_status','tracking_no'],q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',csv='\uFEFF'+heads.map(q).join(',')+'\n'+rows.map(r=>keys.map(k=>q(r[k])).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='供應商出貨單_'+sessionId+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('已下載供應商出貨單｜不含售價與財務資料');}
 
 async function openGroupBuyBatchPlan(sessionId,restoring=false){if(!restoring)saveGroupBuyAdminView('batchPlan',sessionId);
- const d=await api({action:'groupBuyPromoterPlanData',sessionId}),ps=d.promoters||[],products=d.products||[];
+ const d=await api({action:'groupBuyPromoterPlanData',sessionId}),ps=d.promoters||[],products=d.products||[],candidates=d.candidates||[];
  const productInfo=products.map(p=>'<div class="sub"><b>'+safe(p.name)+'</b>：'+((p.defaultPromoterTiers||[]).length?(p.defaultPromoterTiers||[]).map(t=>'滿 '+t.minQty+' 件→結算 '+money(t.basePrice)).join('｜'):'尚未設定預設級距')+'</div>').join('');
- const rows=ps.map(p=>'<label class="report-card" style="display:flex;gap:10px;align-items:center"><input class="gb-plan-promoter" type="checkbox" value="'+attr(p.id)+'" checked style="width:18px;height:18px"><div><b>'+safe(p.displayName||p.member_id)+'</b><div class="sub">'+safe(p.referral_code||'')+'</div></div></label>').join('')||'<div class="empty">這場尚未有團購主</div>';
- const actions='<div class="card-actions"><button class="btn secondary" id="gbPlanSelectAll">全選</button><button class="btn" id="gbPlanApply">批次套用預設方案</button></div>';
- openPanel('團購主批次方案','勾選團購主後，一次套用此團購商品目前的預設結算級距。','<div class="report-card"><b>目前商品預設方案</b>'+productInfo+'</div>'+rows+actions);
- setTimeout(()=>{const a=$('gbPlanSelectAll'),b=$('gbPlanApply');if(a)a.onclick=()=>document.querySelectorAll('.gb-plan-promoter').forEach(x=>x.checked=true);if(b)b.onclick=()=>applyGroupBuyBatchPlan(sessionId)},0);
+
+ const candidateHtml=candidates.length
+  ?'<h3>可指派到這場的已核准團購主</h3>'+candidates.map(a=>'<div class="report-card" style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><b>'+safe(a.displayName||a.member_email)+'</b><div class="sub">團購主 ID：'+safe(a.requested_referral_code||'')+'｜'+safe(a.memberEmail||a.member_email||'')+'｜'+safe(a.memberPhone||'')+'</div></div><button class="btn yellow small" data-quick-assign="'+attr(a.id)+'">指派到這場</button></div>').join('')
+  :'<div class="empty">目前沒有其他已核准、尚未指派到這場的團購主</div>';
+
+ const rows=ps.map(p=>'<label class="report-card" style="display:flex;gap:10px;align-items:center"><input class="gb-plan-promoter" type="checkbox" value="'+attr(p.id)+'" checked style="width:18px;height:18px"><div><b>'+safe(p.displayName||p.member_id)+'</b><div class="sub">'+safe(p.referral_code||'')+'</div></div></label>').join('')||'<div class="empty">這場尚未有已啟用團購主</div>';
+
+ const actions=ps.length?'<div class="card-actions"><button class="btn secondary" id="gbPlanSelectAll">全選</button><button class="btn" id="gbPlanApply">批次套用預設方案</button></div>':'';
+ openPanel('團購主批次方案','雙向都可以操作：可以從申請人選團購，也可以從這一場直接挑已核准團購主加入。','<div class="report-card"><b>目前商品預設方案</b>'+productInfo+'</div>'+candidateHtml+'<h3 style="margin-top:18px">這場已啟用團購主</h3>'+rows+actions);
+
+ setTimeout(()=>{
+  document.querySelectorAll('[data-quick-assign]').forEach(el=>el.onclick=()=>quickAssignGroupBuyPromoter(el.dataset.quickAssign,sessionId));
+  const a=$('gbPlanSelectAll'),b=$('gbPlanApply');
+  if(a)a.onclick=()=>document.querySelectorAll('.gb-plan-promoter').forEach(x=>x.checked=true);
+  if(b)b.onclick=()=>applyGroupBuyBatchPlan(sessionId);
+ },0);
+}
+async function quickAssignGroupBuyPromoter(appId,sessionId){
+ try{
+  const r=await apiPost({action:'saveSessionPromoter',applicationId:appId,sessionId,customerPrices:{}});
+  if(r.error)throw new Error(r.error);
+  toast('已指派團購主到這場');
+  await openGroupBuyBatchPlan(sessionId,true);await loadGroupBuyAdmin();
+ }catch(e){toast('指派失敗：'+(e.message||e),10000)}
 }
 async function applyGroupBuyBatchPlan(sessionId){const ids=[...document.querySelectorAll('.gb-plan-promoter:checked')].map(x=>x.value);if(!ids.length){toast('請至少選一位團購主');return}const r=await apiPost({action:'batchApplyPromoterPlan',sessionId,promoterIds:ids});if(r.error)throw new Error(r.error);toast('已批次更新 '+num(r.updated)+' 位團購主');closeAllPanels();await loadGroupBuyAdmin()}
 
@@ -4414,9 +4434,14 @@ async function openGroupBuyPromoterApplications(defaultSessionId='',restoring=fa
 }
 async function reviewGroupBuyApplication(id,status){try{const r=await apiPost({action:'reviewSessionManagerApplication',id,status});if(r.error)throw new Error(r.error);toast('已更新申請');await openGroupBuyPromoterApplications('',true)}catch(e){toast('更新失敗：'+(e.message||e),8000)}}
 async function openPromoterPriceSetup(appId){
+ try{const sc=await api({action:'groupBuyPromoterSchemaCheck'});const miss=Object.entries(sc||{}).filter(([k,v])=>v!==true).map(([k])=>k.replace(/^app_/,''));
+ if(miss.length){toast('團購主資料庫尚未補齊：缺少 '+miss.join('、'),10000);return}}catch(e){}
+
  const app=(GroupBuyPromoterAdminData?.applications||[]).find(x=>String(x.id)===String(appId)),sid=$('gba_session_'+appId)?.value;if(!app||!sid){toast('請選團購');return}
  const d=await api({action:'sessionProductsAdmin',sessionId:sid}),ps=d.products||[];
- const rows=ps.map(p=>`<div class="report-card"><b>${safe(p.name)}</b><div class="sub">團購售價 ${money(p.price||0)}｜預設團購主級距：${safeJson(p.default_promoter_tiers_json,[]).length?safeJson(p.default_promoter_tiers_json,[]).map(t=>'滿 '+t.minQty+'件→'+money(t.basePrice)).join('｜'):'尚未設定'}</div><div class="form-field"><label>專屬連結售價</label><input class="prom-customer" data-id="${attr(p.id)}" type="number" min="0" value="${attr(p.price||0)}"></div></div>`).join('');
+ const missing=ps.filter(p=>!safeJson(p.default_promoter_tiers_json,[]).length);
+ const rows=ps.map(p=>`<div class="report-card"><b>${safe(p.name)}</b><div class="sub">團購售價 ${money(p.price||0)}｜團購主結算級距：${safeJson(p.default_promoter_tiers_json,[]).length?safeJson(p.default_promoter_tiers_json,[]).map(t=>'滿 '+t.minQty+'件→'+money(t.basePrice)).join('｜'):'尚未設定'}</div><div class="form-field"><label>消費者專屬售價</label><input class="prom-customer" data-id="${attr(p.id)}" type="number" min="0" value="${attr(p.price||0)}"></div></div>`).join('');
+ if(missing.length){toast('請先設定團購主結算級距：'+missing.map(x=>x.name).join('、'),10000);return}
  openPanel('指派團購主','團購主 ID 由申請人填寫。這裡只選擇團購與確認價格方案。',`<div class="report-card"><b>${safe(app.brand_name||app.display_name||app.member_name||app.member_email)}</b><div class="sub">姓名：${safe(app.member_name||'')}｜電話：${safe(app.member_phone||'')}｜帳號：${safe(app.member_email||'')}</div><div style="margin-top:6px"><b>團購主 ID：</b>${safe(app.requested_referral_code||'')}</div></div>${rows}<button id="savePromoterAssignmentBtn" class="btn">指派並產生專屬連結</button>`);
  setTimeout(()=>{const x=$('savePromoterAssignmentBtn');if(x)x.onclick=()=>savePromoterAssignment(appId,sid)},0);
 }
