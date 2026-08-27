@@ -4129,6 +4129,25 @@ async function openSessionProducts(sid,restoring=false){if(!restoring)saveGroupB
  const add='<article class="gb-product-card gb-product-card-add" data-sid="'+attr(sid)+'" onclick="openSessionProductForm(this.dataset.sid,\'\')"><div><div style="font-size:34px;line-height:1">＋</div><div style="margin-top:8px">新增商品</div><div class="sub" style="margin-top:6px">點一下快速建置</div></div></article>';
  openPanel('團購商品','直式商品卡會依螢幕寬度自動排列；點商品直接開啟大卡片編輯。','<div class="gb-product-grid">'+cards+add+'</div>');
 }
+const GROUPBUY_PRODUCT_CATEGORIES=['冷凍食品','常溫食品','零食甜點','飲品','生鮮','生活用品','美妝保養','親子','寵物','3C家電','服飾配件','其他'];
+let GroupBuyAIProductSuggestion=null;
+function groupBuyCategoryOptions(selected=''){
+ const s=String(selected||'').trim(),rows=[...GROUPBUY_PRODUCT_CATEGORIES];
+ if(s&&!rows.includes(s))rows.push(s);
+ return '<option value="">請選分類</option>'+rows.map(x=>'<option value="'+attr(x)+'" '+(x===s?'selected':'')+'>'+safe(x)+'</option>').join('');
+}
+function badOldAIProductText(v){
+ const s=String(v||'').toLowerCase();
+ return ["please provide the image","provide the image","i can't see the image","i cannot see the image","no image provided","請提供圖片","未提供圖片"].some(x=>s.includes(x));
+}
+function applyGroupBuyAISuggestion(){
+ const r=GroupBuyAIProductSuggestion;if(!r)return;
+ if(r.title)$('sp_name').value=r.title;
+ if(r.category)$('sp_category').value=r.category;
+ if(r.description)$('sp_desc').value=r.description;
+ toast('已套用 AI 建議，請確認內容後再儲存');
+}
+
 async function openSessionProductForm(sid,pid='',restoring=false){if(!restoring)saveGroupBuyAdminView('productForm',sid,pid);
  let p={};if(pid){const d=await api({action:'sessionProductsAdmin',sessionId:sid});p=(d.products||[]).find(x=>String(x.id)===String(pid))||{};}
  const tiers=safeJson(p.quantity_tiers_json||p.quantityTiers,[]),promTiers=safeJson(p.default_promoter_tiers_json||p.defaultPromoterTiers,[]),imgs=safeJson(p.images_json||p.images,[]);if(!imgs.length&&p.image_url)imgs.push(p.image_url);
@@ -4137,7 +4156,7 @@ async function openSessionProductForm(sid,pid='',restoring=false){if(!restoring)
   +'<div class="form-field full"><label>商品圖片（可多張）</label><div id="sp_preview" style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:10px"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn secondary gb-ai-btn">上傳多張圖片<input id="sp_img" type="file" accept="image/*" multiple hidden onchange="uploadSessionProductImages(this)"></label><button id="sp_ai_btn" type="button" class="btn secondary gb-ai-btn" onclick="analyzeSessionProductImages(false)">✨ AI 辨識商品</button></div><input id="sp_urls" type="hidden" value="'+attr(JSON.stringify(imgs))+'"><div class="sub" style="margin-top:7px">第一張為商品卡封面。AI 只會建議名稱、說明與分類，仍由你確認後儲存。</div></div>'
   +'<div id="sp_ai_note" class="form-field full gb-ai-box" style="display:none"></div>'
   +'<div class="form-field full"><label>商品名稱</label><input id="sp_name" value="'+attr(p.name||'')+'" placeholder="AI 可從圖片協助辨識"></div>'
-  +'<div class="form-field"><label>商品分類</label><input id="sp_category" value="'+attr(p.category||'')+'" placeholder="例如：冷凍食品"></div>'
+  +'<div class="form-field"><label>商品分類</label><select id="sp_category">'+groupBuyCategoryOptions(p.category||'')+'</select></div>'
   +'<div class="form-field"><label>原價</label><input id="sp_original" type="number" min="0" value="'+attr(p.original_price||0)+'"></div>'
   +'<div class="form-field"><label>團購售價</label><input id="sp_price" type="number" min="0" value="'+attr(p.price||0)+'"></div>'
   +'<div class="form-field"><label>供應成本（僅平台總管理員）</label><input id="sp_cost" type="number" min="0" value="'+attr(p.supply_cost||0)+'"></div>'
@@ -4147,13 +4166,48 @@ async function openSessionProductForm(sid,pid='',restoring=false){if(!restoring)
   +'<div class="form-field full"><label>買家數量優惠</label><div id="sp_tiers"></div><button type="button" class="btn secondary small" onclick="addSessionProductTier()">＋ 新增買家級距</button></div>'
   +'<div class="form-field full"><label>團購主預設結算級距</label><div id="sp_prom_tiers"></div><button type="button" class="btn secondary small" onclick="addDefaultPromoterTier()">＋ 新增團購主級距</button><div class="sub">新核准團購主會自動套用。例：1件結算650、10件結算620、30件結算580。</div></div>'
   +'</div></div><button class="btn gb-primary-save" onclick="saveSessionProductForm(\''+attr(sid)+'\')">儲存商品</button></div>');
+ if(badOldAIProductText($('sp_desc')?.value))$('sp_desc').value='';
  renderSessionProductImages();tiers.forEach(t=>addSessionProductTier(t.minQty,t.unitPrice));promTiers.forEach(t=>addDefaultPromoterTier(t.minQty,t.basePrice));
 }
 function sessionProductImages(){return safeJson($('sp_urls')?.value,[])}
 function renderSessionProductImages(){const box=$('sp_preview'),imgs=sessionProductImages();if(!box)return;box.innerHTML=imgs.length?imgs.map((u,i)=>'<div style="width:96px;aspect-ratio:1;border:1px solid var(--line);border-radius:9px;overflow:hidden;position:relative"><img src="'+attr(u)+'" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="removeSessionProductImage('+i+')" style="position:absolute;right:4px;top:4px;border:0;border-radius:99px;width:30px;height:30px;font-size:18px">×</button></div>').join(''):'<div class="sub">尚未上傳</div>'}
 function removeSessionProductImage(i){const a=sessionProductImages();a.splice(i,1);$('sp_urls').value=JSON.stringify(a);renderSessionProductImages()}
 async function uploadSessionProductImages(input){const fs=[...(input?.files||[])].slice(0,12);if(!fs.length)return;try{toast('商品圖片上傳中…');const urls=sessionProductImages();for(const f of fs){const d=await makeSquarePaddedImage(f),r=await apiPost({action:'uploadCover',image:d});if(r.error||!r.url)throw new Error(r.error||'圖片上傳失敗');urls.push(r.url)}$('sp_urls').value=JSON.stringify([...new Set(urls)].slice(0,12));renderSessionProductImages();toast('商品圖片已上傳');if(!$('sp_name')?.value.trim()&&!$('sp_desc')?.value.trim())await analyzeSessionProductImages(true)}catch(e){toast('商品圖片上傳失敗：'+(e.message||e),7000)}}
-async function analyzeSessionProductImages(auto=false){const urls=sessionProductImages().slice(0,3);if(!urls.length){toast('請先上傳商品圖片');return}const btn=$('sp_ai_btn'),old=btn?.textContent;if(btn){btn.disabled=true;btn.textContent='AI 辨識中…'}try{const r=await apiPost({action:'analyzeGroupBuyProductImages',imageUrls:urls});if(r.error)throw new Error(r.error);const existing=!!($('sp_name')?.value.trim()||$('sp_desc')?.value.trim()||$('sp_category')?.value.trim());let apply=auto&&!existing;if(!apply&&existing)apply=confirm('AI 已產生商品建議，要覆蓋目前的商品名稱、說明與分類嗎？');if(!existing)apply=true;if(apply){if(r.title)$('sp_name').value=r.title;if(r.description)$('sp_desc').value=r.description;if(r.category)$('sp_category').value=r.category}const note=$('sp_ai_note');if(note){const facts=(r.visibleFacts||[]).map(x=>'• '+safe(x)).join('<br>'),unc=(r.uncertain||[]).map(x=>'• '+safe(x)).join('<br>');note.style.display='block';note.innerHTML='<b>AI 圖片辨識結果</b>'+(facts?'<div style="margin-top:6px">圖片可確認：<br>'+facts+'</div>':'')+(unc?'<div style="margin-top:6px;color:#8a5b20">請人工確認：<br>'+unc+'</div>':'')+'<div class="sub" style="margin-top:6px">AI 不會自動填價格、成本、庫存或未看清楚的商品規格。</div>'}toast('AI 商品建議已完成')}catch(e){toast('AI 辨識失敗：'+(e.message||e),8000)}finally{if(btn){btn.disabled=false;btn.textContent=old||'✨ AI 辨識商品'}}}
+async function analyzeSessionProductImages(auto=false){
+ const urls=sessionProductImages().slice(0,3);if(!urls.length){toast('請先上傳商品圖片');return}
+ const btn=$('sp_ai_btn'),old=btn?.textContent;if(btn){btn.disabled=true;btn.textContent='AI 辨識中…'}
+ try{
+  const r=await apiPost({action:'analyzeGroupBuyProductImages',imageUrls:urls});if(r.error)throw new Error(r.error);
+  GroupBuyAIProductSuggestion=r;
+  const note=$('sp_ai_note');
+  const facts=(r.visibleFacts||[]).map(x=>'• '+safe(x)).join('<br>');
+  const unc=(r.uncertain||[]).map(x=>'• '+safe(x)).join('<br>');
+  if(note){
+   note.style.display='block';
+   note.innerHTML='<b>AI 商品建議</b>'
+    +'<div style="margin-top:8px"><b>名稱：</b>'+safe(r.title||'')+'</div>'
+    +'<div><b>分類：</b>'+safe(r.category||'其他')+'</div>'
+    +'<div style="margin-top:6px"><b>說明：</b>'+safe(r.description||'')+'</div>'
+    +(facts?'<div style="margin-top:8px"><b>圖片可確認：</b><br>'+facts+'</div>':'')
+    +(unc?'<div style="margin-top:8px;color:#8a5b20"><b>請人工確認：</b><br>'+unc+'</div>':'')
+    +'<div class="sub" style="margin-top:8px">AI 信心：'+safe(r.confidence||'medium')+'｜已分析 '+num(r.sourceImages||urls.length)+' 張圖片</div>'
+    +'<button type="button" class="btn gb-ai-btn" style="margin-top:10px" onclick="applyGroupBuyAISuggestion()">套用 AI 建議</button>';
+  }
+
+  const nameEmpty=!$('sp_name')?.value.trim();
+  const catEmpty=!$('sp_category')?.value.trim();
+  const descEmpty=!$('sp_desc')?.value.trim()||badOldAIProductText($('sp_desc')?.value);
+  if(auto&&(nameEmpty||catEmpty||descEmpty)){
+   if(nameEmpty&&r.title)$('sp_name').value=r.title;
+   if(catEmpty&&r.category)$('sp_category').value=r.category;
+   if(descEmpty&&r.description)$('sp_desc').value=r.description;
+   toast('AI 已自動填入可確認的商品資料，請檢查後儲存');
+  }else{
+   toast('AI 商品建議已完成，請按「套用 AI 建議」');
+  }
+ }catch(e){toast('AI 辨識失敗：'+(e.message||e),8000)}
+ finally{if(btn){btn.disabled=false;btn.textContent=old||'✨ AI 辨識商品'}}
+}
 function addSessionProductTier(minQty='',unitPrice=''){const box=$('sp_tiers');if(!box)return;const row=document.createElement('div');row.className='form-grid sp-tier-row';row.innerHTML='<div class="form-field"><label>買家滿幾個</label><input class="sp-tier-min" type="number" min="2" value="'+attr(minQty)+'"></div><div class="form-field"><label>每個多少錢</label><input class="sp-tier-price" type="number" min="0" value="'+attr(unitPrice)+'"></div><button type="button" class="btn danger small" onclick="this.parentElement.remove()">刪除</button>';box.appendChild(row)}
 function collectSessionProductTiers(){return [...document.querySelectorAll('.sp-tier-row')].map(r=>({minQty:Number(r.querySelector('.sp-tier-min')?.value||0),unitPrice:Number(r.querySelector('.sp-tier-price')?.value||0)})).filter(x=>x.minQty>=2&&x.unitPrice>=0).sort((a,b)=>a.minQty-b.minQty)}
 function addDefaultPromoterTier(minQty='',basePrice=''){const box=$('sp_prom_tiers');if(!box)return;const row=document.createElement('div');row.className='form-grid sp-prom-tier-row';row.innerHTML='<div class="form-field"><label>團購主累積滿幾件</label><input class="sp-prom-min" type="number" min="1" value="'+attr(minQty)+'"></div><div class="form-field"><label>結算價／件</label><input class="sp-prom-price" type="number" min="0" value="'+attr(basePrice)+'"></div><button type="button" class="btn danger small" onclick="this.parentElement.remove()">刪除</button>';box.appendChild(row)}
