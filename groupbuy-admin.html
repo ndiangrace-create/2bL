@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>團GO</title>
+<style>
+:root{--g:#DDEAD1;--line:#e7e7e2;--muted:#666;--bg:#fafaf8}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:var(--bg);color:#111}button{font:inherit}
+#app{display:none}
+.top{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:20}
+.topin{max-width:920px;margin:auto;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;justify-content:center;min-width:62px;height:38px;padding:0 10px;border:2px solid #111;border-radius:11px;font-weight:1000;font-size:20px}
+.title{font-weight:950}.wrap{max-width:920px;margin:auto;padding:16px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat,.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}.stat b{display:block;font-size:23px;margin-top:4px}.muted{color:var(--muted);font-size:13px}
+.card{margin-bottom:12px}.card h2{margin:0 0 5px;font-size:18px}.linkrow{display:flex;gap:8px;margin-top:10px}.linkrow input{flex:1;min-width:0;padding:10px;border:1px solid #ccc;border-radius:9px}.btn{border:0;border-radius:9px;padding:10px 12px;font-weight:900;background:var(--g)}
+.order{padding:9px 0;border-bottom:1px solid var(--line)}.order:last-child{border:0}.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id=app>
+<header class=top><div class=topin><div class=logo onclick="location.href='groupbuy.html'">團GO</div><div class=title>我的團購</div></div></header>
+<main class=wrap>
+<div class=stats><div class=stat><span class=muted>預估收益</span><b id=est>NT$ 0</b></div><div class=stat><span class=muted>已付款有效收益</span><b id=conf>NT$ 0</b></div></div>
+<div id=sessions></div>
+<div class=card><h2>我的訂單</h2><div id=orders></div></div>
+</main></div>
+<script>
+const API='https://2bl-v7.ndiangrace.workers.dev',T='tuibile',TK='2bl_member_token';
+function tk(){return localStorage.getItem(TK)||''}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function money(n){return'NT$ '+Number(n||0).toLocaleString()}
+async function post(action,data={}){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,tenant:T,...data}),cache:'no-store'}).then(r=>r.json())}
+function copyText(v){navigator.clipboard?.writeText(v).then(()=>alert('已複製連結')).catch(()=>prompt('複製連結',v))}
+async function boot(){
+ if(!tk()){location.replace('groupbuy.html');return}
+ let j;try{j=await post('myPromoterDashboard',{memberToken:tk()})}catch(e){location.replace('groupbuy.html');return}
+ if(j.error||!Array.isArray(j.promoters)||!j.promoters.length){location.replace('groupbuy.html');return}
+ document.getElementById('app').style.display='block';
+ est.textContent=money(j.estimatedEarning);conf.textContent=money(j.confirmedEarning);
+ const sm=new Map((j.sessions||[]).map(s=>[s.id,s]));
+ sessions.innerHTML=j.promoters.map(p=>{const s=sm.get(p.session_id)||{},url=location.origin+'/groupbuy.html?ref='+encodeURIComponent(p.referral_code||'');const count=(j.orders||[]).filter(o=>o.session_id===p.session_id).length;return `<section class=card><h2>${esc(s.name||'團購場次')}</h2><div class=muted>有效訂單 ${count} 筆</div><div class=linkrow><input readonly value="${esc(url)}"><button class=btn onclick='copyText(${JSON.stringify(url)})'>複製</button></div></section>`}).join('');
+ const earningByOrder={};for(const it of (j.items||[]))earningByOrder[it.order_id]=(earningByOrder[it.order_id]||0)+Number(it.promoter_earning||0);
+ orders.innerHTML=(j.orders||[]).length?(j.orders||[]).map(o=>`<div class=order><b>${esc(sm.get(o.session_id)?.name||'團購')}</b><div class=muted>${esc(o.created_at||'')}｜${esc(o.payment_status||'')}｜收益 ${money(earningByOrder[o.id]||0)}</div></div>`).join(''):'<div class=muted>目前還沒有訂單</div>';
+}
+boot();
+</script>
+</body></html>
