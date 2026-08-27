@@ -1274,6 +1274,15 @@
 .gb-product-card-img img{width:100%;height:100%;object-fit:cover}.gb-product-card-body{padding:13px;display:flex;flex-direction:column;gap:7px;flex:1}.gb-product-card-title{font-size:18px;font-weight:950;line-height:1.35;color:#171717}.gb-product-card-price{font-size:19px;font-weight:950;color:#171717}.gb-product-card-meta{font-size:15px;line-height:1.55;color:#4d4d4d}.gb-product-card-add{border:2px dashed #a9c7c0;background:#f6fbf9;align-items:center;justify-content:center;text-align:center;min-height:300px;font-size:19px;font-weight:950;color:#315f57}.gb-product-editor{max-width:980px;margin:0 auto;font-size:16px}.gb-product-editor .form-field>label{font-size:16px;font-weight:900}.gb-product-editor input,.gb-product-editor textarea,.gb-product-editor select{font-size:17px;min-height:46px}.gb-ai-box{border:1px solid #cfe0db;background:#f7fbfa;border-radius:12px;padding:12px;margin:8px 0}.gb-ai-btn{min-height:46px;font-size:16px;font-weight:950}.gb-primary-save{min-height:50px;font-size:18px;font-weight:950;padding:12px 18px}
 @media(max-width:720px){.gb-product-grid{grid-template-columns:repeat(auto-fit,minmax(min(160px,100%),1fr));gap:10px}.gb-product-card{min-height:290px}.gb-product-card-add{min-height:290px}.gb-product-card-title{font-size:17px}.gb-product-card-price{font-size:18px}.gb-product-card-meta{font-size:14px}}
 
+
+.gb-bulk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
+.gb-bulk-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.gb-bulk-card h4{margin:0;font-size:18px}.gb-bulk-card label{font-size:15px;font-weight:850}
+.gb-bulk-card input,.gb-bulk-card textarea,.gb-bulk-card select{font-size:16px;min-height:42px}
+.gb-bulk-images{display:flex;gap:6px;overflow:auto;margin:8px 0}.gb-bulk-images img{width:64px;height:64px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}
+.gb-bulk-actions{display:flex;gap:8px;flex-wrap:wrap;position:sticky;bottom:0;background:rgba(250,249,246,.96);padding:10px 0;z-index:2}
+@media(max-width:700px){.gb-bulk-grid{grid-template-columns:1fr}.gb-bulk-card input,.gb-bulk-card textarea,.gb-bulk-card select{font-size:17px;min-height:46px}}
+
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg">
 <style>
@@ -4128,8 +4137,9 @@ async function saveGroupBuyNow(id,btn,creating=false){
 async function openSessionProducts(sid,restoring=false){if(!restoring)saveGroupBuyAdminView('products',sid);try{const sc=await api({action:'groupBuySchemaCheck'});const miss=Object.entries(sc||{}).filter(([k,v])=>v!==true).map(([k])=>k);if(miss.length){toast('團購資料庫尚未更新完成：缺少 '+miss.join('、'),9000);}}catch(e){}
  let rows=[];try{rows=(await api({action:'sessionProductsAdmin',sessionId:sid})).products||[]}catch(e){}
  const cards=rows.map(p=>{const imgs=safeJson(p.images_json,[]),cover=imgs[0]||p.image_url||'',buyer=safeJson(p.quantity_tiers_json,[]),prom=safeJson(p.default_promoter_tiers_json,[]);return '<article class="gb-product-card" data-sid="'+attr(sid)+'" data-pid="'+attr(p.id)+'" onclick="openSessionProductForm(this.dataset.sid,this.dataset.pid)"><div class="gb-product-card-img">'+(cover?'<img src="'+attr(cover)+'" alt="">':'尚無圖片')+'</div><div class="gb-product-card-body"><div class="gb-product-card-title">'+safe(p.name)+'</div>'+(p.category?'<div class="sub">'+safe(p.category)+'</div>':'')+'<div class="gb-product-card-price">團購 '+money(p.price||0)+'</div><div class="gb-product-card-meta">原價 '+money(p.original_price||0)+'<br>庫存 '+(p.stock_qty==null?'不限':num(p.stock_qty))+'<br>圖片 '+num(imgs.length||(cover?1:0))+' 張｜買家優惠 '+num(buyer.length)+' 組｜團購主級距 '+num(prom.length)+' 組</div></div></article>'}).join('');
- const add='<article class="gb-product-card gb-product-card-add" data-sid="'+attr(sid)+'" onclick="openSessionProductForm(this.dataset.sid,\'\')"><div><div style="font-size:34px;line-height:1">＋</div><div style="margin-top:8px">新增商品</div><div class="sub" style="margin-top:6px">點一下快速建置</div></div></article>';
- openPanel('團購商品','直式商品卡會依螢幕寬度自動排列；點商品直接開啟大卡片編輯。','<div class="gb-product-grid">'+cards+add+'</div>');
+ const add='<article class="gb-product-card gb-product-card-add" data-sid="'+attr(sid)+'" onclick="openSessionProductForm(this.dataset.sid,\'\')"><div><div style="font-size:34px;line-height:1">＋</div><div style="margin-top:8px">新增單一商品</div><div class="sub" style="margin-top:6px">完整快速建置</div></div></article>';
+ const bulk='<article class="gb-product-card gb-product-card-add" data-sid="'+attr(sid)+'" onclick="openBulkSessionProducts(this.dataset.sid)"><div><div style="font-size:34px;line-height:1">＋＋</div><div style="margin-top:8px">批次新增商品</div><div class="sub" style="margin-top:6px">一次建立多個商品</div></div></article>';
+ openPanel('團購商品','直式商品卡會依螢幕寬度自動排列；可單一新增，也可以一次批次建立多個商品。','<div class="gb-product-grid">'+cards+add+bulk+'</div>');
 }
 const GROUPBUY_PRODUCT_CATEGORIES=['冷凍食品','常溫食品','零食甜點','飲品','生鮮','生活用品','美妝保養','親子','寵物','3C家電','服飾配件','其他'];
 let GroupBuyAIProductSuggestion=null;
@@ -4148,6 +4158,73 @@ function applyGroupBuyAISuggestion(){
  if(r.category)$('sp_category').value=r.category;
  if(r.description)$('sp_desc').value=r.description;
  toast('已套用 AI 建議，請確認內容後再儲存');
+}
+
+let BulkProductSessionId='',BulkProductBatchKey='',BulkProductDrafts=[];
+function newBulkProductDraft(){
+ return {id:'BPD_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name:'',category:'',description:'',images:[],originalPrice:'',price:'',supplyCost:'',stockQty:'',perMemberLimit:''};
+}
+function bulkDraft(id){return BulkProductDrafts.find(x=>x.id===id)}
+function bulkSet(id,key,value){const d=bulkDraft(id);if(d)d[key]=value}
+function bulkCategoryOptions(selected=''){return groupBuyCategoryOptions(selected)}
+function renderBulkProductDrafts(){
+ const box=$('bulkProductGrid');if(!box)return;
+ box.innerHTML=BulkProductDrafts.map((d,i)=>'<section class="gb-bulk-card">'
+  +'<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h4>商品 '+(i+1)+'</h4><button type="button" class="btn danger small" data-bulk-remove="'+attr(d.id)+'">刪除</button></div>'
+  +'<div class="gb-bulk-images">'+(d.images.length?d.images.map(u=>'<img src="'+attr(u)+'" alt="">').join(''):'<span class="sub">尚未上傳圖片</span>')+'</div>'
+  +'<div style="display:flex;gap:6px;flex-wrap:wrap"><label class="btn secondary small">上傳圖片<input type="file" accept="image/*" multiple hidden data-bulk-upload="'+attr(d.id)+'"></label><button type="button" class="btn secondary small" data-bulk-ai="'+attr(d.id)+'">✨ AI 辨識</button></div>'
+  +'<div class="form-field"><label>商品名稱 *</label><input value="'+attr(d.name)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="name"></div>'
+  +'<div class="form-field"><label>分類</label><select data-bulk-id="'+attr(d.id)+'" data-bulk-key="category">'+bulkCategoryOptions(d.category)+'</select></div>'
+  +'<div class="form-field"><label>商品說明</label><textarea rows="3" data-bulk-id="'+attr(d.id)+'" data-bulk-key="description">'+safe(d.description)+'</textarea></div>'
+  +'<div class="form-grid"><div class="form-field"><label>原價</label><input type="number" min="0" value="'+attr(d.originalPrice)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="originalPrice"></div>'
+  +'<div class="form-field"><label>團購售價</label><input type="number" min="0" value="'+attr(d.price)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="price"></div>'
+  +'<div class="form-field"><label>供應成本</label><input type="number" min="0" value="'+attr(d.supplyCost)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="supplyCost"></div>'
+  +'<div class="form-field"><label>庫存（空白不限）</label><input type="number" min="0" value="'+attr(d.stockQty)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="stockQty"></div></div>'
+  +'<div class="sub">買家優惠與團購主級距可在建立後點商品卡快速補充。</div>'
+  +'</section>').join('');
+ box.querySelectorAll('[data-bulk-id]').forEach(el=>{el.oninput=()=>bulkSet(el.dataset.bulkId,el.dataset.bulkKey,el.value);el.onchange=el.oninput});
+ box.querySelectorAll('[data-bulk-remove]').forEach(el=>el.onclick=()=>bulkRemoveDraft(el.dataset.bulkRemove));
+ box.querySelectorAll('[data-bulk-ai]').forEach(el=>el.onclick=()=>bulkAnalyzeDraft(el.dataset.bulkAi));
+ box.querySelectorAll('[data-bulk-upload]').forEach(el=>el.onchange=()=>bulkUploadDraftImages(el.dataset.bulkUpload,el));
+}
+function openBulkSessionProducts(sid){
+ saveGroupBuyAdminView('products',sid);BulkProductSessionId=sid;BulkProductBatchKey=(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random()).replace(/[^A-Za-z0-9]/g,'');
+ BulkProductDrafts=[newBulkProductDraft(),newBulkProductDraft(),newBulkProductDraft()];
+ openPanel('批次新增商品','一次先建立多個商品；全部送出時由資料庫交易一次完成，任一商品失敗整批不寫入。','<div id="bulkProductGrid" class="gb-bulk-grid"></div><div class="gb-bulk-actions"><button id="bulkAddProduct" class="btn secondary">＋ 再新增一個</button><button id="bulkSaveProducts" class="btn">全部建立商品</button></div>');
+ renderBulkProductDrafts();
+ $('bulkAddProduct').onclick=()=>{if(BulkProductDrafts.length>=30)return toast('一次最多 30 個商品');BulkProductDrafts.push(newBulkProductDraft());renderBulkProductDrafts()};
+ $('bulkSaveProducts').onclick=bulkSaveAllProducts;
+}
+function bulkRemoveDraft(id){if(BulkProductDrafts.length<=1)return toast('至少保留一個商品');BulkProductDrafts=BulkProductDrafts.filter(x=>x.id!==id);renderBulkProductDrafts()}
+async function bulkUploadDraftImages(id,input){
+ const d=bulkDraft(id),fs=[...(input?.files||[])].slice(0,12);if(!d||!fs.length)return;
+ try{
+  toast('商品圖片上傳中…');
+  for(const f of fs){const image=await makeSquarePaddedImage(f),r=await apiPost({action:'uploadCover',image});if(r.error||!r.url)throw new Error(r.error||'圖片上傳失敗');d.images.push(r.url)}
+  d.images=[...new Set(d.images)].slice(0,12);renderBulkProductDrafts();
+  if(!d.name&&!d.description)await bulkAnalyzeDraft(id,true);
+ }catch(e){toast('圖片上傳失敗：'+(e.message||e),8000)}
+}
+async function bulkAnalyzeDraft(id,auto=false){
+ const d=bulkDraft(id);if(!d||!d.images.length)return toast('請先上傳商品圖片');
+ try{
+  const r=await apiPost({action:'analyzeGroupBuyProductImages',imageUrls:d.images.slice(0,3)});if(r.error)throw new Error(r.error);
+  if(auto||confirm('AI 已辨識完成，要套用到商品名稱、分類與說明嗎？')){if(r.title)d.name=r.title;if(r.category)d.category=r.category;if(r.description)d.description=r.description;renderBulkProductDrafts()}
+  toast('AI 商品辨識完成');
+ }catch(e){toast('AI 辨識失敗：'+(e.message||e),8000)}
+}
+async function bulkSaveAllProducts(){
+ const products=BulkProductDrafts.filter(d=>d.name.trim()||d.images.length||String(d.price).trim()||String(d.originalPrice).trim());
+ if(!products.length)return toast('請至少填一個商品');
+ for(let i=0;i<products.length;i++){if(!products[i].name.trim())return toast('第 '+(i+1)+' 個商品尚未填名稱',8000)}
+ const btn=$('bulkSaveProducts'),old=btn.textContent;btn.disabled=true;btn.textContent='整批建立中…';
+ try{
+  const r=await apiPost({action:'bulkSaveSessionProducts',sessionId:BulkProductSessionId,idempotencyKey:BulkProductBatchKey,products:products.map(d=>({name:d.name,category:d.category,description:d.description,images:d.images,originalPrice:d.originalPrice,price:d.price,supplyCost:d.supplyCost,stockQty:d.stockQty,perMemberLimit:d.perMemberLimit,quantityTiers:[],defaultPromoterTiers:[]}))});
+  if(r.error)throw new Error(r.error);
+  toast('已一次建立 '+num(r.count||products.length)+' 個商品');
+  saveGroupBuyAdminView('products',BulkProductSessionId);await openSessionProducts(BulkProductSessionId,true);await loadGroupBuyAdmin();
+ }catch(e){toast(String(e.message||e),10000)}
+ finally{btn.disabled=false;btn.textContent=old}
 }
 
 async function openSessionProductForm(sid,pid='',restoring=false){if(!restoring)saveGroupBuyAdminView('productForm',sid,pid);
@@ -4234,9 +4311,9 @@ async function openGroupBuyPromoterApplications(defaultSessionId='',restoring=fa
  const sessions=Array.isArray(d.sessions)?d.sessions:[],apps=Array.isArray(d.applications)?d.applications:[],promoters=Array.isArray(d.promoters)?d.promoters:[];
  const active=promoters.filter(p=>p.status==='active');
  const activeHtml=active.length?'<h3>目前團購主</h3>'+active.map(p=>`<div class="report-card"><b>${safe(p.brand_name||p.member_name||p.member_email||p.member_id)}</b><div class="sub">姓名：${safe(p.member_name||'')}｜電話：${safe(p.member_phone||'')}｜帳號：${safe(p.member_email||'')}</div><div class="sub">指派團購：${safe(p.session_name||p.session_id)}｜連結代碼：${safe(p.referral_code||'')}</div><div class="card-actions"><button class="btn danger small" data-promoter="${attr(p.id)}" data-member="${attr(p.member_id)}">移除團購主資格</button></div></div>`).join(''):'<div class="empty">目前沒有已啟用的團購主</div>';
- const appHtml=apps.map(a=>{const social=safeJson(a.social_profiles_json,[]),links=social.map(x=>`<a href="${attr(x.url||'')}" target="_blank">${safe(x.url||'')}</a>`).join('<br>'),opts=sessions.map(s=>`<option value="${attr(s.id)}" ${String(s.id)===String(defaultSessionId)?'selected':''}>${safe(s.name)}</option>`).join(''),removed=!!a.removed_at;return `<div class="report-card"><b>${safe(a.brand_name||a.display_name||a.member_name||a.member_email)}</b><div class="sub">姓名：${safe(a.member_name||'')}｜電話：${safe(a.member_phone||a.phone||'')}｜帳號：${safe(a.member_email||'')}</div><div style="margin-top:7px"><b>團購主 ID：</b>${safe(a.requested_referral_code||'未填')}<br>社群：${links||'未填'}<br>人數：${num(a.audience_size||0)}｜平均觸及：${num(a.avg_reach||0)}<br>團購經驗：${safe(a.group_buy_experience||'')}<br>偏好：${safe(a.preferred_categories||'')}</div>${removed?'<div class="sub" style="margin-top:7px;color:#8b5b24">此資格已移除，可由會員重新申請。</div>':''}${a.status==='pending'?`<div class="card-actions"><button class="btn green small" data-review="approved" data-app="${attr(a.id)}">核准</button><button class="btn danger small" data-review="rejected" data-app="${attr(a.id)}">拒絕</button></div>`:''}${a.status==='approved'?`<div style="margin-top:10px"><select id="gba_session_${attr(a.id)}">${opts}</select><button class="btn yellow small" style="margin-top:8px" data-assign="${attr(a.id)}">指派此團購（套用預設方案）</button></div>`:''}</div>`}).join('')||'<div class="empty">目前沒有團購主申請</div>';
+ const appHtml=apps.map(a=>{const social=safeJson(a.social_profiles_json,[]),links=social.map(x=>`<a href="${attr(x.url||'')}" target="_blank">${safe(x.url||'')}</a>`).join('<br>'),opts=sessions.map(s=>`<option value="${attr(s.id)}" ${String(s.id)===String(defaultSessionId)?'selected':''}>${safe(s.name)}</option>`).join(''),removed=!!a.removed_at;return `<div class="report-card"><b>${safe(a.brand_name||a.display_name||a.member_name||a.member_email)}</b><div class="sub">姓名：${safe(a.member_name||'')}｜電話：${safe(a.member_phone||a.phone||'')}｜帳號：${safe(a.member_email||'')}</div><div style="margin-top:7px"><b>團購主 ID：</b>${safe(a.requested_referral_code||'未填')}<br>社群：${links||'未填'}<br>人數：${num(a.audience_size||0)}｜平均觸及：${num(a.avg_reach||0)}<br>團購經驗：${safe(a.group_buy_experience||'')}<br>偏好：${safe(a.preferred_categories||'')}</div>${removed?'<div class="sub" style="margin-top:7px;color:#8b5b24">此資格已移除，可由會員重新申請。</div>':''}${a.status==='pending'?`<div class="card-actions"><button class="btn green small" data-review="approved" data-app="${attr(a.id)}">核准</button><button class="btn danger small" data-review="rejected" data-app="${attr(a.id)}">拒絕</button></div>`:''}${a.status==='approved'&&a.requested_referral_code?`<div style="margin-top:10px"><select id="gba_session_${attr(a.id)}">${opts}</select><button class="btn yellow small" style="margin-top:8px" data-assign="${attr(a.id)}">指派此團購（套用預設方案）</button><button class="btn secondary small" style="margin-top:8px;margin-left:6px" data-return="${attr(a.id)}">退回重新申請</button></div>`:''}${a.status==='approved'&&!a.requested_referral_code?`<div class="card-actions"><button class="btn danger small" data-return="${attr(a.id)}">退回重新申請</button></div>`:''}</div>`}).join('')||'<div class="empty">目前沒有團購主申請</div>';
  openPanel('團購主申請／指派','申請人先登入既有 2BL 會員或建立會員，再填自己的團購主 ID；平台只負責核准與指派團購。',activeHtml+'<h3 style="margin-top:18px">申請紀錄</h3>'+appHtml);
- setTimeout(()=>{document.querySelectorAll('[data-promoter]').forEach(el=>el.onclick=()=>removeGroupBuyPromoter(el.dataset.promoter,el.dataset.member));document.querySelectorAll('[data-review]').forEach(el=>el.onclick=()=>reviewGroupBuyApplication(el.dataset.app,el.dataset.review));document.querySelectorAll('[data-assign]').forEach(el=>el.onclick=()=>openPromoterPriceSetup(el.dataset.assign));},0);
+ setTimeout(()=>{document.querySelectorAll('[data-promoter]').forEach(el=>el.onclick=()=>removeGroupBuyPromoter(el.dataset.promoter,el.dataset.member));document.querySelectorAll('[data-review]').forEach(el=>el.onclick=()=>reviewGroupBuyApplication(el.dataset.app,el.dataset.review));document.querySelectorAll('[data-assign]').forEach(el=>el.onclick=()=>openPromoterPriceSetup(el.dataset.assign));document.querySelectorAll('[data-return]').forEach(el=>el.onclick=()=>returnGroupBuyApplication(el.dataset.return));},0);
 }
 async function reviewGroupBuyApplication(id,status){try{const r=await apiPost({action:'reviewSessionManagerApplication',id,status});if(r.error)throw new Error(r.error);toast('已更新申請');await openGroupBuyPromoterApplications('',true)}catch(e){toast('更新失敗：'+(e.message||e),8000)}}
 async function openPromoterPriceSetup(appId){
@@ -4248,6 +4325,14 @@ async function openPromoterPriceSetup(appId){
 }
 async function savePromoterAssignment(appId,sid){try{const cust={};document.querySelectorAll('.prom-customer').forEach(x=>cust[x.dataset.id]=Number(x.value||0));const r=await apiPost({action:'saveSessionPromoter',applicationId:appId,sessionId:sid,customerPrices:cust});if(r.error)throw new Error(r.error);openPanel('團購主已指派','專屬連結已建立。',`<div class="report-card"><b>指派完成</b><div class="sub" style="margin-top:6px">團購主可以直接分享以下網址：</div><div class="form-field"><input id="prom_done_url" readonly value="${attr(r.url||'')}"></div><button id="copyPromDone" class="btn">複製專屬連結</button></div>`);setTimeout(()=>{const x=$('copyPromDone');if(x)x.onclick=copyPromoterDoneUrl},0);await loadGroupBuyAdmin()}catch(e){toast('指派失敗：'+(e.message||e),9000)}}
 async function copyPromoterDoneUrl(){const v=$('prom_done_url')?.value||'';try{await navigator.clipboard.writeText(v);toast('已複製專屬連結')}catch(e){prompt('複製專屬連結',v)}}
+async function returnGroupBuyApplication(id){
+ if(!confirm('確定退回這筆團購主申請？\n\n不會刪除會員資料。退回後，申請人可以重新登入團GO，重新填自己的團購主 ID 再送出申請。'))return;
+ try{
+  const r=await apiPost({action:'returnGroupBuyApplication',id});if(r.error)throw new Error(r.error);
+  toast('已退回，可請申請人重新申請');
+  await openGroupBuyPromoterApplications('',true);await loadGroupBuyAdmin();
+ }catch(e){toast('退回失敗：'+(e.message||e),9000)}
+}
 async function removeGroupBuyPromoter(promoterId,memberId){if(!confirm('確定移除這位團購主資格？\n\n會員帳號、歷史訂單與收益紀錄都會保留；目前團購權限與分享連結會立即失效，之後可以重新申請。'))return;try{const r=await apiPost({action:'removeGroupBuyPromoter',promoterId,memberId});if(r.error)throw new Error(r.error);toast('已移除團購主資格，可重新申請');await openGroupBuyPromoterApplications('',true);await loadGroupBuyAdmin()}catch(e){toast('移除失敗：'+(e.message||e),9000)}}
 
 function paymentProfileOptionsHtml(list, selected){
