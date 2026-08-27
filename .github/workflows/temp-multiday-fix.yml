@@ -1,0 +1,99 @@
+name: Temporary multi-day discount closed-loop patch
+on:
+  push:
+    branches: [fix/multi-day-discount-closed-loop]
+    paths: [.github/workflows/temp-multiday-fix.yml]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/multi-day-discount-closed-loop
+          fetch-depth: 0
+      - name: Patch worker closed loop
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('worker.js')
+          s=p.read_text()
+          old="""function calcFee(ses, selectedDates, stallCount) {
+  const dates = safeJson(ses.dates_json, []);
+  const baseFee = safeNum(ses.fee);
+  const stalls = Math.max(parseInt(stallCount)||1, 1); // 無上限，由後台 maxStalls 控制
+  if (dates.length > 1 && selectedDates && selectedDates.length > 0) {
+    const allSelected = dates.every(d => selectedDates.includes(d.date));
+    if (allSelected && baseFee > 0) return baseFee * stalls;
+    return selectedDates.reduce((sum, sd) => {
+      const def = dates.find(d => d.date === sd);
+      return sum + (def ? (Number(def.fee) || 0) : 0);
+    }, 0) * stalls;
+  }
+  return baseFee * stalls;
+}"""
+          new="""function normalizeMultiDayTiers(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(t => ({
+    minDays: Math.max(2, Math.floor(safeNum(t && t.minDays))),
+    maxDays: Math.max(0, Math.floor(safeNum(t && t.maxDays))),
+    dailyFee: Math.max(0, safeNum(t && t.dailyFee)),
+    enabled: !(t && (t.enabled === false || t.enabled === 'false')),
+  })).filter(t => t.enabled && t.minDays >= 2 && (t.maxDays === 0 || t.maxDays >= t.minDays))
+    .sort((a,b) => a.minDays - b.minDays);
+}
+function sessionMultiDayTiersFromRow(ses, dates) {
+  const top = safeJson(ses.multi_day_tiers_json, null);
+  if (Array.isArray(top)) return normalizeMultiDayTiers(top);
+  return normalizeMultiDayTiers(dates && dates[0] && dates[0].multiDayTiers);
+}
+function calcFee(ses, selectedDates, stallCount) {
+  const dates = safeJson(ses.dates_json, []);
+  const baseFee = safeNum(ses.fee);
+  const stalls = Math.max(parseInt(stallCount)||1, 1); // 無上限，由後台 maxStalls 控制
+  if (dates.length > 1 && selectedDates && selectedDates.length > 0) {
+    const picked = [...new Set(selectedDates.map(x => String(x).slice(0,10)))].filter(sd => dates.some(d => String(d.date).slice(0,10) === sd));
+    const tiers = sessionMultiDayTiersFromRow(ses, dates);
+    const tier = tiers.filter(t => picked.length >= t.minDays && (t.maxDays === 0 || picked.length <= t.maxDays)).sort((a,b) => b.minDays - a.minDays)[0];
+    if (tier) return tier.dailyFee * picked.length * stalls;
+    const allSelected = dates.every(d => picked.includes(String(d.date).slice(0,10)));
+    if (allSelected && baseFee > 0) return baseFee * stalls;
+    return picked.reduce((sum, sd) => {
+      const def = dates.find(d => String(d.date).slice(0,10) === sd);
+      return sum + (def ? (Number(def.fee) || 0) : 0);
+    }, 0) * stalls;
+  }
+  return baseFee * stalls;
+}"""
+          if old not in s: raise SystemExit('calcFee baseline mismatch')
+          s=s.replace(old,new,1)
+          old2="dates_json:JSON.stringify(b.dates||[]),"
+          new2="dates_json:JSON.stringify((()=>{const ds=Array.isArray(b.dates)?b.dates.map(d=>({...d})):[];const tiers=normalizeMultiDayTiers(b.multiDayTiers);if(ds.length){if(tiers.length)ds[0].multiDayTiers=tiers;else delete ds[0].multiDayTiers;}return ds;})()),"
+          count=s.count(old2)
+          if count < 2: raise SystemExit(f'dates_json baseline mismatch: {count}')
+          s=s.replace(old2,new2)
+          p.write_text(s)
+          PY
+      - name: Syntax and focused tests
+        shell: bash
+        run: |
+          node --check worker.js
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('worker.js').read_text()
+          assert 'normalizeMultiDayTiers(b.multiDayTiers)' in s
+          assert 'tier.dailyFee * picked.length * stalls' in s
+          assert "case 'updateSession':       return hUpdateSession(env,b);" in s
+          assert 'return jsonOk(formatSession(rows[0]));' in s
+          print('focused wiring checks PASS')
+          PY
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add worker.js
+          git commit -m "fix: persist and price multi-day discount tiers"
+          git push origin HEAD:fix/multi-day-discount-closed-loop
