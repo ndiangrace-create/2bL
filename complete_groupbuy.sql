@@ -1,0 +1,11 @@
+begin;
+alter table public.sessions add column if not exists feature_modules_json jsonb not null default '{}'::jsonb;
+alter table public.session_orders add column if not exists recipient_postal_code text not null default '';
+alter table public.session_orders add column if not exists fulfillment_note text not null default '';
+alter table public.session_orders add column if not exists transfer_status text not null default 'pending';
+alter table public.session_orders add column if not exists tracking_no text not null default '';
+alter table public.session_orders add column if not exists transferred_at timestamptz;
+alter table public.session_orders add column if not exists transferred_by text;
+alter table public.session_orders add column if not exists shipped_at timestamptz;
+alter table public.session_products add column if not exists quantity_tiers_json jsonb not null default '[]'::jsonb;
+commit;
