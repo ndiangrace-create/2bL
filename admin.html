@@ -1275,13 +1275,13 @@
 @media(max-width:720px){.gb-product-grid{grid-template-columns:repeat(auto-fit,minmax(min(160px,100%),1fr));gap:10px}.gb-product-card{min-height:290px}.gb-product-card-add{min-height:290px}.gb-product-card-title{font-size:17px}.gb-product-card-price{font-size:18px}.gb-product-card-meta{font-size:14px}}
 
 
-.gb-bulk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
+.gb-bulk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;align-items:stretch;width:100%}.gb-bulk-card{height:100%}
 .gb-bulk-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;box-shadow:0 3px 12px rgba(0,0,0,.04)}
 .gb-bulk-card h4{margin:0;font-size:18px}.gb-bulk-card label{font-size:15px;font-weight:850}
 .gb-bulk-card input,.gb-bulk-card textarea,.gb-bulk-card select{font-size:16px;min-height:42px}
 .gb-bulk-images{display:flex;gap:6px;overflow:auto;margin:8px 0}.gb-bulk-images img{width:64px;height:64px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}
 .gb-bulk-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:16px;padding:14px 0 4px;border-top:1px solid var(--line);background:transparent}.gb-bulk-actions .btn{min-height:46px;font-size:16px}
-@media(max-width:700px){.gb-bulk-grid{grid-template-columns:1fr;padding-bottom:86px}.gb-bulk-card input,.gb-bulk-card textarea,.gb-bulk-card select{font-size:17px;min-height:46px}.gb-bulk-actions{position:sticky;bottom:0;z-index:8;background:rgba(250,249,246,.98);padding:10px 0 calc(10px + env(safe-area-inset-bottom));margin-top:18px}}
+@media(max-width:900px){.gb-bulk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.gb-bulk-grid{grid-template-columns:1fr;padding-bottom:86px}.gb-bulk-card input,.gb-bulk-card textarea,.gb-bulk-card select{font-size:17px;min-height:46px}.gb-bulk-actions{position:sticky;bottom:0;z-index:8;background:rgba(250,249,246,.98);padding:10px 0 calc(10px + env(safe-area-inset-bottom));margin-top:18px}}
 
 </style>
 <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg"><link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/logo.jpg">
@@ -1289,13 +1289,13 @@
 /* DESKTOP_WIDE_FRAME_FINAL_20260811
    桌機用真正桌機寬度；手機/窄平板沿用原本 responsive。 */
 @media (min-width:861px){
-  :root{--admin-desktop-gutter:clamp(18px,2vw,34px);}
+  :root{--admin-desktop-gutter:12px;}
 
   .app,
   .topbar-in,
   .panel-head-in,
   .panel-body{
-    width:min(1600px,calc(100vw - (var(--admin-desktop-gutter) * 2)))!important;
+    width:calc(100vw - (var(--admin-desktop-gutter) * 2))!important;
     max-width:none!important;
     margin-left:auto!important;
     margin-right:auto!important;
@@ -1352,7 +1352,7 @@
   .topbar-in,
   .panel-head-in,
   .panel-body{
-    width:min(1600px,calc(100vw - (var(--admin-desktop-gutter) * 2)))!important;
+    width:calc(100vw - (var(--admin-desktop-gutter) * 2))!important;
     max-width:none!important;
   }
 }
@@ -1747,6 +1747,18 @@
 }
 </style>
 
+
+<style>
+@media (min-width:861px){
+  .app,.topbar-in,.panel-head-in,.panel-body{
+    width:calc(100vw - 24px)!important;
+    max-width:none!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  .panel-body{padding-left:0!important;padding-right:0!important}
+}
+</style>
 </head>
 <body>
 <section id="loginPage" class="login-wrap">
@@ -4091,6 +4103,7 @@ async function loadGroupBuyAdmin(){saveAdminPageState('groupbuy');
     +'<div style="display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:start">'
     +'<div style="width:92px;aspect-ratio:1;border-radius:8px;border:1px solid var(--line);overflow:hidden;background:#f6f6f3">'+(g.coverImageUrl?'<img src="'+attr(g.coverImageUrl)+'" style="width:100%;height:100%;object-fit:cover">':'')+'</div>'
     +'<div><div class="report-title">'+safe(s.name)+'</div><div class="sub">'+safe(state)+'｜商品 '+num(s.productCount)+'｜有效訂單 '+num(s.orderCount)+'｜已付款 '+num(s.paidOrderCount)+'｜團購主 '+num(s.promoterCount)+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><span class="pill">已付款商品額 '+money(s.paidProductAmount||0)+'</span><span class="pill">已收運費 '+money(s.paidShippingAmount||0)+'</span><span class="pill">訂單實收 '+money(s.paidTotalAmount||0)+'</span><span class="pill">宅配運費 '+money(g.shippingFee||0)+'</span><span class="pill">滿 '+money(g.freeShippingThreshold||0)+' 免運</span></div>'
     +'<div class="sub" style="margin-top:6px">'+safe(g.groupBuyDescription||'尚未填團購說明')+'</div><div class="sub" style="margin-top:7px"><b>公開分享：</b>'+safe(groupBuyPublicUrl(s))+' <button type="button" class="btn secondary small" onclick="copyGroupBuyPublicUrl(\''+attr(s.id)+'\')">複製</button></div></div></div>'
     +'<div class="card-actions" style="margin-top:10px">'
     +'<button class="btn secondary small" onclick="openEditGroupBuy(\''+attr(s.id)+'\')">團購設定</button>'
@@ -4162,7 +4175,7 @@ function applyGroupBuyAISuggestion(){
 
 let BulkProductSessionId='',BulkProductBatchKey='',BulkProductDrafts=[];
 function newBulkProductDraft(){
- return {id:'BPD_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name:'',category:'',description:'',images:[],originalPrice:'',price:'',supplyCost:'',promoterBasePrice:'',stockQty:'',perMemberLimit:''};
+ return {id:'BPD_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name:'',category:'',description:'',images:[],originalPrice:'',price:'',supplyCost:'',promoterBasePrice:'',buyerTiers:[],promoterTiers:[],stockQty:'',perMemberLimit:''};
 }
 function bulkDraft(id){return BulkProductDrafts.find(x=>x.id===id)}
 function bulkSet(id,key,value){const d=bulkDraft(id);if(d)d[key]=value}
@@ -4181,20 +4194,44 @@ function renderBulkProductDrafts(){
   +'<div class="form-field"><label>供應成本</label><input type="number" min="0" value="'+attr(d.supplyCost)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="supplyCost"></div>'
   +'<div class="form-field"><label>團購主結算價</label><input type="number" min="0" value="'+attr(d.promoterBasePrice)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="promoterBasePrice"></div>'
   +'<div class="form-field"><label>庫存（空白不限）</label><input type="number" min="0" value="'+attr(d.stockQty)+'" data-bulk-id="'+attr(d.id)+'" data-bulk-key="stockQty"></div></div>'
-  +'<div class="sub">團購主結算價會建立成 1 件起預設級距；其他數量級距建立後可再補。</div>'
+  +'<div class="sub"><b>買家優惠：</b>'+(d.buyerTiers.length?d.buyerTiers.map(t=>'滿'+t.minQty+'件→'+money(t.unitPrice)).join('｜'):'未設定')+'<br><b>團購主級距：</b>'+((d.promoterTiers.length?d.promoterTiers:(String(d.promoterBasePrice).trim()!==''?[{minQty:1,basePrice:Number(d.promoterBasePrice)||0}]:[])).length?(d.promoterTiers.length?d.promoterTiers:[{minQty:1,basePrice:Number(d.promoterBasePrice)||0}]).map(t=>'滿'+t.minQty+'件→'+money(t.basePrice)).join('｜'):'未設定')+'</div>'
   +'</section>').join('');
  box.querySelectorAll('[data-bulk-id]').forEach(el=>{el.oninput=()=>bulkSet(el.dataset.bulkId,el.dataset.bulkKey,el.value);el.onchange=el.oninput});
  box.querySelectorAll('[data-bulk-remove]').forEach(el=>el.onclick=()=>bulkRemoveDraft(el.dataset.bulkRemove));
  box.querySelectorAll('[data-bulk-ai]').forEach(el=>el.onclick=()=>bulkAnalyzeDraft(el.dataset.bulkAi));
  box.querySelectorAll('[data-bulk-upload]').forEach(el=>el.onchange=()=>bulkUploadDraftImages(el.dataset.bulkUpload,el));
 }
+let BulkBuyerTierDrafts=[],BulkPromoterTierDrafts=[];
+function renderBulkTierTools(){
+ const br=$('bulkBuyerTierRows'),pr=$('bulkPromTierRows');
+ if(br)br.innerHTML=BulkBuyerTierDrafts.map((t,i)=>'<div class="form-grid" style="margin-bottom:6px"><div class="form-field"><label>買家滿幾件</label><input class="bulk-buyer-min" data-i="'+i+'" type="number" min="2" value="'+attr(t.minQty)+'"></div><div class="form-field"><label>每件多少</label><input class="bulk-buyer-price" data-i="'+i+'" type="number" min="0" value="'+attr(t.unitPrice)+'"></div><button type="button" class="btn danger small" onclick="BulkBuyerTierDrafts.splice('+i+',1);renderBulkTierTools()">刪除</button></div>').join('')||'<div class="sub">未設定買家數量門檻</div>';
+ if(pr)pr.innerHTML=BulkPromoterTierDrafts.map((t,i)=>'<div class="form-grid" style="margin-bottom:6px"><div class="form-field"><label>團購主累積滿幾件</label><input class="bulk-prom-min" data-i="'+i+'" type="number" min="1" value="'+attr(t.minQty)+'"></div><div class="form-field"><label>結算價／件</label><input class="bulk-prom-price" data-i="'+i+'" type="number" min="0" value="'+attr(t.basePrice)+'"></div><button type="button" class="btn danger small" onclick="BulkPromoterTierDrafts.splice('+i+',1);renderBulkTierTools()">刪除</button></div>').join('')||'<div class="sub">未設定團購主數量門檻</div>';
+ document.querySelectorAll('.bulk-buyer-min').forEach(x=>x.oninput=()=>BulkBuyerTierDrafts[Number(x.dataset.i)].minQty=Number(x.value||0));
+ document.querySelectorAll('.bulk-buyer-price').forEach(x=>x.oninput=()=>BulkBuyerTierDrafts[Number(x.dataset.i)].unitPrice=Number(x.value||0));
+ document.querySelectorAll('.bulk-prom-min').forEach(x=>x.oninput=()=>BulkPromoterTierDrafts[Number(x.dataset.i)].minQty=Number(x.value||0));
+ document.querySelectorAll('.bulk-prom-price').forEach(x=>x.oninput=()=>BulkPromoterTierDrafts[Number(x.dataset.i)].basePrice=Number(x.value||0));
+}
 function openBulkSessionProducts(sid){
  saveGroupBuyAdminView('products',sid);BulkProductSessionId=sid;BulkProductBatchKey=(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random()).replace(/[^A-Za-z0-9]/g,'');
- BulkProductDrafts=[newBulkProductDraft(),newBulkProductDraft(),newBulkProductDraft()];
- const priceTools='<div class="report-card" style="margin-bottom:12px"><b>批次價格</b><div class="sub" style="margin-top:4px">填入後可一次套用到這批全部商品；留空不修改。</div><div class="form-grid" style="margin-top:10px"><div class="form-field"><label>團購售價</label><input id="bulkAllSalePrice" type="number" min="0"></div><div class="form-field"><label>團購主結算價</label><input id="bulkAllPromoterPrice" type="number" min="0"></div></div><button id="bulkApplyPrices" type="button" class="btn secondary">套用到全部商品</button></div>';
- openPanel('批次新增商品','一次先建立多個商品；全部送出時由資料庫交易一次完成，任一商品失敗整批不寫入。',priceTools+'<div id="bulkProductGrid" class="gb-bulk-grid"></div><div class="gb-bulk-actions"><button id="bulkAddProduct" class="btn secondary">＋ 再新增一個</button><button id="bulkSaveProducts" class="btn">全部建立商品</button></div>');
+ BulkProductDrafts=[newBulkProductDraft(),newBulkProductDraft(),newBulkProductDraft()];BulkBuyerTierDrafts=[];BulkPromoterTierDrafts=[];
+ const priceTools='<div class="report-card" style="margin-bottom:12px"><b>批次價格與級距</b><div class="sub" style="margin-top:4px">設定後可一次套用到這批全部商品；卡片下方會顯示實際套用數字。</div>'
+  +'<div class="form-grid" style="margin-top:10px"><div class="form-field"><label>團購售價</label><input id="bulkAllSalePrice" type="number" min="0"></div><div class="form-field"><label>團購主 1 件起結算價</label><input id="bulkAllPromoterPrice" type="number" min="0"></div></div>'
+  +'<div class="form-field full"><label>買家數量優惠</label><div id="bulkBuyerTierRows"></div><button id="bulkAddBuyerTier" type="button" class="btn secondary small">＋ 買家門檻</button></div>'
+  +'<div class="form-field full"><label>團購主累積銷量級距</label><div id="bulkPromTierRows"></div><button id="bulkAddPromTier" type="button" class="btn secondary small">＋ 團購主門檻</button></div>'
+  +'<button id="bulkApplyPrices" type="button" class="btn secondary">套用到全部商品</button></div>';
+ openPanel('批次新增商品' ,'一次先建立多個商品；全部送出時由資料庫交易一次完成，任一商品失敗整批不寫入。',priceTools+'<div id="bulkProductGrid" class="gb-bulk-grid"></div><div class="gb-bulk-actions"><button id="bulkAddProduct" class="btn secondary">＋ 再新增一個</button><button id="bulkSaveProducts" class="btn">全部建立商品</button></div>');
  renderBulkProductDrafts();
- $('bulkApplyPrices').onclick=()=>{const sale=$('bulkAllSalePrice')?.value,prom=$('bulkAllPromoterPrice')?.value;BulkProductDrafts.forEach(d=>{if(sale!=='')d.price=sale;if(prom!=='')d.promoterBasePrice=prom});renderBulkProductDrafts();toast('已套用到全部商品')};
+ renderBulkTierTools();
+ $('bulkAddBuyerTier').onclick=()=>{BulkBuyerTierDrafts.push({minQty:'',unitPrice:''});renderBulkTierTools()};
+ $('bulkAddPromTier').onclick=()=>{BulkPromoterTierDrafts.push({minQty:'',basePrice:''});renderBulkTierTools()};
+ $('bulkApplyPrices').onclick=()=>{
+  const sale=$('bulkAllSalePrice')?.value,prom=$('bulkAllPromoterPrice')?.value;
+  const buyer=BulkBuyerTierDrafts.filter(t=>Number(t.minQty)>=2).map(t=>({minQty:Number(t.minQty),unitPrice:Number(t.unitPrice)||0})).sort((a,b)=>a.minQty-b.minQty);
+  let promoter=BulkPromoterTierDrafts.filter(t=>Number(t.minQty)>=1).map(t=>({minQty:Number(t.minQty),basePrice:Number(t.basePrice)||0})).sort((a,b)=>a.minQty-b.minQty);
+  if(prom!==''&&!promoter.some(t=>t.minQty===1))promoter=[{minQty:1,basePrice:Number(prom)||0},...promoter];
+  BulkProductDrafts.forEach(d=>{if(sale!=='')d.price=sale;if(prom!=='')d.promoterBasePrice=prom;d.buyerTiers=buyer.map(x=>({...x}));d.promoterTiers=promoter.map(x=>({...x}))});
+  renderBulkProductDrafts();toast('已套用團購價、買家門檻與團購主級距');
+ };
  $('bulkAddProduct').onclick=()=>{if(BulkProductDrafts.length>=30)return toast('一次最多 30 個商品');BulkProductDrafts.push(newBulkProductDraft());renderBulkProductDrafts()};
  $('bulkSaveProducts').onclick=bulkSaveAllProducts;
 }
@@ -4222,7 +4259,7 @@ async function bulkSaveAllProducts(){
  for(let i=0;i<products.length;i++){if(!products[i].name.trim())return toast('第 '+(i+1)+' 個商品尚未填名稱',8000)}
  const btn=$('bulkSaveProducts'),old=btn.textContent;btn.disabled=true;btn.textContent='整批建立中…';
  try{
-  const r=await apiPost({action:'bulkSaveSessionProducts',sessionId:BulkProductSessionId,idempotencyKey:BulkProductBatchKey,products:products.map(d=>({name:d.name,category:d.category,description:d.description,images:d.images,originalPrice:d.originalPrice,price:d.price,supplyCost:d.supplyCost,stockQty:d.stockQty,perMemberLimit:d.perMemberLimit,quantityTiers:[],defaultPromoterTiers:(String(d.promoterBasePrice).trim()!==''?[{minQty:1,basePrice:Number(d.promoterBasePrice)||0}]:[])}))});
+  const r=await apiPost({action:'bulkSaveSessionProducts',sessionId:BulkProductSessionId,idempotencyKey:BulkProductBatchKey,products:products.map(d=>({name:d.name,category:d.category,description:d.description,images:d.images,originalPrice:d.originalPrice,price:d.price,supplyCost:d.supplyCost,stockQty:d.stockQty,perMemberLimit:d.perMemberLimit,quantityTiers:d.buyerTiers||[],defaultPromoterTiers:(d.promoterTiers&&d.promoterTiers.length?d.promoterTiers:(String(d.promoterBasePrice).trim()!==''?[{minQty:1,basePrice:Number(d.promoterBasePrice)||0}]:[]))}))});
   if(r.error)throw new Error(r.error);
   toast('已一次建立 '+num(r.count||products.length)+' 個商品');
   saveGroupBuyAdminView('products',BulkProductSessionId);await openSessionProducts(BulkProductSessionId,true);await loadGroupBuyAdmin();
@@ -4296,33 +4333,62 @@ function addDefaultPromoterTier(minQty='',basePrice=''){const box=$('sp_prom_tie
 function collectDefaultPromoterTiers(){return [...document.querySelectorAll('.sp-prom-tier-row')].map(r=>({minQty:Number(r.querySelector('.sp-prom-min')?.value||0),basePrice:Number(r.querySelector('.sp-prom-price')?.value||0)})).filter(x=>x.minQty>=1&&x.basePrice>=0).sort((a,b)=>a.minQty-b.minQty)}
 async function saveSessionProductForm(sid){try{const imgs=sessionProductImages(),r=await apiPost({action:'saveSessionProduct',sessionId:sid,id:$('sp_id')?.value||'',name:$('sp_name').value,category:$('sp_category').value,description:$('sp_desc').value,images:imgs,imageUrl:imgs[0]||'',price:$('sp_price').value,originalPrice:$('sp_original').value,supplyCost:$('sp_cost').value,stockQty:$('sp_stock').value,perMemberLimit:$('sp_limit').value,quantityTiers:collectSessionProductTiers(),defaultPromoterTiers:collectDefaultPromoterTiers()});if(r.error)throw new Error(r.error);toast('商品已儲存');saveGroupBuyAdminView('products',sid);await openSessionProducts(sid,true);await loadGroupBuyAdmin()}catch(e){toast(String(e.message||e),8000)}}
 
+let GroupBuyBulkBuyerTiers=[],GroupBuyBulkPromoterTiers=[];
+function renderExistingBulkTierTools(){
+ const br=$('gbExistingBuyerTiers'),pr=$('gbExistingPromTiers');
+ if(br)br.innerHTML=GroupBuyBulkBuyerTiers.map((t,i)=>'<div class="form-grid"><div class="form-field"><label>買家滿幾件</label><input class="gb-eb-min" data-i="'+i+'" type="number" min="2" value="'+attr(t.minQty)+'"></div><div class="form-field"><label>每件多少</label><input class="gb-eb-price" data-i="'+i+'" type="number" min="0" value="'+attr(t.unitPrice)+'"></div><button class="btn danger small" onclick="GroupBuyBulkBuyerTiers.splice('+i+',1);renderExistingBulkTierTools()">刪除</button></div>').join('')||'<div class="sub">未設定</div>';
+ if(pr)pr.innerHTML=GroupBuyBulkPromoterTiers.map((t,i)=>'<div class="form-grid"><div class="form-field"><label>團購主累積滿幾件</label><input class="gb-ep-min" data-i="'+i+'" type="number" min="1" value="'+attr(t.minQty)+'"></div><div class="form-field"><label>結算價／件</label><input class="gb-ep-price" data-i="'+i+'" type="number" min="0" value="'+attr(t.basePrice)+'"></div><button class="btn danger small" onclick="GroupBuyBulkPromoterTiers.splice('+i+',1);renderExistingBulkTierTools()">刪除</button></div>').join('')||'<div class="sub">未設定</div>';
+ document.querySelectorAll('.gb-eb-min').forEach(x=>x.oninput=()=>GroupBuyBulkBuyerTiers[Number(x.dataset.i)].minQty=Number(x.value||0));
+ document.querySelectorAll('.gb-eb-price').forEach(x=>x.oninput=()=>GroupBuyBulkBuyerTiers[Number(x.dataset.i)].unitPrice=Number(x.value||0));
+ document.querySelectorAll('.gb-ep-min').forEach(x=>x.oninput=()=>GroupBuyBulkPromoterTiers[Number(x.dataset.i)].minQty=Number(x.value||0));
+ document.querySelectorAll('.gb-ep-price').forEach(x=>x.oninput=()=>GroupBuyBulkPromoterTiers[Number(x.dataset.i)].basePrice=Number(x.value||0));
+}
 async function openGroupBuyBulkPricing(sessionId){
  saveGroupBuyAdminView('products',sessionId);
  const d=await api({action:'sessionProductsAdmin',sessionId}),ps=d.products||[];
  if(!ps.length){toast('這場團購還沒有商品');return}
+ GroupBuyBulkBuyerTiers=[];GroupBuyBulkPromoterTiers=[];
  const rows=ps.map(p=>{
-  const tiers=safeJson(p.default_promoter_tiers_json,[]);
-  const first=tiers.find(t=>Number(t.minQty||0)===1)||tiers[0]||{},base=first.basePrice??'';
-  return '<div class="report-card gb-price-row" data-id="'+attr(p.id)+'">'
+  const bt=safeJson(p.quantity_tiers_json,[]),pt=safeJson(p.default_promoter_tiers_json,[]);
+  return '<div class="report-card gb-price-row" data-id="'+attr(p.id)+'" data-buyer="'+attr(JSON.stringify(bt))+'" data-prom="'+attr(JSON.stringify(pt))+'">'
    +'<label style="display:flex;gap:10px;align-items:flex-start"><input class="gb-price-check" type="checkbox" checked style="width:18px;height:18px;margin-top:3px"><div style="flex:1"><b>'+safe(p.name)+'</b><div class="sub">供應成本 '+money(p.supply_cost||0)+'｜原價 '+money(p.original_price||0)+'</div></div></label>'
-   +'<div class="form-grid" style="margin-top:8px"><div class="form-field"><label>團購售價</label><input class="gb-price-sale" type="number" min="0" value="'+attr(p.price||0)+'"></div><div class="form-field"><label>團購主結算價（1件起）</label><input class="gb-price-promoter" type="number" min="0" value="'+attr(base)+'"></div></div>'
-   +(tiers.length>1?'<div class="sub">其他既有級距：'+tiers.filter(t=>Number(t.minQty||0)!==1).map(t=>'滿 '+t.minQty+'件→'+money(t.basePrice)).join('｜')+'</div>':'')
+   +'<div class="form-field" style="margin-top:8px"><label>團購售價</label><input class="gb-price-sale" type="number" min="0" value="'+attr(p.price||0)+'"></div>'
+   +'<div class="sub"><b>目前買家門檻：</b>'+(bt.length?bt.map(t=>'滿'+t.minQty+'件→'+money(t.unitPrice)).join('｜'):'未設定')+'<br><b>目前團購主級距：</b>'+(pt.length?pt.map(t=>'滿'+t.minQty+'件→'+money(t.basePrice)).join('｜'):'未設定')+'</div>'
    +'</div>';
  }).join('');
- const top='<div class="report-card"><b>批次套用</b><div class="sub">只修改已勾選商品。留空不改。</div><div class="form-grid" style="margin-top:8px"><div class="form-field"><label>團購售價</label><input id="gbBatchSale" type="number" min="0"></div><div class="form-field"><label>團購主結算價</label><input id="gbBatchProm" type="number" min="0"></div></div><div class="card-actions"><button id="gbBatchSelectAll" class="btn secondary">全選</button><button id="gbBatchApplyFields" class="btn secondary">套用到勾選商品</button></div></div>';
- openPanel('批次價格','一次調整多個商品的團購售價與團購主基準結算價；歷史訂單快照不會被改。',top+rows+'<div class="card-actions" style="margin-top:14px"><button id="gbBatchSavePrices" class="btn">儲存批次價格</button></div>');
+ const top='<div class="report-card"><b>批次套用完整價格方案</b><div class="sub">只修改已勾選商品。團購售價留空則不改；門檻按下套用後會整組覆蓋。</div>'
+  +'<div class="form-field"><label>團購售價</label><input id="gbBatchSale" type="number" min="0"></div>'
+  +'<div class="form-field full"><label>買家數量優惠門檻</label><div id="gbExistingBuyerTiers"></div><button id="gbExistingAddBuyer" class="btn secondary small">＋ 買家門檻</button></div>'
+  +'<div class="form-field full"><label>團購主累積銷量結算級距</label><div id="gbExistingPromTiers"></div><button id="gbExistingAddProm" class="btn secondary small">＋ 團購主門檻</button></div>'
+  +'<div class="card-actions"><button id="gbBatchSelectAll" class="btn secondary">全選</button><button id="gbBatchApplyFields" class="btn secondary">套用到勾選商品</button></div></div>';
+ openPanel('批次價格','團購售價、買家數量優惠、團購主結算級距一次管理；歷史訂單快照不會被改。',top+rows+'<div class="card-actions" style="margin-top:14px"><button id="gbBatchSavePrices" class="btn">儲存批次價格</button></div>');
+ renderExistingBulkTierTools();
  setTimeout(()=>{
+  $('gbExistingAddBuyer').onclick=()=>{GroupBuyBulkBuyerTiers.push({minQty:'',unitPrice:''});renderExistingBulkTierTools()};
+  $('gbExistingAddProm').onclick=()=>{GroupBuyBulkPromoterTiers.push({minQty:'',basePrice:''});renderExistingBulkTierTools()};
   $('gbBatchSelectAll').onclick=()=>document.querySelectorAll('.gb-price-check').forEach(x=>x.checked=true);
-  $('gbBatchApplyFields').onclick=()=>{const sale=$('gbBatchSale').value,prom=$('gbBatchProm').value;document.querySelectorAll('.gb-price-row').forEach(row=>{if(!row.querySelector('.gb-price-check').checked)return;if(sale!=='')row.querySelector('.gb-price-sale').value=sale;if(prom!=='')row.querySelector('.gb-price-promoter').value=prom})};
+  $('gbBatchApplyFields').onclick=()=>{
+   const sale=$('gbBatchSale').value;
+   const buyer=GroupBuyBulkBuyerTiers.filter(t=>Number(t.minQty)>=2).map(t=>({minQty:Number(t.minQty),unitPrice:Number(t.unitPrice)||0})).sort((a,b)=>a.minQty-b.minQty);
+   const prom=GroupBuyBulkPromoterTiers.filter(t=>Number(t.minQty)>=1).map(t=>({minQty:Number(t.minQty),basePrice:Number(t.basePrice)||0})).sort((a,b)=>a.minQty-b.minQty);
+   document.querySelectorAll('.gb-price-row').forEach(row=>{if(!row.querySelector('.gb-price-check').checked)return;if(sale!=='')row.querySelector('.gb-price-sale').value=sale;row.dataset.buyer=JSON.stringify(buyer);row.dataset.prom=JSON.stringify(prom);const sub=row.querySelector('.sub:last-child');if(sub)sub.innerHTML='<b>套用買家門檻：</b>'+(buyer.length?buyer.map(t=>'滿'+t.minQty+'件→'+money(t.unitPrice)).join('｜'):'未設定')+'<br><b>套用團購主級距：</b>'+(prom.length?prom.map(t=>'滿'+t.minQty+'件→'+money(t.basePrice)).join('｜'):'未設定')});
+   toast('已套用完整價格門檻到勾選商品');
+  };
   $('gbBatchSavePrices').onclick=()=>saveGroupBuyBulkPricing(sessionId);
  },0);
 }
 async function saveGroupBuyBulkPricing(sessionId){
- const items=[...document.querySelectorAll('.gb-price-row')].filter(row=>row.querySelector('.gb-price-check')?.checked).map(row=>({id:row.dataset.id,salePrice:Number(row.querySelector('.gb-price-sale')?.value||0),promoterBasePrice:row.querySelector('.gb-price-promoter')?.value===''?null:Number(row.querySelector('.gb-price-promoter')?.value||0)}));
+ const items=[...document.querySelectorAll('.gb-price-row')].filter(row=>row.querySelector('.gb-price-check')?.checked).map(row=>({
+  id:row.dataset.id,
+  salePrice:Number(row.querySelector('.gb-price-sale')?.value||0),
+  buyerTiers:safeJson(row.dataset.buyer,[]),
+  promoterTiers:safeJson(row.dataset.prom,[])
+ }));
  if(!items.length){toast('請至少勾選一個商品');return}
  const btn=$('gbBatchSavePrices'),old=btn.textContent;btn.disabled=true;btn.textContent='儲存中…';
- try{const r=await apiPost({action:'bulkUpdateGroupBuyPrices',sessionId,items});if(r.error)throw new Error(r.error);toast('已更新 '+num(r.updated||items.length)+' 個商品價格');closeAllPanels();await loadGroupBuyAdmin()}catch(e){toast('批次價格失敗：'+(e.message||e),9000)}finally{btn.disabled=false;btn.textContent=old}
+ try{const r=await apiPost({action:'bulkUpdateGroupBuyPrices',sessionId,items});if(r.error)throw new Error(r.error);toast('已更新 '+num(r.updated||items.length)+' 個商品完整價格方案');closeAllPanels();await loadGroupBuyAdmin()}catch(e){toast('批次價格失敗：'+(e.message||e),9000)}finally{btn.disabled=false;btn.textContent=old}
 }
+
 
 async function downloadSupplierOrders(sessionId){const d=await api({action:'sessionSupplierExport',sessionId}),rows=d&&d.rows||[];if(!rows.length){toast('目前沒有可供出貨的已付款訂單');return;}const heads=['訂單編號','收件人','電話','地址','取貨方式','商品','數量','出貨備註','轉單狀態','物流單號'],keys=['order_no','recipient_name','recipient_phone','shipping_address','fulfillment_type','product_name','quantity','fulfillment_note','transfer_status','tracking_no'],q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',csv='\uFEFF'+heads.map(q).join(',')+'\n'+rows.map(r=>keys.map(k=>q(r[k])).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='供應商出貨單_'+sessionId+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('已下載供應商出貨單｜不含售價與財務資料');}
 
