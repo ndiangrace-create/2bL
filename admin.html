@@ -4069,22 +4069,25 @@ async function loadGroupBuyAdmin(){
 function groupBuyFormHtml(s){
  s=s||{};const g=s.groupBuySettings||{};
  const local=v=>{if(!v)return'';const d=new Date(v);if(Number.isNaN(d.getTime()))return'';const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())};
+ const methodCard=(id,title,checked,desc)=>'<label for="'+id+'" style="display:block;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;cursor:pointer"><div style="display:flex;align-items:flex-start;gap:10px"><input id="'+id+'" type="checkbox" '+(checked?'checked':'')+' style="margin-top:3px;width:18px;height:18px;accent-color:#7da9a1"><div><div style="font-weight:900;color:#222">'+title+'</div><div class="sub" style="margin-top:4px">'+desc+'</div></div></div></label>';
  return '<div class="report-card"><div class="form-grid">'
   +'<div class="form-field full"><label>團購名稱</label><input id="gb_name" value="'+attr(s.name||'')+'" placeholder="例如：9月生活好物團"></div>'
   +'<div class="form-field full"><label>團購首頁 1:1 圖片</label><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div id="gb_cover_preview" style="width:118px;aspect-ratio:1;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#f6f6f3">'+(g.coverImageUrl?'<img src="'+attr(g.coverImageUrl)+'" style="width:100%;height:100%;object-fit:cover">':'')+'</div><label class="btn secondary small">直接上傳圖片<input id="gb_cover_file" type="file" accept="image/*" hidden onchange="uploadGroupBuyAdminCover(this)"></label><input id="gb_cover_url" type="hidden" value="'+attr(g.coverImageUrl||'')+'"></div></div>'
   +'<div class="form-field full"><label>團購說明</label><textarea id="gb_desc" rows="4" placeholder="給民眾看的團購說明">'+safe(g.groupBuyDescription||s.description||'')+'</textarea></div>'
   +'<div class="form-field"><label>開始販售日期時間</label><input id="gb_start" type="datetime-local" value="'+attr(local(g.saleStartAt||''))+'"></div>'
   +'<div class="form-field"><label>截止訂購日期時間</label><input id="gb_end" type="datetime-local" value="'+attr(local(g.saleEndAt||''))+'"></div>'
-  +'<div class="form-field"><label><input id="gb_pickup" type="checkbox" '+(g.pickupEnabled!==false?'checked':'')+'> 現場取貨</label></div>'
-  +'<div class="form-field"><label><input id="gb_shipping" type="checkbox" '+(g.shippingEnabled===true?'checked':'')+'> 宅配</label></div>'
+  +'<div class="form-field full"><label>取貨方式</label><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">'
+  +methodCard('gb_pickup','現場取貨',g.pickupEnabled!==false,'適合自取、面交或指定現場領貨')
+  +methodCard('gb_shipping','宅配',g.shippingEnabled===true,'開啟後可設定宅配運費與滿額免運')
+  +'</div></div>'
   +'<div class="form-field"><label>宅配運費</label><input id="gb_shipfee" type="number" min="0" value="'+attr(g.shippingFee||0)+'"></div>'
   +'<div class="form-field"><label>滿額免運門檻</label><input id="gb_free" type="number" min="0" value="'+attr(g.freeShippingThreshold||0)+'"></div>'
-  +'<div class="form-field full"><label>取貨說明</label><input id="gb_picknote" value="'+attr(g.pickupNote||'')+'"></div>'
-  +'<div class="form-field full"><label><input id="gb_open" type="checkbox" '+(s.status==='已關閉'?'':'checked')+'> 前台開放此團購</label></div>'
+  +'<div class="form-field full"><label>取貨說明</label><input id="gb_picknote" value="'+attr(g.pickupNote||'')+'" placeholder="例如：到貨後另行通知取貨地點與時間"></div>'
+  +'<div class="form-field full"><label style="display:flex;align-items:center;gap:8px"><input id="gb_open" type="checkbox" '+(s.status==='已關閉'?'':'checked')+' style="width:18px;height:18px;accent-color:#7da9a1"> 前台開放此團購</label></div>'
   +'</div></div>';
 }
 function openNewGroupBuy(){openPanel('建立團購','團購由平台總管理員建立；不會出現在 2BL 市集前台。',groupBuyFormHtml({})+'<button class="btn" onclick="createGroupBuyNow(this)">建立團購</button>');}
-async function createGroupBuyNow(btn){const name=String($('gb_name')?.value||'').trim();if(!name){toast('請填團購名稱');return;}const old=btn.textContent;btn.disabled=true;btn.textContent='建立中…';try{const r=await apiPost({action:'createGroupBuy',name});if(r.error)throw new Error(r.error);await saveGroupBuyNow(r.id,null,true);toast('團購已建立');closeAllPanels();await loadGroupBuyAdmin();}catch(e){toast('建立失敗：'+(e.message||e),7000)}finally{btn.disabled=false;btn.textContent=old;}}
+async function createGroupBuyNow(btn){const name=String($('gb_name')?.value||'').trim();if(!name){toast('請填團購名稱');return;}const old=btn.textContent;btn.disabled=true;btn.textContent='建立中…';try{const r=await apiPost({action:'createGroupBuy',name});if(r.error)throw new Error(r.error);await saveGroupBuyNow(r.id,null,true);toast('團購已建立，請先新增商品');closeAllPanels();await loadGroupBuyAdmin();await openSessionProducts(r.id);}catch(e){toast('建立失敗：'+(e.message||e),7000)}finally{btn.disabled=false;btn.textContent=old;}}
 function openEditGroupBuy(id){const s=(GroupBuyAdminData?.sessions||[]).find(x=>String(x.id)===String(id));if(!s)return;openPanel('團購設定','團購獨立於市集前台；這裡只管理團購。',groupBuyFormHtml(s)+'<button class="btn" onclick="saveGroupBuyNow(\''+attr(id)+'\',this)">儲存團購</button>');}
 async function uploadGroupBuyAdminCover(input){const f=input&&input.files&&input.files[0];if(!f)return;try{toast('圖片上傳中…');const image=await makeSquarePaddedImage(f),r=await apiPost({action:'uploadCover',image});if(r.error||!r.url)throw new Error(r.error||'圖片上傳失敗');$('gb_cover_url').value=r.url;$('gb_cover_preview').innerHTML='<img src="'+attr(r.url)+'" style="width:100%;height:100%;object-fit:cover">';toast('圖片已上傳，記得儲存團購');}catch(e){toast('圖片上傳失敗：'+(e.message||e),7000);}}
 async function saveGroupBuyNow(id,btn,creating=false){
