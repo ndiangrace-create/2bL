@@ -1,0 +1,33 @@
+name: Export Groupbuy E2E Baseline
+
+on:
+  push:
+    branches:
+      - groupbuy-full-e2e-closure-20260828
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect current baseline
+        run: |
+          mkdir -p export
+          cp admin.html export/admin.html
+          cp groupbuy.html export/groupbuy.html
+          cp groupbuy-admin.html export/groupbuy-admin.html
+          cp worker.js export/worker.js
+          cp groupbuy.sql export/groupbuy.sql || true
+          cp complete_groupbuy.sql export/complete_groupbuy.sql || true
+          cp groupbuy-migration.sql export/groupbuy-migration.sql || true
+          sha256sum export/* | sort > export/SHA256SUMS.txt
+          wc -l export/* > export/LINE_COUNTS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: groupbuy-e2e-baseline
+          path: export
+          retention-days: 1
