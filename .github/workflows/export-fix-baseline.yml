@@ -1,0 +1,19 @@
+name: Export Fix Baseline
+on:
+  push:
+    branches: [fix-groupbuy-framework-rpc-order-20260828]
+  workflow_dispatch:
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 2bl-fix-baseline
+          path: |
+            admin.html
+            worker.js
+            wrangler.jsonc
+          if-no-files-found: error
+          retention-days: 1
