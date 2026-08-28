@@ -1,0 +1,28 @@
+name: Export 2BL Worker Base
+
+on:
+  push:
+    branches:
+      - groupbuy-base-export-20260828d
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify base worker
+        run: |
+          node --check worker.js
+          wc -l worker.js
+          sha256sum worker.js
+      - name: Upload worker source
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2bl-worker-base
+          path: |
+            worker.js
+            lib/admin-authorization.js
+          retention-days: 1
