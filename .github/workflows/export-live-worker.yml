@@ -1,0 +1,35 @@
+name: Export live 2BL Worker
+
+on:
+  push:
+    branches:
+      - groupbuy-base-export-20260828d
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  export-live:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      BOOTSTRAP_SOURCE: "true"
+      EXPECTED_WORKER_SOURCE_PATH: "live-worker.js"
+      ALLOW_WORKER_DIFF: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read deployed 2bl-v7 source
+        run: |
+          rm -f live-worker.js
+          node scripts/cloudflare-readonly-audit.mjs
+          node --check live-worker.js
+          wc -l live-worker.js
+          sha256sum live-worker.js
+      - name: Upload deployed source
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2bl-live-worker-source
+          path: live-worker.js
+          retention-days: 1
