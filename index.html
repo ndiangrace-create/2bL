@@ -1649,45 +1649,13 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <strong data-site-info-text style="font-size:16px;color:#6a4a00">探索活動，找到屬於你的市集旅程</strong>
   </div>
 
-  <!-- 四大分類入口 -->
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px">
-
-    <div onclick="filterCat('市集報名',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#DDEAD1;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP歡迎.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">市集</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">市集報名</div>
-      </div>
-    </div>
-
-    <div onclick="filterCat('通路寄賣',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAEEC7;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP指引.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">寄賣</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">攤位寄賣</div>
-      </div>
-    </div>
-
-    <div onclick="filterCat('體驗活動',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#D9E5EE;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP資料.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">體驗</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">體驗活動</div>
-      </div>
-    </div>
-
-    <div onclick="filterCat('合作洽詢',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAE1DD;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP會員.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">合作</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">合作洽詢</div>
-      </div>
-    </div>
-
+  <!-- 2BL 共用入口：小型分類按鈕，團購仍使用同一會員與場次主檔 -->
+  <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:14px">
+    <button class="cat-btn" onclick="filterCat('市集報名',this)" style="min-height:58px;border-radius:14px;border:1px solid #cfdcc5;background:#DDEAD1;font-weight:900;cursor:pointer">🏪<br>市集</button>
+    <button class="cat-btn" onclick="filterCat('通路寄賣',this)" style="min-height:58px;border-radius:14px;border:1px solid #eadba7;background:#FAEEC7;font-weight:900;cursor:pointer">🛍<br>寄賣</button>
+    <button class="cat-btn" onclick="filterCat('體驗活動',this)" style="min-height:58px;border-radius:14px;border:1px solid #c3d4df;background:#D9E5EE;font-weight:900;cursor:pointer">🎨<br>體驗</button>
+    <button class="cat-btn" onclick="filterCat('合作洽詢',this)" style="min-height:58px;border-radius:14px;border:1px solid #e8c9c4;background:#FAE1DD;font-weight:900;cursor:pointer">🤝<br>合作</button>
+    <button class="cat-btn" onclick="filterCat('團購',this)" style="min-height:58px;border-radius:14px;border:1px solid #ead59b;background:#FFF1B8;font-weight:900;cursor:pointer">🛒<br>團購</button>
   </div>
 
   <!-- 精選主題活動 -->
@@ -3905,7 +3873,7 @@ function eventSessionCount(eventId){
 }
 function isOpenSession(s){
   const st=String(s?.status||'').trim();
-  return !st || st==='報名中' || st==='開放中';
+  return !st || st==='報名中' || st==='開放中' || st==='團購中';
 }
 function mergeSessions(list){
   const old=Array.isArray(ST.allSessionsData)?ST.allSessionsData:[];
@@ -4131,7 +4099,7 @@ async function filterCat(type, el){
   if(title) title.textContent = type;
   const list = $('portalSessionList');
   if(list) list.innerHTML = '<div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>';
-  const _catBgMap={'市集報名':'#F2EEED','體驗活動':'#F4EBE4','通路寄賣':'#EAE0D7','合作洽詢':'#EBEBE9'};
+  const _catBgMap={'市集報名':'#F2EEED','體驗活動':'#F4EBE4','通路寄賣':'#EAE0D7','合作洽詢':'#EBEBE9','團購':'#FFF9E6'};
   const _catBg=_catBgMap[type]||'';
   const _portalPageEl=$('pagePortal');
   if(_portalPageEl) _portalPageEl.style.background=_catBg;
@@ -4300,10 +4268,11 @@ function renderSessionCard(s){
     : `<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
   const unavailableLabel=full?'名額已滿':(scheduleUnavailable?({upcoming:'尚未開放',paused:'暫停報名',ended:'報名已截止'}[s.registrationState]||'目前未開放'):'已關閉');
   const scheduleNote=scheduleUnavailable&&s.registrationMessage?`<div style="margin-top:6px;color:#8b5a00;font-size:14px;font-weight:800;line-height:1.5">⏱ ${esc(s.registrationMessage)}</div>`:'';
+  const isGroupBuy=s.groupBuyEnabled===true || s.type==='團購' || (Array.isArray(s.portals)&&s.portals.includes('團購'));
   const actionHtml=closed
     ? `<span style="display:flex;align-items:center;justify-content:center;width:100%;min-height:34px;padding:5px 8px;border-radius:11px;background:#eee;color:#777;font-size:15px;font-weight:900;text-align:center">${unavailableLabel}</span>`
-    : `<button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>`;
-  return `<div class="ses-list-card ${themeClass}" data-session-id="${esc(s.id)}" onclick="${closed?'':'openActivityFromHome(null,\''+esc(s.id)+'\')'}" style="${closed?'opacity:.62;':''}">
+    : (isGroupBuy?`<button onclick="event.stopPropagation();openSession('${esc(s.id)}')" class="ses-list-reg">查看團購</button>`:`<button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>`);
+  return `<div class="ses-list-card ${themeClass}" data-session-id="${esc(s.id)}" onclick="${closed?'':(isGroupBuy?'openSession(\''+esc(s.id)+'\')':'openActivityFromHome(null,\''+esc(s.id)+'\')')}" style="${closed?'opacity:.62;':''}">
     <div class="ses-list-img">${coverEl}</div>
     <div class="ses-list-body">
       <div class="ses-theme-pill">${esc(themeInfo.title||'無主題')}</div>
@@ -5025,12 +4994,17 @@ function adjStall(delta){
   updateFee();
 }
 
+let FormHeroImages=[],FormHeroImageIndex=0;
+function cycleFormHeroImage(step=1){if(FormHeroImages.length<2)return;FormHeroImageIndex=(FormHeroImageIndex+step+FormHeroImages.length)%FormHeroImages.length;const img=$('formHero')?.querySelector('.form-hero-img'),count=$('formHero')?.querySelector('.form-hero-image-count');if(img)img.src=FormHeroImages[FormHeroImageIndex];if(count)count.textContent=(FormHeroImageIndex+1)+' / '+FormHeroImages.length}
 function buildFormHero(s, cover){
   const dateStr=(s.dates&&s.dates.length)?s.dates.map(d=>d.date+(d.start?' '+d.start:'')+(d.end?'–'+d.end:'')).join(' / '):(s.date||'');
   const meta=[dateStr,s.venue].filter(Boolean).join('　');
+  const mods=s&&s.modules&&typeof s.modules==='object'?s.modules:{};
+  FormHeroImages=[...new Set([...(Array.isArray(mods.galleryImages)?mods.galleryImages:[]),cover||''].filter(Boolean))];FormHeroImageIndex=0;cover=FormHeroImages[0]||cover;
   if(cover){
     $('formHero').innerHTML=`
-      <img class="form-hero-img" src="${cover}" alt="" onerror="this.parentElement.innerHTML='<div class=form-hero-placeholder>🎪</div>'">
+      <img class="form-hero-img" src="${cover}" alt="" ${FormHeroImages.length>1?'onclick="cycleFormHeroImage(1)" style="cursor:pointer"':''} onerror="this.parentElement.innerHTML='<div class=form-hero-placeholder>🎪</div>'">
+      ${FormHeroImages.length>1?`<button type="button" class="form-hero-image-count" onclick="cycleFormHeroImage(1)" style="position:absolute;right:12px;top:12px;z-index:2;border:0;border-radius:99px;padding:6px 10px;background:rgba(0,0,0,.62);color:#fff;font-weight:900">1 / ${FormHeroImages.length}</button>`:''}
       <div class="form-hero-overlay">
         <div class="form-hero-title">${s.name}</div>
         <div class="form-hero-meta">${meta}</div>
@@ -5435,7 +5409,7 @@ async function openSessionProductShop(sessionId){
 
 async function openSession(sessionId){
   const _gbCached=(ST.allSessionsData||[]).find(x=>String(x.id)===String(sessionId))||(ST.sessions||[]).find(x=>String(x.id)===String(sessionId));
-  if(_gbCached&&_gbCached.groupBuyEnabled){await openSessionProductShop(sessionId);return;}
+  if(_gbCached&&_gbCached.groupBuyEnabled){location.href='groupbuy.html?g='+encodeURIComponent(sessionId);return;}
   ST.currentBundle=null; ST.bundleAddon='';
   if(!Array.isArray(ST.bundles)||!ST.bundles.length){ try{ const _bl=await api({action:'getBundlesPublic'}); ST.bundles=Array.isArray(_bl)?_bl:[]; }catch(_e){} }
   // 點場次必須立即有反應：先用列表快取打開報名表，再背景抓最新資料。
