@@ -142,7 +142,7 @@ function publicRelogin(){publicLogout()}
 async function publicLoginDo(){const j=await post('memberEmailPhoneLogin',{email:publicEmail.value,phone:publicPhone.value});if(j.error)return alert(j.error);localStorage.setItem(TK,j.token);await refreshLoginState();closePublicLogin();if(hiddenAdminIntent){hiddenAdminIntent=false;await tryPromoterAdmin();return}if(publicLoginAfter==='orders'){publicLoginAfter='';await openMyOrders();return}if(publicLoginAfter==='promoter'){publicLoginAfter='';await handlePromoterEntry()}}
 let logoHoldTimer=0,logoHeld=false,hiddenAdminIntent=false;
 function cancelLogoHold(){if(logoHoldTimer){clearTimeout(logoHoldTimer);logoHoldTimer=0}}
-async function tryPromoterAdmin(){if(!tk()){hiddenAdminIntent=true;openPublicLogin();return}const identity=await post('groupBuyIdentity',{memberToken:tk()});if(identity.error)return alert(identity.error);window.GroupBuyIdentity=identity;if(!identity.isPromoter)return identity.promoterState==='none'?openApply():openPublicLogin();location.href='groupbuy-admin.html?v=20260829-promoter-profit-simplified'}
+async function tryPromoterAdmin(){if(!tk()){hiddenAdminIntent=true;openPublicLogin();return}const identity=await post('groupBuyIdentity',{memberToken:tk()});if(identity.error)return alert(identity.error);window.GroupBuyIdentity=identity;if(!identity.isPromoter)return identity.promoterState==='none'?openApply():openPublicLogin();location.href='groupbuy-admin.html?v=20260829-promoter-profit-final'}
 function bindHiddenAdmin(){const el=document.getElementById('brandEntry');if(!el)return;const start=e=>{logoHeld=false;cancelLogoHold();logoHoldTimer=setTimeout(async()=>{logoHeld=true;logoHoldTimer=0;await tryPromoterAdmin()},3000)};const stop=()=>cancelLogoHold();el.addEventListener('pointerdown',start);el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);el.addEventListener('pointerleave',stop);el.addEventListener('contextmenu',e=>e.preventDefault());el.addEventListener('click',e=>{if(logoHeld){logoHeld=false;e.preventDefault();return}goHome()})}
 refreshLoginState();bindHiddenAdmin();boot();
 </script><style id="gbFrontCompactV2">
@@ -321,4 +321,13 @@ body.gb-has-home-dock,body.gb-has-dock{padding-bottom:calc(108px + env(safe-area
 <style id="gbNoRoundActionButtons20260829">
 button,.primary,.secondary,.topbtn,.back{border-radius:8px!important}
 </style>
+<style id="gbPromoterModeNotice20260829">
+.gb-promoter-mode-notice{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:10px 12px;border:1px solid #abc8bf;border-radius:8px;background:#e4f0ec;font-size:16px;font-weight:900}.gb-promoter-mode-notice button{flex:0 0 auto;border:1px solid #6f9e92;background:#315f55;color:#fff;border-radius:7px;padding:9px 13px;font-size:16px;font-weight:950}@media(max-width:620px){.gb-promoter-mode-notice{align-items:stretch;flex-direction:column;font-size:15px}.gb-promoter-mode-notice button{width:100%;min-height:46px}}
+</style>
+<script id="gbPromoterModeNotice20260829Script">
+(function(){
+function syncPromoterModeNotice(){const host=document.getElementById('content'),store=host?.querySelector('.storehead'),existing=document.getElementById('gbPromoterModeNotice');if(!host||!store||!window.GroupBuyIdentity?.isPromoter){existing?.remove();return}if(existing)return;const bar=document.createElement('div');bar.id='gbPromoterModeNotice';bar.className='gb-promoter-mode-notice';bar.innerHTML='<span>目前是一般買家模式</span><button type="button">切換團購主採購</button>';bar.querySelector('button').onclick=()=>tryPromoterAdmin();store.parentNode.insertBefore(bar,store)}
+const observer=new MutationObserver(syncPromoterModeNotice);observer.observe(document.body,{childList:true,subtree:true});[0,400,1200,2500].forEach(ms=>setTimeout(syncPromoterModeNotice,ms));
+})();
+</script>
 </body></html>
