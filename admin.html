@@ -49,6 +49,8 @@
 .etc-sub{font-size:12.5px;color:#7a7160;font-weight:700;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .etc-key{font-size:11px;color:#b3aa9b}
 .theme-fbtn.active{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}
+.theme-fbtn.groupbuy-fbtn:not(.active){background:var(--yellow);border-color:#d5bd77}
+.groupbuy-session-card{border-color:#d5bd77;background:linear-gradient(135deg,#fff 0%,#fffdf5 100%)}
 .onsite-fbtn.active{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}.onsite-count{font-weight:900;color:#333;padding:2px 2px 0}.tabs .tab{padding-left:2px;padding-right:2px}
 /* 現場報到：攤友小卡（電腦版並排，手機自動單欄） */
 .onsite-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;align-items:stretch}
@@ -1792,7 +1794,7 @@
     <div class="actions"><button class="btn secondary small hide-sm" onclick="refreshCurrentPage()">重新整理資料</button><button class="btn secondary small hide-sm" onclick="updateAdminVersion()">更新系統版本</button><button class="btn secondary small" onclick="window.open('onsite.html','_blank')">現場入口</button><button class="btn gray small" onclick="logout()">登出</button></div>
   </div></header>
   <main class="app">
-<section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">每一場都是獨立管理卡；點數字直接進入該場名單。</div></div><div class="page-actions"><button type="button" class="btn" onclick="openAdminManualRegistrationForSession()">＋ 主辦代報名</button><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button><button id="btn-new-groupbuy-session" class="btn yellow hidden" data-groupbuy-platform-only onclick="openNewGroupBuy()">＋ 新增團購</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
+<section id="page-sessions"><div class="page-title"><div><h2>場次總覽 / 場次管理</h2><div class="sub">市集依主題分類；點「團購」只顯示團購卡，並進入團購專用管理。</div></div><div class="page-actions"><button type="button" class="btn" onclick="openAdminManualRegistrationForSession()">＋ 主辦代報名</button><button class="btn secondary" onclick="refreshSessionsOverview()">重新整理</button><button class="btn secondary" onclick="openBusinessOverviewPanel()">跨場次總覽</button><button class="btn secondary" onclick="openFinanceOverview()">💰 金流總覽</button><button class="btn" onclick="newSessionFull()">＋ 新增場次</button><button id="btn-new-groupbuy-session" class="btn yellow hidden" data-groupbuy-platform-only onclick="openNewGroupBuy()">＋ 新增團購</button></div></div><div class="filter-row"><input id="sessionSearch" placeholder="搜尋場次、系列、合作單位、地點" oninput="renderSessions()"><select id="sessionStatusFilter" onchange="renderSessions()"><option value="current">進行中</option><option value="all">全部</option><option value="archived">封存</option></select></div><div id="themeFilterRow" class="filter-row" style="margin-top:0"></div><div id="sessionList" class="session-list"><div class="loading">載入場次中…</div></div></section>
     <section id="page-todos" class="hidden"><div class="page-title"><div><h2>全部待辦</h2><div class="sub">跨場次快速處理中心；每張卡片一層完成處理。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadTodos()">重新整理</button></div></div><div id="todoThemeFilterBar" class="todo-theme-filter-bar"></div><div id="todoFilterBar"></div><div id="todoList" class="cards"><div class="loading">載入待辦中…</div></div></section>
     <section id="page-onsite" class="hidden"><div class="page-title"><div><h2>現場報到</h2><div class="sub">選場次 → 選日期 → 報到；不同場次絕不共用名單。</div></div><div class="page-actions"><button class="btn secondary" onclick="loadOnsiteList()">重新整理</button><button class="btn secondary" onclick="window.open('onsite.html','_blank')">完整現場／通行碼入口</button></div></div><div class="filter-row"><select id="onsiteSession" onchange="loadOnsiteList(this.value)" style="flex:1;min-width:220px"></select></div><div id="onsiteContext" class="notice" style="margin:0 0 10px"></div><div class="filter-row" style="margin-top:0"><input id="onsiteSearch" placeholder="搜尋品牌、姓名、手機、Email" oninput="renderOnsiteList()"></div><div id="onsiteDateTabs" class="quick-scroll"></div><div id="onsiteSummary"></div><div id="onsiteQuickFilters" class="quick-scroll"></div><div id="onsiteBody"><div class="empty">請先選擇場次</div></div></section>
     <section id="page-members" class="hidden"><div class="page-title"><div><h2>會員 / 品牌</h2><div class="sub">查品牌、會員與歷史報名；每場狀態獨立。</div></div><div class="page-actions"><button class="btn" onclick="openAdminManualRegistration()">＋ 主辦代報名</button><button class="btn secondary" onclick="loadMembers()">重新整理</button></div></div><div class="filter-row"><input id="memberSearch" placeholder="搜尋品牌、姓名、手機、Email、FB、IG" oninput="renderMembers()"></div><div id="memberList" class="member-list"><div class="loading">載入會員中…</div></div></section>
@@ -1813,11 +1815,12 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260829-login-observer-fix-1';
+const ADMIN_BUILD = '20260829-groupbuy-session-routing-1';
 const API = (location.protocol==='https:' && /(^|\.)2b-love\.com$/i.test(location.hostname)) ? (location.origin+'/s/api') : 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
 const ADMIN_PAGE_STATE_KEY = '2bl_admin_page_state';
+const GROUPBUY_SESSION_FILTER = '__groupbuy__';
 const AdminState = { tenantId:'', email:'', token:'', role:'', name:'', authorization:null, currentPage:'sessions', currentSessionId:null, currentLayer:'root', currentFilter:null, sessions:[], currentSessionDetail:null, currentList:[], members:[], settings:{}, events:[], panelStack:[] };
 let OpsDashboardCache={},OpsDashboardInFlight=false;
 let AdminTodoTheme='all';
@@ -1971,7 +1974,8 @@ function isGroupBuySessionRow(s){
   return settings.pureGroupBuy===true||settings.pure_group_buy===true||s.pureGroupBuy===true||s.pure_group_buy===true||String(s.type||'').trim()==='團購'||String(s.status||'').trim()==='團購中'||(portals.length===1&&portals[0]==='團購');
 }
 function groupBuyAllowedSessionIds(){
-  const auth=AdminState.authorization||{},sources=[auth.allowedSessionIds,auth.allowed_session_ids,GroupBuyAdminData?.allowedSessionIds,GroupBuyAdminData?.allowed_session_ids];
+  const auth=AdminState.authorization||{},groupBuyAuth=GroupBuyAdminData?.authorization||{};
+  const sources=[auth.allowedSessionIds,auth.allowed_session_ids,GroupBuyAdminData?.allowedSessionIds,GroupBuyAdminData?.allowed_session_ids,groupBuyAuth.allowedSessionIds,groupBuyAuth.allowed_session_ids];
   return [...new Set(sources.flatMap(x=>Array.isArray(x)?x:[]).map(String).filter(Boolean))];
 }
 function hasAssignedGroupBuyAccess(){
@@ -2063,7 +2067,7 @@ async function checkAdminVersion(){
     if(m&&m[1]&&m[1]!==ADMIN_BUILD) updateAdminVersion();
   }catch(_e){}
 }
-async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員'); installSocialSchedulerTile(); applyAdminAuthorizationUI(); await refreshSessionsOverview(); await preloadSessionAdminGroupBuyAccess(); applyAdminAuthorizationUI(); setTimeout(checkAdminVersion,1200); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
+async function enterAdmin(){ $('loginPage').classList.add('hidden'); $('adminPage').classList.remove('hidden'); $('whoText').textContent=(AdminState.name||AdminState.email)+'｜'+(AdminState.role||'管理員'); installSocialSchedulerTile(); applyAdminAuthorizationUI(); await refreshSessionsOverview(); await preloadSessionAdminGroupBuyAccess(); applyAdminAuthorizationUI(); renderThemeFilter(); setTimeout(checkAdminVersion,1200); const saved=readAdminPageState(); if(saved && saved.page){ if(saved.page!==AdminState.currentPage) switchPage(saved.page,{restore:true}); else saveAdminPageState(saved.page); restoreDeepNav(saved); } else { saveAdminPageState(AdminState.currentPage); } }
 function switchPage(page,opts={}){
   if(page==='groupbuy'&&!canAccessGroupBuyAdmin()){
     toast('此帳號沒有團購場次管理權限');
@@ -2224,7 +2228,28 @@ function saveGroupBuyAdminView(type,sid='',pid=''){
 }
 function clearGroupBuyAdminView(){try{localStorage.removeItem(GROUPBUY_ADMIN_VIEW_KEY)}catch(e){}}
 function readGroupBuyAdminView(){try{const v=JSON.parse(localStorage.getItem(GROUPBUY_ADMIN_VIEW_KEY)||'null');if(!v||Date.now()-Number(v.at||0)>86400000)return null;return v}catch(e){return null}}
-function restoreDeepNav(st){ try{ if(!st)return; if(st.page==='groupbuy'){setTimeout(()=>restoreGroupBuyAdminView(),350);return;} if(st.page!=='sessions') return; const sid=st.sid||''; const filter=st.filter||'all'; const L=st.layer||'root'; const labelMap={all:'全部名單',pending:'待審核',approved:'已錄取',paid:'已繳費',free:'免費錄取',paymentPending:'付款待確認',unpaid:'未繳費',checked:'已報到',checkin:'現場報到名單',refund:'退款',receivable:'應收明細',received:'已收明細',unreceived:'未收明細',deposit:'押金明細',equipment:'設備名單'}; if(L==='businessOverview'){ if(typeof openBusinessOverviewPanel==='function') openBusinessOverviewPanel(); return; } if(!sid) return; if(L==='sessionList'){ openSessionList(sid,filter,labelMap[filter]||'名單'); } else if(L==='equipment'){ openEquipmentPanel(sid, st.dateKey||'', st.dateLabel||''); } else if(L==='sessionDetail'||L==='finance'){ openFinancePanel(sid); } else if(L==='sessionSettings'){ openSessionSettings(sid); } else if(L==='seatOps'){ openSeatOps(sid,st.activityDate||''); } }catch(e){} }
+function restoreDeepNav(st){
+  try{
+    if(!st)return;
+    if(st.page==='groupbuy'){setTimeout(()=>restoreGroupBuyAdminView(),350);return;}
+    if(st.page!=='sessions') return;
+    const sid=st.sid||'',filter=st.filter||'all',L=st.layer||'root';
+    if(sid&&(L==='groupbuyUnified'||isGroupBuySessionRow(sessionById(sid)))){
+      AdminState.themeFilter=GROUPBUY_SESSION_FILTER;
+      renderThemeFilter();renderSessions();
+      setTimeout(()=>openGroupBuyUnified(sid,st.filter||(canManageGroupBuyPlatform()?'settings':'orders')),350);
+      return;
+    }
+    const labelMap={all:'全部名單',pending:'待審核',approved:'已錄取',paid:'已繳費',free:'免費錄取',paymentPending:'付款待確認',unpaid:'未繳費',checked:'已報到',checkin:'現場報到名單',refund:'退款',receivable:'應收明細',received:'已收明細',unreceived:'未收明細',deposit:'押金明細',equipment:'設備名單'};
+    if(L==='businessOverview'){if(typeof openBusinessOverviewPanel==='function')openBusinessOverviewPanel();return;}
+    if(!sid)return;
+    if(L==='sessionList')openSessionList(sid,filter,labelMap[filter]||'名單');
+    else if(L==='equipment')openEquipmentPanel(sid,st.dateKey||'',st.dateLabel||'');
+    else if(L==='sessionDetail'||L==='finance')openFinancePanel(sid);
+    else if(L==='sessionSettings')openSessionSettings(sid);
+    else if(L==='seatOps')openSeatOps(sid,st.activityDate||'');
+  }catch(e){}
+}
 async function refreshCurrentPage(){ if(AdminState.currentLayer !== 'root' && AdminState.currentSessionId){ await refreshCurrentSessionOnly(); return; } if(AdminState.currentPage==='sessions') await refreshSessionsOverview(); if(AdminState.currentPage==='todos') await loadTodos(); if(AdminState.currentPage==='members') await loadMembers(); if(AdminState.currentPage==='groupbuy') await loadGroupBuyAdmin(); }
 function sessionId(s){return String(s.id||s.sessionId||s.session_id||'');}
 function sessionName(s){return s.name||s.title||s.sessionName||'未命名場次';}
@@ -2238,7 +2263,17 @@ function nz(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
 function getStats(s){ const st=s.stats||{}; return { total: nz(st.registrationTotal ?? s.registrationTotal ?? s.total), pending: nz(st.pendingReview ?? s.pendingReview ?? s.pending), approved: nz(st.approved ?? s.approved), unpaid: nz(st.unpaid ?? s.unpaid), paymentPending: nz(st.paymentPending ?? s.paymentPending ?? s.pendingPayment), paid: nz(st.paid ?? s.paid), free: nz(st.free ?? s.free), checked: nz(st.checkedIn ?? s.checkedIn ?? s.seated), refund: nz(st.refund ?? s.refund ?? s.refundReq) }; }
 function getFinance(s){ const f=s.finance||{}; return {deposit:nz(f.depositTotal ?? s.depositTotal), receivable:nz(f.receivableTotal ?? s.receivableTotal ?? s.invoiceTotal), received:nz(f.receivedTotal ?? s.receivedTotal ?? s.revenue), revenue:nz(f.revenueTotal ?? f.invoiceTotal ?? s.invoiceTotal), unreceived:nz(f.unreceivedTotal ?? s.unreceivedTotal)}; }
 function getEquip(s){ const e=s.equipment||{}; return {need:e.neededText ?? e.paidNeededText ?? e.approvedNeededText ?? textFromMap(s.equipNeed), dailyRows:e.dailyRows || s.dailyEquipmentRows || [], dailyText:e.dailyText || s.dailyEquipmentText || '', total:e.totalText || s.totalEquipmentText || e.neededText || textFromMap(s.equipNeed)}; }
-async function refreshSessionsOverview(){ AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; try{ toast('場次載入中…'); const rows=await api({action:'getSessionDashboard'}); AdminState.sessions = Array.isArray(rows) ? rows : []; renderSessions(); renderThemeFilter(); ensureThemeEventsData(); toast('場次已更新'); }catch(e){ $('sessionList').innerHTML='<div class="empty">場次載入失敗：'+safe(e.message)+'</div>'; } }
+async function refreshSessionsOverview(){
+  AdminState.currentSessionId=null;AdminState.currentLayer='root';AdminState.currentFilter=null;
+  try{
+    toast('場次載入中…');
+    const rows=await api({action:'getSessionDashboard'});
+    AdminState.sessions=Array.isArray(rows)?rows:[];
+    renderSessions();renderThemeFilter();ensureThemeEventsData();
+    if(AdminState.themeFilter===GROUPBUY_SESSION_FILTER)await loadGroupBuySessionCategoryData(true);
+    toast('場次已更新');
+  }catch(e){$('sessionList').innerHTML='<div class="empty">場次載入失敗：'+safe(e.message)+'</div>';}
+}
 
 function sessionLimit(s){ return nz(s.limit ?? s.limitCount ?? s.maxStalls ?? s.max_stalls ?? s.capacity ?? 0); }
 function progressText(s){ const st=getStats(s); const lim=sessionLimit(s); return lim>0 ? (st.total + '/' + lim) : String(st.total); }
@@ -2331,15 +2366,48 @@ function renderThemeFilter(){
   const row=$('themeFilterRow'); if(!row) return;
   const evs=AdminState.featEvents||AdminState.events||[];
   const cur=AdminState.themeFilter||'';
-  // 只列出「實際有場次」的主題，避免空按鈕
-  const used=new Set((AdminState.sessions||[]).filter(s=>!isGroupBuySessionRow(s)).map(s=>String(s.eventId||s.event_id||'')).filter(Boolean));
+  // 市集主題與團購共用這一列快速分類，但兩種業務卡片與管理入口完全分開。
+  const marketRows=(AdminState.sessions||[]).filter(s=>!isGroupBuySessionRow(s));
+  const used=new Set(marketRows.map(s=>String(s.eventId||s.event_id||'')).filter(Boolean));
   const btns=[{id:'',name:'全部主題'}].concat(evs.filter(e=>used.has(String(e.id))).map(e=>({id:String(e.id),name:e.title||e.name||'主題'})));
+  const hasGroupBuy=canManageGroupBuyPlatform()||(canAccessGroupBuyAdmin()&&groupBuyOverviewSessions().length>0);
+  if(hasGroupBuy) btns.push({id:GROUPBUY_SESSION_FILTER,name:'團購',groupBuy:true});
   row.innerHTML=btns.map(b=>{
     const on=String(cur)===String(b.id);
-    return '<button type="button" class="btn secondary small theme-fbtn'+(on?' active':'')+'" onclick="setThemeFilter(\''+attr(b.id)+'\')">'+safe(b.name)+'</button>';
+    return '<button type="button" class="btn secondary small theme-fbtn'+(b.groupBuy?' groupbuy-fbtn':'')+(on?' active':'')+'" aria-pressed="'+(on?'true':'false')+'" onclick="setThemeFilter(\''+attr(b.id)+'\')">'+safe(b.name)+'</button>';
   }).join('');
 }
-function setThemeFilter(id){ AdminState.themeFilter=String(id||''); renderThemeFilter(); renderSessions(); }
+function setThemeFilter(id){
+  AdminState.themeFilter=String(id||'');
+  renderThemeFilter();
+  renderSessions();
+  if(AdminState.themeFilter===GROUPBUY_SESSION_FILTER) loadGroupBuySessionCategoryData();
+}
+
+function groupBuyOverviewSessions(){
+  const byId=new Map();
+  const sources=[...(Array.isArray(AdminState.sessions)?AdminState.sessions:[]),...(Array.isArray(GroupBuyAdminData?.sessions)?GroupBuyAdminData.sessions:[])];
+  for(const row of sources){
+    if(!isGroupBuySessionRow(row)) continue;
+    const id=sessionId(row); if(!id) continue;
+    const old=byId.get(id)||{};
+    byId.set(id,{...old,...row,groupBuySettings:row.groupBuySettings||old.groupBuySettings||safeJson(row.group_buy_settings_json||old.group_buy_settings_json,{})});
+  }
+  return [...byId.values()];
+}
+
+async function loadGroupBuySessionCategoryData(force=false){
+  if(!canManageGroupBuyPlatform()&&!isSessionAdmin()) return;
+  if(GroupBuyAdminData&&!force){renderThemeFilter();renderSessions();return;}
+  try{
+    GroupBuyAdminData=await api({action:'groupBuyAdminData'});
+    applyAdminAuthorizationUI();
+    renderThemeFilter();
+    renderSessions();
+  }catch(e){
+    if(AdminState.themeFilter===GROUPBUY_SESSION_FILTER) toast('團購場次更新失敗：'+(e.message||e),8000);
+  }
+}
 
 function sessionDaySyncHtml(s){
   const sid=sessionId(s),x=OpsDashboardCache[String(sid)];
@@ -2376,19 +2444,23 @@ function openOpsFromSessionCard(sid,day,filter='all'){
 
 function renderSessions(){
   const box=$('sessionList'),kw=($('sessionSearch')?.value||'').trim().toLowerCase(),mode=$('sessionStatusFilter')?.value||'current',list=[];
-  for(const s of AdminState.sessions){
-    if(isGroupBuySessionRow(s))continue;
+  const tf=AdminState.themeFilter||'',groupBuyOnly=tf===GROUPBUY_SESSION_FILTER;
+  const source=groupBuyOnly?groupBuyOverviewSessions():(AdminState.sessions||[]);
+  for(const s of source){
+    const isGroupBuy=isGroupBuySessionRow(s);
+    if(groupBuyOnly?!isGroupBuy:isGroupBuy)continue;
     if(mode==='current'&&isArchived(s))continue;
     if(mode==='archived'&&!isArchived(s))continue;
-    if(kw&&![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type].join(' ').toLowerCase().includes(kw))continue;
-    const tf=AdminState.themeFilter||'';if(tf&&String(s.eventId||s.event_id||'')!==String(tf))continue;
+    const groupBuySettings=safeJson(s.groupBuySettings||s.group_buy_settings_json,{});
+    if(kw&&![sessionName(s),s.eventName,s.organizer,s.coorg,s.venue,s.location,s.type,groupBuySettings.groupBuyDescription].join(' ').toLowerCase().includes(kw))continue;
+    if(!groupBuyOnly&&tf&&String(s.eventId||s.event_id||'')!==String(tf))continue;
     list.push(s);
   }
-  if(!list.length){box.innerHTML='<div class="empty">目前沒有符合條件的場次</div>';return;}
+  if(!list.length){box.innerHTML='<div class="empty">'+(groupBuyOnly?'目前沒有符合條件的團購場次':'目前沒有符合條件的場次')+'</div>';return;}
   const sorted=sortOperationalSessions(list);let out='';
-  for(const s of sorted)out+=renderSessionCard(s);
+  for(const s of sorted)out+=groupBuyOnly?renderGroupBuySessionCard(s):renderSessionCard(s);
   box.innerHTML=out;
-  queueOpsForSessions(sorted);
+  if(!groupBuyOnly) queueOpsForSessions(sorted);
 }
 // ── 場次短網址 ──────────────────────────────────────────────
 // 一個場次只會有一組短網址，後端以唯一索引保證；重複按只會取回同一組。
@@ -2573,6 +2645,7 @@ function adminDefaultOpsDay(s){
 }
 
 function renderSessionCard(s){
+  if(isGroupBuySessionRow(s)) return renderGroupBuySessionCard(s);
   const sid=sessionId(s), st=getStats(s), f=getFinance(s), e=getEquip(s), lim=sessionLimit(s);
   const dayOps=OpsDashboardCache[String(sid)]||{},dayAttendance=dayOps.attendance||{};
   const metric=(cls,label,value,filter,title)=>'<button type="button" class="chip '+cls+' click" onclick="drillOr(\''+attr(sid)+'\',\''+attr(filter)+'\',\''+attr(title||label)+'\','+(parseInt(value,10)||0)+')" title="查看'+safe(title||label)+'明細"><span class="m-label">'+safe(label)+'</span><b>'+safe(value)+'</b></button>';
@@ -2633,12 +2706,53 @@ function renderSessionCard(s){
   +'</article>';
 }
 
+function groupBuyDateText(v){
+  if(!v)return '';
+  const d=new Date(v); if(Number.isNaN(d.getTime()))return String(v);
+  return d.toLocaleString('zh-TW',{timeZone:'Asia/Taipei',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function renderGroupBuySessionCard(source){
+  const sid=sessionId(source);
+  const rich=(GroupBuyAdminData?.sessions||[]).find(x=>String(sessionId(x))===String(sid));
+  const s=rich?{...source,...rich}:source;
+  const g=safeJson(s.groupBuySettings||s.group_buy_settings_json,{}),cover=String(g.coverImageUrl||((Array.isArray(g.coverImages)&&g.coverImages[0])||'')).trim();
+  const now=Date.now(),start=g.saleStartAt?Date.parse(g.saleStartAt):NaN,end=g.saleEndAt?Date.parse(g.saleEndAt):NaN;
+  const state=String(s.status||'')==='已關閉'?'已關閉':(Number.isFinite(start)&&now<start?'尚未開賣':(Number.isFinite(end)&&now>end?'已截止':'開放中'));
+  const period=[groupBuyDateText(g.saleStartAt),groupBuyDateText(g.saleEndAt)].filter(Boolean).join(' ～ ')||'尚未設定販售期間';
+  const thumb=cover?'<div class="session3-thumb" title="'+safe(sessionName(s))+'"><img src="'+attr(cover)+'" alt="" loading="lazy" onerror="this.parentNode.classList.add(\'is-empty\');this.remove()"></div>':'<div class="session3-thumb is-empty" title="'+safe(sessionName(s))+'"></div>';
+  const metric=(cls,label,value)=>'<span class="chip '+cls+'"><span class="m-label">'+safe(label)+'</span><b>'+num(value)+'</b></span>';
+  const finance=canManageGroupBuyPlatform()
+    ? metric('green','訂單實收',money(s.paidTotalAmount||0))+metric('blue','商品實收',money(s.paidProductAmount||0))+metric('yellow','已收運費',money(s.paidShippingAmount||0))
+    : '<span class="chip gray"><span class="m-label">權限</span><b>訂單／出貨</b></span>';
+  const focus=canManageGroupBuyPlatform()?'settings':'orders',url=groupBuyPublicUrl(s);
+  return '<article class="session-card session-card-3rows groupbuy-session-card" id="session-'+attr(sid)+'">'
+    +'<div class="session3-wrap">'
+      +'<div class="session3-info">'+thumb
+        +'<div class="session3-title">'+safe(sessionName(s))+'</div>'
+        +'<div class="meta"><span class="pill yellow">團購</span><span class="pill '+(state==='開放中'?'green':'pink')+'">'+safe(state)+'</span></div>'
+        +'<div class="sub" style="margin-top:8px">'+safe(period)+'</div>'
+        +'<div class="sub" style="margin-top:6px">'+safe(g.groupBuyDescription||'尚未填團購說明')+'</div>'
+      +'</div>'
+      +'<div class="session3-content">'
+        +'<div class="session3-main">'
+          +metric('blue','商品',s.productCount)+metric('purple','有效訂單',s.orderCount)+metric('green','已付款',s.paidOrderCount)+metric('yellow','團購主',s.promoterCount)
+        +'</div>'
+        +'<div class="session3-finance">'+finance+'</div>'
+        +'<div class="session3-actions">'
+          +'<button type="button" class="btn purple" onclick="openGroupBuyUnified(\''+attr(sid)+'\',\''+focus+'\')">進入團購專用管理</button>'
+          +'<button type="button" class="btn green small" onclick="window.open(\''+attr(url)+'\',\'_blank\')">查看團購前台</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+  +'</article>';
+}
+
 async function copySessionAction(sid){ if(!await uiConfirm('要複製這個場次嗎？會建立一個「（複製）」的新場次，內容全帶、名額歸零，之後改日期名稱即可。')) return; try{ await apiPost({action:'copySession', id:sid}); toast('已複製，請在列表編輯新場次'); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('複製失敗：'+e.message,6000); } }
 async function setSessionStatus(sid, status){ const label={'報名中':'開放報名','關閉':'關閉報名','封存':'封存（移到過往場次）'}[status]||status; if(!await uiConfirm('確定「'+label+'」？')) return; try{ await apiPost({action:'toggleSessionStatus', sessionId:sid, status}); toast('已'+label); if(typeof refreshSessionsOverview==='function') refreshSessionsOverview(); }catch(e){ toast('失敗：'+e.message,6000); } }
 function syncPanelNav(){ const hasPrev=AdminState.panelStack.length>0; const backBtn=document.querySelector('#panel .panel-bottom button[onclick="panelBack()"]'); if(backBtn)backBtn.textContent=hasPrev?'← 返回上一頁':'← 回場次總覽'; $('panelRootBtn')?.classList.toggle('hidden',!hasPrev); }
 function openPanel(title,sub,html,opts={}){ const p=$('panel'); if(p.classList.contains('show')&&!opts.replace){ AdminState.panelStack.push({title:$('panelTitle').textContent,sub:$('panelSub').textContent,html:$('panelBody').innerHTML,layer:AdminState.currentLayer,sessionId:AdminState.currentSessionId,filter:AdminState.currentFilter}); } $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; p.classList.add('show'); document.body.style.overflow='hidden'; syncPanelNav(); history.pushState({panel:true},''); saveAdminPageState(); }
 function panelBack(){ const prev=AdminState.panelStack.pop(); if(prev){ $('panelTitle').textContent=prev.title; $('panelSub').textContent=prev.sub; $('panelBody').innerHTML=prev.html; AdminState.currentLayer=prev.layer; AdminState.currentSessionId=prev.sessionId; AdminState.currentFilter=prev.filter; syncPanelNav(); saveAdminPageState(); return; } closeAllPanels(); }
-function closeAllPanels(){ if(AdminState.currentPage==='groupbuy') clearGroupBuyAdminView(); $('panel').classList.remove('show'); $('panelBody').innerHTML=''; document.body.style.overflow=''; AdminState.panelStack=[]; AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; saveAdminPageState(); }
+function closeAllPanels(){ if(AdminState.currentPage==='groupbuy'||AdminState.currentLayer==='groupbuyUnified') clearGroupBuyAdminView(); $('panel').classList.remove('show'); $('panelBody').innerHTML=''; document.body.style.overflow=''; AdminState.panelStack=[]; AdminState.currentSessionId=null; AdminState.currentLayer='root'; AdminState.currentFilter=null; saveAdminPageState(); }
 window.addEventListener('popstate',()=>{ if($('panel').classList.contains('show')) panelBack(); });
 function isRefundLikeText(v){ const s=String(v||''); return s.includes('退費')||s.includes('退款')||s.includes('refund'); }
 function isRefundCompletedRow(r){ const t=String(r.transferStatus||r.transfer_status||r.refundStatus||r.refund_status||''); const p=String(r.paymentStatus||r.payStatus||r.payment_status||''); return ['已退費','已退款','refunded'].includes(t) || ['已退費','已退款','refunded'].includes(p) || !!(r.refundedAt||r.refunded_at); }
@@ -3087,7 +3201,20 @@ async function runRegAction(regId,regAction,btn,sidOverride=''){
   }catch(e){ toast('操作失敗：'+e.message,6000); }
   finally{ btn.disabled=false; btn.textContent=old; }
 }
-async function refreshCurrentSessionOnly(){ const sid=AdminState.currentSessionId; if(!sid) return; try{ const rows=await api({action:'getSessionDashboard',sessionId:sid}); if(Array.isArray(rows) && rows[0]){ let replaced=false; for(let i=0;i<AdminState.sessions.length;i++){ if(sessionId(AdminState.sessions[i])===sid){ AdminState.sessions[i]=rows[0]; replaced=true; } } if(!replaced) AdminState.sessions.push(rows[0]); } if(AdminState.currentLayer==='sessionList') await openSessionList(sid,AdminState.currentFilter,$('panelTitle').textContent.split('｜').pop()||'名單'); renderSessions(); }catch(e){toast('刷新本場失敗：'+e.message,6000);} }
+async function refreshCurrentSessionOnly(){
+  const sid=AdminState.currentSessionId;if(!sid)return;
+  if(AdminState.currentLayer==='groupbuyUnified')return openGroupBuyUnified(sid,AdminState.currentFilter||(canManageGroupBuyPlatform()?'settings':'orders'),true);
+  try{
+    const rows=await api({action:'getSessionDashboard',sessionId:sid});
+    if(Array.isArray(rows)&&rows[0]){
+      let replaced=false;
+      for(let i=0;i<AdminState.sessions.length;i++){if(sessionId(AdminState.sessions[i])===sid){AdminState.sessions[i]=rows[0];replaced=true;}}
+      if(!replaced)AdminState.sessions.push(rows[0]);
+    }
+    if(AdminState.currentLayer==='sessionList')await openSessionList(sid,AdminState.currentFilter,$('panelTitle').textContent.split('｜').pop()||'名單');
+    renderSessions();
+  }catch(e){toast('刷新本場失敗：'+e.message,6000);}
+}
 function openRegDetail(id){
   let r=null; for(const x of AdminState.currentList){ if(String(x.id||x.regId)===String(id)) r=x; }
   if(!r){toast('找不到資料');return;}
@@ -4043,14 +4170,12 @@ async function downloadSeatBoardPng(mode='public'){
 }
 
 async function openSessionSettings(sid){
-  AdminState.currentSessionId=sid;
-  AdminState.currentLayer='sessionSettings';
   const s=sessionById(sid);
   if(isGroupBuySessionRow(s)){
-    toast('純團購請從獨立「團購」頁管理');
-    switchPage('groupbuy');
-    return;
+    return openGroupBuyUnified(sid,canManageGroupBuyPlatform()?'settings':'orders');
   }
+  AdminState.currentSessionId=sid;
+  AdminState.currentLayer='sessionSettings';
   openPanel(sessionName(s)+'｜場次設定','','<div class="loading">設定載入中…</div>');
   try{
     const rows=await api({action:'getSession',sessionId:sid}).catch(()=>null);
@@ -4161,8 +4286,8 @@ function openInlineAgreementCreate(){
 
 let GroupBuyAdminData=null,GroupBuyStaffData=[];
 
-function groupBuyPublicUrl(s){const g=s&&s.groupBuySettings||{},code=String(g.publicCode||s.id||"");return location.origin+"/groupbuy.html?g="+encodeURIComponent(code)}
-async function copyGroupBuyPublicUrl(id){const s=(GroupBuyAdminData?.sessions||[]).find(x=>String(x.id)===String(id));if(!s)return;const url=groupBuyPublicUrl(s);try{await navigator.clipboard.writeText(url);toast("已複製公開團購網址")}catch(e){prompt("複製公開團購網址",url)}}
+function groupBuyPublicUrl(s){const g=safeJson(s&&s.groupBuySettings||s?.group_buy_settings_json,{}),code=String(g.publicCode||sessionId(s)||"");return location.origin+"/groupbuy.html?g="+encodeURIComponent(code)}
+async function copyGroupBuyPublicUrl(id){const s=(GroupBuyAdminData?.sessions||[]).find(x=>String(sessionId(x))===String(id));if(!s)return;const url=groupBuyPublicUrl(s);try{await navigator.clipboard.writeText(url);toast("已複製公開團購網址")}catch(e){prompt("複製公開團購網址",url)}}
 
 function groupBuyCoverUrls(){return safeJson($('gb_cover_urls')?.value,[])}
 function renderGroupBuyCoverPreview(){const imgs=groupBuyCoverUrls(),box=$('gb_cover_preview');if(!box)return;box.innerHTML=imgs.length?imgs.map((u,i)=>'<div style="width:92px;aspect-ratio:1;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative"><img src="'+attr(u)+'" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="removeGroupBuyCoverImage('+i+')" style="position:absolute;right:4px;top:4px;border:0;border-radius:99px">×</button></div>').join(''):'<div class="sub">尚未上傳</div>'}
@@ -4185,7 +4310,7 @@ function groupBuyCreateFormHtml(){
   +'<div class="form-field"><label>截止訂購日期時間</label><input id="gb_end" type="datetime-local"></div></div></section>'
   +'<section class="ugb-create-card"><h3>2. 團購圖片</h3><div id="gb_cover_preview" class="ugb-create-images"><div class="sub">尚未上傳</div></div><label class="btn secondary small">上傳多張圖片<input id="gb_cover_file" type="file" accept="image/*" multiple hidden onchange="uploadGroupBuyAdminCover(this)"></label><input id="gb_cover_urls" type="hidden" value="[]"><div class="sub">可上傳多張，第一張作為封面。</div></section>'
   +'<section class="ugb-create-card"><h3>3. 指派團購主／場次管理員</h3><div class="sub">勾選後會同時取得這一場的管理權限、專屬連結、團購主採購價與分潤資格；不會取得其他市集或團購場次。</div><div class="ugb-create-manager-list">'+managerHtml+'</div></section>'
-  +'<div class="ugb-create-submit"><div class="sub">建立後預設不公開；再到獨立「團購」工作台完成商品、價格、配送與收款設定。</div><button class="btn" onclick="createGroupBuyNow(this)">建立團購</button></div>'
+  +'<div class="ugb-create-submit"><div class="sub">建立後預設不公開；請到「場次 → 團購」開啟專用管理，完成商品、價格、配送與收款設定。</div><button class="btn" onclick="createGroupBuyNow(this)">建立團購</button></div>'
   +'</div>';
 }
 async function openNewGroupBuy(){
@@ -6676,7 +6801,7 @@ async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disable
 let UGBSessionId='',UGBActiveModule='settings';
 
 function ugbLocal(v){if(!v)return'';const d=new Date(v);if(Number.isNaN(d.getTime()))return'';const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())}
-function ugbCurrentSession(){return (GroupBuyAdminData?.sessions||[]).find(x=>String(x.id)===String(UGBSessionId))||null}
+function ugbCurrentSession(){return (GroupBuyAdminData?.sessions||[]).find(x=>String(sessionId(x))===String(UGBSessionId))||null}
 function ugbCanFulfillCurrentSession(){return canManageGroupBuyPlatform()||(isSessionAdmin()&&groupBuyAllowedSessionIds().includes(String(UGBSessionId))&&!!ugbCurrentSession())}
 function ugbCoverHtml(imgs){imgs=(imgs||[]).filter(Boolean);return imgs.length?imgs.map((u,i)=>'<div><img src="'+attr(u)+'"><button type="button" onclick="removeGroupBuyCoverImage('+i+')" style="position:absolute;right:2px;top:2px;border:0;border-radius:99px;width:24px;height:24px">×</button></div>').join(''):'<span class="sub">尚未上傳</span>'}
 function ugbPaymentOptions(profiles,selected){return paymentProfileOptionsHtml(profiles||[],selected||'')}
@@ -6731,7 +6856,7 @@ function ugbNormalizeModule(name){
  const allowed=ugbAllowedModules();
  return allowed.includes(name)?name:allowed[0];
 }
-function ugbHeroHtml(s){const g=s.groupBuySettings||{},cover=g.coverImageUrl||((g.coverImages||[])[0])||'',url=groupBuyPublicUrl(s),state=s.status==='已關閉'?'已關閉':'開放中',meta=canManageGroupBuyPlatform()?'<span class="pill">商品 '+num(s.productCount||0)+'</span><span class="pill">訂單 '+num(s.orderCount||0)+'</span><span class="pill">已付款 '+num(s.paidOrderCount||0)+'</span><span class="pill">團購主 '+num(s.promoterCount||0)+'</span>':'<span class="pill">訂單 '+num(s.orderCount||0)+'</span><span class="pill">已付款 '+num(s.paidOrderCount||0)+'</span>';return '<div class="ugb-hero"><div class="ugb-hero-cover">'+(cover?'<img src="'+attr(cover)+'" alt="">':'')+'</div><div><div class="ugb-hero-title">'+safe(s.name||'團購')+'</div><div class="ugb-hero-meta"><span class="pill">'+safe(state)+'</span>'+meta+'</div><div class="sub" style="margin-top:7px">'+safe(g.groupBuyDescription||s.description||'尚未填團購說明')+'</div></div><div class="ugb-hero-actions">'+(canManageGroupBuyPlatform()?'<button class="btn secondary small" onclick="copyGroupBuyPublicUrl(\''+attr(s.id)+'\')">複製分享</button>':'')+'<button class="btn green small" onclick="window.open(\''+attr(url)+'\',\'_blank\')">查看前台</button></div></div>'}
+function ugbHeroHtml(s){const g=s.groupBuySettings||{},cover=g.coverImageUrl||((g.coverImages||[])[0])||'',url=groupBuyPublicUrl(s),state=s.status==='已關閉'?'已關閉':'開放中',meta=canManageGroupBuyPlatform()?'<span class="pill">商品 '+num(s.productCount||0)+'</span><span class="pill">訂單 '+num(s.orderCount||0)+'</span><span class="pill">已付款 '+num(s.paidOrderCount||0)+'</span><span class="pill">團購主 '+num(s.promoterCount||0)+'</span>':'<span class="pill">訂單 '+num(s.orderCount||0)+'</span><span class="pill">已付款 '+num(s.paidOrderCount||0)+'</span>';return '<div class="ugb-hero"><div class="ugb-hero-cover">'+(cover?'<img src="'+attr(cover)+'" alt="">':'')+'</div><div><div class="ugb-hero-title">'+safe(s.name||'團購')+'</div><div class="ugb-hero-meta"><span class="pill">'+safe(state)+'</span>'+meta+'</div><div class="sub" style="margin-top:7px">'+safe(g.groupBuyDescription||s.description||'尚未填團購說明')+'</div></div><div class="ugb-hero-actions">'+(canManageGroupBuyPlatform()?'<button class="btn secondary small" onclick="copyGroupBuyPublicUrl(\''+attr(sessionId(s))+'\')">複製分享</button>':'')+'<button class="btn green small" onclick="window.open(\''+attr(url)+'\',\'_blank\')">查看前台</button></div></div>'}
 function ugbModuleCards(s){
  const defs=[['settings','⚙️','團購設定','基本資料、圖片、配送、免運、每場收款','收款與團購設定集中'],['products','📦','商品設定','商品、批次建立、價格、成本、級距','商品 '+num(s.productCount||0)+' 件'],['promoters','🤝','本場指派與採購規則','只管理本場候選人、指派、專屬連結與個別採購價','已指派 '+num(s.promoterCount||0)+' 位'],['orders','🧾','訂單','查看指定場次訂單；付款與退款由平台處理','訂單 '+num(s.orderCount||0)+'｜已付 '+num(s.paidOrderCount||0)],['supplier','🚚','出貨作業','僅已付款有效訂單可出貨','供應商出貨單']];
  const allowed=ugbAllowedModules();
@@ -6829,25 +6954,31 @@ window.ugbOpenModule=async function(name){
  document.querySelectorAll('#ugbModuleGrid .ugb-module-card').forEach(b=>b.classList.toggle('active',b.dataset.module===UGBActiveModule));
  const target=document.getElementById('ugbSection-'+UGBActiveModule);
  if(!target){toast('找不到這個團購設定區段');return false}
+ AdminState.currentFilter=UGBActiveModule;
  saveGroupBuyAdminView('unified',UGBSessionId,UGBActiveModule);
+ if(AdminState.currentLayer==='groupbuyUnified')saveAdminPageState();
  target.scrollIntoView({behavior:'smooth',block:'start'});
  return true;
 }
 
 window.openGroupBuyUnified=async function(sid,focus='',reopen=false){
- if(AdminState.currentPage!=='groupbuy'){toast('請先從獨立「團購」頁進入管理');return;}
- if(!canAccessGroupBuyAdmin()){toast('此帳號沒有已指派的團購場次');return;}
- UGBSessionId=String(sid||UGBSessionId||'');
+ if(!canManageGroupBuyPlatform()&&!isSessionAdmin()){toast('此帳號沒有團購場次管理權限');return;}
+ UGBSessionId=String(sid||'');
  if(!UGBSessionId)return toast('找不到團購場次');
  UGBActiveModule=ugbNormalizeModule(focus||UGBActiveModule||(canManageGroupBuyPlatform()?'settings':'orders'));
  try{
   GroupBuyAdminData=await api({action:'groupBuyAdminData'});
+  applyAdminAuthorizationUI();
+  if(!canAccessGroupBuyAdmin())throw new Error('此帳號沒有已指派的團購場次');
   if(canManageGroupBuyPlatform()){
    try{const profiles=await api({action:'getPaymentProfiles'});AdminState.paymentProfiles=Array.isArray(profiles)?profiles:(profiles?.profiles||[])}catch(_e){}
   }
   const s=ugbCurrentSession();
-  if(!s)throw new Error('找不到或未指派此團購場次');
+  if(!s||!isGroupBuySessionRow(s))throw new Error('找不到或未指派此團購場次');
   if(isSessionAdmin()&&!groupBuyAllowedSessionIds().includes(String(UGBSessionId)))throw new Error('此團購場次未指派給目前帳號');
+  AdminState.currentSessionId=UGBSessionId;
+  AdminState.currentLayer='groupbuyUnified';
+  AdminState.currentFilter=UGBActiveModule;
   saveGroupBuyAdminView('unified',UGBSessionId,UGBActiveModule);
   const html='<div id="ugbRoot" class="ugb-root" data-session="'+attr(UGBSessionId)+'">'+ugbHeroHtml(s)+ugbModuleCards(s)+ugbContinuousWorkspaceHtml(s)+'</div>';
   const sub=canManageGroupBuyPlatform()?'平台工作台可管理設定、商品、團購主、訂單付款與出貨。':'場次管理員只能處理這一場的訂單查閱與出貨。';
@@ -6887,13 +7018,14 @@ window.createGroupBuyNow=async function(btn){
   await apiPost(payload);
   const assigned=await assignCreatedGroupBuyManagers(createdId,managers),failed=assigned.filter(x=>!x.ok);
   closeAllPanels();
-  switchPage('groupbuy');
-  await loadGroupBuyAdmin();
-  toast(failed.length?'團購已建立；'+failed.length+' 位團購主／場次管理員指派失敗，請到權限管理重試':'團購已建立並保留為未公開，請由團購列表進入設定',failed.length?9000:5000);
+  switchPage('sessions');
+  AdminState.themeFilter=GROUPBUY_SESSION_FILTER;
+  await refreshSessionsOverview();
+  toast(failed.length?'團購已建立；'+failed.length+' 位團購主／場次管理員指派失敗，請到權限管理重試':'團購已建立並保留為未公開，請由「場次 → 團購」卡片進入設定',failed.length?9000:5000);
  }catch(e){
   if(createdId){
-   closeAllPanels();switchPage('groupbuy');await loadGroupBuyAdmin().catch(()=>{});
-   toast('團購已用正式名稱建立，但基本資料未完整儲存；請從團購列表繼續，不要重複建立。原因：'+(e.message||e),10000);
+   closeAllPanels();switchPage('sessions');AdminState.themeFilter=GROUPBUY_SESSION_FILTER;await refreshSessionsOverview().catch(()=>{});
+   toast('團購已用正式名稱建立，但基本資料未完整儲存；請從「場次 → 團購」繼續，不要重複建立。原因：'+(e.message||e),10000);
   }else toast('建立失敗：'+(e.message||e),9000);
  }finally{if(btn){btn.disabled=false;btn.textContent=old||'建立團購';}}
 };
@@ -6908,17 +7040,19 @@ window.loadGroupBuyAdmin=async function(){
   GroupBuyAdminData=d;
   applyAdminAuthorizationUI();
   const rows=(Array.isArray(d.sessions)?d.sessions:[]).filter(isGroupBuySessionRow);
+  if(AdminState.currentPage==='sessions'&&AdminState.themeFilter===GROUPBUY_SESSION_FILTER){renderThemeFilter();renderSessions();}
   if(!box)return;
   if(!rows.length){box.innerHTML='<div class="empty">'+(canManageGroupBuyPlatform()?'目前還沒有團購。按「＋ 建立團購」開始。':'目前沒有指派給你的團購場次。')+'</div>';return;}
   const platform=canManageGroupBuyPlatform();
   box.innerHTML=rows.map(s=>{
    const g=s.groupBuySettings||{},state=s.status==='已關閉'?'已關閉':(g.saleStartAt&&Date.now()<Date.parse(g.saleStartAt)?'尚未開賣':(g.saleEndAt&&Date.now()>Date.parse(g.saleEndAt)?'已截止':'開放中'));
+   const sid=sessionId(s);
    const stats=platform
     ?safe(state)+'｜商品 '+num(s.productCount)+'｜有效訂單 '+num(s.orderCount)+'｜已付款 '+num(s.paidOrderCount)+'｜團購主 '+num(s.promoterCount)
     :safe(state)+'｜有效訂單 '+num(s.orderCount)+'｜已付款 '+num(s.paidOrderCount);
    const finance=platform?'<div class="ugb-admin-finance"><span class="pill">已付款商品額 '+money(s.paidProductAmount||0)+'</span><span class="pill">已收運費 '+money(s.paidShippingAmount||0)+'</span><span class="pill">訂單實收 '+money(s.paidTotalAmount||0)+'</span><span class="pill">宅配運費 '+money(g.shippingFee||0)+'</span><span class="pill">滿 '+money(g.freeShippingThreshold||0)+' 免運</span></div>':'';
    const focus=platform?'settings':'orders';
-   return '<article class="ugb-admin-session"><div class="ugb-admin-session-main"><div class="ugb-admin-cover">'+(g.coverImageUrl?'<img src="'+attr(g.coverImageUrl)+'" alt="">':'')+'</div><div><div class="report-title">'+safe(s.name)+'</div><div class="sub">'+stats+'</div>'+finance+'<div class="sub ugb-admin-desc">'+safe(g.groupBuyDescription||'尚未填團購說明')+'</div>'+(platform?'<div class="sub ugb-admin-share"><b>公開分享：</b>'+safe(groupBuyPublicUrl(s))+' <button type="button" class="btn secondary small" onclick="copyGroupBuyPublicUrl(\''+attr(s.id)+'\')">複製</button></div>':'')+'</div></div><div class="card-actions"><button class="btn purple" onclick="openGroupBuyUnified(\''+attr(s.id)+'\',\''+focus+'\')">'+(platform?'管理團購':'訂單與出貨')+'</button><button class="btn green small" onclick="window.open(\''+attr(groupBuyPublicUrl(s))+'\',\'_blank\')">查看前台</button></div></article>';
+   return '<article class="ugb-admin-session"><div class="ugb-admin-session-main"><div class="ugb-admin-cover">'+(g.coverImageUrl?'<img src="'+attr(g.coverImageUrl)+'" alt="">':'')+'</div><div><div class="report-title">'+safe(s.name)+'</div><div class="sub">'+stats+'</div>'+finance+'<div class="sub ugb-admin-desc">'+safe(g.groupBuyDescription||'尚未填團購說明')+'</div>'+(platform?'<div class="sub ugb-admin-share"><b>公開分享：</b>'+safe(groupBuyPublicUrl(s))+' <button type="button" class="btn secondary small" onclick="copyGroupBuyPublicUrl(\''+attr(sid)+'\')">複製</button></div>':'')+'</div></div><div class="card-actions"><button class="btn purple" onclick="openGroupBuyUnified(\''+attr(sid)+'\',\''+focus+'\')">'+(platform?'管理團購':'訂單與出貨')+'</button><button class="btn green small" onclick="window.open(\''+attr(groupBuyPublicUrl(s))+'\',\'_blank\')">查看前台</button></div></article>';
   }).join('');
  }catch(e){if(box)box.innerHTML='<div class="empty">團購載入失敗：'+safe(e.message||e)+'</div>';}
 };
@@ -6930,7 +7064,7 @@ function ugbGlobalPromoterAdminHtml(data){
  const pending=apps.filter(a=>String(a.status)==='pending'),approved=apps.filter(a=>String(a.status)==='approved'),active=promoters.filter(p=>String(p.status||'active')==='active');
  const assignedFor=mid=>active.filter(p=>String(p.member_id)===String(mid));
  const assignmentNames=mid=>{const rows=assignedFor(mid);return rows.length?rows.map(p=>'<span class="pill">'+safe(p.session_name||p.session_id)+'</span>').join(' '):'<span class="sub">尚未指派場次</span>'};
- const assignControl=a=>{const assigned=new Set(assignedFor(a.member_id).map(p=>String(p.session_id))),available=sessions.filter(s=>!assigned.has(String(s.id)));if(!available.length)return '<div class="sub">目前所有團購都已指派或尚無可用團購。</div>';return '<div class="card-actions"><select id="hub_s_'+attr(a.id)+'"><option value="">選擇指定團購</option>'+available.map(s=>'<option value="'+attr(s.id)+'">'+safe(s.name)+'</option>').join('')+'</select><button class="btn yellow small" onclick="assignFromGlobal(\''+attr(a.id)+'\')">指派這一場</button></div>'};
+ const assignControl=a=>{const assigned=new Set(assignedFor(a.member_id).map(p=>String(p.session_id))),available=sessions.filter(s=>!assigned.has(String(sessionId(s))));if(!available.length)return '<div class="sub">目前所有團購都已指派或尚無可用團購。</div>';return '<div class="card-actions"><select id="hub_s_'+attr(a.id)+'"><option value="">選擇指定團購</option>'+available.map(s=>'<option value="'+attr(sessionId(s))+'">'+safe(s.name)+'</option>').join('')+'</select><button class="btn yellow small" onclick="assignFromGlobal(\''+attr(a.id)+'\')">指派這一場</button></div>'};
  const pendingHtml=pending.length?pending.map(a=>'<div class="ugb-mini"><b>'+safe(ugbPromoterName(a))+'</b><div class="sub">團購主 ID：'+safe(a.requested_referral_code||'未填')+'｜2BL 會員：'+safe(a.member_email||'')+(a.source_session_name?'｜來源：'+safe(a.source_session_name):'｜來源：團購首頁')+'</div><div class="card-actions"><button class="btn green small" onclick="ugbReviewApp(\''+attr(a.id)+'\',\'approved\')">核准身分</button><button class="btn danger small" onclick="ugbReviewApp(\''+attr(a.id)+'\',\'rejected\')">退回申請</button></div></div>').join(''):'<div class="sub">目前沒有待審核申請</div>';
  const rosterHtml=apps.length?apps.map(a=>'<div class="ugb-mini"><b>'+safe(ugbPromoterName(a))+'</b><div class="sub">'+safe(a.member_email||'')+'｜團購主 ID：'+safe(a.requested_referral_code||'未填')+'｜身分：'+safe(ugbPromoterStatusLabel(a.status))+'</div><div style="margin-top:6px">'+assignmentNames(a.member_id)+'</div>'+(String(a.status)==='approved'?assignControl(a):'')+'</div>').join(''):'<div class="sub">目前沒有團購主身分資料</div>';
  const assignmentHtml=active.length?active.map(pr=>'<div class="ugb-mini"><b>'+safe(ugbPromoterName(pr))+'</b><div class="sub">指定團購：'+safe(pr.session_name||pr.session_id)+'｜團購主 ID：'+safe(pr.public_handle||pr.referral_code||'')+'</div><div class="card-actions"><button class="btn secondary small" onclick="openGroupBuyUnified(\''+attr(pr.session_id)+'\',\'promoters\')">查看本場採購規則</button><button class="btn danger small" onclick="removeGroupBuyPromoter(\''+attr(pr.id)+'\',\''+attr(pr.member_id)+'\')">移除這場指派</button></div></div>').join(''):'<div class="sub">目前沒有已指派的團購主</div>';
