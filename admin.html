@@ -1813,7 +1813,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260818-settings-13';
+const ADMIN_BUILD = '20260829-login-observer-fix-1';
 const API = (location.protocol==='https:' && /(^|\.)2b-love\.com$/i.test(location.hostname)) ? (location.origin+'/s/api') : 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -2003,9 +2003,10 @@ function applyAdminAuthorizationUI(){
     el.classList.toggle('hidden',!canManageGroupBuyPlatform());
   });
   const gbSub=$('groupBuyPageSub');
-  if(gbSub) gbSub.textContent=isSessionAdmin()
+  const gbSubText=isSessionAdmin()
     ?'只顯示已指派給你的團購場次；可查看訂單並處理出貨，不能修改價格、付款、退款或結算。'
     :'團購是獨立管理工作台；不混入市集場次，也不改動市集報名流程。';
+  if(gbSub&&gbSub.textContent!==gbSubText) gbSub.textContent=gbSubText;
   const settingsTab=$('tab-settings');
   if(settingsTab) settingsTab.title=adminCan('canManageTenantSettings')?'系統設定':'僅顯示被指定系列可使用的工具';
 }
