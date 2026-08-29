@@ -2147,7 +2147,7 @@ function renderOnsiteList(){
     const tags=`<span class="tag ${ck?'ok':''}">${safe(ck?'已報到':'未報到')}</span><span class="tag ${teardown==='已撤場'?'ok':''}">${safe(teardown)}</span>${dep>0?`<span class="tag ${depStatus==='已退押金'?'ok':depStatus==='押金沒收'?'bad':'warn'}">${safe(depStatus)} ${money(dep)}</span>`:''}`;
     const depositMode=depStatus==='已退押金'?'depositUnrefund':'depositRefund';
     const actions=`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button><button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${depositMode}',this)" ${r.depositEligible&&(depStatus==='已退押金'||teardown==='已撤場')?'':'disabled'}>${depStatus==='已退押金'?'撤銷已退押金 '+money(dep):r.depositEligible?'退押金 '+money(dep):'最後一天退'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
-    cards+=`<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">${safe(r.brand||r.name||'未填品牌')}</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${tags}</div><div class="onsite-sub">${safe(r.name||'—')}｜${safe(r.phone||'—')}｜${safe(seat)}</div>${r.equipmentText?`<div class="onsite-sub">設備｜${safe(r.equipmentText)}</div>`:''}</div><div class="onsite-card-btn direct-actions">${actions}</div></article>`;
+    cards+=`<article class="onsite-card"><div class="onsite-card-top">${memberBrandLinkHtml(r,r.brand||r.name||'未填品牌','onsite-name')}<div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${tags}</div><div class="onsite-sub">${safe(r.name||'—')}｜${safe(r.phone||'—')}｜${safe(seat)}</div>${r.equipmentText?`<div class="onsite-sub">設備｜${safe(r.equipmentText)}</div>`:''}</div><div class="onsite-card-btn direct-actions">${actions}</div></article>`;
   }
   $('onsiteBody').innerHTML=`<div class="onsite-grid">${cards}</div>`;
 }
@@ -2622,7 +2622,7 @@ async function openEquipmentPanel(sid,dateKey='',dateLabel=''){
     const totalText=dateKey ? (selectedDailyRows[0] ? selectedDailyRows[0].equipmentText : '無') : (summary.totalText||summary.neededText||'無');
     const dailyText=dateKey ? (selectedDailyRows[0] ? ((selectedDailyRows[0].label||dateLabel||dateKey)+'：攤數 '+(selectedDailyRows[0].stallCount||0)+'，'+(selectedDailyRows[0].equipmentText||'無')) : '無') : (summary.dailyText||'無');
     let html='<div class="compact-grid"><div class="info-box"><div class="section-label" style="margin-top:0">'+(dateKey?'單日設備需求':'整場設備需求')+'</div><button type="button" class="info-line click" onclick="openEquipmentPanel(\''+attr(sid)+'\')"><span>應租／準備設備（單日峰值）</span><span>'+safe(summary.totalText||summary.neededText||'無')+'</span></button><div class="info-line"><span>'+(dateKey?'本日實際需求':'各日攤位／設備需求')+'</span><span>'+ (dateKey?safe(dailyText):dailyChipHtml(allDailyRows,summary.dailyText,sid)) +'</span></div><button type="button" class="info-line click" onclick="openEquipmentPanel(\''+attr(sid)+'\',\''+(dateKey?attr(dateKey):'')+'\',\''+(dateKey?attr(dateLabel):'')+'\')"><span class="metric-click">'+(dateKey?'本日設備需求':'各設備單日最高需求')+'</span><span>'+safe(totalText)+'</span></button></div></div><div style="height:14px"></div>';
-    if(!rows.length){ html+='<div class="empty">沒有符合此口徑的設備名單</div>'; } else { html+='<div class="cards">'; for(const r of rows){ html+='<article class="reg-card"><div><div class="reg-title">'+safe(r.brand||'未填品牌')+'</div><div class="reg-sub">'+safe(r.reviewStatus||'')+'｜'+safe(r.paymentStatus||'')+'｜'+safe(r.selectedDatesText||'')+'</div><div class="kv"><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div></article>'; } html+='</div>'; }
+    if(!rows.length){ html+='<div class="empty">沒有符合此口徑的設備名單</div>'; } else { html+='<div class="cards">'; for(const r of rows){ html+='<article class="reg-card"><div>'+memberBrandLinkHtml(r,r.brand||'未填品牌','reg-title')+'<div class="reg-sub">'+safe(r.reviewStatus||'')+'｜'+safe(r.paymentStatus||'')+'｜'+safe(r.selectedDatesText||'')+'</div><div class="kv"><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div></article>'; } html+='</div>'; }
     $('panelBody').innerHTML=html;
   }catch(e){ $('panelBody').innerHTML='<div class="empty">設備報表載入失敗：'+safe(e.message)+'</div>'; }
 }
@@ -2649,6 +2649,11 @@ function regDatesText(r){ return regDateText(r); }
 try{ window.regDatesText = regDatesText; }catch(e){}
 function regCreatedText(r){ return r.createdText || r.createdAt || r.created_at || r.submittedAt || r.submitted_at || '—'; }
 function invoiceBrief(r){ const parts=[]; if(r.taxId) parts.push('統編 '+r.taxId); if(r.invoiceTitle) parts.push(r.invoiceTitle); if(r.invoiceEmail) parts.push(r.invoiceEmail); return parts.join('｜') || '—'; }
+function memberBrandLinkHtml(row,label,className){
+  const email=String(row?.email||row?.memberEmail||row?.member_email||'').trim(),memberId=String(row?.memberId||row?.member_id||'').trim(),text=String(label||row?.brand||row?.brandName||row?.brand_name||row?.name||email||'未填品牌'),cls=String(className||'').trim();
+  if(!email&&!memberId)return '<span class="'+attr(cls)+'">'+safe(text)+'</span>';
+  return '<button type="button" class="brand-member-link '+attr(cls)+'" title="開啟會員資料" onclick="openMemberFromCard(\''+attr(email)+'\',\''+attr(memberId)+'\')">'+safe(text)+'</button>';
+}
 
 function adminShortDateRange(v){
   const s=String(v===undefined||v===null?'':v).trim();
@@ -2687,6 +2692,8 @@ function adminRegFixedBlockHtml(r){
   const pay=adminPaymentText(r);
   const gross=Number(r.totalAmount??r.total_amount??r.amount??0)||0;
   const credit=Math.max(0,Number(r.activityCreditApplied??r.activity_credit_applied??0)||0);
+  const hasBalance=r.activityCreditBalance!==undefined||r.activity_credit_balance!==undefined;
+  const availableCredit=Math.max(0,Number(r.activityCreditBalance??r.activity_credit_balance??0)||0);
   const cashReceived=Math.max(0,Number(r.receivedAmount??r.paidAmount??r.paid_amount??0)||0);
   const cashDue=Math.max(0,Number(r.unreceivedAmount??(gross-credit-cashReceived))||0);
   return '<div class="card-fixed-block">'
@@ -2694,7 +2701,7 @@ function adminRegFixedBlockHtml(r){
     +'<div class="fixed-row"><span><b>名單編號：</b>'+safe(rosterNo||'付款確認後產生')+'</span><span></span></div>'
     +'<div class="fixed-row"><span><b>位置號碼：</b>'+safe(seatNo||'尚未排位')+'</span><span title="'+attr(equip)+'">設備：'+safe(equip)+'</span></div>'
     +'<div class="fixed-row"><span title="'+attr(addon)+'">加購：'+safe(addon)+'</span><span></span></div>'
-    +'<div class="fixed-pay">原應繳：<b>'+money(gross)+'</b>｜活動金：<b>-'+money(credit)+'</b><br>現金已收：<b>'+money(cashReceived)+'</b>｜現金待繳：<b>'+money(cashDue)+'</b></div>'
+    +'<div class="fixed-pay">原應繳：<b>'+money(gross)+'</b>'+(hasBalance?'｜可用活動金：<b>'+money(availableCredit)+'</b>':'')+'<br>本次已抵：<b>'+money(credit)+'</b>｜現金已收：<b>'+money(cashReceived)+'</b><br>現金待繳：<b>'+money(cashDue)+'</b></div>'
   +'</div>';
 }
 
@@ -2712,7 +2719,7 @@ function renderRegistrationCards(){
     const brand=r.brand||r.brandName||r.brand_name||'未填品牌';
     const contact=[r.name||'—',r.phone||''].filter(Boolean).join('｜');
     html+='<article class="reg-card unified-reg-card">'
-      +'<div class="reg-title" title="'+attr(brand)+'">'+safe(brand)+'</div>'
+      +memberBrandLinkHtml(r,brand,'reg-title')
       +'<div class="reg-sub" title="'+attr(r.sessionName||'')+'">'+safe(r.sessionName||'場次')+'</div>'
       +'<div class="tag-row">'+statusTags(r)+socialLinks(r)+'</div>'
       +'<div class="reg-contact-line">'+safe(contact)+'</div>'
@@ -2763,7 +2770,7 @@ function renderRegCard(r){
   const contact=[r.name||'—',r.phone||''].filter(Boolean).join('｜');
   const createdText=regCreatedText(r);
   return '<article class="reg-card unified-reg-card">'
-    +'<div class="reg-title" title="'+attr(brand)+'">'+safe(brand)+'</div>'
+    +memberBrandLinkHtml(r,brand,'reg-title')
     +'<div class="reg-sub" title="'+attr(sessionTitle)+'">'+safe(sessionTitle)+'</div>'
     +'<div class="tag-row">'+statusTags(r)+socialLinks(r)+'</div>'
     +'<div class="reg-contact-line">'+safe(contact)+'</div>'
@@ -3042,7 +3049,7 @@ async function refreshCurrentSessionOnly(){ const sid=AdminState.currentSessionI
 function openRegDetail(id){
   let r=null; for(const x of AdminState.currentList){ if(String(x.id||x.regId)===String(id)) r=x; }
   if(!r){toast('找不到資料');return;}
-  const html='<div class="readable-detail">'+qualityHtml(r)+'<div class="report-card"><div class="report-title">基本資料</div><div class="kv"><div class="k">品牌</div><div>'+safe(r.brand||r.brandName||r.brand_name||'—')+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">FB / IG</div><div>'+safe(r.fb||'—')+'｜'+safe(r.ig||'—')+'</div></div></div><div class="report-card"><div class="report-title">報名內容</div><div class="kv"><div class="k">場次</div><div>'+safe(r.sessionName||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(r.createdAt||r.created_at||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div><div class="report-card"><div class="report-title">金流與狀態</div><div class="kv"><div class="k">審核</div><div>'+safe(r.reviewStatus||r.status||'—')+'</div><div class="k">付款</div><div>'+safe(r.paymentStatus||r.payStatus||'—')+'</div><div class="k">報到</div><div>'+safe(r.checkinStatus||r.checkin||'—')+'</div><div class="k">退費 / 取消</div><div>'+safe(r.transferStatus||'—')+'</div><div class="k">原應繳</div><div>'+money(r.amount||r.totalAmount||0)+'</div><div class="k">活動金扣抵</div><div>-'+money(r.activityCreditApplied||0)+'</div><div class="k">現金已收</div><div>'+money(r.receivedAmount||0)+'</div><div class="k">現金待繳</div><div>'+money(r.unreceivedAmount||0)+'</div><div class="k">發票金額</div><div>'+money(r.invoiceAmount||0)+'</div></div></div><div class="report-card"><div class="report-title">備註</div><div>'+safe(r.adminNote||r.note||'—')+'</div></div></div>';
+  const html='<div class="readable-detail">'+qualityHtml(r)+'<div class="report-card"><div class="report-title">基本資料</div><div class="kv"><div class="k">品牌</div><div>'+memberBrandLinkHtml(r,r.brand||r.brandName||r.brand_name||'—','detail-member-brand')+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">FB / IG</div><div>'+safe(r.fb||'—')+'｜'+safe(r.ig||'—')+'</div></div></div><div class="report-card"><div class="report-title">報名內容</div><div class="kv"><div class="k">場次</div><div>'+safe(r.sessionName||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(r.createdAt||r.created_at||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div><div class="report-card"><div class="report-title">金流與狀態</div><div class="kv"><div class="k">審核</div><div>'+safe(r.reviewStatus||r.status||'—')+'</div><div class="k">付款</div><div>'+safe(r.paymentStatus||r.payStatus||'—')+'</div><div class="k">報到</div><div>'+safe(r.checkinStatus||r.checkin||'—')+'</div><div class="k">退費 / 取消</div><div>'+safe(r.transferStatus||'—')+'</div><div class="k">原應繳</div><div>'+money(r.amount||r.totalAmount||0)+'</div><div class="k">可用活動金</div><div>'+money(r.activityCreditBalance||0)+'</div><div class="k">本次已抵</div><div>'+money(r.activityCreditApplied||0)+'</div><div class="k">現金已收</div><div>'+money(r.receivedAmount||r.paidAmount||0)+'</div><div class="k">現金待繳</div><div>'+money(r.unreceivedAmount??Math.max(0,Number(r.totalAmount||r.amount||0)-Number(r.activityCreditApplied||0)-Number(r.receivedAmount||r.paidAmount||0)))+'</div><div class="k">發票金額</div><div>'+money(r.invoiceAmount||0)+'</div></div></div><div class="report-card"><div class="report-title">備註</div><div>'+safe(r.adminNote||r.note||'—')+'</div></div></div>';
   openPanel('完整資料｜'+safe(r.brand||r.brandName||r.brand_name||'品牌'),'已改為可讀資料，不顯示工程 JSON',html);
 }
 
@@ -4267,10 +4274,12 @@ async function bulkAnalyzeDraft(id,auto=false){
  const d=bulkDraft(id);if(!d||!d.images.length)return toast('請先上傳商品圖片');
  try{
   const r=await apiPost({action:'analyzeGroupBuyProductImages',imageUrls:d.images.slice(0,3)});if(r.error)throw new Error(r.error);
+  if(!validGroupBuyAiResult(r))throw new Error('AI 回傳不是可用的繁體中文內容，原有內容未更動');
   if(auto||confirm('AI 已辨識完成，要套用到商品名稱、分類與說明嗎？')){if(r.title)d.name=r.title;if(r.category)d.category=r.category;if(r.description)d.description=r.description;renderBulkProductDrafts()}
   toast('AI 商品辨識完成');
  }catch(e){toast('AI 辨識失敗：'+(e.message||e),8000)}
 }
+function validGroupBuyAiResult(r){const title=String(r?.title||''),description=String(r?.description||''),han=s=>(s.match(/[\u3400-\u9fff]/g)||[]).length,latin=s=>(s.match(/[A-Za-z]/g)||[]).length,simplified=s=>/[这为与发产说见识类别冻选卖买还请价购赠仅从后过边门间气无开关应东条个]/.test(s);return r?.language==='zh-Hant'&&han(title)>=2&&han(description)>=6&&latin(title)<=8&&latin(description)<=Math.max(8,Math.floor(han(description)*.7))&&!simplified(title)&&!simplified(description)}
 async function bulkSaveAllProducts(){
  const products=BulkProductDrafts.filter(d=>d.name.trim()||d.images.length||String(d.price).trim()||String(d.originalPrice).trim());
  if(!products.length)return toast('請至少填一個商品');
@@ -4871,7 +4880,7 @@ function renderTodoRows(rows){
       +'<div class="todo-card-top"><span class="todo-stage-badge '+safe(kind)+'">'+safe(label)+'</span><span class="todo-next-mini">'+safe(todoNextText(kind))+'</span></div>'
       +'<div class="todo-session-title" title="'+attr(title)+'">'+safe(title)+'</div>'
       +'<div class="todo-action-row">'+todoStageButtons(r,kind)+'</div>'
-      +'<div class="todo-brand-row"><span class="todo-brand-name" title="'+attr(who)+'">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
+      +'<div class="todo-brand-row">'+memberBrandLinkHtml(r,who,'todo-brand-name')+todoSocialLinks(r)+'</div>'
       +'<div class="todo-contact-line" title="'+attr(contactText)+'">'+safe(contactText)+'</div>'
       +adminRegFixedBlockHtml(r)
     +'</article>';
@@ -4889,15 +4898,34 @@ function todoStageButtons(r,kind){
   if(!id) return '<span class="tag">缺少報名 ID</span>';
   const btn=(act,label,cls='secondary')=>'<button class="btn small '+cls+'" onclick="runRegAction(\''+attr(id)+'\',\''+attr(act)+'\',this,\''+attr(sid)+'\')">'+safe(label)+'</button>';
   const _paidR=/已繳費|已付款/.test(String(r.paymentStatus||r.payStatus||r.payment_status||''));
+  const creditBalance=Math.max(0,Number(r.activityCreditBalance??r.activity_credit_balance??0)||0);
+  const gross=Math.max(0,Number(r.totalAmount??r.total_amount??r.amount??0)||0),applied=Math.max(0,Number(r.activityCreditApplied??r.activity_credit_applied??0)||0),received=Math.max(0,Number(r.receivedAmount??r.paidAmount??r.paid_amount??0)||0),cashDue=Math.max(0,gross-applied-received);
+  const applyCredit=(kind==='unpaid'&&creditBalance>0&&cashDue>0)?'<button class="btn small credit" onclick="adminApplyRegistrationCredit(\''+attr(id)+'\',\''+attr(sid)+'\',this)">套用活動金</button>':'';
   const cancelBtn=_paidR?btn('refund','取消／退費'):btn('cancelUnpaid','取消');
   if(kind==='pending') return btn('approve','錄取')+btn('reject','不錄取')+btn('waitlist','備取')+cancelBtn;
   if(kind==='paymentPending') return btn('confirmPayment','確認付款')+btn('markUnpaid','退回未繳費')+cancelBtn+btn('note','備註','secondary');
-  if(kind==='unpaid') return btn('confirmPayment','確認付款')+btn('remindPayment','提醒')+cancelBtn+btn('note','備註','secondary');
+  if(kind==='unpaid') return applyCredit+btn('confirmPayment','確認付款')+btn('remindPayment','提醒')+cancelBtn+btn('note','備註','secondary');
   if(kind==='checkin') return btn('checkin','報到')+cancelBtn+btn('note','備註','secondary');
   if(kind==='refund') return btn('refund','處理退費')+btn('markRefunded','標記已退費')+btn('note','備註','secondary');
   if(kind==='dataIssue') return '<button class="btn small secondary" onclick="openRegDetail(\''+attr(id)+'\')">完整資料</button>'+cancelBtn+btn('note','備註','secondary');
   if(kind==='equipment') return '<button class="btn small secondary" onclick="openEquipmentPanel(\''+attr(sid)+'\')">設備總表</button>'+btn('note','備註','secondary');
   return actionButtons(r);
+}
+
+async function adminApplyRegistrationCredit(regId,sessionId,btn){
+  const old=btn?.textContent||'套用活動金';
+  if(btn){btn.disabled=true;btn.textContent='計算中…';}
+  try{
+    const p=await apiPost({action:'adminApplyRegistrationCredit',regId,sessionId,preview:true});
+    const canApply=Number(p.canApply||0),balance=Number(p.balance||0),after=Number(p.cashDueAfter||0);
+    if(!(canApply>0)){toast(balance>0?'這筆報名目前沒有待繳金額':'這位會員目前沒有可用活動金',6000);return;}
+    if(!await uiConfirm('確定替會員套用活動金？\n\n會員可用：'+money(balance)+'\n本次套用：'+money(canApply)+'\n套用後現金待繳：'+money(after)+'\n\n確認後會寫入正式活動金紀錄。'))return;
+    if(btn)btn.textContent='套用中…';
+    const result=await apiPost({action:'adminApplyRegistrationCredit',regId,sessionId});
+    toast('活動金已套用 '+money(result.appliedNow||0)+'，現金待繳 '+money(result.cashDue||0),7000);
+    await loadTodos();
+  }catch(e){toast('活動金套用失敗：'+(e.message||e),8000);}
+  finally{if(btn&&document.body.contains(btn)){btn.disabled=false;btn.textContent=old;}}
 }
 
 function memberBrand(m){ return m.brandName||m.brand_name||m.brand||m.storeName||m.store_name||m.displayName||m.name||m.email||'未命名會員'; }
@@ -4928,6 +4956,20 @@ async function loadMembers(){
   }catch(e){
     box.innerHTML='<div class="empty">會員載入失敗：'+safe(e.message)+'</div>';
   }
+}
+async function openMemberFromCard(email,memberId){
+  const target=String(email||'').trim().toLowerCase(),mid=String(memberId||'').trim();
+  if(!target&&!mid){toast('這張卡片缺少會員識別，無法開啟會員資料');return;}
+  try{
+    const isTarget=x=>(mid&&String(x.memberId||x.member_id||x.id||'')===mid)||(target&&String(x.email||'').trim().toLowerCase()===target);
+    if(!(AdminState.members||[]).some(isTarget)){
+      const rows=await api({action:'getMembers'});
+      AdminState.members=Array.isArray(rows)?rows:[];
+    }
+    const found=(AdminState.members||[]).find(isTarget);
+    if(!found){toast('找不到這位會員的正式資料');return;}
+    openMemberDetail(found.email||target);
+  }catch(e){toast('會員資料載入失敗：'+(e.message||e),7000);}
 }
 // 免審核會員（fast_pass）：以資料庫 members.fast_pass 為準。
 // 開啟後，該會員報名「需審核」的場次也會直接錄取（老攤友免審），並自動寄出錄取通知信。
@@ -6547,11 +6589,25 @@ window.downloadSupplierOrders=async function(sessionId){try{const d=await api({a
 (function(){
 'use strict';
 function inlineProductCard(pid){return document.querySelector('.ugb-product-edit-card[data-pid="'+CSS.escape(String(pid))+'"]')}
-window.ugbAnalyzeInlineProduct=async function(pid,btn){const card=inlineProductCard(pid);if(!card)return;const refs=safeJson(card.querySelector('.ugb-p-refs')?.value,[]),urls=(Array.isArray(refs)?refs:[]).map(x=>x&&x.url).filter(Boolean).slice(0,3);if(!urls.length){toast('請先上傳商品圖片');return}const old=btn?.textContent||'';if(btn){btn.disabled=true;btn.textContent='AI 辨識中…'}try{const r=await apiPost({action:'analyzeGroupBuyProductImages',imageUrls:urls});if(r.error)throw new Error(r.error);if(!confirm('AI 已辨識完成，要套用到商品標題、分類與說明嗎？'))return;const name=card.querySelector('.ugb-p-name'),category=card.querySelector('.ugb-p-category'),desc=card.querySelector('.ugb-p-desc');if(r.title&&name)name.value=r.title;if(r.category&&category&&[...category.options].some(x=>x.value===r.category))category.value=r.category;if(r.description&&desc)desc.value=r.description;toast('AI 已套用商品標題、分類與說明')}catch(e){toast('AI 辨識失敗：'+(e.message||e),9000)}finally{if(btn){btn.disabled=false;btn.textContent=old||'✨ AI 辨識'}}};
+window.ugbAnalyzeInlineProduct=async function(pid,btn){const card=inlineProductCard(pid);if(!card)return;const refs=safeJson(card.querySelector('.ugb-p-refs')?.value,[]),urls=(Array.isArray(refs)?refs:[]).map(x=>x&&x.url).filter(Boolean).slice(0,3);if(!urls.length){toast('請先上傳商品圖片');return}const old=btn?.textContent||'';if(btn){btn.disabled=true;btn.textContent='AI 辨識中…'}try{const r=await apiPost({action:'analyzeGroupBuyProductImages',imageUrls:urls});if(r.error)throw new Error(r.error);if(!validGroupBuyAiResult(r))throw new Error('AI 回傳不是可用的繁體中文內容，原有內容未更動');const preview='商品名稱：'+r.title+'\n分類：'+r.category+'\n商品說明：'+r.description+'\n\n確認套用以上繁體中文內容？';if(!confirm(preview))return;const name=card.querySelector('.ugb-p-name'),category=card.querySelector('.ugb-p-category'),desc=card.querySelector('.ugb-p-desc');if(r.title&&name)name.value=r.title;if(r.category&&category&&[...category.options].some(x=>x.value===r.category))category.value=r.category;if(r.description&&desc)desc.value=r.description;toast('AI 已套用繁體中文商品標題、分類與說明')}catch(e){toast('AI 辨識失敗：'+(e.message||e),9000)}finally{if(btn){btn.disabled=false;btn.textContent=old||'✨ AI 辨識'}}};
 function markImage(img,box){const fail=()=>{box.innerHTML='<span class="ugb-image-error">圖片讀取失敗<br>可重新上傳</span>'};img.addEventListener('error',fail,{once:true});if(img.complete&&img.naturalWidth===0)fail()}
 function compactCard(card){if(!card||card.dataset.compactReady==='1')return;card.dataset.compactReady='1';const direct=[...card.children],image=direct.find(x=>x.classList.contains('ugb-product-edit-img')),refs=direct.find(x=>x.classList.contains('ugb-p-refs')),tools=direct.find(x=>x.classList.contains('ugb-product-edit-tools')),fields=direct.filter(x=>x.classList.contains('form-field')),priceGrid=direct.find(x=>x.classList.contains('form-grid')),tiers=direct.filter(x=>x.classList.contains('ugb-tier-box')),save=direct.find(x=>x.classList.contains('ugb-inline-save')),pid=card.dataset.pid||'';if(!image||!tools)return;const ai=document.createElement('button');ai.type='button';ai.className='btn secondary small ugb-ai-recognize';ai.textContent='✨ AI 辨識';ai.onclick=()=>ugbAnalyzeInlineProduct(pid,ai);tools.appendChild(ai);const head=document.createElement('div'),media=document.createElement('div'),main=document.createElement('div');head.className='ugb-product-compact-head';media.className='ugb-product-compact-media';main.className='ugb-product-compact-fields';card.insertBefore(head,card.firstChild);media.appendChild(image);if(refs)media.appendChild(refs);media.appendChild(tools);fields.forEach((x,i)=>{if(i===0)main.appendChild(x)});if(priceGrid)main.appendChild(priceGrid);fields.forEach((x,i)=>{if(i>0)main.appendChild(x)});head.append(media,main);if(tiers.length){const grid=document.createElement('div');grid.className='ugb-product-tier-grid';tiers.forEach(x=>grid.appendChild(x));card.insertBefore(grid,save||null)}const img=image.querySelector('img');if(img)markImage(img,image)}
 function compactAll(){document.querySelectorAll('.ugb-product-edit-card').forEach(compactCard)}
 const observer=new MutationObserver(compactAll);observer.observe(document.body,{childList:true,subtree:true});compactAll();
+})();
+</script>
+<style id="noRoundActionButtons20260829">
+/* 團GO／團購管理的操作按鈕一律使用清楚的小圓角矩形。 */
+button,.btn,.xbtn,.tab,.quick-chip,.seatops-waiting-btn,button.chip,.member-icon,.todo-social{border-radius:8px!important}
+.brand-member-link{appearance:none;border:0;background:transparent;color:#111;padding:0;margin:0;font:inherit;font-weight:950;text-align:left;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;cursor:pointer;border-radius:4px!important}
+.brand-member-link:hover{color:#315f55}.ugb-mini .brand-member-link{font-size:15px;line-height:1.35}
+</style>
+<script id="promoterMemberLinks20260829">
+(function(){
+function memberCandidates(label){const key=String(label||'').trim().toLowerCase();return (AdminState?.members||[]).filter(m=>[m.brand_name,m.brand,m.name,m.display_name,m.email].some(v=>String(v||'').trim().toLowerCase()===key))}
+function enhancePromoterBrandLinks(root){if(!root)return;root.querySelectorAll('.ugb-mini>b:first-child').forEach(title=>{if(title.querySelector('button'))return;const matches=memberCandidates(title.textContent);if(matches.length!==1)return;const m=matches[0],button=document.createElement('button');button.type='button';button.className='brand-member-link';button.textContent=title.textContent;button.title='開啟會員資料';button.onclick=()=>openMemberFromCard(m.email||'',m.id||m.member_id||'');title.textContent='';title.appendChild(button)})}
+let membersLoading=null;async function ensurePromoterBrandLinks(root){if(!(AdminState?.members||[]).length){membersLoading=membersLoading||api({action:'getMembers'}).then(rows=>{AdminState.members=Array.isArray(rows)?rows:[]}).catch(()=>{});await membersLoading}enhancePromoterBrandLinks(root)}
+const observer=new MutationObserver(()=>document.querySelectorAll('#ugbPromoterArea').forEach(ensurePromoterBrandLinks));observer.observe(document.body,{childList:true,subtree:true});document.querySelectorAll('#ugbPromoterArea').forEach(ensurePromoterBrandLinks);
 })();
 </script>
 </body>
