@@ -17,7 +17,7 @@ function render(j,line){
  const reported=['reported','已回報','待確認'].includes(String(o.payment_status||''));
  const status=paid?'已付款':reported?'已回報，等待確認':'待付款';
  const head=`<div class=card><h2>${esc(j.session?.name||'團購訂單')}</h2><span class=status>${status}</span><div class=muted style="margin-top:8px">訂單編號 ${esc(o.id||'')}</div></div>`;
- const detail=`<div class=card><h2>訂單明細</h2>${(j.items||[]).map(x=>`<div class=line><span>${esc(x.product_name)} × ${x.quantity}${Number(x.bonus_quantity||0)>0?` ＋贈 ${Number(x.bonus_quantity)}`:''}</span><b>${money(x.line_total)}</b></div>`).join('')}<div class=line><span>商品小計</span><b>${money(o.product_amount)}</b></div><div class=line><span>運費</span><b>${money(o.shipping_fee)}</b></div><div class=line><span>應付總額</span><span class=total>${money(o.total_amount)}</span></div><div class=muted style="margin-top:8px">金額以正式訂單資料為準，付款回報不能自行修改應付總額。</div></div>`;
+ const detail=`<div class=card><h2>訂單明細</h2>${(j.items||[]).map(x=>`<div class=line><span>${esc(x.product_name)}${Number(x.quantity||0)>0?` × ${Number(x.quantity)}`:''}${Number(x.bonus_quantity||0)>0?` ${Number(x.bonus_quantity)} 件`:''}</span><b>${money(x.line_total)}</b></div>`).join('')}<div class=line><span>商品小計</span><b>${money(o.product_amount)}</b></div><div class=line><span>運費</span><b>${money(o.shipping_fee)}</b></div><div class=line><span>應付總額</span><span class=total>${money(o.total_amount)}</span></div><div class=muted style="margin-top:8px">金額以正式訂單資料為準，付款回報不能自行修改應付總額。</div></div>`;
  let payment='';
  if(paid){
   payment=`<div class=card><div class=notice><b>付款已確認。</b><br>訂單已進入後續出貨／取貨流程。</div><div class=muted style="margin-top:8px">確認時間：${esc(o.paid_at||'')}</div><button class="btn secondary" onclick="location.href='groupbuy.html'">回團GO</button></div>`;
