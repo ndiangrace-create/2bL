@@ -1,23 +1,1075 @@
-<!doctype html>
-<html lang="zh-Hant">
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-  <title>團GO｜返回團購頁</title>
-  <script>
-    const target = new URL('groupbuy.html', location.href);
-    target.searchParams.set('member', '1');
-    const source = new URL(location.href);
-    for (const key of ['g', 'session', 'ref']) {
-      const value = source.searchParams.get(key);
-      if (value) target.searchParams.set(key === 'session' ? 'g' : key, value);
-    }
-    location.replace(target.toString());
-  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache,no-store">
+<title>團GO 後台</title>
+<style>
+:root{
+  --navy:#285E50; --navy2:#397765;
+  --green:#2D7A66; --green-lt:#B7EDDB; --green-dk:#1F5F4F;
+  --amber:#F59E0B; --amber-lt:#FEF9C3;
+  --red:#EF4444; --red-lt:#FEE2E2;
+  --blue:#3B82F6; --blue-lt:#DBEAFE;
+  --purple:#8B5CF6; --purple-lt:#EDE9FE;
+  --bg:#F3FBF8; --card:#FFF;
+  --text:#18352D; --muted:#60736D; --line:#CFE7DF;
+  --r:14px; --shadow:0 1px 4px rgba(0,0,0,.08);
+  --hdr:56px; --nav:calc(60px + env(safe-area-inset-bottom,0px));
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;overscroll-behavior:none}
+button,input,select,textarea{font:inherit}
+img{display:block;max-width:100%}
+.hidden{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+
+/* ── Login ── */
+#login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:#B7EDDB}
+.login-card{background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-badge{width:64px;height:64px;background:var(--green-dk);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px}
+.login-title{font-size:22px;font-weight:900;margin-bottom:6px}
+.login-sub{color:var(--muted);font-size:14px;margin-bottom:28px}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:1.5px solid #E2E8F0;border-radius:12px;background:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-google:active{background:#F8FAFC}
+.login-err{color:var(--red);font-size:13px;margin-top:14px;min-height:18px}
+
+/* ── App Shell ── */
+#app{display:flex;flex-direction:column;height:100dvh}
+header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;position:sticky;top:0;z-index:20;border-bottom:1px solid #94D8C2}
+.hdr-logo{color:var(--text);font-size:18px;font-weight:900;letter-spacing:-.5px;flex-shrink:0}
+.hdr-session{flex:1;min-width:0}
+#sessionPicker{background:rgba(255,255,255,.72);color:var(--text);border:1px solid #82CDB5;border-radius:8px;padding:5px 8px;font-size:14px;font-weight:700;width:100%;max-width:200px;cursor:pointer}
+#sessionPicker option{background:#fff;color:var(--text)}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.icon-btn{position:relative;width:38px;height:38px;border-radius:10px;border:none;background:rgba(40,94,80,.12);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
+.icon-btn:active{background:rgba(40,94,80,.22)}
+.badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;background:var(--red);color:#fff;border-radius:99px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--navy)}
+.badge.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
+
+/* ── Main ── */
+#main{flex:1;overflow-y:auto;padding-bottom:calc(var(--nav) + 8px)}
+.tab{padding:14px 14px 0;display:none}
+.tab.active{display:block}
+
+/* ── Summary Cards ── */
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sum-card{background:var(--card);border-radius:var(--r);padding:14px 10px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+.sum-card:active{transform:scale(.97)}
+.sum-num{font-size:28px;font-weight:900;line-height:1;margin-bottom:4px}
+.sum-label{font-size:12px;color:var(--muted);font-weight:600}
+.sum-card.s-amber .sum-num{color:var(--amber)}
+.sum-card.s-blue .sum-num{color:var(--blue)}
+.sum-card.s-purple .sum-num{color:var(--purple)}
+.sum-card.s-green .sum-num{color:var(--green)}
+
+/* ── Revenue Card ── */
+.rev-card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.rev-title{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px}
+.rev-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.rev-row:last-child{border:none;font-weight:800;font-size:15px}
+.rev-val{font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ── Section heading ── */
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px}
+.section-hd h3{font-size:15px;font-weight:800}
+.section-hd .see-all{font-size:13px;color:var(--green);font-weight:700;border:none;background:none;padding:4px 0;cursor:pointer}
+
+/* ── Order Cards ── */
+.order-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+.order-card:active{transform:scale(.99)}
+.order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.order-id{font-size:12px;color:var(--muted);font-family:monospace}
+.order-name{font-size:15px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.chip-amber{background:var(--amber-lt);color:#92400E}
+.chip-green{background:var(--green-lt);color:#065F46}
+.chip-red{background:var(--red-lt);color:#991B1B}
+.chip-blue{background:var(--blue-lt);color:#1E40AF}
+.chip-purple{background:var(--purple-lt);color:#5B21B6}
+.chip-gray{background:#F1F5F9;color:var(--muted)}
+.order-meta{font-size:13px;color:var(--muted);line-height:1.6}
+.order-amount{font-size:18px;font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
+
+/* ── Urgent banner ── */
+.urgent-bar{background:var(--amber-lt);border:1px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:14px;font-weight:700;color:#92400E;display:flex;align-items:center;gap:8px}
+
+/* ── Filter Bar ── */
+.filter-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.f-chip{padding:7px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;transition:.15s;flex-shrink:0}
+.f-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* ── Apply Cards ── */
+.apply-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+.apply-card:active{transform:scale(.99)}
+.apply-name{font-size:16px;font-weight:800}
+.apply-meta{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.55}
+.apply-session{font-size:12px;font-weight:700;color:var(--blue);margin-top:4px}
+
+/* ── Promoter Cards ── */
+.promo-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+.promo-avatar{width:44px;height:44px;border-radius:50%;background:var(--green-lt);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--green-dk);flex-shrink:0}
+.promo-info{flex:1;min-width:0}
+.promo-name{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.promo-handle{font-size:13px;color:var(--muted)}
+.promo-session{font-size:12px;color:var(--blue);font-weight:700;margin-top:2px}
+
+/* ── Empty State ── */
+.empty{text-align:center;padding:44px 24px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-text{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.empty-sub{font-size:14px}
+
+/* ── Loading ── */
+.loading{text-align:center;padding:36px 24px;color:var(--muted);font-size:14px}
+
+/* ── Bottom Nav ── */
+#nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:#fff;border-top:1px solid var(--line);display:flex;z-index:20;padding-bottom:var(--safe-b)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;color:var(--muted);cursor:pointer;position:relative;padding:8px 0}
+.nav-btn.active{color:var(--navy)}
+.nav-icon{font-size:22px;line-height:1}
+.nav-label{font-size:11px;font-weight:700}
+.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:var(--navy)}
+.nav-dot{position:absolute;top:6px;right:calc(50% - 14px);width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid #fff}
+
+/* ── Bottom Sheet Modal ── */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;transition:opacity .2s}
+#overlay.show{opacity:1}
+#sheet{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;z-index:50;max-height:90dvh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.67,0);padding-bottom:var(--safe-b)}
+#sheet.show{transform:translateY(0)}
+.sheet-handle{width:40px;height:4px;background:#D1D5DB;border-radius:2px;margin:12px auto 8px;flex-shrink:0}
+#sheet-head{padding:0 18px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
+.sh-title{font-size:18px;font-weight:900}
+.sh-sub{font-size:13px;color:var(--muted);margin-top:2px}
+#sheet-body{overflow-y:auto;flex:1;padding:16px 18px}
+#sheet-foot{padding:12px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+
+/* ── Detail Lines ── */
+.detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);gap:12px;font-size:14px}
+.detail-row:last-child{border:none}
+.detail-key{color:var(--muted);font-weight:600;flex-shrink:0}
+.detail-val{font-weight:700;text-align:right;word-break:break-all}
+
+/* ── Buttons ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;border:none;font-size:16px;font-weight:800;cursor:pointer;transition:.15s}
+.btn:active{opacity:.85}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--line)}
+.btn-sm{padding:10px 14px;font-size:14px;width:auto}
+.btn-danger-outline{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+
+/* ── Form fields in sheet ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fff}
+.field textarea{resize:vertical;min-height:80px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--green)}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:calc(var(--nav) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;z-index:99;opacity:0;transition:.2s;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:var(--red)}
+
+/* ── User Menu ── */
+#userMenu{position:fixed;top:calc(var(--hdr) + 6px);right:14px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:30;min-width:180px;overflow:hidden}
+.um-item{display:block;width:100%;text-align:left;padding:14px 18px;border:none;background:none;font-size:15px;font-weight:700;cursor:pointer;border-bottom:1px solid var(--line)}
+.um-item:last-child{border:none;color:var(--red)}
+.um-item:active{background:var(--bg)}
+.um-name{padding:14px 18px 8px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line)}
+
+/* ── More Tab ── */
+.more-section{margin-bottom:16px}
+.more-section-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.more-row{background:var(--card);border-radius:var(--r);margin-bottom:2px;cursor:pointer;transition:.1s}
+.more-row:active{background:var(--bg)}
+.more-row-inner{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line)}
+.more-row:last-child .more-row-inner{border:none}
+.more-row-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.more-row-label{font-size:15px;font-weight:700;flex:1}
+.more-row-arrow{color:var(--muted);font-size:18px}
+
+/* ── Add Promoter Search ── */
+.member-result{background:var(--bg);border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:1.5px solid var(--line)}
+.member-result:active{background:var(--line)}
+.member-result-name{font-weight:800;font-size:15px}
+.member-result-email{font-size:13px;color:var(--muted)}
+
+/* ── Payout Cards ── */
+.payout-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer}
+.payout-amount{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--green-dk)}
+.payout-meta{font-size:13px;color:var(--muted);margin-top:4px}
+
+@media(min-width:640px){
+  #main{max-width:640px;margin:0 auto}
+  #nav{max-width:640px;left:50%;transform:translateX(-50%)}
+  #sheet{max-width:640px;left:50%;transform:translateX(-50%) translateY(100%)}
+  #sheet.show{transform:translateX(-50%) translateY(0)}
+  #overlay{backdrop-filter:blur(2px)}
+}
+</style>
 </head>
 <body>
-  <p>正在返回同一個團購頁面…</p>
-  <p><a href="groupbuy.html?member=1">回到團購頁</a></p>
+
+<!-- ── Login Screen ── -->
+<div id="login">
+  <div class="login-card">
+    <div class="login-badge">團GO</div>
+    <h1 class="login-title">後台管理</h1>
+    <p class="login-sub">使用已授權的 Google 帳號登入</p>
+    <button class="btn-google" onclick="startGoogleLogin()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.1 0 5.6 1.1 7.6 2.8l5.7-5.7C33.8 3.5 29.2 1.5 24 1.5 14.8 1.5 7 7.4 3.7 15.5l6.7 5.2C12.1 14.3 17.6 9.5 24 9.5z"/><path fill="#34A853" d="M46.5 24c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 3-2.2 5.5-4.7 7.2l7.2 5.6C43.5 36.9 46.5 30.9 46.5 24z"/><path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.8-2.8-.8-4.3s.3-2.9.8-4.3l-6.7-5.2C2.1 17.5 1.5 20.7 1.5 24s.6 6.5 2.2 9.5l6.7-5.2z"/><path fill="#EA4335" d="M24 46.5c5.2 0 9.7-1.7 13-4.7l-7.2-5.6c-1.8 1.2-4 1.9-5.8 1.9-6.4 0-11.9-4.8-13.6-11.2l-6.7 5.2C7 40.6 14.8 46.5 24 46.5z"/></svg>
+      使用 Google 登入
+    </button>
+    <div id="loginErr" class="login-err"></div>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div id="app" hidden>
+  <header>
+    <span class="hdr-logo">團GO後台</span>
+    <div class="hdr-session">
+      <select id="sessionPicker" onchange="onSessionChange()">
+        <option>載入中…</option>
+      </select>
+    </div>
+    <div class="hdr-right">
+      <button class="icon-btn" onclick="refreshAll()" title="重新整理">↻</button>
+      <button class="icon-btn" id="userBtn" onclick="toggleUserMenu()">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-4.42 0-8 1.79-8 4v1h16v-1c0-2.21-3.58-4-8-4z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- 首頁 Tab -->
+    <div id="t-home" class="tab active">
+      <div id="urgentBar"></div>
+      <div class="summary-row" id="summaryRow">
+        <div class="sum-card s-amber" onclick="goTab('orders');filterOrders('reported')">
+          <div class="sum-num num" id="cntPay">—</div>
+          <div class="sum-label">待確認付款</div>
+        </div>
+        <div class="sum-card s-blue" onclick="goTab('orders');filterOrders('shipping')">
+          <div class="sum-num num" id="cntShip">—</div>
+          <div class="sum-label">待出貨</div>
+        </div>
+        <div class="sum-card s-purple" onclick="goTab('apply')">
+          <div class="sum-num num" id="cntApply">—</div>
+          <div class="sum-label">申請待審</div>
+        </div>
+      </div>
+      <div id="revCard" class="rev-card hidden"></div>
+      <div class="section-hd">
+        <h3>最近訂單</h3>
+        <button class="see-all" onclick="goTab('orders')">全部 →</button>
+      </div>
+      <div id="recentList"><div class="loading">載入中…</div></div>
+    </div>
+
+    <!-- 訂單 Tab -->
+    <div id="t-orders" class="tab">
+      <div class="section-hd" style="margin-top:0">
+        <h3>場次訂單</h3>
+        <button class="see-all" onclick="downloadSupplierCsv()">下載中文出貨單</button>
+      </div>
+      <div class="filter-bar" id="filterBar">
+        <button class="f-chip active" data-f="all" onclick="filterOrders('all')">全部</button>
+        <button class="f-chip" data-f="reported" onclick="filterOrders('reported')">待確認</button>
+        <button class="f-chip" data-f="unpaid" onclick="filterOrders('unpaid')">待付款</button>
+        <button class="f-chip" data-f="paid" onclick="filterOrders('paid')">已付款</button>
+        <button class="f-chip" data-f="shipping" onclick="filterOrders('shipping')">出貨中</button>
+        <button class="f-chip" data-f="done" onclick="filterOrders('done')">完成</button>
+        <button class="f-chip" data-f="closed" onclick="filterOrders('closed')">關閉</button>
+      </div>
+      <div id="orderList"><div class="loading">載入中…</div></div>
+    </div>
+
+    <!-- 申請 Tab -->
+    <div id="t-apply" class="tab">
+      <div id="applyContent"><div class="loading">載入中…</div></div>
+    </div>
+
+    <!-- 管理 Tab -->
+    <div id="t-more" class="tab">
+      <div id="moreContent"><div class="loading">載入中…</div></div>
+    </div>
+  </main>
+
+  <nav id="nav">
+    <button class="nav-btn active" id="nb-home" onclick="goTab('home')">
+      <span class="nav-icon">⌂</span>
+      <span class="nav-label">首頁</span>
+    </button>
+    <button class="nav-btn" id="nb-orders" onclick="goTab('orders')">
+      <span class="nav-icon">☰</span>
+      <span class="nav-label">訂單</span>
+      <span id="orderDot" class="nav-dot hidden"></span>
+    </button>
+    <button class="nav-btn" id="nb-apply" onclick="goTab('apply')">
+      <span class="nav-icon">✎</span>
+      <span class="nav-label">申請</span>
+      <span id="applyDot" class="nav-dot hidden"></span>
+    </button>
+    <button class="nav-btn" id="nb-more" onclick="goTab('more')">
+      <span class="nav-icon">≡</span>
+      <span class="nav-label">管理</span>
+    </button>
+  </nav>
+</div>
+
+<!-- User Menu -->
+<div id="userMenu" class="hidden">
+  <div class="um-name" id="umName"></div>
+  <button class="um-item" onclick="closeUserMenu();goTab('more')">設定</button>
+  <button class="um-item" onclick="closeUserMenu();doLogout()">登出</button>
+</div>
+
+<!-- Modal: overlay + sheet -->
+<div id="overlay" hidden onclick="closeModal()"></div>
+<div id="sheet" hidden>
+  <div class="sheet-handle"></div>
+  <div id="sheetHead" class="sheet-head"></div>
+  <div id="sheetBody" class="sheet-body"></div>
+  <div id="sheetFoot" class="sheet-foot"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ── Config ── */
+const API = location.protocol==='https:'&&/(^|\.)2b-love\.com$/i.test(location.hostname)
+  ? location.origin+'/s/api'
+  : 'https://2bl-v7.ndiangrace.workers.dev';
+const TENANT = 'tuibile';
+const SESSION_KEY = 'tb_v3';
+const TENANT_KEY  = '2bl_admin_tenant';
+
+/* ── State ── */
+const S = {
+  email:'', token:'', role:'', name:'',
+  authorization: null,
+  isPlatform: false,
+  sessions: [],
+  currentSid: '',
+  orders: [],
+  orderItems: [],
+  applications: { managers:[], promoters:[] },
+  promoters: [],
+  payouts: [],
+  activeFilter: 'all',
+  activeTab: 'home',
+};
+
+/* ── API Helpers ── */
+async function get(action, extra={}) {
+  const params = new URLSearchParams({ action, tenant:TENANT, email:S.email||'_', token:S.token||'', _t:Date.now(), ...extra });
+  const r = await fetch(`${API}?${params}`, {cache:'no-store'});
+  const j = await r.json().catch(()=>({error:'回應格式錯誤'}));
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+async function post(action, body={}) {
+  const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action, tenant:TENANT, email:S.email||'_', token:S.token||'', ...body }), cache:'no-store' });
+  const j = await r.json().catch(()=>({error:'回應格式錯誤'}));
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+
+/* ── Auth ── */
+const q = new URLSearchParams(location.search);
+(function initOAuth(){
+  const tok = q.get('admin_token');
+  const err = q.get('login_error');
+  if (tok) sessionStorage.setItem('2bl_admin_token_pending', tok);
+  if (err) sessionStorage.setItem('2bl_login_error_pending', err);
+  if (tok || err) history.replaceState({}, '', location.pathname);
+})();
+
+function startGoogleLogin() {
+  localStorage.removeItem(SESSION_KEY);
+  location.href = API.replace('/s/api','') + '/auth/google/start?tenant=' + TENANT;
+}
+
+async function handleOAuthCallback() {
+  const tok = sessionStorage.getItem('2bl_admin_token_pending');
+  const err = sessionStorage.getItem('2bl_login_error_pending');
+  sessionStorage.removeItem('2bl_admin_token_pending');
+  sessionStorage.removeItem('2bl_login_error_pending');
+  const errMap = { not_authorized:'Google 帳號不在管理員名單', staff_inactive:'帳號已停用',
+    id_token_verify_failed:'Google 身份驗證失敗', google_cancelled:'Google 登入已取消' };
+  if (err) { showLoginErr(errMap[err]||'登入失敗：'+err); return false; }
+  if (!tok) return false;
+  try {
+    const j = await fetch(`${API.replace('/s/api','')}/admin/me?email=_&token=${encodeURIComponent(tok)}&_t=${Date.now()}`,{cache:'no-store'}).then(r=>r.json());
+    if (j.error||!j.email) { showLoginErr('無後台管理權限'); return false; }
+    saveSession({ email:j.email, token:tok, role:j.normalized_role||j.role||'', name:j.display_name||j.name||j.email, authorization:j.authorization||null });
+    return true;
+  } catch(e) { showLoginErr('驗證失敗：'+e.message); return false; }
+}
+
+function saveSession(s) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({...s, savedAt:Date.now()}));
+  applySession(s);
+}
+
+function readSession() {
+  try {
+    const v = JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+    if (!v || Date.now()-Number(v.savedAt||0) > 8*3600*1000) return null;
+    return v;
+  } catch { return null; }
+}
+
+function applySession(s) {
+  S.email = s.email; S.token = s.token; S.role = s.role||''; S.name = s.name||s.email;
+  S.authorization = s.authorization||null;
+  S.isPlatform = S.role === 'platform_super_admin';
+  document.getElementById('umName').textContent = S.name;
+}
+
+function doLogout() {
+  post('adminLogout').catch(()=>{});
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+function showLoginErr(msg) {
+  document.getElementById('loginErr').textContent = msg||'登入失敗';
+}
+
+/* ── Helpers ── */
+function esc(s) { return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function money(n) { return 'NT$ '+Number(n||0).toLocaleString(); }
+function fmt(d) { if(!d) return '—'; return new Date(d).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}); }
+
+/* ── Session Picker ── */
+function buildSessionPicker() {
+  const pick = document.getElementById('sessionPicker');
+  pick.innerHTML = S.sessions.length
+    ? S.sessions.map(s=>`<option value="${esc(s.id)}" ${s.id===S.currentSid?'selected':''}>${esc(s.name)}</option>`).join('')
+    : '<option>無可用場次</option>';
+  if (!S.currentSid && S.sessions[0]) S.currentSid = S.sessions[0].id;
+}
+function onSessionChange() {
+  S.currentSid = document.getElementById('sessionPicker').value;
+  S.orders = [];
+  loadOrders();
+  loadApplications();
+  updateHome();
+}
+
+/* ── Tab System ── */
+function goTab(name) {
+  ['home','orders','apply','more'].forEach(t => {
+    document.getElementById('t-'+t).classList.toggle('active', t===name);
+    document.getElementById('nb-'+t).classList.toggle('active', t===name);
+  });
+  S.activeTab = name;
+  if (name === 'orders' && !S.orders.length) loadOrders();
+  if (name === 'apply') loadApplications();
+  if (name === 'more') renderMore();
+}
+
+/* ── Toast ── */
+let _toastTimer;
+function toast(msg, isErr=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = isErr ? 'show err' : 'show';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+/* ── Modal (Bottom Sheet) ── */
+function openModal(title, sub, bodyHtml, footHtml) {
+  document.getElementById('sheetHead').innerHTML = `<div class="sh-title">${esc(title)}</div>${sub?`<div class="sh-sub">${esc(sub)}</div>`:''}`;
+  document.getElementById('sheetBody').innerHTML = bodyHtml;
+  document.getElementById('sheetFoot').innerHTML = footHtml;
+  const ov = document.getElementById('overlay');
+  const sh = document.getElementById('sheet');
+  ov.hidden = false; sh.hidden = false;
+  requestAnimationFrame(()=>{ ov.classList.add('show'); sh.classList.add('show'); });
+}
+function closeModal() {
+  const ov = document.getElementById('overlay'), sh = document.getElementById('sheet');
+  ov.classList.remove('show'); sh.classList.remove('show');
+  setTimeout(()=>{ ov.hidden=true; sh.hidden=true; }, 300);
+}
+
+/* ── Status Helpers ── */
+function payChip(order) {
+  const ps = String(order.payment_status||'').toLowerCase();
+  const rs = String(order.refund_status||'').toLowerCase();
+  const os = String(order.order_status||'').toLowerCase();
+  if (['cancelled','已取消'].includes(os)||ps==='cancelled') return '<span class="chip chip-gray">已取消</span>';
+  if (os==='refunded'||rs==='refunded') return '<span class="chip chip-gray">已退款</span>';
+  if (rs==='requested') return '<span class="chip chip-red">申請退款</span>';
+  if (ps==='paid'||ps==='已付款') return '<span class="chip chip-green">已付款</span>';
+  if (ps==='reported'||ps==='已回報') return '<span class="chip chip-amber">待確認</span>';
+  return '<span class="chip chip-gray">待付款</span>';
+}
+function fulfillChip(order) {
+  const m = {pending:'待處理',processing:'處理中',ready_pickup:'可取貨',shipped:'已出貨',completed:'已完成'};
+  const os = String(order.order_status||'pending');
+  const label = m[os.toLowerCase()]||os;
+  if (['shipped','ready_pickup'].includes(os.toLowerCase())) return `<span class="chip chip-blue">${label}</span>`;
+  if (os.toLowerCase()==='completed') return `<span class="chip chip-green">${label}</span>`;
+  if (['cancelled','refunded'].includes(os.toLowerCase())) return '';
+  return `<span class="chip chip-gray">${label}</span>`;
+}
+function isClosed(o) {
+  const os = String(o.order_status||'').toLowerCase();
+  return ['cancelled','refunded','void','已取消','已退款'].includes(os) || String(o.payment_status||'').toLowerCase()==='cancelled';
+}
+function isPaid(o) { return ['paid','已付款'].includes(String(o.payment_status||'').toLowerCase()); }
+function isReported(o) { return ['reported','已回報'].includes(String(o.payment_status||'').toLowerCase()); }
+
+/* ── Home Tab ── */
+async function updateHome() {
+  const sid = S.currentSid;
+  const ses = S.sessions.find(s=>s.id===sid)||{};
+
+  // Revenue card (platform only)
+  const rc = document.getElementById('revCard');
+  if (S.isPlatform && (ses.paidTotalAmount||0) > 0) {
+    rc.classList.remove('hidden');
+    rc.innerHTML = `<div class="rev-title">${esc(ses.name||'本場')} 付款收入</div>
+      <div class="detail-row"><span class="detail-key">商品收入</span><span class="detail-val">${money(ses.paidProductAmount)}</span></div>
+      <div class="detail-row"><span class="detail-key">運費收入</span><span class="detail-val">${money(ses.paidShippingAmount)}</span></div>
+      <div class="detail-row"><span class="detail-key">訂單實收</span><span class="detail-val num" style="font-size:17px;color:var(--green-dk)">${money(ses.paidTotalAmount)}</span></div>`;
+  } else { rc.classList.add('hidden'); }
+
+  // Summary counts
+  let reportedCnt=0, shipCnt=0;
+  if (S.orders.length) {
+    reportedCnt = S.orders.filter(o=>!isClosed(o)&&isReported(o)).length;
+    shipCnt = S.orders.filter(o=>!isClosed(o)&&isPaid(o)&&!['shipped','ready_pickup','completed'].includes(String(o.order_status||'').toLowerCase())&&!String(o.refund_status||'')).length;
+  }
+  document.getElementById('cntPay').textContent = reportedCnt;
+  document.getElementById('cntShip').textContent = shipCnt;
+
+  // Urgent bar
+  const ub = document.getElementById('urgentBar');
+  ub.innerHTML = reportedCnt > 0
+    ? `<div class="urgent-bar">🔔 有 ${reportedCnt} 筆付款回報待確認</div>`
+    : '';
+
+  // Order dots
+  document.getElementById('orderDot').classList.toggle('hidden', reportedCnt===0);
+  document.getElementById('applyDot').classList.toggle('hidden',
+    (S.applications.managers.filter(a=>a.status==='pending').length + S.applications.promoters.filter(a=>a.status==='pending').length) === 0);
+
+  // Apply count
+  const pendingApply = (S.applications.managers||[]).filter(a=>a.status==='pending').length
+    + (S.applications.promoters||[]).filter(a=>a.status==='pending').length;
+  document.getElementById('cntApply').textContent = pendingApply;
+
+  // Recent orders
+  renderOrderList('recentList', S.orders.slice(0,5), true);
+}
+
+/* ── Orders Tab ── */
+async function loadOrders() {
+  if (!S.currentSid) { document.getElementById('orderList').innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">請先選擇場次</div></div>'; return; }
+  document.getElementById('orderList').innerHTML = '<div class="loading">載入訂單中…</div>';
+  document.getElementById('recentList').innerHTML = '<div class="loading">載入中…</div>';
+  try {
+    const d = await get('getGroupBuySessionOrders', { sessionId: S.currentSid });
+    S.orders = d.orders||[];
+    S.orderItems = d.items||[];
+    renderFilteredOrders();
+    updateHome();
+  } catch(e) {
+    document.getElementById('orderList').innerHTML = `<div class="empty"><div class="empty-text">載入失敗</div><div class="empty-sub">${esc(e.message)}</div></div>`;
+  }
+}
+
+function filterOrders(f) {
+  S.activeFilter = f;
+  document.querySelectorAll('.f-chip').forEach(c=>c.classList.toggle('active', c.dataset.f===f));
+  renderFilteredOrders();
+}
+
+function renderFilteredOrders() {
+  const f = S.activeFilter;
+  let rows = S.orders;
+  if (f==='reported') rows = rows.filter(o=>!isClosed(o)&&isReported(o));
+  else if (f==='unpaid') rows = rows.filter(o=>!isClosed(o)&&!isPaid(o)&&!isReported(o));
+  else if (f==='paid') rows = rows.filter(o=>!isClosed(o)&&isPaid(o)&&!String(o.refund_status||''));
+  else if (f==='shipping') rows = rows.filter(o=>!isClosed(o)&&isPaid(o)&&['processing','shipped','ready_pickup'].includes(String(o.order_status||'').toLowerCase()));
+  else if (f==='done') rows = rows.filter(o=>String(o.order_status||'').toLowerCase()==='completed');
+  else if (f==='closed') rows = rows.filter(o=>isClosed(o));
+  renderOrderList('orderList', rows, false);
+}
+
+function renderOrderList(elId, rows, compact=false) {
+  const el = document.getElementById(elId);
+  if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">沒有符合的訂單</div></div>`; return; }
+  el.innerHTML = rows.map(o => {
+    const delivery = o.fulfillment_type==='pickup'?'自取':'宅配';
+    const name = esc(o.recipient_name||o.member_email||'訂單');
+    const shortId = String(o.id||'').slice(-8).toUpperCase();
+    return `<div class="order-card" onclick="openOrderModal('${esc(o.id)}')">
+      <div class="order-head">
+        <div>
+          <div class="order-id">#${shortId}</div>
+          <div class="order-name">${name}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">${payChip(o)}${compact?'':fulfillChip(o)}</div>
+      </div>
+      <div class="order-meta">${esc(fmt(o.created_at))} · ${delivery}${o.tracking_no?` · ${esc(o.tracking_no)}`:''}</div>
+      <div class="order-amount">${money(o.total_amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openOrderModal(orderId) {
+  const o = S.orders.find(x=>x.id===orderId);
+  if (!o) return;
+  const items = (S.orderItems||[]).filter(x=>String(x.order_id)===String(orderId));
+  const closed = isClosed(o);
+  const paid = isPaid(o);
+  const reported = isReported(o);
+  const refundReq = String(o.refund_status||'').toLowerCase()==='requested';
+  const shortId = String(o.id||'').slice(-8).toUpperCase();
+  const osLabel = {pending:'待處理',processing:'處理中',ready_pickup:'可取貨',shipped:'已出貨',completed:'已完成',cancelled:'已取消',refunded:'已退款'}[String(o.order_status||'pending').toLowerCase()]||o.order_status||'待處理';
+
+  const body = `
+    <div class="detail-row"><span class="detail-key">訂單編號</span><span class="detail-val" style="font-size:12px;font-family:monospace">${esc(o.id||'')}</span></div>
+    <div class="detail-row"><span class="detail-key">買家</span><span class="detail-val">${esc(o.member_email||'')}</span></div>
+    <div class="detail-row"><span class="detail-key">收件人</span><span class="detail-val">${esc(o.recipient_name||'—')} ${esc(o.recipient_phone||'')}</span></div>
+    <div class="detail-row"><span class="detail-key">取貨方式</span><span class="detail-val">${o.fulfillment_type==='pickup'?'現場自取':'宅配'}</span></div>
+    ${o.shipping_address?`<div class="detail-row"><span class="detail-key">地址</span><span class="detail-val">${esc(o.shipping_address)}</span></div>`:''}
+    ${o.fulfillment_note?`<div class="detail-row"><span class="detail-key">備註</span><span class="detail-val">${esc(o.fulfillment_note)}</span></div>`:''}
+    ${o.tracking_no?`<div class="detail-row"><span class="detail-key">物流單號</span><span class="detail-val">${esc(o.tracking_no)}</span></div>`:''}
+    <div class="detail-row"><span class="detail-key">付款狀態</span><span class="detail-val">${payChip(o)}</span></div>
+    <div class="detail-row"><span class="detail-key">出貨狀態</span><span class="detail-val">${osLabel}</span></div>
+    ${o.payment_last5?`<div class="detail-row"><span class="detail-key">帳號末5碼</span><span class="detail-val">${esc(o.payment_last5)}</span></div>`:''}
+    <div class="detail-row"><span class="detail-key">商品小計</span><span class="detail-val">${money(o.product_amount)}</span></div>
+    <div class="detail-row"><span class="detail-key">運費</span><span class="detail-val">${money(o.shipping_fee)}</span></div>
+    <div class="detail-row"><span class="detail-key">應付總額</span><span class="detail-val" style="font-size:18px;font-weight:900;color:var(--green-dk)">${money(o.total_amount)}</span></div>
+    <div style="padding:10px 0;border-bottom:1px solid var(--line)"><strong>商品明細</strong>${items.length?items.map(it=>`<div class="detail-row"><span class="detail-key">${esc(it.product_name||'商品')}</span><span class="detail-val">× ${Number(it.fulfillment_quantity??it.quantity??0)}${Number(it.bonus_quantity||0)>0?`（贈 ${Number(it.bonus_quantity)}）`:''}</span></div>`).join(''):'<div style="color:var(--muted);font-size:13px;margin-top:5px">沒有商品明細</div>'}</div>
+    <div class="detail-row"><span class="detail-key">建立時間</span><span class="detail-val">${fmt(o.created_at)}</span></div>`;
+
+  // Foot actions
+  let foot = '';
+  if (closed) {
+    foot = `<div style="text-align:center;color:var(--muted);font-size:14px;padding:8px">此單已關閉，無法再操作</div>`;
+  } else if (reported && S.isPlatform) {
+    foot = `<button class="btn btn-green" onclick="doConfirmPayment('${orderId}')">✓ 確認已收款</button>
+      <button class="btn btn-outline" onclick="doRejectPayment('${orderId}')">退回回報</button>
+      <button class="btn btn-danger-outline" onclick="doRejectAndCancel('${orderId}')">退回並取消訂單</button>`;
+  } else if (paid && refundReq && S.isPlatform) {
+    foot = `<button class="btn btn-red" onclick="doConfirmRefund('${orderId}',${Number(o.total_amount||0)})">確認整筆退款</button>`;
+  } else if (paid && !refundReq) {
+    const os = String(o.order_status||'pending').toLowerCase();
+    const delivery = String(o.fulfillment_type||'').toLowerCase();
+    const next = [];
+    if (!['shipped','ready_pickup','completed'].includes(os)) next.push(`<button class="btn btn-blue" onclick="doFulfill('${orderId}','processing','')">開始處理</button>`);
+    if (delivery==='pickup'&&!['ready_pickup','completed'].includes(os)) next.push(`<button class="btn btn-green" onclick="doFulfill('${orderId}','ready_pickup','')">標記可取貨</button>`);
+    if (delivery==='shipping'&&!['shipped','completed'].includes(os)) next.push(`<button class="btn btn-blue" onclick="doFulfillShipped('${orderId}')">填寫物流單號並出貨</button>`);
+    if (['shipped','ready_pickup'].includes(os)) next.push(`<button class="btn btn-green" onclick="doFulfill('${orderId}','completed','')">標記完成</button>`);
+    if (S.isPlatform) next.push(`<button class="btn btn-danger-outline" onclick="doAdminRefund('${orderId}',${Number(o.total_amount||0)})">辦理整筆退款</button>`);
+    foot = next.join('')||`<div style="text-align:center;color:var(--muted);font-size:14px">訂單已完成</div>`;
+  } else if (!reported && !paid && S.isPlatform) {
+    foot = `<button class="btn btn-danger-outline" onclick="doCancelOrder('${orderId}')">取消未付款訂單</button>`;
+  } else {
+    foot = `<div style="text-align:center;color:var(--muted);font-size:14px;padding:8px">等待買家付款</div>`;
+  }
+
+  openModal(`訂單 #${shortId}`, o.recipient_name||o.member_email||'', body, foot);
+}
+
+/* ── Order Actions ── */
+async function doConfirmPayment(id) {
+  if (!confirm('確認已實際收到這筆款項？')) return;
+  try { await post('confirmGroupBuyOrderPayment',{orderId:id}); toast('✓ 付款已確認'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+async function doRejectPayment(id) {
+  const note = prompt('退回原因：','付款資料尚未核對成功，請確認後重新回報。');
+  if (note===null) return;
+  try { await post('rejectGroupBuyPaymentReport',{sessionId:S.currentSid,orderId:id,note}); toast('已退回付款回報'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+async function doRejectAndCancel(id) {
+  const reason = prompt('退回並取消的原因（必填）：','');
+  if (!reason||reason.trim().length<2) { toast('請填寫原因（至少2字）',true); return; }
+  if (!confirm('確定退回付款回報並取消這筆訂單？')) return;
+  try { await post('adminRejectAndCancelGroupBuyOrder',{orderId:id,reason:reason.trim()}); toast('已退回並取消'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+async function doCancelOrder(id) {
+  const reason = prompt('取消原因（必填）：','');
+  if (!reason||reason.trim().length<2) { toast('請填寫原因',true); return; }
+  if (!confirm('確定取消這筆未付款訂單？取消後庫存會釋回。')) return;
+  try { await post('adminCancelGroupBuyOrder',{orderId:id,reason:reason.trim()}); toast('訂單已取消'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+async function doConfirmRefund(id, amount) {
+  const note = prompt('退款備註（可留空）：','');
+  if (note===null) return;
+  if (!confirm(`確認已依原收款方式完成退款 ${money(amount)}？`)) return;
+  try { await post('confirmGroupBuyRefund',{orderId:id,refundAmount:amount,note}); toast('退款確認完成'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+async function doAdminRefund(id, amount) {
+  const note = prompt('退款原因：','');
+  if (note===null) return;
+  if (!confirm(`確認已依原收款方式完成退款 ${money(amount)}？退款完成後庫存與分潤會同步處理。`)) return;
+  try { await post('adminProcessGroupBuyRefund',{orderId:id,refundAmount:amount,note}); toast('退款已處理'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+async function doFulfill(id, status, tracking) {
+  const labels = {processing:'開始處理',ready_pickup:'可取貨',shipped:'已出貨',completed:'完成'};
+  if (!confirm(`確認更新為「${labels[status]||status}」？`)) return;
+  try { await post('sessionOrderFulfillment',{orderId:id,status,trackingNo:tracking||''}); toast('狀態已更新'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+async function doFulfillShipped(id) {
+  const tracking = prompt('物流單號（沒有可留空）：','');
+  if (tracking===null) return;
+  if (!confirm('確認標記已出貨？')) return;
+  try { await post('sessionOrderFulfillment',{orderId:id,status:'shipped',trackingNo:tracking||''}); toast('已標記出貨'); closeModal(); await loadOrders(); } catch(e){toast(e.message,true);}
+}
+
+/* ── Applications ── */
+async function loadApplications() {
+  const el = document.getElementById('applyContent');
+  el.innerHTML = '<div class="loading">載入申請中…</div>';
+  try {
+    let managers=[], promoters=[];
+    if (S.isPlatform) {
+      const d = await get('groupBuyPromoterAdminData');
+      managers = (d.applications||[]).filter(a=>a.application_type==='manager'||(a.social_profiles&&a.audience_size!=null));
+      promoters = (d.applications||[]).filter(a=>!managers.includes(a));
+    } else {
+      if (S.currentSid) {
+        const d = await get('groupBuyPromoterAdminData');
+        promoters = (d.applications||[]).filter(a=>String(a.source_session_id||'')===String(S.currentSid));
+      }
+    }
+    S.applications = { managers, promoters };
+    renderApplications();
+  } catch(e) {
+    el.innerHTML = `<div class="empty"><div class="empty-text">載入失敗</div><div class="empty-sub">${esc(e.message)}</div></div>`;
+  }
+}
+
+function renderApplications() {
+  const {managers,promoters} = S.applications;
+  const pend = [...managers,...promoters].filter(a=>a.status==='pending').length;
+  document.getElementById('applyDot').classList.toggle('hidden', pend===0);
+
+  let html = '';
+  if (S.isPlatform) {
+    html += `<div class="section-hd" style="margin-top:0"><h3>場次管理員申請</h3></div>`;
+    html += managers.length
+      ? managers.map(a=>applyCardHtml(a,'manager')).join('')
+      : '<div class="empty"><div class="empty-sub">目前沒有場次管理員申請</div></div>';
+    html += `<div class="section-hd"><h3>團購主申請</h3></div>`;
+  }
+  html += promoters.length
+    ? promoters.map(a=>applyCardHtml(a,'promoter')).join('')
+    : '<div class="empty"><div class="empty-sub">目前沒有待審核申請</div></div>';
+
+  document.getElementById('applyContent').innerHTML = html;
+}
+
+function applyCardHtml(a, type) {
+  const statusChip = {pending:'<span class="chip chip-amber">待審核</span>',approved:'<span class="chip chip-blue">待啟用</span>',rejected:'<span class="chip chip-gray">已拒絕</span>',active:'<span class="chip chip-green">已啟用</span>'}[a.status]||'';
+  return `<div class="apply-card" onclick="openApplyModal('${esc(a.id)}','${type}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div class="apply-name">${esc(a.brand_name||a.member_name||'申請者')}</div>
+      ${statusChip}
+    </div>
+    <div class="apply-meta">${esc(a.member_email||'')}${a.member_phone?` · ${esc(a.member_phone)}`:''}</div>
+    ${a.source_session_name?`<div class="apply-session">📍 ${esc(a.source_session_name)}</div>`:''}
+  </div>`;
+}
+
+function openApplyModal(id, type) {
+  const list = type==='manager' ? S.applications.managers : S.applications.promoters;
+  const a = list.find(x=>x.id===id);
+  if (!a) return;
+
+  const isPending = a.status==='pending';
+  const body = `
+    <div class="detail-row"><span class="detail-key">姓名 / 品牌</span><span class="detail-val">${esc(a.brand_name||a.member_name||'—')}</span></div>
+    <div class="detail-row"><span class="detail-key">Email</span><span class="detail-val">${esc(a.member_email||'—')}</span></div>
+    <div class="detail-row"><span class="detail-key">手機</span><span class="detail-val">${esc(a.member_phone||'—')}</span></div>
+    ${a.source_session_name?`<div class="detail-row"><span class="detail-key">申請場次</span><span class="detail-val">${esc(a.source_session_name)}</span></div>`:''}
+    ${a.requested_referral_code?`<div class="detail-row"><span class="detail-key">申請 ID</span><span class="detail-val">${esc(a.requested_referral_code)}</span></div>`:''}
+    ${a.audience_size?`<div class="detail-row"><span class="detail-key">社群人數</span><span class="detail-val">${Number(a.audience_size).toLocaleString()}</span></div>`:''}
+    ${a.apply_note||a.groupBuyExperience?`<div class="detail-row"><span class="detail-key">說明</span><span class="detail-val">${esc(a.apply_note||a.groupBuyExperience||'')}</span></div>`:''}
+    <div class="detail-row"><span class="detail-key">申請時間</span><span class="detail-val">${fmt(a.created_at)}</span></div>`;
+
+  const sid = a.source_session_id||S.currentSid||'';
+  const foot = isPending
+    ? `<button class="btn btn-green" onclick="doReviewApply('${esc(a.id)}','${esc(sid)}','approved')">✓ 核准申請</button>
+       <button class="btn btn-danger-outline" onclick="doReviewApply('${esc(a.id)}','${esc(sid)}','rejected')">拒絕申請</button>`
+    : `<div style="text-align:center;color:var(--muted);font-size:14px;padding:8px">狀態：${a.status}</div>`;
+
+  openModal(a.brand_name||a.member_name||'申請', a.status==='pending'?'待審核':'', body, foot);
+}
+
+async function doReviewApply(id, sid, status) {
+  const label = status==='approved'?'核准':'拒絕';
+  if (!confirm(`確定${label}這份申請？`)) return;
+  try {
+    await post('reviewSessionManagerApplication',{id,sessionId:sid,status});
+    toast(`申請已${label}`); closeModal(); loadApplications();
+  } catch(e){toast(e.message,true);}
+}
+
+/* ── More / Management Tab ── */
+async function renderMore() {
+  const el = document.getElementById('moreContent');
+  el.innerHTML = `
+    <div class="more-section">
+      <div class="more-section-title">場次操作</div>
+      <div class="more-row" onclick="openPromoterMgmt()">
+        <div class="more-row-inner">
+          <div class="more-row-icon" style="background:var(--green-lt)">🤝</div>
+          <span class="more-row-label">管理本場團購主</span>
+          <span class="more-row-arrow">›</span>
+        </div>
+      </div>
+      <div class="more-row" onclick="window.open('groupbuy.html','_blank')">
+        <div class="more-row-inner">
+          <div class="more-row-icon" style="background:var(--blue-lt)">🏪</div>
+          <span class="more-row-label">查看前台</span>
+          <span class="more-row-arrow">↗</span>
+        </div>
+      </div>
+    </div>
+    ${S.isPlatform ? `
+    <div class="more-section">
+      <div class="more-section-title">平台管理</div>
+      <div class="more-row" onclick="loadPayouts()">
+        <div class="more-row-inner">
+          <div class="more-row-icon" style="background:var(--amber-lt)">💰</div>
+          <span class="more-row-label">分潤結算申請</span>
+          <span class="more-row-arrow">›</span>
+        </div>
+      </div>
+    </div>` : ''}
+    <div class="more-section">
+      <div class="more-section-title">帳號</div>
+      <div class="more-row" onclick="doLogout()">
+        <div class="more-row-inner" style="color:var(--red)">
+          <div class="more-row-icon" style="background:var(--red-lt)">🚪</div>
+          <span class="more-row-label" style="color:var(--red)">登出</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── Promoter Management ── */
+async function openPromoterMgmt() {
+  if (!S.currentSid) { toast('請先選擇場次',true); return; }
+  openModal('本場團購主', '', '<div class="loading">載入中…</div>',
+    `<button class="btn btn-green" onclick="openAddPromoterSheet()">＋ 新增團購主</button>`);
+  try {
+    const d = await get('groupBuyAdminData');
+    const sid = S.currentSid;
+    const allData = (d.sessions||[]).find(s=>s.id===sid)||{};
+    // Promoter data comes from groupBuyPromoterAdminData for platform admins
+    let promos = [];
+    if (S.isPlatform) {
+      const pd = await get('groupBuyPromoterAdminData');
+      promos = (pd.promoters||[]).filter(p=>p.session_id===sid);
+    }
+    const body = promos.length
+      ? promos.map(p=>`
+        <div class="promo-card">
+          <div class="promo-avatar">${(p.brand_name||p.member_name||'?')[0].toUpperCase()}</div>
+          <div class="promo-info">
+            <div class="promo-name">${esc(p.brand_name||p.member_name||'')}</div>
+            <div class="promo-handle">${esc(p.member_email||'')} · @${esc(p.public_handle||p.referral_code||'')}</div>
+          </div>
+          ${S.isPlatform?`<button class="btn btn-danger-outline btn-sm" style="padding:8px 12px;font-size:13px" onclick="doRemovePromoter('${esc(p.id)}','${esc(p.member_id)}')">移除</button>`:''}
+        </div>`).join('')
+      : '<div class="empty"><div class="empty-sub">本場尚無團購主</div></div>';
+    document.getElementById('sheetBody').innerHTML = body;
+  } catch(e) { document.getElementById('sheetBody').innerHTML = `<div class="empty"><div class="empty-sub">${esc(e.message)}</div></div>`; }
+}
+
+function openAddPromoterSheet() {
+  const body = `
+    <p style="font-size:14px;color:var(--muted);margin-bottom:12px">
+      會員需先在前台申請本場團購主，審核通過後系統自動啟用。<br><br>
+      若需要手動指定，請輸入會員 Email：
+    </p>
+    <div class="field"><label>會員 Email</label><input id="addPromoEmail" type="email" placeholder="member@example.com"></div>
+    <div class="field"><label>分潤 / 推廣碼（英數）</label><input id="addPromoHandle" placeholder="例如 alice" maxlength="20"></div>
+    <div id="addPromoResult"></div>`;
+  openModal('新增團購主', S.sessions.find(s=>s.id===S.currentSid)?.name||'', body,
+    `<button class="btn btn-green" onclick="doDirectAddPromoter()">確認新增</button>
+     <button class="btn btn-outline" onclick="closeModal()">取消</button>`);
+}
+
+async function doDirectAddPromoter() {
+  const email = document.getElementById('addPromoEmail')?.value.trim();
+  const handle = document.getElementById('addPromoHandle')?.value.trim();
+  if (!email||!handle) { toast('請填寫 Email 與推廣碼',true); return; }
+  const resEl = document.getElementById('addPromoResult');
+  resEl.innerHTML = '<div class="loading">處理中…</div>';
+  try {
+    // NOTE: Direct add requires platform admin and an existing approved application
+    // This is a simplified flow - full implementation needs custom worker endpoint
+    toast('請先讓會員在前台申請，審核核准後系統自動啟用。直接指派功能開發中。',true);
+    resEl.innerHTML = '';
+  } catch(e) { resEl.innerHTML = `<div class="empty-sub" style="color:var(--red)">${esc(e.message)}</div>`; }
+}
+
+async function doRemovePromoter(promoterId, memberId) {
+  if (!confirm('確定將這位團購主移出本場？其他場次與歷史資料仍保留。')) return;
+  try {
+    await post('removeGroupBuyPromoter',{promoterId,memberId,sessionId:S.currentSid});
+    toast('已移除'); closeModal();
+  } catch(e){toast(e.message,true);}
+}
+
+/* ── Payouts ── */
+async function loadPayouts() {
+  openModal('分潤結算申請', '', '<div class="loading">載入中…</div>', '');
+  try {
+    const d = await get('getGroupBuyPayoutRequests');
+    const rows = d.requests||d||[];
+    if (!rows.length) { document.getElementById('sheetBody').innerHTML = '<div class="empty"><div class="empty-sub">目前沒有申請</div></div>'; return; }
+    document.getElementById('sheetBody').innerHTML = rows.map(r=>`
+      <div class="payout-card" onclick="openPayoutModal('${esc(r.id)}',${Number(r.amount||0)},'${esc(r.status||'')}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="payout-amount">${money(r.amount)}</div>
+          <span class="chip chip-${r.status==='approved'?'blue':r.status==='paid'?'green':'amber'}">${{requested:'待審核',approved:'核准',paid:'已匯款'}[r.status]||r.status}</span>
+        </div>
+        <div class="payout-meta">${esc(r.promoter_name||r.member_email||'')} · ${fmt(r.created_at)}</div>
+      </div>`).join('');
+  } catch(e) { document.getElementById('sheetBody').innerHTML = `<div class="empty"><div class="empty-sub">${esc(e.message)}</div></div>`; }
+}
+
+function openPayoutModal(id, amount, status) {
+  const label = {requested:'待審核',approved:'核准',paid:'已匯款'}[status]||status;
+  openModal(`結算申請 ${money(amount)}`, label, `<div style="font-size:14px;color:var(--muted)">申請狀態：${label}</div>`,
+    status==='requested'
+      ? `<button class="btn btn-green" onclick="doPayoutReview('${id}','approved')">核准申請</button>
+         <button class="btn btn-danger-outline" onclick="doPayoutReview('${id}','rejected')">拒絕申請</button>`
+      : status==='approved'
+      ? `<button class="btn btn-green" onclick="doPayoutReview('${id}','paid')">確認已實際匯款</button>`
+      : `<div style="text-align:center;color:var(--muted);font-size:14px">已完成</div>`);
+}
+
+async function doPayoutReview(id, status) {
+  const note = prompt('備註（可留空）：','')||'';
+  if (!confirm({approved:'確定核准？',rejected:'確定拒絕？',paid:'確認已實際完成匯款？'}[status]||'確認？')) return;
+  try { await post('reviewGroupBuyPayout',{id,status,note}); toast('已更新'); closeModal(); } catch(e){toast(e.message,true);}
+}
+
+/* ── User Menu ── */
+function toggleUserMenu() {
+  const m = document.getElementById('userMenu');
+  m.classList.toggle('hidden');
+}
+function closeUserMenu() {
+  document.getElementById('userMenu').classList.add('hidden');
+}
+document.addEventListener('click', e=>{
+  if (!e.target.closest('#userMenu')&&!e.target.closest('#userBtn')) closeUserMenu();
+});
+
+/* ── Refresh ── */
+async function refreshAll() {
+  if (!S.currentSid) return;
+  toast('更新中…');
+  try {
+    await loadOrders();
+    await loadApplications();
+    toast('已更新 ✓');
+  } catch(e){toast(e.message,true);}
+}
+
+function csvCell(value){return '"'+String(value??'').replace(/"/g,'""')+'"'}
+function csvFulfillment(value){return value==='pickup'?'現場自取':value==='shipping'?'宅配':value||''}
+function csvTransfer(value){return ({pending:'待處理',processing:'處理中',ready_pickup:'可取貨',shipped:'已出貨',completed:'已完成'})[String(value||'').toLowerCase()]||value||''}
+async function downloadSupplierCsv(){
+  if(!S.currentSid)return toast('請先選擇場次',true);
+  try{
+    const d=await get('sessionSupplierExport',{sessionId:S.currentSid}),rows=d.rows||[];
+    if(!rows.length)return toast('目前沒有可出貨的已付款訂單',true);
+    const headers=['訂單編號','收件人','電話','地址','取貨方式','商品','付款數量','贈品數量','實際出貨數量','出貨備註','轉單狀態','物流單號'];
+    const body=rows.map(r=>[r.order_no,r.recipient_name,r.recipient_phone,r.shipping_address,csvFulfillment(r.fulfillment_type),r.product_name,r.quantity,r.bonus_quantity,r.fulfillment_quantity,r.fulfillment_note,csvTransfer(r.transfer_status),r.tracking_no].map(csvCell).join(','));
+    const blob=new Blob(['\uFEFF'+[headers.map(csvCell).join(','),...body].join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a'),session=S.sessions.find(x=>String(x.id)===String(S.currentSid));
+    a.href=url;a.download='團購出貨單_'+String(session?.name||S.currentSid).replace(/[\\/:*?"<>|]/g,'_')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('中文出貨單已下載');
+  }catch(e){toast(e.message||'下載失敗',true)}
+}
+
+/* ── Boot ── */
+async function boot() {
+  // 1. Handle OAuth callback
+  const oauthDone = await handleOAuthCallback();
+  if (oauthDone) { /* session saved, fall through */ }
+
+  // 2. Read session
+  const saved = readSession();
+  if (!saved) {
+    document.getElementById('login').style.display='flex';
+    return;
+  }
+  applySession(saved);
+
+  // 3. Validate token + load data
+  try {
+    // Validate
+    const me = await get('adminMe');
+    // Update session with fresh data
+    saveSession({email:me.email||saved.email, token:saved.token, role:me.normalized_role||me.role||saved.role, name:me.display_name||saved.name||me.email, authorization:me.authorization||null});
+
+    // Load sessions
+    const data = await get('groupBuyAdminData');
+    S.sessions = data.sessions||[];
+
+    if (!S.sessions.length) {
+      document.getElementById('login').style.display='none';
+      document.getElementById('app').hidden = false;
+      document.getElementById('sessionPicker').innerHTML = '<option>無可用場次</option>';
+      document.getElementById('cntPay').textContent = '0';
+      document.getElementById('cntShip').textContent = '0';
+      document.getElementById('cntApply').textContent = '0';
+      document.getElementById('recentList').innerHTML = '<div class="empty"><div class="empty-text">還沒有團購場次</div></div>';
+      return;
+    }
+
+    S.currentSid = S.sessions[0].id;
+    buildSessionPicker();
+
+    // Show app
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').hidden = false;
+
+    // Load orders & applications
+    await Promise.all([loadOrders(), loadApplications()]);
+  } catch(e) {
+    // Token probably expired
+    if (/token|login|auth|401|登入/i.test(e.message)) {
+      localStorage.removeItem(SESSION_KEY);
+      document.getElementById('loginErr').textContent = '登入已過期，請重新登入';
+      document.getElementById('login').style.display='flex';
+    } else {
+      document.getElementById('login').style.display='none';
+      document.getElementById('app').hidden = false;
+      toast('資料載入失敗：'+e.message, true);
+    }
+  }
+}
+
+boot();
+</script>
+<!-- GROUPBUY_ADMIN_BUILD: 20260830-mint-b7eddb-1 -->
 </body>
 </html>
