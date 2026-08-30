@@ -13,21 +13,23 @@ function render(j,line){
  const lastRejected=events.find(x=>x.event_type==='report_rejected')||null;
  const a=p.allowedMethods||{},bank=p.bankAccount||{};
  const hasMethod=!!((a.bank!==false&&String(bank.accountNumber||'').trim())||(a.linepay&&p.linepay?.url)||(a.card&&p.card?.url));
- const paid=['paid','已付款'].includes(String(o.payment_status||''));
+ const paid=['paid','已付款'].includes(String(o.payment_status||'')),orderState=String(o.order_status||'').toLowerCase(),closed=['cancelled','refunded','void','voided','deleted','已取消','已退款','作廢','已作廢','已刪除'].includes(orderState),refundRequested=String(o.refund_status||'').toLowerCase()==='requested';
  const reported=['reported','已回報','待確認'].includes(String(o.payment_status||''));
- const status=paid?'已付款':reported?'已回報，等待確認':'待付款';
+ const status=closed?(orderState==='refunded'||orderState==='已退款'?'已退款':'已取消／作廢'):refundRequested?'退款申請中':paid?'已付款':reported?'已回報，等待確認':'待付款';
  const head=`<div class=card><h2>${esc(j.session?.name||'團購訂單')}</h2><span class=status>${status}</span><div class=muted style="margin-top:8px">訂單編號 ${esc(o.id||'')}</div></div>`;
  const detail=`<div class=card><h2>訂單明細</h2>${(j.items||[]).map(x=>`<div class=line><span>${esc(x.product_name)}${Number(x.quantity||0)>0?` × ${Number(x.quantity)}`:''}${Number(x.bonus_quantity||0)>0?` ${Number(x.bonus_quantity)} 件`:''}</span><b>${money(x.line_total)}</b></div>`).join('')}<div class=line><span>商品小計</span><b>${money(o.product_amount)}</b></div><div class=line><span>運費</span><b>${money(o.shipping_fee)}</b></div><div class=line><span>應付總額</span><span class=total>${money(o.total_amount)}</span></div><div class=muted style="margin-top:8px">金額以正式訂單資料為準，付款回報不能自行修改應付總額。</div></div>`;
  let payment='';
- if(paid){
-  payment=`<div class=card><div class=notice><b>付款已確認。</b><br>訂單已進入後續出貨／取貨流程。</div><div class=muted style="margin-top:8px">確認時間：${esc(o.paid_at||'')}</div><button class="btn secondary" onclick="location.href='groupbuy.html'">回團GO</button></div>`;
+ if(closed){
+  payment=`<div class=card><div class=notice><b>${esc(status)}</b><br>這筆訂單已結束，歷史紀錄仍會保留。</div><button class="btn secondary" onclick="location.href='groupbuy.html'">回團GO</button></div>`;
+ }else if(paid){
+  payment=`<div class=card><div class=notice><b>${refundRequested?'退款申請已送出。':'付款已確認。'}</b><br>${refundRequested?'請等待平台完成退款，處理期間不會再出貨。':'訂單已進入後續出貨／取貨流程。'}</div><div class=muted style="margin-top:8px">確認時間：${esc(o.paid_at||'')}</div>${refundRequested?'':`<button class="btn" style="margin-top:10px" onclick="requestRefund()">申請整筆退款</button>`}<button class="btn secondary" onclick="location.href='groupbuy.html'">回團GO</button></div>`;
  }else{
   const rejected=(!reported&&lastRejected)?`<div class=notice style="margin-top:8px"><b>上一筆付款回報已退回。</b><br>${esc(lastRejected.note||'請確認付款資料後重新回報。')}</div>`:'';
   let action='';
   if(reported){
-   action=`<div class=notice><b>已送出付款回報。</b><br>請等待平台確認，確認前不會出貨。</div><div class=muted style="margin-top:8px">回報方式：${esc(o.payment_method||'')} ${o.payment_last5?`｜末5碼 ${esc(o.payment_last5)}`:''}<br>回報金額：${money(o.payment_report_amount||o.total_amount)}<br>回報時間：${esc(o.payment_reported_at||'')}</div>`;
+   action=`<div class=notice><b>已送出付款回報。</b><br>請等待平台確認，確認前不會出貨。</div><div class=muted style="margin-top:8px">回報方式：${esc(o.payment_method||'')} ${o.payment_last5?`｜末5碼 ${esc(o.payment_last5)}`:''}<br>回報金額：${money(o.payment_report_amount||o.total_amount)}<br>回報時間：${esc(o.payment_reported_at||'')}</div><button class="btn secondary" onclick="cancelReportedOrder()">撤回回報並取消訂單</button>`;
   }else if(hasMethod){
-   action=`<div class=field><label id=last5Label>匯款帳號末 5 碼</label><input id=last5 maxlength=20 inputmode=numeric placeholder="例如 12345"></div><div class=field><label>回報金額</label><input id=amount type=number readonly value="${Number(o.total_amount||0)}"></div><div class=field><label>備註</label><textarea id=note rows=3></textarea></div><button class=btn onclick=reportPay()>送出付款回報</button>`;
+   action=`<div class=field><label id=last5Label>匯款帳號末 5 碼</label><input id=last5 maxlength=20 inputmode=numeric placeholder="例如 12345"></div><div class=field><label>回報金額</label><input id=amount type=number readonly value="${Number(o.total_amount||0)}"></div><div class=field><label>備註</label><textarea id=note rows=3></textarea></div><button class=btn onclick=reportPay()>送出付款回報</button><button class="btn secondary" onclick="cancelUnpaidOrder()">取消未付款訂單</button>`;
   }else{
    action='<div class=notice>目前沒有可用的正式付款方式，請聯絡團GO客服。</div>';
   }
@@ -38,5 +40,8 @@ function render(j,line){
  if(!paid&&!reported&&hasMethod){const first=document.querySelector('input[name=paymethod]');if(first&&!document.querySelector('input[name=paymethod]:checked'))first.checked=true;payMethodChanged()}
 }
 function payMethodChanged(){const method=document.querySelector('input[name=paymethod]:checked')?.value||'銀行轉帳',bank=/銀行|轉帳|ATM|匯款/i.test(method),label=document.getElementById('last5Label'),input=document.getElementById('last5');if(label)label.textContent=bank?'匯款帳號末 5 碼':'付款識別／交易末碼（可留空）';if(input){input.inputMode=bank?'numeric':'text';input.maxLength=bank?5:20;input.placeholder=bank?'例如 12345':'依付款平台需要填寫'}}
+async function cancelUnpaidOrder(){if(!confirm('確定取消這筆未付款訂單？取消後庫存會立即釋回，訂單歷史仍會保留。'))return;try{await call('cancelGroupBuyOrder',{memberToken:tk(),orderId});alert('訂單已取消');boot()}catch(e){alert(e.message||e)}}
+async function cancelReportedOrder(){if(!confirm('確定撤回付款回報並取消訂單？\n\n若款項已實際匯出，請勿取消，請等待平台核對。'))return;try{await call('cancelReportedGroupBuyOrder',{memberToken:tk(),orderId,note:'買家撤回付款回報並取消訂單'});alert('付款回報已撤回，訂單已取消');boot()}catch(e){alert(e.message||e)}}
+async function requestRefund(){const note=prompt('請填退款原因／備註（可留空）：','')??null;if(note===null)return;if(!confirm('確定送出整筆退款申請？'))return;try{await call('requestGroupBuyRefund',{memberToken:tk(),orderId,note});alert('退款申請已送出');boot()}catch(e){alert(e.message||e)}}
 async function reportPay(){try{const method=document.querySelector('input[name=paymethod]:checked')?.value||'';if(!method)return alert('請先選擇可用付款方式');const last=(document.getElementById('last5')?.value||'').trim(),memo=document.getElementById('note')?.value||'';if(/銀行|轉帳|ATM|匯款/i.test(method)&&!/^\d{5}$/.test(last))return alert('銀行轉帳請填寫帳號末 5 碼');const sig=JSON.stringify([orderId,method,last,memo]);if(PaymentReportAttempt.signature!==sig)PaymentReportAttempt={signature:sig,key:crypto.randomUUID()};await call('reportGroupBuyPayment',{memberToken:tk(),orderId,method,last5:last,note:memo,idempotencyKey:PaymentReportAttempt.key});alert('付款回報已送出');boot()}catch(e){alert(e.message)}}boot();
-</script></body></html>
+</script><!-- GROUPBUY_PAYMENT_BUILD: 20260830-groupbuy-order-actions-1 --></body></html>
