@@ -7,15 +7,11 @@
 <title>團GO 後台</title>
 <style>
 :root{
-  --navy:#285E50; --navy2:#397765;
-  --green:#2D7A66; --green-lt:#B7EDDB; --green-dk:#1F5F4F;
-  --amber:#F59E0B; --amber-lt:#FEF9C3;
-  --red:#EF4444; --red-lt:#FEE2E2;
-  --blue:#3B82F6; --blue-lt:#DBEAFE;
-  --purple:#8B5CF6; --purple-lt:#EDE9FE;
-  --bg:#F3FBF8; --card:#FFF;
-  --text:#18352D; --muted:#60736D; --line:#CFE7DF;
-  --r:14px; --shadow:0 1px 4px rgba(0,0,0,.08);
+  --bg:#F8F6F0; --paper:#fff; --ink:#1f1f1f; --muted:#6f6f6f; --line:#E8DFD4;
+  --green:#DDEAD1; --yellow:#FAEEC7; --blue:#D9E5EE; --pink:#FAE1DD; --purple:#DCD7ED;
+  --mint:#D4E3DD; --main:#82ABA3; --main2:#628E87; --danger:#C8645D;
+  --shadow:0 12px 30px rgba(45,39,32,.08); --shadow2:0 18px 48px rgba(45,39,32,.16);
+  --card:#fff; --text:#1f1f1f; --r:14px;
   --hdr:56px; --nav:calc(60px + env(safe-area-inset-bottom,0px));
   --safe-b:env(safe-area-inset-bottom,0px);
 }
@@ -27,47 +23,47 @@ img{display:block;max-width:100%}
 .num{font-variant-numeric:tabular-nums}
 
 /* ── Login ── */
-#login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:#B7EDDB}
+#login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#fff 0%,var(--bg) 42%,var(--blue) 100%)}
 .login-card{background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.login-badge{width:64px;height:64px;background:var(--green-dk);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px}
+.login-badge{width:64px;height:64px;background:linear-gradient(135deg,var(--main),var(--main2));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px}
 .login-title{font-size:22px;font-weight:900;margin-bottom:6px}
 .login-sub{color:var(--muted);font-size:14px;margin-bottom:28px}
-.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:1.5px solid #E2E8F0;border-radius:12px;background:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s}
 .btn-google:active{background:#F8FAFC}
 .login-err{color:var(--red);font-size:13px;margin-top:14px;min-height:18px}
 
 /* ── App Shell ── */
-#app{display:flex;flex-direction:column;height:100dvh}
-header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;position:sticky;top:0;z-index:20;border-bottom:1px solid #94D8C2}
-.hdr-logo{color:var(--text);font-size:18px;font-weight:900;letter-spacing:-.5px;flex-shrink:0}
+#app{display:flex;flex-direction:column;min-height:100dvh}
+header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;flex-shrink:0}.hdr-in{max-width:1180px;margin:0 auto;padding:0 14px;height:var(--hdr);display:flex;align-items:center;gap:10px}
+.hdr-logo{color:var(--ink);font-size:18px;font-weight:900;letter-spacing:-.5px;flex-shrink:0}
 .hdr-session{flex:1;min-width:0}
-#sessionPicker{background:rgba(255,255,255,.72);color:var(--text);border:1px solid #82CDB5;border-radius:8px;padding:5px 8px;font-size:14px;font-weight:700;width:100%;max-width:200px;cursor:pointer}
-#sessionPicker option{background:#fff;color:var(--text)}
+#sessionPicker{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:14px;font-weight:600;width:100%;max-width:200px;cursor:pointer}
+
 .hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.icon-btn{position:relative;width:38px;height:38px;border-radius:10px;border:none;background:rgba(40,94,80,.12);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
-.icon-btn:active{background:rgba(40,94,80,.22)}
-.badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;background:var(--red);color:#fff;border-radius:99px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--navy)}
+.icon-btn{position:relative;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
+.icon-btn:active{background:var(--green)}
+.badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;background:var(--danger);color:#fff;border-radius:99px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--navy)}
 .badge.pulse{animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
 
 /* ── Main ── */
-#main{flex:1;overflow-y:auto;padding-bottom:calc(var(--nav) + 8px)}
-.tab{padding:14px 14px 0;display:none}
+#main{flex:1;overflow-y:auto;padding-bottom:calc(var(--nav) + 30px)}
+.tab{display:none;padding:14px 14px 0}.tab-inner{max-width:1180px;margin:0 auto}
 .tab.active{display:block}
 
 /* ── Summary Cards ── */
 .summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.sum-card{background:var(--card);border-radius:var(--r);padding:14px 10px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+.sum-card{background:var(--paper);border-radius:var(--r);padding:14px 10px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
 .sum-card:active{transform:scale(.97)}
 .sum-num{font-size:28px;font-weight:900;line-height:1;margin-bottom:4px}
 .sum-label{font-size:12px;color:var(--muted);font-weight:600}
-.sum-card.s-amber .sum-num{color:var(--amber)}
-.sum-card.s-blue .sum-num{color:var(--blue)}
-.sum-card.s-purple .sum-num{color:var(--purple)}
-.sum-card.s-green .sum-num{color:var(--green)}
+.sum-card.s-amber .sum-num{color:#B99745}
+.sum-card.s-blue .sum-num{color:#628E87}
+.sum-card.s-purple .sum-num{color:#7B6AA8}
+.sum-card.s-green .sum-num{color:var(--main2)}
 
 /* ── Revenue Card ── */
-.rev-card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.rev-card{background:var(--paper);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
 .rev-title{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px}
 .rev-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
 .rev-row:last-child{border:none;font-weight:800;font-size:15px}
@@ -79,40 +75,40 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
 .section-hd .see-all{font-size:13px;color:var(--green);font-weight:700;border:none;background:none;padding:4px 0;cursor:pointer}
 
 /* ── Order Cards ── */
-.order-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+.order-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
 .order-card:active{transform:scale(.99)}
 .order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
 .order-id{font-size:12px;color:var(--muted);font-family:monospace}
 .order-name{font-size:15px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
-.chip-amber{background:var(--amber-lt);color:#92400E}
-.chip-green{background:var(--green-lt);color:#065F46}
-.chip-red{background:var(--red-lt);color:#991B1B}
-.chip-blue{background:var(--blue-lt);color:#1E40AF}
-.chip-purple{background:var(--purple-lt);color:#5B21B6}
-.chip-gray{background:#F1F5F9;color:var(--muted)}
+.chip-amber{background:var(--yellow);color:#7A5C00}
+.chip-green{background:var(--green);color:#2b5f24}
+.chip-red{background:var(--pink);color:#8B3330}
+.chip-blue{background:var(--blue);color:#2a4a70}
+.chip-purple{background:var(--purple);color:#5B21B6}
+.chip-gray{background:#F4F0EA;color:var(--muted)}
 .order-meta{font-size:13px;color:var(--muted);line-height:1.6}
 .order-amount{font-size:18px;font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
 
 /* ── Urgent banner ── */
-.urgent-bar{background:var(--amber-lt);border:1px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:14px;font-weight:700;color:#92400E;display:flex;align-items:center;gap:8px}
+.urgent-bar{background:var(--yellow);border:1px solid #d5bd77;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:14px;font-weight:700;color:#7A5C00;display:flex;align-items:center;gap:8px}
 
 /* ── Filter Bar ── */
 .filter-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .filter-bar::-webkit-scrollbar{display:none}
-.f-chip{padding:7px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;transition:.15s;flex-shrink:0}
-.f-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.f-chip{padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;transition:.15s;flex-shrink:0}
+.f-chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 
 /* ── Apply Cards ── */
-.apply-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+.apply-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
 .apply-card:active{transform:scale(.99)}
 .apply-name{font-size:16px;font-weight:800}
 .apply-meta{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.55}
 .apply-session{font-size:12px;font-weight:700;color:var(--blue);margin-top:4px}
 
 /* ── Promoter Cards ── */
-.promo-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
-.promo-avatar{width:44px;height:44px;border-radius:50%;background:var(--green-lt);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--green-dk);flex-shrink:0}
+.promo-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+.promo-avatar{width:44px;height:44px;border-radius:50%;background:var(--green-lt);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--main2);flex-shrink:0}
 .promo-info{flex:1;min-width:0}
 .promo-name{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .promo-handle{font-size:13px;color:var(--muted)}
@@ -128,19 +124,19 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
 .loading{text-align:center;padding:36px 24px;color:var(--muted);font-size:14px}
 
 /* ── Bottom Nav ── */
-#nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:#fff;border-top:1px solid var(--line);display:flex;z-index:20;padding-bottom:var(--safe-b)}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;color:var(--muted);cursor:pointer;position:relative;padding:8px 0}
-.nav-btn.active{color:var(--navy)}
+#nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);width:min(640px,calc(100vw - 20px));height:60px;background:rgba(221,234,209,.97);backdrop-filter:blur(12px);border:1px solid #b9cfae;border-radius:24px;display:flex;z-index:20;box-shadow:var(--shadow2);padding:8px}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;color:var(--muted);cursor:pointer;position:relative;padding:4px 0;border-radius:16px}
+.nav-btn.active{color:var(--main2);background:rgba(255,255,255,.6)}
 .nav-icon{font-size:22px;line-height:1}
 .nav-label{font-size:11px;font-weight:700}
-.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:var(--navy)}
-.nav-dot{position:absolute;top:6px;right:calc(50% - 14px);width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid #fff}
+.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:var(--main2)}
+.nav-dot{position:absolute;top:6px;right:calc(50% - 14px);width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid #fff}
 
 /* ── Bottom Sheet Modal ── */
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;transition:opacity .2s}
 #overlay.show{opacity:1}
-#sheet{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;z-index:50;max-height:90dvh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.67,0);padding-bottom:var(--safe-b)}
-#sheet.show{transform:translateY(0)}
+#sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:min(580px,100vw);background:#fff;border-radius:20px 20px 0 0;z-index:50;max-height:90dvh;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.32,0,.67,0);padding-bottom:var(--safe-b)}
+#sheet.show{transform:translateX(-50%) translateY(0)}
 .sheet-handle{width:40px;height:4px;background:#D1D5DB;border-radius:2px;margin:12px auto 8px;flex-shrink:0}
 #sheet-head{padding:0 18px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
 .sh-title{font-size:18px;font-weight:900}
@@ -157,25 +153,25 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
 /* ── Buttons ── */
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;border:none;font-size:16px;font-weight:800;cursor:pointer;transition:.15s}
 .btn:active{opacity:.85}
-.btn-green{background:var(--green);color:#fff}
-.btn-red{background:var(--red);color:#fff}
-.btn-amber{background:var(--amber);color:#fff}
-.btn-blue{background:var(--blue);color:#fff}
-.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--line)}
+.btn-green{background:var(--main);color:#fff}
+.btn-red{background:var(--danger);color:#fff}
+.btn-amber{background:#B99745;color:#fff}
+.btn-blue{background:var(--main2);color:#fff}
+.btn-outline{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
 .btn-sm{padding:10px 14px;font-size:14px;width:auto}
-.btn-danger-outline{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+.btn-danger-outline{background:#fff;color:var(--danger);border:1.5px solid var(--danger)}
 
 /* ── Form fields in sheet ── */
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
 .field input,.field select,.field textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fff}
 .field textarea{resize:vertical;min-height:80px}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--green)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--main)}
 
 /* ── Toast ── */
-#toast{position:fixed;bottom:calc(var(--nav) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;z-index:99;opacity:0;transition:.2s;white-space:nowrap;pointer-events:none}
+#toast{position:fixed;bottom:calc(var(--nav) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;z-index:99;opacity:0;transition:.2s;white-space:nowrap;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.err{background:var(--red)}
+#toast.err{background:var(--danger)}
 
 /* ── User Menu ── */
 #userMenu{position:fixed;top:calc(var(--hdr) + 6px);right:14px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:30;min-width:180px;overflow:hidden}
@@ -187,7 +183,7 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
 /* ── More Tab ── */
 .more-section{margin-bottom:16px}
 .more-section-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.more-row{background:var(--card);border-radius:var(--r);margin-bottom:2px;cursor:pointer;transition:.1s}
+.more-row{background:var(--paper);border-radius:var(--r);margin-bottom:2px;cursor:pointer;transition:.1s}
 .more-row:active{background:var(--bg)}
 .more-row-inner{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line)}
 .more-row:last-child .more-row-inner{border:none}
@@ -202,16 +198,18 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
 .member-result-email{font-size:13px;color:var(--muted)}
 
 /* ── Payout Cards ── */
-.payout-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer}
-.payout-amount{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--green-dk)}
+.payout-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer}
+.payout-amount{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--main2)}
 .payout-meta{font-size:13px;color:var(--muted);margin-top:4px}
 
-@media(min-width:640px){
-  #main{max-width:640px;margin:0 auto}
-  #nav{max-width:640px;left:50%;transform:translateX(-50%)}
-  #sheet{max-width:640px;left:50%;transform:translateX(-50%) translateY(100%)}
-  #sheet.show{transform:translateX(-50%) translateY(0)}
-  #overlay{backdrop-filter:blur(2px)}
+@media(min-width:768px){
+  .summary-row{grid-template-columns:repeat(4,1fr)}
+  .tab{padding:20px 24px 0}
+  #sheet{width:min(580px,96vw)}
+}
+@media(min-width:1024px){
+  .tab{padding:24px 40px 0}
+}
 }
 </style>
 </head>
@@ -220,21 +218,29 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
 <!-- ── Login Screen ── -->
 <div id="login">
   <div class="login-card">
-    <div class="login-badge">團GO</div>
+    <img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/55cd984d-dc71-4a23-8da8-40de323b8b59%20(1).png" alt="團GO" style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin:0 auto 12px;display:block">
     <h1 class="login-title">後台管理</h1>
-    <p class="login-sub">使用已授權的 Google 帳號登入</p>
-    <button class="btn-google" onclick="startGoogleLogin()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.1 0 5.6 1.1 7.6 2.8l5.7-5.7C33.8 3.5 29.2 1.5 24 1.5 14.8 1.5 7 7.4 3.7 15.5l6.7 5.2C12.1 14.3 17.6 9.5 24 9.5z"/><path fill="#34A853" d="M46.5 24c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 3-2.2 5.5-4.7 7.2l7.2 5.6C43.5 36.9 46.5 30.9 46.5 24z"/><path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.8-2.8-.8-4.3s.3-2.9.8-4.3l-6.7-5.2C2.1 17.5 1.5 20.7 1.5 24s.6 6.5 2.2 9.5l6.7-5.2z"/><path fill="#EA4335" d="M24 46.5c5.2 0 9.7-1.7 13-4.7l-7.2-5.6c-1.8 1.2-4 1.9-5.8 1.9-6.4 0-11.9-4.8-13.6-11.2l-6.7 5.2C7 40.6 14.8 46.5 24 46.5z"/></svg>
-      使用 Google 登入
-    </button>
+    <p class="login-sub">場次管理員 / 平台管理員登入</p>
+    <div class="field" style="margin-bottom:12px">
+      <label style="display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px">Email</label>
+      <input id="loginEmail" type="email" autocomplete="email" placeholder="your@email.com"
+        style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px">
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label style="display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px">手機號碼</label>
+      <input id="loginPhone" type="tel" autocomplete="tel" placeholder="0912345678" inputmode="tel"
+        style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px">
+    </div>
+    <button onclick="doLogin()" style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--main);color:#fff;font-size:16px;font-weight:800;cursor:pointer">登入管理後台</button>
     <div id="loginErr" class="login-err"></div>
+    <div style="text-align:center;padding:8px;font-size:11px;color:var(--muted)">www.2b-Love.com　兔彼樂共創活動</div>
   </div>
 </div>
 
 <!-- ── App ── -->
 <div id="app" hidden>
   <header>
-    <span class="hdr-logo">團GO後台</span>
+    <img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/55cd984d-dc71-4a23-8da8-40de323b8b59%20(1).png" alt="團GO" style="height:36px;object-fit:contain;border-radius:8px;flex-shrink:0">
     <div class="hdr-session">
       <select id="sessionPicker" onchange="onSessionChange()">
         <option>載入中…</option>
@@ -250,7 +256,7 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
 
   <main id="main">
     <!-- 首頁 Tab -->
-    <div id="t-home" class="tab active">
+    <div id="t-home" class="tab active"><div class="tab-inner">
       <div id="urgentBar"></div>
       <div class="summary-row" id="summaryRow">
         <div class="sum-card s-amber" onclick="goTab('orders');filterOrders('reported')">
@@ -275,11 +281,7 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
     </div>
 
     <!-- 訂單 Tab -->
-    <div id="t-orders" class="tab">
-      <div class="section-hd" style="margin-top:0">
-        <h3>場次訂單</h3>
-        <button class="see-all" onclick="downloadSupplierCsv()">下載中文出貨單</button>
-      </div>
+    <div id="t-orders" class="tab"><div class="tab-inner">
       <div class="filter-bar" id="filterBar">
         <button class="f-chip active" data-f="all" onclick="filterOrders('all')">全部</button>
         <button class="f-chip" data-f="reported" onclick="filterOrders('reported')">待確認</button>
@@ -293,12 +295,12 @@ header{height:var(--hdr);background:#B7EDDB;display:flex;align-items:center;padd
     </div>
 
     <!-- 申請 Tab -->
-    <div id="t-apply" class="tab">
+    <div id="t-apply" class="tab"><div class="tab-inner">
       <div id="applyContent"><div class="loading">載入中…</div></div>
     </div>
 
     <!-- 管理 Tab -->
-    <div id="t-more" class="tab">
+    <div id="t-more" class="tab"><div class="tab-inner">
       <div id="moreContent"><div class="loading">載入中…</div></div>
     </div>
   </main>
@@ -352,7 +354,7 @@ const API = location.protocol==='https:'&&/(^|\.)2b-love\.com$/i.test(location.h
   ? location.origin+'/s/api'
   : 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT = 'tuibile';
-const SESSION_KEY = 'tb_v3';
+const SESSION_KEY = '2bl_member_token'; // 與 groupbuy.html 共用同一個 token
 const TENANT_KEY  = '2bl_admin_tenant';
 
 /* ── State ── */
@@ -363,7 +365,6 @@ const S = {
   sessions: [],
   currentSid: '',
   orders: [],
-  orderItems: [],
   applications: { managers:[], promoters:[] },
   promoters: [],
   payouts: [],
@@ -373,7 +374,7 @@ const S = {
 
 /* ── API Helpers ── */
 async function get(action, extra={}) {
-  const params = new URLSearchParams({ action, tenant:TENANT, email:S.email||'_', token:S.token||'', _t:Date.now(), ...extra });
+  const params = new URLSearchParams({ action, tenant:TENANT, memberToken:S.token||'', _t:Date.now(), ...extra });
   const r = await fetch(`${API}?${params}`, {cache:'no-store'});
   const j = await r.json().catch(()=>({error:'回應格式錯誤'}));
   if (j.error) throw new Error(j.error);
@@ -381,43 +382,16 @@ async function get(action, extra={}) {
 }
 async function post(action, body={}) {
   const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ action, tenant:TENANT, email:S.email||'_', token:S.token||'', ...body }), cache:'no-store' });
+    body: JSON.stringify({ action, tenant:TENANT, memberToken:S.token||'', ...body }), cache:'no-store' });
   const j = await r.json().catch(()=>({error:'回應格式錯誤'}));
   if (j.error) throw new Error(j.error);
   return j;
 }
 
 /* ── Auth ── */
-const q = new URLSearchParams(location.search);
-(function initOAuth(){
-  const tok = q.get('admin_token');
-  const err = q.get('login_error');
-  if (tok) sessionStorage.setItem('2bl_admin_token_pending', tok);
-  if (err) sessionStorage.setItem('2bl_login_error_pending', err);
-  if (tok || err) history.replaceState({}, '', location.pathname);
-})();
 
-function startGoogleLogin() {
-  localStorage.removeItem(SESSION_KEY);
-  location.href = API.replace('/s/api','') + '/auth/google/start?tenant=' + TENANT;
-}
 
-async function handleOAuthCallback() {
-  const tok = sessionStorage.getItem('2bl_admin_token_pending');
-  const err = sessionStorage.getItem('2bl_login_error_pending');
-  sessionStorage.removeItem('2bl_admin_token_pending');
-  sessionStorage.removeItem('2bl_login_error_pending');
-  const errMap = { not_authorized:'Google 帳號不在管理員名單', staff_inactive:'帳號已停用',
-    id_token_verify_failed:'Google 身份驗證失敗', google_cancelled:'Google 登入已取消' };
-  if (err) { showLoginErr(errMap[err]||'登入失敗：'+err); return false; }
-  if (!tok) return false;
-  try {
-    const j = await fetch(`${API.replace('/s/api','')}/admin/me?email=_&token=${encodeURIComponent(tok)}&_t=${Date.now()}`,{cache:'no-store'}).then(r=>r.json());
-    if (j.error||!j.email) { showLoginErr('無後台管理權限'); return false; }
-    saveSession({ email:j.email, token:tok, role:j.normalized_role||j.role||'', name:j.display_name||j.name||j.email, authorization:j.authorization||null });
-    return true;
-  } catch(e) { showLoginErr('驗證失敗：'+e.message); return false; }
-}
+
 
 function saveSession(s) {
   localStorage.setItem(SESSION_KEY, JSON.stringify({...s, savedAt:Date.now()}));
@@ -436,6 +410,11 @@ function applySession(s) {
   S.email = s.email; S.token = s.token; S.role = s.role||''; S.name = s.name||s.email;
   S.authorization = s.authorization||null;
   S.isPlatform = S.role === 'platform_super_admin';
+  // Also check authorization.role if available (groupBuyAdminData response)
+  if (s.authorization?.role) {
+    S.role = s.authorization.role;
+    S.isPlatform = S.role === 'platform_super_admin';
+  }
   document.getElementById('umName').textContent = S.name;
 }
 
@@ -466,7 +445,6 @@ function onSessionChange() {
   S.currentSid = document.getElementById('sessionPicker').value;
   S.orders = [];
   loadOrders();
-  loadApplications();
   updateHome();
 }
 
@@ -477,7 +455,7 @@ function goTab(name) {
     document.getElementById('nb-'+t).classList.toggle('active', t===name);
   });
   S.activeTab = name;
-  if (name === 'orders' && !S.orders.length) loadOrders();
+  if (name === 'orders') { if (!S.orders.length) { loadOrders(); } else { renderFilteredOrders(); } }
   if (name === 'apply') loadApplications();
   if (name === 'more') renderMore();
 }
@@ -548,7 +526,7 @@ async function updateHome() {
     rc.innerHTML = `<div class="rev-title">${esc(ses.name||'本場')} 付款收入</div>
       <div class="detail-row"><span class="detail-key">商品收入</span><span class="detail-val">${money(ses.paidProductAmount)}</span></div>
       <div class="detail-row"><span class="detail-key">運費收入</span><span class="detail-val">${money(ses.paidShippingAmount)}</span></div>
-      <div class="detail-row"><span class="detail-key">訂單實收</span><span class="detail-val num" style="font-size:17px;color:var(--green-dk)">${money(ses.paidTotalAmount)}</span></div>`;
+      <div class="detail-row"><span class="detail-key">訂單實收</span><span class="detail-val num" style="font-size:17px;color:var(--main2)">${money(ses.paidTotalAmount)}</span></div>`;
   } else { rc.classList.add('hidden'); }
 
   // Summary counts
@@ -588,7 +566,6 @@ async function loadOrders() {
   try {
     const d = await get('getGroupBuySessionOrders', { sessionId: S.currentSid });
     S.orders = d.orders||[];
-    S.orderItems = d.items||[];
     renderFilteredOrders();
     updateHome();
   } catch(e) {
@@ -638,7 +615,6 @@ function renderOrderList(elId, rows, compact=false) {
 function openOrderModal(orderId) {
   const o = S.orders.find(x=>x.id===orderId);
   if (!o) return;
-  const items = (S.orderItems||[]).filter(x=>String(x.order_id)===String(orderId));
   const closed = isClosed(o);
   const paid = isPaid(o);
   const reported = isReported(o);
@@ -657,10 +633,7 @@ function openOrderModal(orderId) {
     <div class="detail-row"><span class="detail-key">付款狀態</span><span class="detail-val">${payChip(o)}</span></div>
     <div class="detail-row"><span class="detail-key">出貨狀態</span><span class="detail-val">${osLabel}</span></div>
     ${o.payment_last5?`<div class="detail-row"><span class="detail-key">帳號末5碼</span><span class="detail-val">${esc(o.payment_last5)}</span></div>`:''}
-    <div class="detail-row"><span class="detail-key">商品小計</span><span class="detail-val">${money(o.product_amount)}</span></div>
-    <div class="detail-row"><span class="detail-key">運費</span><span class="detail-val">${money(o.shipping_fee)}</span></div>
-    <div class="detail-row"><span class="detail-key">應付總額</span><span class="detail-val" style="font-size:18px;font-weight:900;color:var(--green-dk)">${money(o.total_amount)}</span></div>
-    <div style="padding:10px 0;border-bottom:1px solid var(--line)"><strong>商品明細</strong>${items.length?items.map(it=>`<div class="detail-row"><span class="detail-key">${esc(it.product_name||'商品')}</span><span class="detail-val">× ${Number(it.fulfillment_quantity??it.quantity??0)}${Number(it.bonus_quantity||0)>0?`（贈 ${Number(it.bonus_quantity)}）`:''}</span></div>`).join(''):'<div style="color:var(--muted);font-size:13px;margin-top:5px">沒有商品明細</div>'}</div>
+    <div class="detail-row"><span class="detail-key">金額</span><span class="detail-val" style="font-size:18px;font-weight:900;color:var(--main2)">${money(o.total_amount)}</span></div>
     <div class="detail-row"><span class="detail-key">建立時間</span><span class="detail-val">${fmt(o.created_at)}</span></div>`;
 
   // Foot actions
@@ -750,8 +723,8 @@ async function loadApplications() {
       promoters = (d.applications||[]).filter(a=>!managers.includes(a));
     } else {
       if (S.currentSid) {
-        const d = await get('groupBuyPromoterAdminData');
-        promoters = (d.applications||[]).filter(a=>String(a.source_session_id||'')===String(S.currentSid));
+        const d = await get('sessionProductsAdmin',{sessionId:S.currentSid});
+        promoters = d.applications||[];
       }
     }
     S.applications = { managers, promoters };
@@ -832,17 +805,27 @@ async function renderMore() {
   const el = document.getElementById('moreContent');
   el.innerHTML = `
     <div class="more-section">
+      <div class="more-section-title">商品管理</div>
+      <div class="more-row" onclick="openProductMgmt()">
+        <div class="more-row-inner">
+          <div class="more-row-icon" style="background:var(--green)">📦</div>
+          <span class="more-row-label">商品 / 價格 / 級距</span>
+          <span class="more-row-arrow">›</span>
+        </div>
+      </div>
+    </div>
+    <div class="more-section">
       <div class="more-section-title">場次操作</div>
       <div class="more-row" onclick="openPromoterMgmt()">
         <div class="more-row-inner">
-          <div class="more-row-icon" style="background:var(--green-lt)">🤝</div>
+          <div class="more-row-icon" style="background:var(--green)">🤝</div>
           <span class="more-row-label">管理本場團購主</span>
           <span class="more-row-arrow">›</span>
         </div>
       </div>
       <div class="more-row" onclick="window.open('groupbuy.html','_blank')">
         <div class="more-row-inner">
-          <div class="more-row-icon" style="background:var(--blue-lt)">🏪</div>
+          <div class="more-row-icon" style="background:var(--blue)">🏪</div>
           <span class="more-row-label">查看前台</span>
           <span class="more-row-arrow">↗</span>
         </div>
@@ -853,7 +836,7 @@ async function renderMore() {
       <div class="more-section-title">平台管理</div>
       <div class="more-row" onclick="loadPayouts()">
         <div class="more-row-inner">
-          <div class="more-row-icon" style="background:var(--amber-lt)">💰</div>
+          <div class="more-row-icon" style="background:var(--yellow)">💰</div>
           <span class="more-row-label">分潤結算申請</span>
           <span class="more-row-arrow">›</span>
         </div>
@@ -863,7 +846,7 @@ async function renderMore() {
       <div class="more-section-title">帳號</div>
       <div class="more-row" onclick="doLogout()">
         <div class="more-row-inner" style="color:var(--red)">
-          <div class="more-row-icon" style="background:var(--red-lt)">🚪</div>
+          <div class="more-row-icon" style="background:var(--pink)">🚪</div>
           <span class="more-row-label" style="color:var(--red)">登出</span>
         </div>
       </div>
@@ -994,28 +977,34 @@ async function refreshAll() {
   } catch(e){toast(e.message,true);}
 }
 
-function csvCell(value){return '"'+String(value??'').replace(/"/g,'""')+'"'}
-function csvFulfillment(value){return value==='pickup'?'現場自取':value==='shipping'?'宅配':value||''}
-function csvTransfer(value){return ({pending:'待處理',processing:'處理中',ready_pickup:'可取貨',shipped:'已出貨',completed:'已完成'})[String(value||'').toLowerCase()]||value||''}
-async function downloadSupplierCsv(){
-  if(!S.currentSid)return toast('請先選擇場次',true);
-  try{
-    const d=await get('sessionSupplierExport',{sessionId:S.currentSid}),rows=d.rows||[];
-    if(!rows.length)return toast('目前沒有可出貨的已付款訂單',true);
-    const headers=['訂單編號','收件人','電話','地址','取貨方式','商品','付款數量','贈品數量','實際出貨數量','出貨備註','轉單狀態','物流單號'];
-    const body=rows.map(r=>[r.order_no,r.recipient_name,r.recipient_phone,r.shipping_address,csvFulfillment(r.fulfillment_type),r.product_name,r.quantity,r.bonus_quantity,r.fulfillment_quantity,r.fulfillment_note,csvTransfer(r.transfer_status),r.tracking_no].map(csvCell).join(','));
-    const blob=new Blob(['\uFEFF'+[headers.map(csvCell).join(','),...body].join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a'),session=S.sessions.find(x=>String(x.id)===String(S.currentSid));
-    a.href=url;a.download='團購出貨單_'+String(session?.name||S.currentSid).replace(/[\\/:*?"<>|]/g,'_')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('中文出貨單已下載');
-  }catch(e){toast(e.message||'下載失敗',true)}
+// ── 登入 ──
+async function doLogin() {
+  const email = (document.getElementById('loginEmail')?.value||'').trim();
+  const phone = (document.getElementById('loginPhone')?.value||'').trim();
+  if (!email||!phone) { showLoginErr('請輸入 Email 與手機號碼'); return; }
+  showLoginErr('');
+  const btn = document.querySelector('#login button');
+  if (btn) { btn.disabled=true; btn.textContent='登入中…'; }
+  try {
+    const j = await fetch(API, {method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'memberEmailPhoneLogin',tenant:TENANT,email,phone}),cache:'no-store'}).then(r=>r.json());
+    if (j.error) throw new Error(j.error);
+    const check = await fetch(`${API}?${new URLSearchParams({action:'groupBuyAdminData',tenant:TENANT,memberToken:j.token,_t:Date.now()})}`,{cache:'no-store'}).then(r=>r.json());
+    if (check.error) throw new Error('此帳號沒有後台管理權限，請確認已申請並審核通過場次管理員資格');
+    saveSession({email, token:j.token, role:check.authorization?.role||'session_admin',
+      name:j.name||j.display_name||email, authorization:check.authorization||null});
+    await initWithSession(readSession());
+  } catch(e) {
+    showLoginErr(e.message||'登入失敗，請確認 Email 與手機號碼');
+    const btn2 = document.querySelector('#login button');
+    if (btn2) { btn2.disabled=false; btn2.textContent='登入管理後台'; }
+  }
 }
+
 
 /* ── Boot ── */
 async function boot() {
-  // 1. Handle OAuth callback
-  const oauthDone = await handleOAuthCallback();
-  if (oauthDone) { /* session saved, fall through */ }
-
-  // 2. Read session
+  // Read session from localStorage (shared with groupbuy.html)
   const saved = readSession();
   if (!saved) {
     document.getElementById('login').style.display='flex';
@@ -1023,16 +1012,17 @@ async function boot() {
   }
   applySession(saved);
 
-  // 3. Validate token + load data
+  // 3. Validate token + load data using groupBuyAdminData (validates admin token + fetches sessions in one call)
   try {
-    // Validate
-    const me = await get('adminMe');
-    // Update session with fresh data
-    saveSession({email:me.email||saved.email, token:saved.token, role:me.normalized_role||me.role||saved.role, name:me.display_name||saved.name||me.email, authorization:me.authorization||null});
-
-    // Load sessions
+    // groupBuyAdminData validates admin credentials (requireGroupBuyAdmin) AND returns session data
     const data = await get('groupBuyAdminData');
+    // Role is confirmed by the fact that we got a valid response (not 401/error)
     S.sessions = data.sessions||[];
+    // Update role from live API response
+    const liveRole = data.authorization?.role || saved.role || '';
+    S.isPlatform = liveRole === 'platform_super_admin';
+    S.role = liveRole;
+    saveSession({email:saved.email, token:saved.token, role:liveRole, name:saved.name||saved.email, authorization:data.authorization||null});
 
     if (!S.sessions.length) {
       document.getElementById('login').style.display='none';
@@ -1068,8 +1058,142 @@ async function boot() {
   }
 }
 
+// ─── 商品管理 ──────────────────────────────────────────────────────
+let S_PRODUCTS = [];
+
+async function openProductMgmt() {
+  if (!S.currentSid) { toast('請先選擇場次',true); return; }
+  openModal('商品管理', S.sessions.find(s=>s.id===S.currentSid)?.name||'', '<div class="loading">載入中…</div>',
+    S.isPlatform ? `<button class="btn btn-green btn-sm" onclick="openAddProductModal()">＋ 新增商品</button>` : '');
+  try {
+    const d = await get('sessionProductsAdmin', {sessionId: S.currentSid});
+    S_PRODUCTS = d.products||[];
+    renderProductList();
+  } catch(e) { document.getElementById('sheetBody').innerHTML = `<div class="empty"><div class="empty-sub">${esc(e.message)}</div></div>`; }
+}
+
+function tierHtml(tiers, priceKey) {
+  if (!Array.isArray(tiers)||!tiers.length) return '<span style="color:var(--muted);font-size:12px">無級距</span>';
+  return tiers.map(t=>`<span style="font-size:12px;background:var(--green);border-radius:6px;padding:2px 7px;margin-right:3px">${t.minQty}件+ → NT$${t[priceKey]||t.basePrice||t.unitPrice}</span>`).join('');
+}
+
+function renderProductList() {
+  const sb = document.getElementById('sheetBody');
+  if (!sb) return;
+  if (!S_PRODUCTS.length) { sb.innerHTML='<div class="empty"><div class="empty-sub">此場次還沒有商品</div></div>'; return; }
+  sb.innerHTML = S_PRODUCTS.map(p=>`
+    <div style="background:var(--paper);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="font-size:15px;font-weight:800;flex:1">${esc(p.name||'未命名')}</div>
+        ${S.isPlatform?`<button onclick="openEditProductModal('${esc(p.id)}')" style="padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:700;cursor:pointer">編輯</button>`:''}
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--main2);margin:4px 0">NT$${Number(p.price||0).toLocaleString()} ${p.original_price?`<span style="text-decoration:line-through;color:var(--muted);font-size:12px">原${Number(p.original_price).toLocaleString()}</span>`:''}${p.buy_get_enabled?` · 買${p.buy_qty}送${p.free_qty}`:''}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">庫存：${p.stock_qty!=null?p.stock_qty:'無限制'} ${p.per_member_limit?`· 每人上限${p.per_member_limit}`:''}</div>
+      <div style="margin:4px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">買家數量級距：</span>${tierHtml(p.quantity_tiers_json||[],'unitPrice')}</div>
+      <div style="margin:4px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">團購主採購級距：</span>${tierHtml(p.default_promoter_tiers_json||[],'basePrice')}</div>
+    </div>`).join('');
+}
+
+function openAddProductModal() { openProductForm(null); }
+function openEditProductModal(id) {
+  const p = S_PRODUCTS.find(x=>x.id===id);
+  if (p) openProductForm(p);
+}
+
+function openProductForm(p) {
+  const isEdit = !!p;
+  const tiers2rows = (arr, priceKey) => (arr||[]).map(t=>`<div class="tier-row" style="display:flex;gap:6px;margin-bottom:6px;align-items:center"><input type="number" class="tier-min" placeholder="最少件數" value="${t.minQty||''}" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"><input type="number" class="tier-price" placeholder="單件價格" value="${t[priceKey]||''}" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"><button type="button" onclick="this.parentElement.remove()" style="border:none;background:var(--pink);color:var(--danger);border-radius:8px;padding:8px;cursor:pointer">✕</button></div>`).join('');
+
+  const body = `
+    <div class="form-field"><label>商品名稱 *</label><input id="pf_name" value="${esc(p?.name||'')}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="form-field"><label>售價 *</label><input id="pf_price" type="number" value="${p?.price||''}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px"></div>
+      <div class="form-field"><label>原價</label><input id="pf_original" type="number" value="${p?.original_price||''}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px"></div>
+      <div class="form-field"><label>供應成本</label><input id="pf_cost" type="number" value="${p?.supply_cost||''}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px"></div>
+      <div class="form-field"><label>庫存（空=無限）</label><input id="pf_stock" type="number" value="${p?.stock_qty!=null?p.stock_qty:''}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px"></div>
+      <div class="form-field"><label>每人上限</label><input id="pf_limit" type="number" value="${p?.per_member_limit||''}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px"></div>
+      <div class="form-field"><label>分類</label><input id="pf_cat" value="${esc(p?.category||'')}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px"></div>
+    </div>
+    <div class="form-field"><label>商品說明</label><textarea id="pf_desc" rows="2" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px">${esc(p?.description||'')}</textarea></div>
+    <div class="form-field"><label>圖片 URL</label><input id="pf_img" value="${esc(p?.image_url||'')}" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:13px"></div>
+
+    <div style="background:var(--green);border-radius:10px;padding:12px;margin:10px 0">
+      <div style="font-weight:800;font-size:13px;margin-bottom:6px">買家數量級距（滿幾件享特價）</div>
+      <div id="pf_qtiers">${tiers2rows(p?.quantity_tiers_json||[],'unitPrice')}</div>
+      <button type="button" onclick="addTierRow('pf_qtiers')" style="font-size:13px;border:none;background:rgba(0,0,0,.08);border-radius:8px;padding:6px 12px;cursor:pointer">＋ 加級距</button>
+    </div>
+
+    <div style="background:var(--yellow);border-radius:10px;padding:12px;margin:10px 0">
+      <div style="font-weight:800;font-size:13px;margin-bottom:6px">團購主採購級距（滿幾件享採購價）</div>
+      <div id="pf_ptiers">${tiers2rows(p?.default_promoter_tiers_json||[],'basePrice')}</div>
+      <button type="button" onclick="addTierRow('pf_ptiers')" style="font-size:13px;border:none;background:rgba(0,0,0,.08);border-radius:8px;padding:6px 12px;cursor:pointer">＋ 加級距</button>
+    </div>
+
+    <div style="background:var(--blue);border-radius:10px;padding:12px;margin:10px 0">
+      <div style="font-weight:800;font-size:13px;margin-bottom:8px">買幾送幾</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="pf_buyget" ${p?.buy_get_enabled?'checked':''}> 啟用</label>
+        <span style="font-size:13px">買</span><input id="pf_buyqty" type="number" min="1" value="${p?.buy_qty||10}" style="width:60px;padding:8px;border:1px solid var(--line);border-radius:8px">
+        <span style="font-size:13px">送</span><input id="pf_freeqty" type="number" min="1" value="${p?.free_qty||1}" style="width:60px;padding:8px;border:1px solid var(--line);border-radius:8px">
+      </div>
+    </div>`;
+
+  openModal(isEdit?`編輯：${p.name}`:'新增商品', '', body,
+    `<button class="btn btn-green" onclick="saveProduct('${esc(p?.id||'')}')">儲存商品</button>
+     <button class="btn btn-outline" onclick="document.getElementById('sheet').classList.remove('show');openProductMgmt()">取消</button>`);
+}
+
+function addTierRow(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const div = document.createElement('div');
+  div.className = 'tier-row';
+  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center';
+  div.innerHTML = '<input type="number" class="tier-min" placeholder="最少件數" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"><input type="number" class="tier-price" placeholder="單件價格" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"><button type="button" onclick="this.parentElement.remove()" style="border:none;background:var(--pink);color:var(--danger);border-radius:8px;padding:8px;cursor:pointer">✕</button>';
+  el.appendChild(div);
+}
+
+function readTierRows(containerId) {
+  return [...document.querySelectorAll(`#${containerId} .tier-row`)].map(row=>{
+    const minQty = Number(row.querySelector('.tier-min')?.value||0);
+    const price = Number(row.querySelector('.tier-price')?.value||0);
+    return {minQty, price};
+  }).filter(t=>t.minQty>0&&t.price>0);
+}
+
+async function saveProduct(id) {
+  const name = document.getElementById('pf_name')?.value.trim();
+  const price = Number(document.getElementById('pf_price')?.value||0);
+  if (!name||!price) { toast('請填寫商品名稱與售價',true); return; }
+  const qtiers = readTierRows('pf_qtiers').map(t=>({minQty:t.minQty,unitPrice:t.price}));
+  const ptiers = readTierRows('pf_ptiers').map(t=>({minQty:t.minQty,basePrice:t.price}));
+  const payload = {
+    sessionId: S.currentSid,
+    id: id||'', status:'active',
+    name,
+    category: document.getElementById('pf_cat')?.value.trim()||'',
+    description: document.getElementById('pf_desc')?.value||'',
+    price,
+    originalPrice: Number(document.getElementById('pf_original')?.value||0)||null,
+    supplyCost: Number(document.getElementById('pf_cost')?.value||0)||null,
+    stockQty: document.getElementById('pf_stock')?.value!==''?Number(document.getElementById('pf_stock')?.value):null,
+    perMemberLimit: document.getElementById('pf_limit')?.value!==''?Number(document.getElementById('pf_limit')?.value):null,
+    imageUrl: document.getElementById('pf_img')?.value.trim()||'',
+    quantityTiers: qtiers,
+    promoterTiers: ptiers,
+    buyGetEnabled: document.getElementById('pf_buyget')?.checked||false,
+    buyQty: Number(document.getElementById('pf_buyqty')?.value||0),
+    freeQty: Number(document.getElementById('pf_freeqty')?.value||0),
+  };
+  try {
+    await post('saveSessionProduct', payload);
+    toast('商品已儲存 ✓');
+    closeModal();
+    setTimeout(openProductMgmt, 300);
+  } catch(e) { toast(e.message,true); }
+}
+
 boot();
 </script>
-<!-- GROUPBUY_ADMIN_BUILD: 20260830-mint-b7eddb-1 -->
 </body>
 </html>
