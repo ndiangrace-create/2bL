@@ -205,6 +205,36 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
 
 /* ── 電腦版側邊導覽 ── */
 @media(min-width:900px){
+/* ── 電腦版：右側抽屜取代底部彈窗 ── */
+@media(min-width:900px){
+  #overlay{backdrop-filter:blur(2px)}
+  #sheet{
+    bottom:0 !important; top:var(--hdr) !important;
+    left:auto !important; right:0 !important;
+    width:min(520px,42vw) !important;
+    height:calc(100dvh - var(--hdr)) !important;
+    border-radius:0 !important;
+    transform:translateX(100%) !important;
+    max-height:none !important
+  }
+  #sheet.show{transform:translateX(0) !important}
+  #sheetBody{padding:20px 24px}
+  #sheetHead{padding:16px 24px 14px}
+  #sheetFoot{padding:14px 24px}
+
+  /* Order table on desktop */
+  
+.card{background:var(--paper);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.order-table-wrap{display:block}
+  .order-card-wrap{display:none}
+  
+  /* Summary cards wider */
+  .summary-row{grid-template-columns:repeat(4,1fr)}
+
+  /* Settings form on desktop */
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+}
+
   #app{flex-direction:column}
   #appBody{display:flex;flex:1;overflow:hidden}
   .sidebar{
@@ -238,6 +268,15 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
   .sidebar{width:240px}
   .tab{padding:24px 36px 0}
 }
+
+
+.order-table-wrap{display:none;overflow-x:auto;border-radius:var(--r);border:1px solid var(--line);background:var(--paper)}
+.order-table-wrap table{width:100%;border-collapse:collapse;font-size:14px}
+.order-table-wrap th{background:var(--bg);font-size:12px;font-weight:800;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:2px solid var(--line);white-space:nowrap}
+.order-table-wrap td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.order-table-wrap tr:last-child td{border:none}
+.order-table-wrap tr:hover td{background:var(--bg);cursor:pointer}
+.order-table-wrap .td-amount{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
 
 @media(min-width:768px){
   .summary-row{grid-template-columns:repeat(4,1fr)}
@@ -316,6 +355,9 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
     <button class="sb-item" id="sb-products" onclick="goTab('products')">
       <span class="sb-icon">📦</span> 商品管理
     </button>
+    <button class="sb-item" id="sb-settings" onclick="goTab('settings')">
+      <span class="sb-icon">⚙️</span> 場次設定
+    </button>
     <button class="sb-item" id="sb-more" onclick="goTab('more')">
       <span class="sb-icon">≡</span> 其他管理
     </button>
@@ -374,6 +416,10 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
     <div id="productsContent"><div class="loading">載入中…</div></div>
   </div></div>
 
+  <div id="t-settings" class="tab"><div class="tab-inner">
+    <div id="settingsContent"><div class="loading">載入設定中…</div></div>
+  </div></div>
+
   <div id="t-more" class="tab"><div class="tab-inner">
       <div id="moreContent"><div class="loading">載入中…</div></div>
     </div>
@@ -399,6 +445,10 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
     <button class="nav-btn" id="nb-products" onclick="goTab('products')">
       <span class="nav-icon">📦</span>
       <span class="nav-label">商品</span>
+    </button>
+    <button class="nav-btn" id="nb-settings" onclick="goTab('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">設定</span>
     </button>
     <button class="nav-btn" id="nb-more" onclick="goTab('more')">
       <span class="nav-icon">≡</span>
@@ -544,7 +594,7 @@ function onSessionChange(src_el) {
 
 /* ── Tab System ── */
 function goTab(name) {
-  ['home','orders','apply','products','more'].forEach(t => {
+  ['home','orders','apply','products','settings','more'].forEach(t => {
     const tab = document.getElementById('t-'+t);
     if (tab) tab.classList.toggle('active', t===name);
     const nb = document.getElementById('nb-'+t);
@@ -557,6 +607,7 @@ function goTab(name) {
   if (name === 'orders') { if (!S.orders.length) { loadOrders(); } else { renderFilteredOrders(); } }
   if (name === 'apply') loadApplications();
   if (name === 'products') loadProductsTab();
+  if (name === 'settings') loadSettingsTab();
   if (name === 'more') renderMore();
 }
 
@@ -738,7 +789,31 @@ function renderFilteredOrders() {
 function renderOrderList(elId, rows, compact=false) {
   const el = document.getElementById(elId);
   if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">沒有符合的訂單</div></div>`; return; }
-  el.innerHTML = rows.map(o => {
+  // Desktop: table view
+  const tableHtml = `<div class="order-table-wrap"><table>
+    <thead><tr>
+      <th>訂單編號</th><th>買家</th><th>狀態</th><th>出貨</th><th>金額</th><th>時間</th><th>操作</th>
+    </tr></thead>
+    <tbody>
+    ${rows.map(o=>{
+      const shortId = String(o.id||'').slice(-8).toUpperCase();
+      const closed = isClosed(o);
+      return `<tr onclick="openOrderModal('${esc(o.id)}')" title="點擊查看詳情">
+        <td style="font-family:monospace;font-size:12px">#${shortId}</td>
+        <td>${esc(o.recipient_name||o.member_email||'—')}</td>
+        <td>${payChip(o)}</td>
+        <td>${fulfillChip(o)||'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+        <td class="td-amount">${money(o.total_amount)}</td>
+        <td style="font-size:12px;color:var(--muted)">${fmt(o.created_at)}</td>
+        <td onclick="event.stopPropagation()">
+          ${closed?'<span style="font-size:12px;color:var(--muted)">已關閉</span>':
+            `<button onclick="openOrderModal('${esc(o.id)}')" style="padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);font-size:12px;font-weight:700;cursor:pointer">操作</button>`}
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div>`;
+  // Mobile: card view
+  const cardsHtml = `<div class="order-card-wrap">` + rows.map(o => {
     const delivery = o.fulfillment_type==='pickup'?'自取':'宅配';
     const name = esc(o.recipient_name||o.member_email||'訂單');
     const shortId = String(o.id||'').slice(-8).toUpperCase();
@@ -753,7 +828,8 @@ function renderOrderList(elId, rows, compact=false) {
       <div class="order-meta">${esc(fmt(o.created_at))} · ${delivery}${o.tracking_no?` · ${esc(o.tracking_no)}`:''}</div>
       <div class="order-amount">${money(o.total_amount)}</div>
     </div>`;
-  }).join('');
+  }).join('') + '</div>';
+  el.innerHTML = tableHtml + cardsHtml;
 }
 
 function openOrderModal(orderId) {
@@ -1444,6 +1520,135 @@ async function saveProduct(id) {
     setTimeout(openProductMgmt, 300);
   } catch(e) { toast(e.message,true); }
 }
+
+// ─── 場次設定 ──────────────────────────────────────────────────────
+let CURRENT_SESSION_DATA = null;
+
+async function loadSettingsTab() {
+  if (!S.currentSid) {
+    document.getElementById('settingsContent').innerHTML = '<div class="empty"><div class="empty-sub">請先選擇場次</div></div>'; return;
+  }
+  document.getElementById('settingsContent').innerHTML = '<div class="loading">載入設定中…</div>';
+  try {
+    const d = await get('groupBuyAdminData');
+    CURRENT_SESSION_DATA = (d.sessions||[]).find(s=>s.id===S.currentSid)||null;
+    renderSettingsForm();
+  } catch(e) {
+    document.getElementById('settingsContent').innerHTML = '<div class="empty"><div class="empty-sub">'+esc(e.message)+'</div></div>';
+  }
+}
+
+function renderSettingsForm() {
+  const s = CURRENT_SESSION_DATA;
+  if (!s) return;
+  const gs = s.groupBuySettings||{};
+  const el = document.getElementById('settingsContent');
+  el.innerHTML = `
+    <div style="max-width:680px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="font-size:18px;font-weight:900">場次設定</h2>
+        ${s.status==='團購中'?'<span class="chip chip-green">開放中</span>':'<span class="chip chip-gray">'+esc(s.status||'')+'</span>'}
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--muted);margin-bottom:10px">開放狀態</div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="s_isOpen" ${s.status==='團購中'?'checked':''} style="width:20px;height:20px">
+          <span style="font-size:15px;font-weight:700">開放購買</span>
+        </label>
+        <p style="font-size:12px;color:var(--muted);margin:0">關閉後買家無法下新訂單，現有訂單不受影響</p>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--muted);margin-bottom:12px">買家配送方式</div>
+        <div class="settings-grid">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="s_pickup" ${gs.pickupEnabled!==false?'checked':''}>
+            <span style="font-weight:700">自取</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="s_shipping" ${gs.shippingEnabled!==false?'checked':''}>
+            <span style="font-weight:700">宅配</span>
+          </label>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">運費 NT$</label>
+            <input id="s_shippingFee" type="number" value="${Number(gs.shippingFee||0)}" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font-size:14px">
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">免運門檻 NT$（0=不設）</label>
+            <input id="s_freeThreshold" type="number" value="${Number(gs.freeShippingThreshold||0)}" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font-size:14px">
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--muted);margin-bottom:12px">團購主採購配送</div>
+        <div class="settings-grid">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="s_pPickup" ${gs.promoterPickupEnabled!==false?'checked':''}>
+            <span style="font-weight:700">自取</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="s_pShipping" ${gs.promoterShippingEnabled!==false?'checked':''}>
+            <span style="font-weight:700">宅配</span>
+          </label>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">採購運費 NT$</label>
+            <input id="s_pFee" type="number" value="${Number(gs.promoterShippingFee||0)}" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font-size:14px">
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">採購免運門檻 NT$</label>
+            <input id="s_pFreeThreshold" type="number" value="${Number(gs.promoterFreeShippingThreshold||0)}" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font-size:14px">
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:var(--muted);margin-bottom:6px">封面圖片 URL</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px">多張圖片請用逗號分隔</p>
+        <textarea id="s_covers" rows="2" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font-size:13px;resize:vertical">${esc((gs.coverImages||[]).join(',\n'))}</textarea>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div style="background:var(--pink);border-radius:10px;padding:10px 12px;font-size:13px;color:#8B3330">
+          <strong>安全提醒：</strong>團購主申請必須人工審核通過後才能查看採購價，此限制已從程式碼層面鎖定。
+        </div>
+      </div>
+
+      <button class="btn btn-green" onclick="saveSettings()" style="max-width:200px">儲存設定</button>
+    </div>`;
+}
+
+async function saveSettings() {
+  if (!S.currentSid) return;
+  const isOpen = document.getElementById('s_isOpen')?.checked;
+  const pickupEnabled = document.getElementById('s_pickup')?.checked;
+  const shippingEnabled = document.getElementById('s_shipping')?.checked;
+  const shippingFee = Number(document.getElementById('s_shippingFee')?.value||0);
+  const freeShippingThreshold = Number(document.getElementById('s_freeThreshold')?.value||0);
+  const promoterPickupEnabled = document.getElementById('s_pPickup')?.checked;
+  const promoterShippingEnabled = document.getElementById('s_pShipping')?.checked;
+  const promoterShippingFee = Number(document.getElementById('s_pFee')?.value||0);
+  const promoterFreeShippingThreshold = Number(document.getElementById('s_pFreeThreshold')?.value||0);
+  const coversRaw = document.getElementById('s_covers')?.value||'';
+  const coverImages = coversRaw.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
+  const btn = document.querySelector('#settingsContent .btn-green');
+  if (btn) { btn.disabled=true; btn.textContent='儲存中…'; }
+  try {
+    await post('saveGroupBuy', {
+      sessionId: S.currentSid, isOpen,
+      pickupEnabled, shippingEnabled, shippingFee, freeShippingThreshold,
+      promoterPickupEnabled, promoterShippingEnabled,
+      promoterShippingFee, promoterFreeShippingThreshold,
+      coverImages, promoterAutoApprove: false
+    });
+    toast('設定已儲存 ✓');
+    await loadSettingsTab();
+  } catch(e) { toast(e.message, true); }
+  finally { if (btn) { btn.disabled=false; btn.textContent='儲存設定'; } }
+}
+
+// Card style shorthand for settings
 
 boot();
 </script>

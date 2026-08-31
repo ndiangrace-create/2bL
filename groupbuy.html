@@ -414,12 +414,38 @@ window.refreshFormalQuote=async function(){
  CurrentGiftIssue=updateGiftHint(document.getElementById('dsGiftHint'),P,C,q);updateFreeHint(document.getElementById('dsFreeHint'),g,q);if(button)button.disabled=!isGroupBuyPurchasable(S)||!publicGroupBuyProducts(P).length||!!CurrentGiftIssue;return q
 };
 
-window.renderSummary=async function(){shipFields.classList.toggle('hide',ful()!=='shipping');const submit=cartModal.querySelector('button.primary[onclick="placeOrder()"]');try{const q=await refreshFormalQuote();if(!q){if(submit)submit.disabled=true;return}const bonus=giftCount(q),owner=String(referralOwner||ref||'').trim(),threshold=Number(q.freeShippingThreshold||0);cartSummary.innerHTML='<div style="margin-bottom:8px;font-weight:950">'+(PromoterPurchaseMode?'團購主本人採購單（不重複計算分潤）':'一般買家訂單'+(owner?'｜已套用專屬團購連結':''))+'</div><div class=line><span>商品小計</span><b>'+money(q.productAmount||0)+'</b></div><div class=line><span>運費（'+fulfillmentLabel(ful())+'）</span><b>'+money(q.shippingFee||0)+'</b></div>'+(bonus?'<div class=line><span>商家隨機贈品（贈完為止）</span><b>'+bonus+' 件</b></div>':'')+'<div class=line style="font-size:20px"><span><b>應付總額</b></span><b>'+money(q.totalAmount||0)+'</b></div>'+(CurrentGiftIssue?'<div class="gb-promo-alert" style="margin-top:8px">'+esc(CurrentGiftIssue)+'</div>':'')+(ful()==='shipping'&&threshold>0?'<small>免運依折扣後商品小計判斷｜'+(q.freeShippingReached?'已達 '+money(threshold)+' 免運':'商品再 '+money(q.remainingForFreeShipping||0)+' 免運')+'</small>':'');cartLines.innerHTML=(q.items||[]).map(it=>'<div class=line><span>'+esc(it.name||'商品')+' × '+it.quantity+'</span><b>'+money(it.lineTotal||0)+'</b></div>').join('');if(submit)submit.disabled=!!CurrentGiftIssue}catch(e){cartSummary.textContent='金額載入失敗，請勿付款並重新整理後再試';if(submit)submit.disabled=true}};
+window.renderSummary=async function(){shipFields.classList.toggle('hide',ful()!=='shipping');const submit=cartModal.querySelector('button.primary[onclick="placeOrder()"]');try{const q=await refreshFormalQuote();if(!q){if(submit)submit.disabled=true;return}const bonus=giftCount(q),owner=String(referralOwner||ref||'').trim(),threshold=Number(q.freeShippingThreshold||0);cartSummary.innerHTML='<div style="margin-bottom:8px;font-weight:950">'+(PromoterPurchaseMode?'團購主本人採購單（不重複計算分潤）':'一般買家訂單'+(owner?'｜已套用專屬團購連結':''))+'</div><div class=line><span>商品小計</span><b>'+money(q.productAmount||0)+'</b></div><div class=line><span>運費（'+fulfillmentLabel(ful())+'）</span><b>'+money(q.shippingFee||0)+'</b></div>'+(bonus?'<div class=line><span>商家隨機贈品（贈完為止）</span><b>'+bonus+' 件</b></div>':'')+'<div class=line style="font-size:20px"><span><b>應付總額</b></span><b>'+money(q.totalAmount||0)+'</b></div>'+(PromoterPurchaseMode&&q.productAmount>0?(function(){
+  // Calculate public price subtotal (what buyers would pay)
+  const publicSubtotal=(q.items||[]).reduce((sum,it)=>{
+    const p=P.find(x=>String(x.id)===String(it.productId));
+    return sum+Number((p?.price||0))*Number(it.quantity||0);
+  },0);
+  const margin=publicSubtotal-Number(q.productAmount||0);
+  return margin>0?'<div style="margin-top:8px;background:#ecfdf5;border-radius:10px;padding:10px 12px;border:1px solid #6ee7b7"><span style="font-size:13px;color:#065f46">🎉 這批多入袋　</span><b style="font-size:16px;color:#065f46">NT$'+margin.toLocaleString()+'</b></div>':'';
+})():'')+(CurrentGiftIssue?'<div class="gb-promo-alert" style="margin-top:8px">'+esc(CurrentGiftIssue)+'</div>':'')+(ful()==='shipping'&&threshold>0?'<small>免運依折扣後商品小計判斷｜'+(q.freeShippingReached?'已達 '+money(threshold)+' 免運':'商品再 '+money(q.remainingForFreeShipping||0)+' 免運')+'</small>':'');cartLines.innerHTML=(q.items||[]).map(it=>'<div class=line><span>'+esc(it.name||'商品')+' × '+it.quantity+'</span><b>'+money(it.lineTotal||0)+'</b></div>').join('');if(submit)submit.disabled=!!CurrentGiftIssue}catch(e){cartSummary.textContent='金額載入失敗，請勿付款並重新整理後再試';if(submit)submit.disabled=true}};
 })();
 
 (function(){
 function promoterPriceAtOne(p){let value=null;for(const tier of [...(p?.promoterTiers||[])].sort((a,b)=>Number(a.minQty)-Number(b.minQty)))if(1>=Number(tier.minQty||0))value=Number(tier.basePrice||0);return value}
-function decoratePromoterPrices(){if(!PromoterPurchaseMode)return;for(const p of P){const price=document.getElementById('price_'+p.id),host=price?.closest('.price');if(!host||host.querySelector('.gb-promoter-price-detail'))continue;const buy=promoterPriceAtOne(p);host.insertAdjacentHTML('afterend','<div class="gb-promoter-price-detail" style="font-size:14px;line-height:1.6;margin-top:4px"><span>原價 '+money(p.original_price||p.price||0)+'</span>｜<span>團購價 '+money(p.price||0)+'</span><br><b>採購價 '+(buy==null?'尚未設定':money(buy))+'</b></div>')}}
+function decoratePromoterPrices(){
+  if(!PromoterPurchaseMode)return;
+  for(const p of P){
+    const price=document.getElementById('price_'+p.id),host=price?.closest('.price');
+    if(!host||host.querySelector('.gb-promoter-price-detail'))continue;
+    const publicPrice=Number(p.price||0);
+    const buy=promoterPriceAtOne(p);
+    if(buy==null)continue;
+    const diff=publicPrice-buy;
+    const diffStr=diff>0?'<span style="color:#1a7f45;font-weight:900;background:#ecfdf5;border-radius:6px;padding:1px 8px;font-size:12px">多入袋 NT$'+diff.toLocaleString()+'</span>':'';
+    host.insertAdjacentHTML('afterend',
+      '<div class="gb-promoter-price-detail" style="margin-top:5px;padding:6px 8px;background:#fffbeb;border-radius:8px;border:1px solid #fde68a;font-size:13px;line-height:1.8">'
+      +'<span style="color:#888">公開售價 <s>NT$'+publicPrice.toLocaleString()+'</s></span>'
+      +'　<span style="color:#1a7f45;font-weight:800">採購價 NT$'+buy.toLocaleString()+'</span>'
+      +(diff>0?'　'+diffStr:'')
+      +'</div>'
+    );
+  }
+}
 window.syncPromoterModeNotice=function(){
  const host=document.getElementById('content'),store=host?.querySelector('.direct-compact-head,.storehead'),existing=document.getElementById('gbPromoterModeNotice');
  if(!host||!store){existing?.remove();return}
