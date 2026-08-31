@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- GROUPBUY_ADMIN_BUILD: 20260831-buyget-restore-1 -->
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -1180,7 +1181,7 @@ async function saveProduct(id) {
     perMemberLimit: document.getElementById('pf_limit')?.value!==''?Number(document.getElementById('pf_limit')?.value):null,
     imageUrl: document.getElementById('pf_img')?.value.trim()||'',
     quantityTiers: qtiers,
-    promoterTiers: ptiers,
+    defaultPromoterTiers: ptiers,
     buyGetEnabled: document.getElementById('pf_buyget')?.checked||false,
     buyQty: Number(document.getElementById('pf_buyqty')?.value||0),
     freeQty: Number(document.getElementById('pf_freeqty')?.value||0),
