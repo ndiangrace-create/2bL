@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- GROUPBUY_MERCHANT_BUILD: 20260831-buyget-restore-1 -->
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -492,7 +491,10 @@ async function doFulfillShipped(id) {
 async function loadProducts() {
   document.getElementById('productList').innerHTML='<div class="loading">載入商品中…</div>';
   try {
-    const d = await call('sessionProductsAdmin',{memberToken:S.token,sessionId:S.sessionId});
+    // Products via promoter's session context
+    // Note: full product management requires sessionProductsAdmin (admin token)
+    // For merchants using member token, we show public products of their session
+    const d = await call('sessionProducts',{sessionId:S.sessionId},'GET');
     S.products = d.products||[];
     renderProducts();
   } catch(e) {
@@ -513,7 +515,6 @@ function renderProducts() {
         <div class="prod-name">${esc(p.name||'未命名商品')}</div>
         <div class="prod-price">${money(p.price)}</div>
         <div class="prod-stock">庫存 ${p.stock_qty!=null?p.stock_qty:'無限制'}</div>
-        <div class="prod-stock">${p.buy_get_enabled?`買 ${Number(p.buy_qty||0)} 送 ${Number(p.free_qty||0)}`:'未啟用買幾送幾'}</div>
       </div>
       <button class="prod-edit" onclick="openEditProduct('${esc(p.id)}')">編輯</button>
     </div>`).join('');
@@ -531,58 +532,18 @@ function openEditProduct(id) {
      <button class="btn btn-outline" onclick="closeModal()">取消</button>`);
 }
 function productFormHtml(p) {
-  const promoterTierOne=(Array.isArray(p.default_promoter_tiers_json)?p.default_promoter_tiers_json:[]).find(t=>Number(t?.minQty)===1);
   return `
     <div class="form-field"><label>商品名稱 *</label><input id="pName" value="${esc(p.name||'')}" placeholder="商品名稱"></div>
     <div class="form-field"><label>售價（NT$）*</label><input id="pPrice" type="number" value="${p.price||''}" placeholder="0" inputmode="decimal"></div>
     <div class="form-field"><label>原價（NT$，可留空）</label><input id="pOriginal" type="number" value="${p.original_price||''}" placeholder="0" inputmode="decimal"></div>
     <div class="form-field"><label>庫存數量（空白=無限制）</label><input id="pStock" type="number" value="${p.stock_qty!=null?p.stock_qty:''}" placeholder="不填為無限制" inputmode="numeric"></div>
     <div class="form-field"><label>商品說明</label><textarea id="pDesc" rows="3">${esc(p.description||'')}</textarea></div>
-    <div class="form-field"><label>商品圖片 URL</label><input id="pImg" value="${esc(p.image_url||'')}"></div>
-    <div class="form-field"><label>團購主 1 件採購價（新增商品必填）</label><input id="pPromoterPrice" type="number" min="0" value="${promoterTierOne?.basePrice??''}" placeholder="0" inputmode="decimal"></div>
-    <div class="form-field">
-      <label>買幾送幾</label>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <label style="display:flex;align-items:center;gap:6px;margin:0;color:var(--text)"><input id="pBuyGet" type="checkbox" ${p.buy_get_enabled?'checked':''} style="width:auto"> 啟用</label>
-        <span>買</span><input id="pBuyQty" type="number" min="1" value="${p.buy_qty||10}" style="width:72px" inputmode="numeric">
-        <span>送</span><input id="pFreeQty" type="number" min="1" value="${p.free_qty||1}" style="width:72px" inputmode="numeric">
-      </div>
-    </div>`;
+    <div class="form-field"><label>商品圖片 URL</label><input id="pImg" value="${esc(p.image_url||'')}"></div>`;
 }
 async function doSaveProduct(id) {
-  const original=S.products.find(x=>String(x.id)===String(id||''))||{};
-  const name=document.getElementById('pName')?.value.trim()||'';
-  const price=Number(document.getElementById('pPrice')?.value||0);
-  const buyGetEnabled=!!document.getElementById('pBuyGet')?.checked;
-  const buyQty=Number(document.getElementById('pBuyQty')?.value||0);
-  const freeQty=Number(document.getElementById('pFreeQty')?.value||0);
-  const promoterPrice=Number(document.getElementById('pPromoterPrice')?.value||0);
-  if (!name||price<=0) { toast('請填寫商品名稱與售價',true); return; }
-  if (buyGetEnabled&&(buyQty<1||freeQty<1)) { toast('啟用買幾送幾時，買與送都必須大於 0',true); return; }
-  const existingPromoterTiers=Array.isArray(original.default_promoter_tiers_json)?original.default_promoter_tiers_json:[];
-  let defaultPromoterTiers=existingPromoterTiers.filter(t=>Number(t?.minQty)!==1);
-  if (promoterPrice>0) defaultPromoterTiers=[{minQty:1,basePrice:promoterPrice},...defaultPromoterTiers];
-  if (!defaultPromoterTiers.some(t=>Number(t?.minQty)===1&&Number(t?.basePrice)>0)) { toast('請填寫團購主 1 件採購價',true); return; }
-  const payload={
-    memberToken:S.token,sessionId:S.sessionId,id:id||'',status:original.status||'active',
-    name,category:original.category||'',description:document.getElementById('pDesc')?.value||'',
-    price,originalPrice:Number(document.getElementById('pOriginal')?.value||0)||null,
-    supplyCost:original.supply_cost??null,
-    stockQty:document.getElementById('pStock')?.value!==''?Number(document.getElementById('pStock')?.value):null,
-    perMemberLimit:original.per_member_limit??null,
-    quantityTiers:Array.isArray(original.quantity_tiers_json)?original.quantity_tiers_json:[],
-    defaultPromoterTiers,
-    buyGetEnabled,buyQty:buyGetEnabled?buyQty:0,freeQty:buyGetEnabled?freeQty:0,
-    promoterBuyGetEnabled:!!original.promoter_buy_get_enabled,
-    promoterBuyQty:Number(original.promoter_buy_qty||0),promoterFreeQty:Number(original.promoter_free_qty||0),
-    imageRefs:[]
-  };
-  try {
-    await call('saveSessionProduct',payload);
-    toast('商品設定已儲存 ✓');
-    closeModal();
-    await loadProducts();
-  } catch(e) { toast(e.message||'儲存失敗',true); }
+  // saveSessionProduct 需要 admin token，商家帳號無法直接儲存
+  // 商品管理請透過平台後台（groupbuy-admin.html）操作
+  toast('商品管理需由平台後台設定，請聯繫平台管理員。',true);
 }
 
 // Earnings

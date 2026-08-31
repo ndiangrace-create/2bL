@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- GROUPBUY_ADMIN_BUILD: 20260831-buyget-restore-1 -->
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -203,6 +202,43 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
 .payout-amount{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--main2)}
 .payout-meta{font-size:13px;color:var(--muted);margin-top:4px}
 
+
+/* ── 電腦版側邊導覽 ── */
+@media(min-width:900px){
+  #app{flex-direction:column}
+  #appBody{display:flex;flex:1;overflow:hidden}
+  .sidebar{
+    width:220px;flex-shrink:0;
+    background:var(--paper);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;
+    height:calc(100dvh - var(--hdr));
+    position:sticky;top:var(--hdr);
+    overflow-y:auto;padding:12px 8px;gap:2px
+  }
+  .sb-item{
+    display:flex;align-items:center;gap:10px;
+    padding:11px 14px;border-radius:10px;
+    border:none;background:none;
+    font-size:14px;font-weight:700;color:var(--muted);
+    cursor:pointer;width:100%;text-align:left;position:relative
+  }
+  .sb-item:hover{background:var(--bg)}
+  .sb-item.active{background:var(--green);color:var(--ink)}
+  .sb-item .sb-icon{font-size:18px;width:24px;text-align:center}
+  .sb-dot{position:absolute;top:8px;right:10px;width:8px;height:8px;background:var(--danger);border-radius:50%}
+  .sb-section{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:14px 14px 4px}
+  #nav{display:none!important}
+  #main{flex:1;overflow-y:auto;padding-bottom:20px;min-width:0}
+  .tab{padding:20px 28px 0}
+  .tab-inner{max-width:1200px;margin:0 auto}
+  #sheet{width:min(560px,90vw)}
+  .summary-row{grid-template-columns:repeat(4,1fr)}
+}
+@media(min-width:1200px){
+  .sidebar{width:240px}
+  .tab{padding:24px 36px 0}
+}
+
 @media(min-width:768px){
   .summary-row{grid-template-columns:repeat(4,1fr)}
   .tab{padding:20px 24px 0}
@@ -255,6 +291,39 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
     </div>
   </header>
 
+  
+  <div id="appBody" style="display:flex;flex:1;overflow:hidden">
+  <aside class="sidebar">
+    <div class="sb-section">場次</div>
+    <div style="padding:4px 8px 10px">
+      <select id="sessionPickerSB" onchange="onSessionChange(this)" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;background:var(--paper)">
+        <option>載入中…</option>
+      </select>
+    </div>
+    <div class="sb-section">導覽</div>
+    <button class="sb-item active" id="sb-home" onclick="goTab('home')">
+      <span class="sb-icon">⌂</span> 首頁
+      <span id="sbOrderDot" class="sb-dot" style="display:none"></span>
+    </button>
+    <button class="sb-item" id="sb-orders" onclick="goTab('orders')">
+      <span class="sb-icon">☰</span> 訂單管理
+      <span id="sbOrderDot2" class="sb-dot" style="display:none"></span>
+    </button>
+    <button class="sb-item" id="sb-apply" onclick="goTab('apply')">
+      <span class="sb-icon">✎</span> 申請審核
+      <span id="sbApplyDot" class="sb-dot" style="display:none"></span>
+    </button>
+    <button class="sb-item" id="sb-products" onclick="goTab('products')">
+      <span class="sb-icon">📦</span> 商品管理
+    </button>
+    <button class="sb-item" id="sb-more" onclick="goTab('more')">
+      <span class="sb-icon">≡</span> 其他管理
+    </button>
+    <div style="flex:1"></div>
+    <button class="sb-item" onclick="doLogout()" style="color:var(--danger)">
+      <span class="sb-icon">🚪</span> 登出
+    </button>
+  </aside>
   <main id="main">
     <!-- 首頁 Tab -->
     <div id="t-home" class="tab active"><div class="tab-inner">
@@ -301,12 +370,18 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
     </div>
 
     <!-- 管理 Tab -->
-    <div id="t-more" class="tab"><div class="tab-inner">
+    <div id="t-products" class="tab"><div class="tab-inner">
+    <div id="productsContent"><div class="loading">載入中…</div></div>
+  </div></div>
+
+  <div id="t-more" class="tab"><div class="tab-inner">
       <div id="moreContent"><div class="loading">載入中…</div></div>
     </div>
   </main>
 
-  <nav id="nav">
+  </div>
+
+<nav id="nav">
     <button class="nav-btn active" id="nb-home" onclick="goTab('home')">
       <span class="nav-icon">⌂</span>
       <span class="nav-label">首頁</span>
@@ -320,6 +395,10 @@ header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom
       <span class="nav-icon">✎</span>
       <span class="nav-label">申請</span>
       <span id="applyDot" class="nav-dot hidden"></span>
+    </button>
+    <button class="nav-btn" id="nb-products" onclick="goTab('products')">
+      <span class="nav-icon">📦</span>
+      <span class="nav-label">商品</span>
     </button>
     <button class="nav-btn" id="nb-more" onclick="goTab('more')">
       <span class="nav-icon">≡</span>
@@ -436,14 +515,28 @@ function fmt(d) { if(!d) return '—'; return new Date(d).toLocaleString('zh-TW'
 
 /* ── Session Picker ── */
 function buildSessionPicker() {
-  const pick = document.getElementById('sessionPicker');
+  const opts = S.sessions.length
+    ? S.sessions.map(s=>`<option value="${esc(s.id)}" ${s.id===S.currentSid?'selected':''}>${esc(s.name)}</option>`).join('')
+    : '<option>無可用場次</option>';
+  ['sessionPicker','sessionPickerSB'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = opts;
+  });
+  if (!S.currentSid && S.sessions[0]) S.currentSid = S.sessions[0].id;
+  const pick_unused = null; if(pick_unused){
   pick.innerHTML = S.sessions.length
     ? S.sessions.map(s=>`<option value="${esc(s.id)}" ${s.id===S.currentSid?'selected':''}>${esc(s.name)}</option>`).join('')
     : '<option>無可用場次</option>';
   if (!S.currentSid && S.sessions[0]) S.currentSid = S.sessions[0].id;
 }
-function onSessionChange() {
-  S.currentSid = document.getElementById('sessionPicker').value;
+function onSessionChange(src_el) {
+  const val = src_el?.value || document.getElementById('sessionPicker')?.value || document.getElementById('sessionPickerSB')?.value;
+  S.currentSid = val;
+  // sync both pickers
+  ['sessionPicker','sessionPickerSB'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && el.value !== val) el.value = val;
+  });
   S.orders = [];
   loadOrders();
   updateHome();
@@ -451,14 +544,64 @@ function onSessionChange() {
 
 /* ── Tab System ── */
 function goTab(name) {
-  ['home','orders','apply','more'].forEach(t => {
-    document.getElementById('t-'+t).classList.toggle('active', t===name);
-    document.getElementById('nb-'+t).classList.toggle('active', t===name);
+  ['home','orders','apply','products','more'].forEach(t => {
+    const tab = document.getElementById('t-'+t);
+    if (tab) tab.classList.toggle('active', t===name);
+    const nb = document.getElementById('nb-'+t);
+    if (nb) nb.classList.toggle('active', t===name);
+    // sync sidebar items
+    const sb = document.getElementById('sb-'+t);
+    if (sb) sb.classList.toggle('active', t===name);
   });
   S.activeTab = name;
   if (name === 'orders') { if (!S.orders.length) { loadOrders(); } else { renderFilteredOrders(); } }
   if (name === 'apply') loadApplications();
+  if (name === 'products') loadProductsTab();
   if (name === 'more') renderMore();
+}
+
+async function loadProductsTab() {
+  const el = document.getElementById('productsContent');
+  if (!el) return;
+  if (!S.currentSid) { el.innerHTML='<div class="empty"><div class="empty-sub">請先選擇場次</div></div>'; return; }
+  el.innerHTML = '<div class="loading">載入商品中…</div>';
+  try {
+    const d = await get('sessionProductsAdmin', {sessionId: S.currentSid});
+    S_PRODUCTS = d.products||[];
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:16px;font-weight:900">商品管理 <span style="font-size:13px;color:var(--muted);font-weight:600">${S_PRODUCTS.length} 件</span></div>
+      ${S.isPlatform ? '<button class="btn btn-green btn-sm" onclick="openAddProductModal()">＋ 新增商品</button>' : ''}
+    </div>`;
+    el.innerHTML += renderProductsHTML();
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><div class="empty-sub">' + esc(e.message) + '</div></div>';
+  }
+}
+
+function renderProductsHTML() {
+  if (!S_PRODUCTS.length) return '<div class="empty"><div class="empty-icon">📦</div><div class="empty-title">尚無商品</div></div>';
+  const batchPanel = S.isPlatform ? renderBatchPanel() : '';
+  const rows = S_PRODUCTS.map(p => `
+    <div style="background:var(--paper);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--line)">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        ${S.isPlatform ? '<input type="checkbox" class="prod-chk" data-id="'+esc(p.id)+'" onchange="updateSelectedCount()" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer">' : ''}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div style="font-size:15px;font-weight:800">${esc(p.name||'未命名')}</div>
+            ${S.isPlatform ? '<button onclick="openEditProductModal(''+esc(p.id)+'')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">編輯</button>' : ''}
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--main2);margin:5px 0">
+            NT$${Number(p.price||0).toLocaleString()}
+            ${p.original_price ? '<s style="color:var(--muted);font-size:12px;font-weight:400;margin-left:4px">原 '+Number(p.original_price).toLocaleString()+'</s>' : ''}
+            ${p.buy_get_enabled ? '<span style="font-size:12px;background:var(--blue);border-radius:6px;padding:2px 7px;margin-left:4px">買'+p.buy_qty+'送'+p.free_qty+'</span>' : ''}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:5px">庫存：${p.stock_qty!=null?p.stock_qty:'無限制'}${p.per_member_limit?' · 每人上限'+p.per_member_limit:''} · 分類：${esc(p.category||'—')}</div>
+          ${(p.quantity_tiers_json||[]).length ? '<div style="margin:3px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">買家級距：</span>'+tierHtml(p.quantity_tiers_json,'unitPrice')+'</div>' : ''}
+          ${(p.default_promoter_tiers_json||[]).length ? '<div style="margin:3px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">團購主採購：</span>'+tierHtml(p.default_promoter_tiers_json,'basePrice')+'</div>' : ''}
+        </div>
+      </div>
+    </div>`).join('');
+  return batchPanel + rows;
 }
 
 /* ── Toast ── */
@@ -1064,6 +1207,8 @@ let S_PRODUCTS = [];
 
 async function openProductMgmt() {
   if (!S.currentSid) { toast('請先選擇場次',true); return; }
+  goTab('products'); return;
+  if(false){
   openModal('商品管理', S.sessions.find(s=>s.id===S.currentSid)?.name||'', '<div class="loading">載入中…</div>',
     S.isPlatform ? `<button class="btn btn-green btn-sm" onclick="openAddProductModal()">＋ 新增商品</button>` : '');
   try {
@@ -1082,17 +1227,123 @@ function renderProductList() {
   const sb = document.getElementById('sheetBody');
   if (!sb) return;
   if (!S_PRODUCTS.length) { sb.innerHTML='<div class="empty"><div class="empty-sub">此場次還沒有商品</div></div>'; return; }
-  sb.innerHTML = S_PRODUCTS.map(p=>`
-    <div style="background:var(--paper);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--line)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="font-size:15px;font-weight:800;flex:1">${esc(p.name||'未命名')}</div>
-        ${S.isPlatform?`<button onclick="openEditProductModal('${esc(p.id)}')" style="padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:700;cursor:pointer">編輯</button>`:''}
+  sb.innerHTML = `
+    ${S.isPlatform ? `
+    <!-- 批次操作區 -->
+    <div id="batchPanel" style="background:var(--yellow);border-radius:12px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label style="display:flex;align-items:center;gap:7px;font-weight:800;font-size:14px;cursor:pointer">
+          <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"> 全選
+        </label>
+        <span id="selectedCount" style="font-size:13px;color:var(--muted)">未勾選</span>
       </div>
-      <div style="font-size:14px;font-weight:700;color:var(--main2);margin:4px 0">NT$${Number(p.price||0).toLocaleString()} ${p.original_price?`<span style="text-decoration:line-through;color:var(--muted);font-size:12px">原${Number(p.original_price).toLocaleString()}</span>`:''}${p.buy_get_enabled?` · 買${p.buy_qty}送${p.free_qty}`:''}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">庫存：${p.stock_qty!=null?p.stock_qty:'無限制'} ${p.per_member_limit?`· 每人上限${p.per_member_limit}`:''}</div>
-      <div style="margin:4px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">買家數量級距：</span>${tierHtml(p.quantity_tiers_json||[],'unitPrice')}</div>
-      <div style="margin:4px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">團購主採購級距：</span>${tierHtml(p.default_promoter_tiers_json||[],'basePrice')}</div>
-    </div>`).join('');
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px">售價 NT$</div>
+          <input id="b_price" type="number" placeholder="空白不變" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"></div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px">原價 NT$</div>
+          <input id="b_original" type="number" placeholder="空白不變" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"></div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px">供應成本 NT$</div>
+          <input id="b_cost" type="number" placeholder="空白不變" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"></div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px">庫存（空=不變）</div>
+          <input id="b_stock" type="number" placeholder="空白不變" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"></div>
+      </div>
+      <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">買家數量級距（勾選商品統一套用）</div>
+        <div id="b_qtiers"></div>
+        <button type="button" onclick="addTierRow('b_qtiers')" style="font-size:12px;border:none;background:rgba(0,0,0,.08);border-radius:7px;padding:5px 10px;cursor:pointer;margin-top:4px">＋ 加級距</button>
+      </div>
+      <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">團購主採購級距（勾選商品統一套用）</div>
+        <div id="b_ptiers"></div>
+        <button type="button" onclick="addTierRow('b_ptiers')" style="font-size:12px;border:none;background:rgba(0,0,0,.08);border-radius:7px;padding:5px 10px;cursor:pointer;margin-top:4px">＋ 加級距</button>
+      </div>
+      <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">買幾送幾</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px"><input type="checkbox" id="b_buyget"> 啟用</label>
+          <span style="font-size:12px">買</span>
+          <input id="b_buyqty" type="number" min="1" placeholder="X" style="width:50px;padding:6px;border:1px solid var(--line);border-radius:7px">
+          <span style="font-size:12px">件送</span>
+          <input id="b_freeqty" type="number" min="1" placeholder="Y" style="width:50px;padding:6px;border:1px solid var(--line);border-radius:7px">
+          <span style="font-size:12px">件</span>
+        </div>
+      </div>
+      <button onclick="applyBatch()" class="btn btn-green" style="width:100%">套用到已勾選商品</button>
+    </div>` : ''}
+    <!-- 商品列表 -->
+    ${S_PRODUCTS.map(p=>`
+    <div style="background:var(--paper);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--line)">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        ${S.isPlatform?`<input type="checkbox" class="prod-chk" data-id="${esc(p.id)}" onchange="updateSelectedCount()" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer">`:''}
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div style="font-size:15px;font-weight:800;flex:1">${esc(p.name||'未命名')}</div>
+            ${S.isPlatform?`<button onclick="openEditProductModal('${esc(p.id)}')" style="padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:700;cursor:pointer">編輯</button>`:''}
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--main2);margin:4px 0">NT$${Number(p.price||0).toLocaleString()} ${p.original_price?`<s style="color:var(--muted);font-size:12px">原${Number(p.original_price).toLocaleString()}</s>`:''}${p.buy_get_enabled?` · 買${p.buy_qty}送${p.free_qty}`:''}</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">庫存：${p.stock_qty!=null?p.stock_qty:'無限制'}${p.per_member_limit?` · 每人上限${p.per_member_limit}`:''}</div>
+          <div style="margin:3px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">買家級距：</span>${tierHtml(p.quantity_tiers_json||[],'unitPrice')}</div>
+          <div style="margin:3px 0"><span style="font-size:11px;color:var(--muted);font-weight:700">團購主級距：</span>${tierHtml(p.default_promoter_tiers_json||[],'basePrice')}</div>
+        </div>
+      </div>
+    </div>`).join('')}`;
+}
+
+function toggleSelectAll(checked) {
+  document.querySelectorAll('.prod-chk').forEach(c=>c.checked=checked);
+  updateSelectedCount();
+}
+function updateSelectedCount() {
+  const n = document.querySelectorAll('.prod-chk:checked').length;
+  const el = document.getElementById('selectedCount');
+  const all = document.getElementById('selectAll');
+  if(el) el.textContent = n ? `已勾選 ${n} 件` : '未勾選';
+  if(all) all.indeterminate = n>0 && n<document.querySelectorAll('.prod-chk').length;
+}
+
+async function applyBatch() {
+  const ids = [...document.querySelectorAll('.prod-chk:checked')].map(c=>c.dataset.id).filter(Boolean);
+  if (!ids.length) { toast('請先勾選要套用的商品',true); return; }
+  const price = document.getElementById('b_price')?.value;
+  const original = document.getElementById('b_original')?.value;
+  const cost = document.getElementById('b_cost')?.value;
+  const stock = document.getElementById('b_stock')?.value;
+  const qtiers = readTierRows('b_qtiers').map(t=>({minQty:t.minQty,unitPrice:t.price}));
+  const ptiers = readTierRows('b_ptiers').map(t=>({minQty:t.minQty,basePrice:t.price}));
+  const buyGetEnabled = document.getElementById('b_buyget')?.checked;
+  const buyQty = Number(document.getElementById('b_buyqty')?.value||0);
+  const freeQty = Number(document.getElementById('b_freeqty')?.value||0);
+  const hasTiers = qtiers.length>0 || ptiers.length>0;
+  const hasBuyGet = buyQty>0 && freeQty>0;
+  
+  if (!price && !original && !cost && !stock && !hasTiers && !hasBuyGet) {
+    toast('請至少填一個要套用的欄位',true); return;
+  }
+  if (!confirm(`確定套用到 ${ids.length} 件商品？空白欄位不覆蓋原值。`)) return;
+  
+  let ok=0, fail=0;
+  for (const id of ids) {
+    const base = S_PRODUCTS.find(p=>p.id===id)||{};
+    const payload = {
+      sessionId: S.currentSid, id, status: base.status||'active',
+      name: base.name||'', category: base.category||'',
+      description: base.description||'', imageUrl: base.image_url||'',
+      price: price!=='' && price!=null ? Number(price) : Number(base.price||0),
+      originalPrice: original!=='' && original!=null ? Number(original)||null : Number(base.original_price||0)||null,
+      supplyCost: cost!=='' && cost!=null ? Number(cost)||null : Number(base.supply_cost||0)||null,
+      stockQty: stock!=='' && stock!=null ? Number(stock) : base.stock_qty,
+      perMemberLimit: base.per_member_limit,
+      quantityTiers: hasTiers ? qtiers : (base.quantity_tiers_json||[]).map(t=>({minQty:t.minQty,unitPrice:t.unitPrice||t.unit_price||0})),
+      promoterTiers: hasTiers ? ptiers : (base.default_promoter_tiers_json||[]).map(t=>({minQty:t.minQty,basePrice:t.basePrice||t.base_price||0})),
+      buyGetEnabled: hasBuyGet ? buyGetEnabled : (base.buy_get_enabled||false),
+      buyQty: hasBuyGet ? buyQty : (base.buy_qty||0),
+      freeQty: hasBuyGet ? freeQty : (base.free_qty||0),
+    };
+    try { await post('saveSessionProduct', payload); ok++; }
+    catch(e) { fail++; console.error('batch fail', id, e.message); }
+  }
+  toast(fail ? `完成 ${ok}，失敗 ${fail}` : `✓ 已套用到 ${ok} 件商品`);
+  await openProductMgmt(); // reload
 }
 
 function openAddProductModal() { openProductForm(null); }
@@ -1181,7 +1432,7 @@ async function saveProduct(id) {
     perMemberLimit: document.getElementById('pf_limit')?.value!==''?Number(document.getElementById('pf_limit')?.value):null,
     imageUrl: document.getElementById('pf_img')?.value.trim()||'',
     quantityTiers: qtiers,
-    defaultPromoterTiers: ptiers,
+    promoterTiers: ptiers,
     buyGetEnabled: document.getElementById('pf_buyget')?.checked||false,
     buyQty: Number(document.getElementById('pf_buyqty')?.value||0),
     freeQty: Number(document.getElementById('pf_freeqty')?.value||0),
