@@ -4139,7 +4139,7 @@ async function createGroupBuyNow(btn){const name=String($('gb_name')?.value||'')
 async function openEditGroupBuy(id){ return window.openGroupBuyUnified?window.openGroupBuyUnified(id,'settings'):null; }
 async function uploadGroupBuyAdminCover(input){const fs=[...(input?.files||[])].slice(0,12);if(!fs.length)return;try{toast('圖片上傳中…');const urls=groupBuyCoverUrls();for(const f of fs){const image=await makeSquarePaddedImage(f),r=await apiPost({action:'uploadCover',image});if(r.error||!r.url)throw new Error(r.error||'圖片上傳失敗');urls.push(r.url)}$('gb_cover_urls').value=JSON.stringify([...new Set(urls)].slice(0,12));renderGroupBuyCoverPreview();toast('圖片已上傳，記得儲存團購')}catch(e){toast('圖片上傳失敗：'+(e.message||e),7000)}}
 async function saveGroupBuyNow(id,btn,creating=false){
- const start=$('gb_start')?.value||'',end=$('gb_end')?.value||'',payload={action:'saveGroupBuy',sessionId:id,name:String($('gb_name')?.value||'').trim(),coverImages:groupBuyCoverUrls(),coverImageUrl:groupBuyCoverUrls()[0]||'',description:String($('gb_desc')?.value||''),saleStartAt:start?new Date(start).toISOString():'',saleEndAt:end?new Date(end).toISOString():'',pickupEnabled:!!$('gb_pickup')?.checked,shippingEnabled:!!$('gb_shipping')?.checked,shippingFee:Number($('gb_shipfee')?.value||0),freeShippingThreshold:Number($('gb_free')?.value||0),pickupNote:String($('gb_picknote')?.value||''),paymentProfileId:String($('gb_payment_profile')?.value||''),isOpen:!!$('gb_open')?.checked};
+ const start=$('gb_start')?.value||'',end=$('gb_end')?.value||'',payload={action:'saveGroupBuy',sessionId:id,name:String($('gb_name')?.value||'').trim(),coverImages:groupBuyCoverUrls(),coverImageUrl:groupBuyCoverUrls()[0]||'',description:String($('gb_desc')?.value||''),saleStartAt:start?new Date(start).toISOString():'',saleEndAt:end?new Date(end).toISOString():'',pickupEnabled:!!$('gb_pickup')?.checked,shippingEnabled:!!$('gb_shipping')?.checked,shippingFee:Number($('gb_shipfee')?.value||0),freeShippingThreshold:Number($('gb_free')?.value||0),pickupNote:String($('gb_picknote')?.value||''),paymentProfileId:String(($('s_gb_payment_profile')||$('gb_payment_profile'))?.value||''),isOpen:!!$('gb_open')?.checked};
  if(!payload.name)throw new Error('請填團購名稱');if(!payload.pickupEnabled&&!payload.shippingEnabled)throw new Error('現場取貨與宅配至少選一種');
  const old=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='儲存中…';}
  try{const r=await apiPost(payload);if(r.error)throw new Error(r.error);if(!creating){toast('團購已儲存');closeAllPanels();await loadGroupBuyAdmin();}return r;}finally{if(btn){btn.disabled=false;btn.textContent=old;}}
@@ -6574,46 +6574,97 @@ function ugbSettingsHtml(s){
  const g=s.groupBuySettings||{},imgs=(Array.isArray(g.coverImages)?g.coverImages:[g.coverImageUrl]).filter(Boolean),profiles=AdminState.paymentProfiles||[];
  return '<form class="ugb-c-form" onsubmit="return false">'\
   +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">基本設定</div>'\
-  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>團購名稱</label><input id="gb_name" value="'+attr(s.name||'')+'"></div><div class="ugb-c-field" style="flex-shrink:0"><label style="visibility:hidden">開放</label><label class="ugb-c-check"><input id="gb_open" type="checkbox" '+(s.status==='已關閉'?'':'checked')+'> 前台開放</label></div></div>'\
-  +'<div class="ugb-c-field"><label>團購說明</label><textarea id="gb_desc" rows="3">'+safe(g.groupBuyDescription||s.description||'')+'</textarea></div>'\
+  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>團購名稱</label><input id="s_gb_name" value="'+attr(s.name||'')+'"></div><div class="ugb-c-field" style="flex-shrink:0"><label style="visibility:hidden">開放</label><label class="ugb-c-check"><input id="s_gb_open" type="checkbox" '+(s.status==='已關閉'?'':'checked')+'> 前台開放</label></div></div>'\
+  +'<div class="ugb-c-field"><label>團購說明</label><textarea id="s_gb_desc" rows="3">'+safe(g.groupBuyDescription||s.description||'')+'</textarea></div>'\
   +'</div>'\
   +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">封面圖片</div>'\
-  +'<div id="gb_cover_preview" class="ugb-cover-list">'+ugbCoverHtml(imgs)+'</div>'\
-  +'<input id="gb_cover_urls" type="hidden" value="'+attr(JSON.stringify(imgs))+'">'\
+  +'<div id="s_gb_cover_preview" class="ugb-cover-list">'+ugbCoverHtml(imgs)+'</div>'\
+  +'<input id="s_gb_cover_urls" type="hidden" value="'+attr(JSON.stringify(imgs))+'">'\
   +'<label class="btn secondary small" style="margin-top:8px">上傳圖片<input type="file" accept="image/*" multiple hidden onchange="uploadGroupBuyAdminCover(this)"></label>'\
   +'<div class="sub" style="margin-top:4px">第一張為封面。</div>'\
   +'</div>'\
   +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">販售時間</div>'\
   +'<div class="ugb-c-row">'\
-  +'<div class="ugb-c-field ugb-c-grow"><label>開始</label><input id="gb_start" type="datetime-local" value="'+attr(ugbLocal(g.saleStartAt||''))+'"></div>'\
-  +'<div class="ugb-c-field ugb-c-grow"><label>截止</label><input id="gb_end" type="datetime-local" value="'+attr(ugbLocal(g.saleEndAt||''))+'"></div>'\
+  +'<div class="ugb-c-field ugb-c-grow"><label>開始</label><input id="s_gb_start" type="datetime-local" value="'+attr(ugbLocal(g.saleStartAt||''))+'"></div>'\
+  +'<div class="ugb-c-field ugb-c-grow"><label>截止</label><input id="s_gb_end" type="datetime-local" value="'+attr(ugbLocal(g.saleEndAt||''))+'"></div>'\
   +'</div>'\
   +'</div>'\
   +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">配送設定</div>'\
   +'<div class="ugb-c-sub-title">買家</div>'\
-  +'<div class="ugb-c-row" style="margin-bottom:10px"><label class="ugb-c-check"><input id="gb_pickup" type="checkbox" '+(g.pickupEnabled!==false?'checked':'')+'> 現場取貨</label><label class="ugb-c-check"><input id="gb_shipping" type="checkbox" '+(g.shippingEnabled===true?'checked':'')+'> 宅配</label></div>'\
+  +'<div class="ugb-c-row" style="margin-bottom:10px"><label class="ugb-c-check"><input id="s_gb_pickup" type="checkbox" '+(g.pickupEnabled!==false?'checked':'')+'> 現場取貨</label><label class="ugb-c-check"><input id="s_gb_shipping" type="checkbox" '+(g.shippingEnabled===true?'checked':'')+'> 宅配</label></div>'\
   +'<div class="ugb-c-row">'\
-  +'<div class="ugb-c-field ugb-c-grow"><label>宅配運費</label><input id="gb_shipfee" type="number" min="0" value="'+attr(g.shippingFee||0)+'"></div>'\
-  +'<div class="ugb-c-field ugb-c-grow"><label>免運門檻</label><input id="gb_free" type="number" min="0" value="'+attr(g.freeShippingThreshold||0)+'"></div>'\
+  +'<div class="ugb-c-field ugb-c-grow"><label>宅配運費</label><input id="s_gb_shipfee" type="number" min="0" value="'+attr(g.shippingFee||0)+'"></div>'\
+  +'<div class="ugb-c-field ugb-c-grow"><label>免運門檻</label><input id="s_gb_free" type="number" min="0" value="'+attr(g.freeShippingThreshold||0)+'"></div>'\
   +'</div>'\
-  +'<div class="ugb-c-field"><label>取貨說明</label><input id="gb_picknote" value="'+attr(g.pickupNote||'')+'"></div>'\
+  +'<div class="ugb-c-field"><label>取貨說明</label><input id="s_gb_picknote" value="'+attr(g.pickupNote||'')+'"></div>'\
   +'</div>'\
   +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">收款設定</div>'\
-  +'<div class="ugb-c-field"><label>收款方式／帳號</label><select id="gb_payment_profile" onchange="ugbRefreshPaymentPreview()">'+ugbPaymentOptions(profiles,g.paymentProfileId||s.payment_profile_id||'')+'</select></div>'\
-  +'<div id="ugbPaymentPreview" class="ugb-payment-preview">'+ugbPaymentPreview(g.paymentProfileId||s.payment_profile_id||'')+'</div>'\
+  +'<div class="ugb-c-field"><label>收款方式／帳號</label><select id="s_gb_payment_profile" onchange="ugbRefreshPaymentPreview()">'+ugbPaymentOptions(profiles,g.paymentProfileId||s.payment_profile_id||'')+'</select></div>'\
+  +'<div id="s_ugbPaymentPreview" class="ugb-payment-preview">'+ugbPaymentPreview(g.paymentProfileId||s.payment_profile_id||'')+'</div>'\
   +'<button type="button" class="btn secondary small" style="margin-top:7px" onclick="ugbToggleNewPayment()">＋ 新增收款方式</button>'\
   +'</div>'\
-  +'<section id="ugbNewPayment" class="ugb-c-sec ugb-hidden"><div class="ugb-c-sec-title">新增收款方式</div>'\
-  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>設定名稱</label><input id="ugb_pp_name" placeholder="例如：養心茶樓團購收款"></div><div class="ugb-c-field ugb-c-grow"><label>收款人／單位</label><input id="ugb_pp_owner"></div></div>'\
-  +'<div class="ugb-c-row"><label class="ugb-c-check"><input id="ugb_pp_bank" type="checkbox" checked> 銀行轉帳</label><label class="ugb-c-check"><input id="ugb_pp_line" type="checkbox"> LINE Pay</label><label class="ugb-c-check"><input id="ugb_pp_card" type="checkbox"> 信用卡</label></div>'\
-  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>銀行名稱</label><input id="ugb_pp_bankname"></div><div class="ugb-c-field ugb-c-grow"><label>分行</label><input id="ugb_pp_branch"></div></div>'\
-  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>戶名</label><input id="ugb_pp_accountname"></div><div class="ugb-c-field ugb-c-grow"><label>帳號</label><input id="ugb_pp_account"></div></div>'\
-  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>LINE Pay 名稱</label><input id="ugb_pp_linename"></div><div class="ugb-c-field ugb-c-grow"><label>LINE Pay 網址</label><input id="ugb_pp_lineurl"></div></div>'\
-  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>信用卡名稱</label><input id="ugb_pp_cardname"></div><div class="ugb-c-field ugb-c-grow"><label>信用卡網址</label><input id="ugb_pp_cardurl"></div></div>'\
+  +'<section id="s_ugbNewPayment" class="ugb-c-sec ugb-hidden"><div class="ugb-c-sec-title">新增收款方式</div>'\
+  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>設定名稱</label><input id="s_ugb_pp_name" placeholder="例如：養心茶樓團購收款"></div><div class="ugb-c-field ugb-c-grow"><label>收款人／單位</label><input id="s_ugb_pp_owner"></div></div>'\
+  +'<div class="ugb-c-row"><label class="ugb-c-check"><input id="s_ugb_pp_bank" type="checkbox" checked> 銀行轉帳</label><label class="ugb-c-check"><input id="s_ugb_pp_line" type="checkbox"> LINE Pay</label><label class="ugb-c-check"><input id="s_ugb_pp_card" type="checkbox"> 信用卡</label></div>'\
+  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>銀行名稱</label><input id="s_ugb_pp_bankname"></div><div class="ugb-c-field ugb-c-grow"><label>分行</label><input id="s_ugb_pp_branch"></div></div>'\
+  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>戶名</label><input id="s_ugb_pp_accountname"></div><div class="ugb-c-field ugb-c-grow"><label>帳號</label><input id="s_ugb_pp_account"></div></div>'\
+  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>LINE Pay 名稱</label><input id="s_ugb_pp_linename"></div><div class="ugb-c-field ugb-c-grow"><label>LINE Pay 網址</label><input id="s_ugb_pp_lineurl"></div></div>'\
+  +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>信用卡名稱</label><input id="s_ugb_pp_cardname"></div><div class="ugb-c-field ugb-c-grow"><label>信用卡網址</label><input id="s_ugb_pp_cardurl"></div></div>'\
   +'<button type="button" class="btn small" onclick="ugbSaveNewPayment(this)">建立並套用本場</button>'\
   +'</section>'\
   +'</form><div class="ugb-sticky-save"><button type="button" class="btn" onclick="ugbSaveSettings(this)">儲存本場設定</button></div>';
 }
+
+// ── 設定頁「儲存本場設定」按鈕對應的函數 ──
+window.ugbSaveSettings = async function(btn) {
+  if (!UGBSessionId) { toast('找不到目前場次', 5000); return; }
+  // Read from settings tab IDs (s_gb_xxx prefix)
+  const s_name = $('s_gb_name')?.value || $('gb_name')?.value;
+  const s_desc = $('s_gb_desc')?.value || $('gb_desc')?.value;
+  const s_open = $('s_gb_open')?.checked ?? $('gb_open')?.checked;
+  const s_start = $('s_gb_start')?.value || $('gb_start')?.value || '';
+  const s_end = $('s_gb_end')?.value || $('gb_end')?.value || '';
+  const s_pickup = $('s_gb_pickup')?.checked ?? $('gb_pickup')?.checked;
+  const s_ship = $('s_gb_shipping')?.checked ?? $('gb_shipping')?.checked;
+  const s_shipfee = $('s_gb_shipfee')?.value || $('gb_shipfee')?.value || 0;
+  const s_free = $('s_gb_free')?.value || $('gb_free')?.value || 0;
+  const s_picknote = $('s_gb_picknote')?.value || $('gb_picknote')?.value || '';
+  const s_profile = $('s_gb_payment_profile')?.value || ($('s_gb_payment_profile')||$('gb_payment_profile'))?.value || '';
+  const s_covers = JSON.parse($('s_gb_cover_urls')?.value || $('gb_cover_urls')?.value || '[]');
+  
+  if (!String(s_name||'').trim()) { toast('請填團購名稱', 5000); return; }
+  if (!s_pickup && !s_ship) { toast('現場取貨與宅配至少選一種', 5000); return; }
+  
+  const payload = {
+    action: 'saveGroupBuy', sessionId: UGBSessionId,
+    name: String(s_name||'').trim(),
+    description: String(s_desc||''),
+    coverImages: s_covers, coverImageUrl: s_covers[0]||'',
+    saleStartAt: s_start ? new Date(s_start).toISOString() : '',
+    saleEndAt: s_end ? new Date(s_end).toISOString() : '',
+    pickupEnabled: !!s_pickup, shippingEnabled: !!s_ship,
+    shippingFee: Number(s_shipfee||0),
+    freeShippingThreshold: Number(s_free||0),
+    pickupNote: String(s_picknote||''),
+    paymentProfileId: String(s_profile||''),
+    isOpen: !!s_open,
+    promoterAutoApprove: false
+  };
+  
+  const old = btn?.textContent||'';
+  if (btn) { btn.disabled=true; btn.textContent='儲存中…'; }
+  try {
+    await apiPost(payload);
+    toast('本場設定已正式儲存');
+    await loadGroupBuyAdmin();
+    await openGroupBuyUnified(UGBSessionId, 'settings', true);
+  } catch(e) {
+    toast('儲存失敗：'+(e.message||e), 9000);
+  } finally {
+    if (btn) { btn.disabled=false; btn.textContent=old; }
+  }
+};
+
 
 function ugbNormalizeModule(name){name=String(name||'settings').toLowerCase();return ['settings','products','promoters','orders','supplier'].includes(name)?name:'settings'}
 function ugbHeroHtml(s){const g=s.groupBuySettings||{},cover=g.coverImageUrl||((g.coverImages||[])[0])||'',url=groupBuyPublicUrl(s),state=s.status==='已關閉'?'已關閉':'開放中';return '<div class="ugb-hero"><div class="ugb-hero-cover">'+(cover?'<img src="'+attr(cover)+'" alt="">':'')+'</div><div><div class="ugb-hero-title">'+safe(s.name||'團購')+'</div><div class="ugb-hero-meta"><span class="pill">'+safe(state)+'</span><span class="pill">商品 '+num(s.productCount||0)+'</span><span class="pill">訂單 '+num(s.orderCount||0)+'</span><span class="pill">已付款 '+num(s.paidOrderCount||0)+'</span><span class="pill">團購主 '+num(s.promoterCount||0)+'</span></div><div class="sub" style="margin-top:7px">'+safe(g.groupBuyDescription||s.description||'尚未填團購說明')+'</div></div><div class="ugb-hero-actions"><button class="btn secondary small" onclick="copyGroupBuyPublicUrl(\''+attr(s.id)+'\')">複製分享</button><button class="btn green small" onclick="window.open(\''+attr(url)+'\',\'_blank\')">查看前台</button></div></div>'}
