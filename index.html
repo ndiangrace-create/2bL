@@ -1649,13 +1649,56 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <strong data-site-info-text style="font-size:16px;color:#6a4a00">探索活動，找到屬於你的市集旅程</strong>
   </div>
 
-  <!-- 2BL 共用入口：團購沿用同一會員，但直接進入商品頁，不共用市集日曆。 -->
-  <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:14px">
-    <button class="cat-btn" onclick="filterCat('市集報名',this)" style="min-height:58px;border-radius:14px;border:1px solid #cfdcc5;background:#DDEAD1;font-weight:900;cursor:pointer">🏪<br>市集</button>
-    <button class="cat-btn" onclick="filterCat('通路寄賣',this)" style="min-height:58px;border-radius:14px;border:1px solid #eadba7;background:#FAEEC7;font-weight:900;cursor:pointer">🛍<br>寄賣</button>
-    <button class="cat-btn" onclick="filterCat('體驗活動',this)" style="min-height:58px;border-radius:14px;border:1px solid #c3d4df;background:#D9E5EE;font-weight:900;cursor:pointer">🎨<br>體驗</button>
-    <button class="cat-btn" onclick="filterCat('合作洽詢',this)" style="min-height:58px;border-radius:14px;border:1px solid #e8c9c4;background:#FAE1DD;font-weight:900;cursor:pointer">🤝<br>合作</button>
-    <button class="cat-btn" onclick="location.href='groupbuy.html'" style="min-height:58px;border-radius:14px;border:1px solid #ead59b;background:#FFF1B8;font-weight:900;cursor:pointer">🛒<br>團購</button>
+  <!-- 四大分類入口 -->
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px">
+
+    <div onclick="filterCat('市集報名',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#DDEAD1;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP歡迎.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">市集</div>
+        <div style="font-size:16px;color:#555;margin-top:3px">市集報名</div>
+      </div>
+    </div>
+
+    <div onclick="filterCat('通路寄賣',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAEEC7;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP指引.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">寄賣</div>
+        <div style="font-size:16px;color:#555;margin-top:3px">攤位寄賣</div>
+      </div>
+    </div>
+
+    <div onclick="filterCat('體驗活動',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#D9E5EE;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP資料.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">體驗</div>
+        <div style="font-size:16px;color:#555;margin-top:3px">體驗活動</div>
+      </div>
+    </div>
+
+    <div onclick="filterCat('合作洽詢',this);scrollToSection('recentSection')"
+      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAE1DD;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
+      <img src="IP會員.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111">合作</div>
+        <div style="font-size:16px;color:#555;margin-top:3px">合作洽詢</div>
+      </div>
+    </div>
+
+    <!-- 🛒 團購：全寬按鈕 -->
+    <div id="catGroupBuy" onclick="filterGroupBuy(this)"
+      style="grid-column:1/-1;min-height:80px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:linear-gradient(100deg,#0D9488 0%,#0f766e 100%);padding:12px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 4px 16px rgba(13,148,136,.22)">
+      <span style="font-size:40px;flex-shrink:0">🛒</span>
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#fff">團購</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.8);margin-top:2px">立即選購・限時好物</div>
+      </div>
+      <div style="margin-left:auto;color:rgba(255,255,255,.7);font-size:22px">›</div>
+    </div>
+
   </div>
 
   <!-- 精選主題活動 -->
@@ -3870,16 +3913,9 @@ function eventSessionCount(eventId){
   const all = (ST.allSessionsData||[]).filter(s=>String(s.eventId||'')===String(eventId) && isOpenSession(s));
   return all.length;
 }
-function isPureGroupBuySession(s){
-  let settings=s?.groupBuySettings||s?.group_buy_settings_json||{};
-  if(typeof settings==='string'){try{settings=JSON.parse(settings)}catch(_e){settings={}}}
-  const portals=Array.isArray(s?.portals)?s.portals:[];
-  return settings?.pureGroupBuy===true || String(s?.type||'').trim()==='團購' ||
-    String(s?.status||'').trim()==='團購中' || (portals.length===1&&portals[0]==='團購');
-}
 function isOpenSession(s){
   const st=String(s?.status||'').trim();
-  return !isPureGroupBuySession(s) && (!st || st==='報名中' || st==='開放中');
+  return !st || st==='報名中' || st==='開放中';
 }
 function mergeSessions(list){
   const old=Array.isArray(ST.allSessionsData)?ST.allSessionsData:[];
@@ -4105,7 +4141,7 @@ async function filterCat(type, el){
   if(title) title.textContent = type;
   const list = $('portalSessionList');
   if(list) list.innerHTML = '<div style="padding:20px;color:#aaa;font-size:16px;text-align:center">載入中…</div>';
-  const _catBgMap={'市集報名':'#F2EEED','體驗活動':'#F4EBE4','通路寄賣':'#EAE0D7','合作洽詢':'#EBEBE9','團購':'#FFF9E6'};
+  const _catBgMap={'市集報名':'#F2EEED','體驗活動':'#F4EBE4','通路寄賣':'#EAE0D7','合作洽詢':'#EBEBE9'};
   const _catBg=_catBgMap[type]||'';
   const _portalPageEl=$('pagePortal');
   if(_portalPageEl) _portalPageEl.style.background=_catBg;
@@ -4270,27 +4306,25 @@ function renderSessionCard(s){
   const bundleBadge=frontBundleBadgeHtml(s);
   const myBadge=myRegBadge(s);
   const coverEl=cover
-    ? `<img src="${escHtml(cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
+    ? `<img src="${esc(cover)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML='<img src=IP指引.png style=width:52px;height:52px;object-fit:contain>';">`
     : `<img src="IP指引.png" style="width:52px;height:52px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:28px>🎪</span>'">`;
   const unavailableLabel=full?'名額已滿':(scheduleUnavailable?({upcoming:'尚未開放',paused:'暫停報名',ended:'報名已截止'}[s.registrationState]||'目前未開放'):'已關閉');
-  const scheduleNote=scheduleUnavailable&&s.registrationMessage?`<div style="margin-top:6px;color:#8b5a00;font-size:14px;font-weight:800;line-height:1.5">⏱ ${escHtml(s.registrationMessage)}</div>`:'';
-  const isGroupBuy=isPureGroupBuySession(s);
+  const scheduleNote=scheduleUnavailable&&s.registrationMessage?`<div style="margin-top:6px;color:#8b5a00;font-size:14px;font-weight:800;line-height:1.5">⏱ ${esc(s.registrationMessage)}</div>`:'';
   const actionHtml=closed
     ? `<span style="display:flex;align-items:center;justify-content:center;width:100%;min-height:34px;padding:5px 8px;border-radius:11px;background:#eee;color:#777;font-size:15px;font-weight:900;text-align:center">${unavailableLabel}</span>`
-    : (isGroupBuy?`<button onclick="event.stopPropagation();openSession(this.closest('.ses-list-card').dataset.sessionId)" class="ses-list-reg">查看團購</button>`:`<button onclick="event.stopPropagation();registerFromHome(null,this.closest('.ses-list-card').dataset.sessionId)" class="ses-list-reg">立即報名</button>`);
-  const cardAction=closed?'':(isGroupBuy?'openSession(this.dataset.sessionId)':'openActivityFromHome(null,this.dataset.sessionId)');
-  return `<div class="ses-list-card ${themeClass}" data-session-id="${escHtml(s.id)}" data-session-name="${escHtml(s.name||'')}" onclick="${cardAction}" style="${closed?'opacity:.62;':''}">
+    : `<button onclick="event.stopPropagation();registerFromHome(null,'${esc(s.id)}')" class="ses-list-reg">立即報名</button>`;
+  return `<div class="ses-list-card ${themeClass}" data-session-id="${esc(s.id)}" onclick="${closed?'':'openActivityFromHome(null,\''+esc(s.id)+'\')'}" style="${closed?'opacity:.62;':''}">
     <div class="ses-list-img">${coverEl}</div>
     <div class="ses-list-body">
-      <div class="ses-theme-pill">${escHtml(themeInfo.title||'無主題')}</div>
-      <div class="ses-list-name">${escHtml(s.name||'')}</div>
-      <div class="ses-list-meta">${dateStr?'📅 '+escHtml(dateStr):''}${placeStr?'<br>📍 '+escHtml(placeStr):''}</div>
+      <div class="ses-theme-pill">${esc(themeInfo.title||'無主題')}</div>
+      <div class="ses-list-name">${esc(s.name||'')}</div>
+      <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${placeStr?'<br>📍 '+esc(placeStr):''}</div>
       ${scheduleNote}
       ${myBadge?`<div style="margin-top:5px">${myBadge}</div>`:''}
       ${bundleBadge?`<div>${bundleBadge}</div>`:''}
     </div>
     <div class="ses-list-actions">
-      <button onclick="event.stopPropagation();const card=this.closest('.ses-list-card');shareSession(card.dataset.sessionId,card.dataset.sessionName)" class="ses-list-share">🔗</button>
+      <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
       ${actionHtml}
     </div>
   </div>`;
@@ -5001,17 +5035,12 @@ function adjStall(delta){
   updateFee();
 }
 
-let FormHeroImages=[],FormHeroImageIndex=0;
-function cycleFormHeroImage(step=1){if(FormHeroImages.length<2)return;FormHeroImageIndex=(FormHeroImageIndex+step+FormHeroImages.length)%FormHeroImages.length;const img=$('formHero')?.querySelector('.form-hero-img'),count=$('formHero')?.querySelector('.form-hero-image-count');if(img)img.src=FormHeroImages[FormHeroImageIndex];if(count)count.textContent=(FormHeroImageIndex+1)+' / '+FormHeroImages.length}
 function buildFormHero(s, cover){
   const dateStr=(s.dates&&s.dates.length)?s.dates.map(d=>d.date+(d.start?' '+d.start:'')+(d.end?'–'+d.end:'')).join(' / '):(s.date||'');
   const meta=[dateStr,s.venue].filter(Boolean).join('　');
-  const mods=s&&s.modules&&typeof s.modules==='object'?s.modules:{};
-  FormHeroImages=[...new Set([...(Array.isArray(mods.galleryImages)?mods.galleryImages:[]),cover||''].filter(Boolean))];FormHeroImageIndex=0;cover=FormHeroImages[0]||cover;
   if(cover){
     $('formHero').innerHTML=`
-      <img class="form-hero-img" src="${cover}" alt="" ${FormHeroImages.length>1?'onclick="cycleFormHeroImage(1)" style="cursor:pointer"':''} onerror="this.parentElement.innerHTML='<div class=form-hero-placeholder>🎪</div>'">
-      ${FormHeroImages.length>1?`<button type="button" class="form-hero-image-count" onclick="cycleFormHeroImage(1)" style="position:absolute;right:12px;top:12px;z-index:2;border:0;border-radius:99px;padding:6px 10px;background:rgba(0,0,0,.62);color:#fff;font-weight:900">1 / ${FormHeroImages.length}</button>`:''}
+      <img class="form-hero-img" src="${cover}" alt="" onerror="this.parentElement.innerHTML='<div class=form-hero-placeholder>🎪</div>'">
       <div class="form-hero-overlay">
         <div class="form-hero-title">${s.name}</div>
         <div class="form-hero-meta">${meta}</div>
@@ -5396,8 +5425,6 @@ function shareCurrentSession(){
 }
 
 async function openSession(sessionId){
-  const _gbCached=(ST.allSessionsData||[]).find(x=>String(x.id)===String(sessionId))||(ST.sessions||[]).find(x=>String(x.id)===String(sessionId));
-  if(_gbCached&&isPureGroupBuySession(_gbCached)){location.href='groupbuy.html?g='+encodeURIComponent(sessionId);return;}
   ST.currentBundle=null; ST.bundleAddon='';
   if(!Array.isArray(ST.bundles)||!ST.bundles.length){ try{ const _bl=await api({action:'getBundlesPublic'}); ST.bundles=Array.isArray(_bl)?_bl:[]; }catch(_e){} }
   // 點場次必須立即有反應：先用列表快取打開報名表，再背景抓最新資料。
@@ -7237,15 +7264,7 @@ if(document.readyState==='loading'){
   // 開放狀態判斷唯一來源（與上方 isOpenSession 同一份規則：未設定或報名中／開放中皆為開放）。
   // 注意：這裡不可呼叫 isOpenSession，因為下方 window.isOpenSession = openSess 會覆蓋它，
   // 互相呼叫會造成無限遞迴、前台卡在載入中。
-  function openSess(s){
-    const st=String(s?.status||'').trim();
-    let settings=s?.groupBuySettings||s?.group_buy_settings_json||{};
-    if(typeof settings==='string'){try{settings=JSON.parse(settings)}catch(_e){settings={}}}
-    const portals=Array.isArray(s?.portals)?s.portals:[];
-    const groupBuy=settings?.pureGroupBuy===true || String(s?.type||'').trim()==='團購' ||
-      st==='團購中' || (portals.length===1&&portals[0]==='團購');
-    return !groupBuy && (!st || st==='報名中' || st==='開放中');
-  }
+  function openSess(s){ const st=String(s?.status||'').trim(); return !st || st==='報名中' || st==='開放中'; }
   function asArr(v){ return Array.isArray(v)?v:[]; }
   function uniqueSessions(list){ return [...new Map(asArr(list).filter(Boolean).map(s=>[String(s.id),s])).values()]; }
   function saveEmail(email){ try{ localStorage.setItem('tb_member_email', email||''); localStorage.removeItem('tb_member'); }catch(e){} }
@@ -7336,6 +7355,54 @@ if(document.readyState==='loading'){
   window.openSessionFromCard=function(ev,sessionId){ if(ev){ev.preventDefault();ev.stopPropagation();} openSession(sessionId); }; window.handleSessionTap=window.openSessionFromCard;
   window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } setActivitySessions('portal',data); };
   window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } setActivitySessions('portal',data); };
+  // ── 🛒 團購首頁整合 ────────────────────────────────────────────────
+  window.filterGroupBuy = async function(el) {
+    document.querySelectorAll('.cat-btn,[id^=catGroupBuy]').forEach(b=>b.classList&&b.classList.remove('active'));
+    if(el)el.style.opacity='0.8';
+    const title=$('portalTitle'),list=$('portalSessionList');
+    if(title)title.textContent='🛒 團購';
+    if(list)list.innerHTML='<div style="padding:30px;color:#aaa;text-align:center">載入中…</div>';
+    navTo('portal');
+    try{
+      const params=new URLSearchParams({action:'groupBuySessions',tenant:'tuibile',_t:Date.now()});
+      const r=await fetch(API+'?'+params,{cache:'no-store'});
+      const data=await r.json().catch(()=>[]);
+      const sessions=Array.isArray(data)?data:(data.sessions||data.data||[]);
+      if(el)el.style.opacity='1';
+      renderGroupBuySessionCards(list,sessions);
+    }catch(e){
+      if(list)list.innerHTML='<div style="padding:30px;color:#c00;text-align:center">載入失敗，請稍後再試</div>';
+      if(el)el.style.opacity='1';
+    }
+  };
+
+  function renderGroupBuySessionCards(container,sessions){
+    if(!container)return;
+    const open=(sessions||[]).filter(s=>{
+      const st=String(s.status||'').trim();
+      return !st||st==='報名中'||st==='開放中'||st==='團購中'||st==='active';
+    });
+    if(!open.length){
+      container.innerHTML='<div style="padding:50px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">🛒</div><div style="font-size:17px;font-weight:800;color:#333;margin-bottom:6px">目前沒有開放中的團購</div><div style="font-size:14px;color:#888">敬請期待下一檔好物</div></div>';
+      return;
+    }
+    container.innerHTML=open.map(function(s){
+      const cover=(s.coverUrl||s.cover_url||'').split(',')[0].trim();
+      const prods=s.products||[];
+      const prices=prods.map(function(p){return Number(p.price||0);}).filter(function(n){return n>0;});
+      const minP=prices.length?Math.min.apply(null,prices):0;
+      const priceLabel=minP?'NT$ '+minP.toLocaleString()+' 起':'';
+      return'<div onclick="location.href='groupbuy.html?id='+encodeURIComponent(s.id)+''" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;cursor:pointer;border:1.5px solid #f0ede8">'
+        +(cover?'<div style="width:100%;aspect-ratio:16/7;overflow:hidden;background:#f5f5f0"><img src="'+cover.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.style.display='none'"></div>':'')
+        +'<div style="padding:14px">'
+        +'<div style="font-size:17px;font-weight:900;color:#111;margin-bottom:4px">'+s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'
+        +(prods.length?'<div style="font-size:13px;color:#888;margin-bottom:8px">'+prods.length+' 件商品'+(priceLabel?' &nbsp;·&nbsp; '+priceLabel:'')+'</div>':'')
+        +(s.description?'<div style="font-size:13px;color:#666;line-height:1.55;margin-bottom:12px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+s.description.replace(/</g,'&lt;').slice(0,120)+'</div>':'')
+        +'<div style="display:inline-flex;align-items:center;gap:6px;background:#0D9488;color:#fff;padding:8px 16px;border-radius:99px;font-size:14px;font-weight:800">🛒 前往購買</div>'
+        +'</div></div>';
+    }).join('');
+  }
+
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
   async function bootDbFront(){
   // 前台使用固定 30 天的安全登入憑證；憑證不保存手機，頁面載入後向 Worker 重新核對會員。
