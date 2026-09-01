@@ -6,477 +6,590 @@
 <meta http-equiv="Cache-Control" content="no-cache,no-store">
 <title>團GO 後台</title>
 <style>
+/* ────────── 設計系統 ────────── */
 :root{
   --bg:#F8F6F0; --paper:#fff; --ink:#1f1f1f; --muted:#6f6f6f; --line:#E8DFD4;
   --green:#DDEAD1; --yellow:#FAEEC7; --blue:#D9E5EE; --pink:#FAE1DD; --purple:#DCD7ED;
   --mint:#D4E3DD; --main:#82ABA3; --main2:#628E87; --danger:#C8645D;
-  --shadow:0 12px 30px rgba(45,39,32,.08); --shadow2:0 18px 48px rgba(45,39,32,.16);
-  --card:#fff; --text:#1f1f1f; --r:14px;
-  --hdr:56px; --nav:calc(60px + env(safe-area-inset-bottom,0px));
+  --shadow:0 1px 3px rgba(45,39,32,.08),0 1px 2px rgba(45,39,32,.04);
+  --shadow-md:0 4px 16px rgba(45,39,32,.10);
+  --r:12px; --sidebar:240px; --hdr:56px;
   --safe-b:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;overscroll-behavior:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;height:100dvh;overflow:hidden}
 button,input,select,textarea{font:inherit}
-img{display:block;max-width:100%}
 .hidden{display:none!important}
-.num{font-variant-numeric:tabular-nums}
 
-/* ── Login ── */
-#login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#fff 0%,var(--bg) 42%,var(--blue) 100%)}
-.login-card{background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.login-badge{width:64px;height:64px;background:linear-gradient(135deg,var(--main),var(--main2));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px}
-.login-title{font-size:22px;font-weight:900;margin-bottom:6px}
-.login-sub{color:var(--muted);font-size:14px;margin-bottom:28px}
-.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s}
-.btn-google:active{background:#F8FAFC}
-.login-err{color:var(--red);font-size:13px;margin-top:14px;min-height:18px}
+/* ────────── 登入頁 ────────── */
+#loginPage{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--bg) 0%,#e8f0ed 100%);z-index:100
+}
+.login-box{
+  background:var(--paper);border-radius:20px;padding:40px 36px;
+  width:100%;max-width:380px;box-shadow:var(--shadow-md)
+}
+.login-logo{width:64px;height:64px;object-fit:contain;border-radius:14px;margin:0 auto 16px;display:block}
+.login-title{font-size:22px;font-weight:900;text-align:center;margin-bottom:4px}
+.login-sub{color:var(--muted);font-size:14px;text-align:center;margin-bottom:28px}
+.f-label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.f-input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:var(--paper);transition:border-color .15s;margin-bottom:14px}
+.f-input:focus{outline:none;border-color:var(--main)}
+.btn-login{width:100%;padding:14px;border-radius:12px;border:none;background:var(--main);color:#fff;font-size:16px;font-weight:800;cursor:pointer;transition:background .15s}
+.btn-login:hover{background:var(--main2)}
+.login-err{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;min-height:18px}
+.login-footer{font-size:11px;color:var(--muted);text-align:center;margin-top:20px}
 
-/* ── App Shell ── */
-#app{display:flex;flex-direction:column;min-height:100dvh}
-header{background:rgba(248,246,240,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;flex-shrink:0}.hdr-in{max-width:1180px;margin:0 auto;padding:0 14px;height:var(--hdr);display:flex;align-items:center;gap:10px}
-.hdr-logo{color:var(--ink);font-size:18px;font-weight:900;letter-spacing:-.5px;flex-shrink:0}
+/* ────────── 頂部 Header ────────── */
+#hdr{
+  position:fixed;top:0;left:0;right:0;height:var(--hdr);
+  background:rgba(248,246,240,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);z-index:30;
+  display:flex;align-items:center;padding:0 16px;gap:12px
+}
+.hdr-logo{height:32px;object-fit:contain;border-radius:8px;flex-shrink:0}
+.hdr-divider{width:1px;height:20px;background:var(--line);flex-shrink:0}
 .hdr-session{flex:1;min-width:0}
-#sessionPicker{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:14px;font-weight:600;width:100%;max-width:200px;cursor:pointer}
+.session-select{
+  background:transparent;border:none;font-size:15px;font-weight:800;
+  color:var(--ink);cursor:pointer;max-width:280px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.session-select:focus{outline:none}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
+.hdr-btn{
+  height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--line);
+  background:var(--paper);font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;gap:6px;color:var(--ink);white-space:nowrap
+}
+.hdr-btn:hover{background:var(--green)}
+.hdr-btn.danger{color:var(--danger);border-color:var(--pink)}
+.hdr-btn.danger:hover{background:var(--pink)}
+.badge{
+  min-width:18px;height:18px;padding:0 5px;
+  background:var(--danger);color:#fff;border-radius:99px;
+  font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center
+}
 
-.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.icon-btn{position:relative;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
-.icon-btn:active{background:var(--green)}
-.badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;background:var(--danger);color:#fff;border-radius:99px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--navy)}
-.badge.pulse{animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
+/* ────────── 主體佈局 ────────── */
+#layout{
+  display:flex;position:fixed;
+  top:var(--hdr);left:0;right:0;bottom:0;overflow:hidden
+}
 
-/* ── Main ── */
-#main{flex:1;overflow-y:auto;padding-bottom:calc(var(--nav) + 30px)}
-.tab{display:none;padding:14px 14px 0}.tab-inner{max-width:1180px;margin:0 auto}
-.tab.active{display:block}
+/* ── 側邊導覽 ── */
+#sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--paper);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow-y:auto;
+  padding:12px 10px
+}
+.nav-section{
+  font-size:11px;font-weight:800;color:var(--muted);
+  letter-spacing:.5px;text-transform:uppercase;
+  padding:12px 8px 4px;margin-top:4px
+}
+.nav-section:first-child{margin-top:0}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  border:none;background:none;cursor:pointer;
+  width:100%;text-align:left;font-size:14px;font-weight:700;
+  color:var(--muted);position:relative;transition:all .1s
+}
+.nav-btn:hover{background:var(--bg);color:var(--ink)}
+.nav-btn.active{background:var(--green);color:var(--main2)}
+.nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0}
+.nav-dot{
+  position:absolute;top:50%;right:10px;transform:translateY(-50%);
+  min-width:18px;height:18px;padding:0 5px;
+  background:var(--danger);color:#fff;border-radius:99px;
+  font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center
+}
+.sidebar-footer{margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}
 
-/* ── Summary Cards ── */
-.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.sum-card{background:var(--paper);border-radius:var(--r);padding:14px 10px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
-.sum-card:active{transform:scale(.97)}
-.sum-num{font-size:28px;font-weight:900;line-height:1;margin-bottom:4px}
-.sum-label{font-size:12px;color:var(--muted);font-weight:600}
-.sum-card.s-amber .sum-num{color:#B99745}
-.sum-card.s-blue .sum-num{color:#628E87}
-.sum-card.s-purple .sum-num{color:#7B6AA8}
-.sum-card.s-green .sum-num{color:var(--main2)}
+/* ── 內容區 ── */
+#main{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden}
+.tab-pane{display:none;padding:24px 28px;min-height:100%}
+.tab-pane.active{display:block}
 
-/* ── Revenue Card ── */
-.rev-card{background:var(--paper);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
-.rev-title{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px}
-.rev-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
-.rev-row:last-child{border:none;font-weight:800;font-size:15px}
-.rev-val{font-weight:700;font-variant-numeric:tabular-nums}
-
-/* ── Section heading ── */
-.section-hd{display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px}
-.section-hd h3{font-size:15px;font-weight:800}
-.section-hd .see-all{font-size:13px;color:var(--green);font-weight:700;border:none;background:none;padding:4px 0;cursor:pointer}
-
-/* ── Order Cards ── */
-.order-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
-.order-card:active{transform:scale(.99)}
-.order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
-.order-id{font-size:12px;color:var(--muted);font-family:monospace}
-.order-name{font-size:15px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
-.chip-amber{background:var(--yellow);color:#7A5C00}
+/* ────────── 通用元件 ────────── */
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:900}
+.page-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.chip{
+  display:inline-flex;align-items:center;padding:3px 10px;
+  border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap
+}
 .chip-green{background:var(--green);color:#2b5f24}
+.chip-yellow{background:var(--yellow);color:#7A5C00}
 .chip-red{background:var(--pink);color:#8B3330}
 .chip-blue{background:var(--blue);color:#2a4a70}
-.chip-purple{background:var(--purple);color:#5B21B6}
 .chip-gray{background:#F4F0EA;color:var(--muted)}
-.order-meta{font-size:13px;color:var(--muted);line-height:1.6}
-.order-amount{font-size:18px;font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
 
-/* ── Urgent banner ── */
-.urgent-bar{background:var(--yellow);border:1px solid #d5bd77;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:14px;font-weight:700;color:#7A5C00;display:flex;align-items:center;gap:8px}
+/* ── 統計卡 ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{
+  background:var(--paper);border-radius:var(--r);padding:18px 20px;
+  box-shadow:var(--shadow);cursor:pointer;transition:box-shadow .15s;border:1px solid transparent
+}
+.stat-card:hover{box-shadow:var(--shadow-md);border-color:var(--line)}
+.stat-num{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px;font-variant-numeric:tabular-nums}
+.stat-label{font-size:13px;color:var(--muted);font-weight:600}
+.stat-card.urgent .stat-num{color:var(--danger)}
+.stat-card.pending .stat-num{color:#7A5C00}
+.stat-card.ok .stat-num{color:var(--main2)}
 
-/* ── Filter Bar ── */
-.filter-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.filter-bar::-webkit-scrollbar{display:none}
-.f-chip{padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;transition:.15s;flex-shrink:0}
-.f-chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* ── 資料表格 ── */
+.table-wrap{background:var(--paper);border-radius:var(--r);border:1px solid var(--line);overflow:hidden;box-shadow:var(--shadow)}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{
+  background:var(--bg);font-size:12px;font-weight:800;color:var(--muted);
+  text-align:left;padding:10px 16px;border-bottom:1px solid var(--line);
+  white-space:nowrap;letter-spacing:.2px
+}
+.data-table td{
+  padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:middle;
+  font-size:14px
+}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr{cursor:pointer;transition:background .1s}
+.data-table tbody tr:hover{background:var(--bg)}
+.td-mono{font-family:monospace;font-size:12px;color:var(--muted)}
+.td-num{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.td-actions{text-align:right}
 
-/* ── Apply Cards ── */
-.apply-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
-.apply-card:active{transform:scale(.99)}
-.apply-name{font-size:16px;font-weight:800}
-.apply-meta{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.55}
-.apply-session{font-size:12px;font-weight:700;color:var(--blue);margin-top:4px}
+/* ── 篩選列 ── */
+.filter-bar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-btn{
+  padding:6px 14px;border-radius:99px;border:1.5px solid var(--line);
+  background:var(--paper);font-size:13px;font-weight:700;cursor:pointer;
+  color:var(--muted);transition:all .1s
+}
+.filter-btn:hover{border-color:var(--main);color:var(--main2)}
+.filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.filter-count{font-size:11px;opacity:.7}
 
-/* ── Promoter Cards ── */
-.promo-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
-.promo-avatar{width:44px;height:44px;border-radius:50%;background:var(--green-lt);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--main2);flex-shrink:0}
-.promo-info{flex:1;min-width:0}
-.promo-name{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.promo-handle{font-size:13px;color:var(--muted)}
-.promo-session{font-size:12px;color:var(--blue);font-weight:700;margin-top:2px}
+/* ── 空狀態 ── */
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--muted)
+}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:6px}
 
-/* ── Empty State ── */
-.empty{text-align:center;padding:44px 24px;color:var(--muted)}
-.empty-icon{font-size:36px;margin-bottom:10px}
-.empty-text{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)}
-.empty-sub{font-size:14px}
+/* ── 按鈕 ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px 18px;border-radius:10px;border:none;font-size:14px;
+  font-weight:800;cursor:pointer;transition:all .15s;white-space:nowrap
+}
+.btn-primary{background:var(--main);color:#fff}
+.btn-primary:hover{background:var(--main2)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{opacity:.9}
+.btn-outline{background:var(--paper);color:var(--ink);border:1.5px solid var(--line)}
+.btn-outline:hover{background:var(--bg)}
+.btn-danger-outline{background:var(--paper);color:var(--danger);border:1.5px solid var(--pink)}
+.btn-danger-outline:hover{background:var(--pink)}
+.btn-sm{padding:7px 12px;font-size:13px;border-radius:8px}
+.btn-full{width:100%}
 
-/* ── Loading ── */
-.loading{text-align:center;padding:36px 24px;color:var(--muted);font-size:14px}
+/* ── 右側抽屜 ── */
+#overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.35);
+  z-index:40;display:none;opacity:0;transition:opacity .2s
+}
+#overlay.open{display:block;opacity:1}
+#drawer{
+  position:fixed;top:var(--hdr);right:0;bottom:0;
+  width:min(520px,50vw);background:var(--paper);
+  z-index:50;display:flex;flex-direction:column;
+  border-left:1px solid var(--line);box-shadow:-4px 0 24px rgba(0,0,0,.08);
+  transform:translateX(100%);transition:transform .25s cubic-bezier(.32,0,.67,0)
+}
+#drawer.open{transform:translateX(0)}
+.drawer-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:20px 24px 16px;border-bottom:1px solid var(--line);flex-shrink:0
+}
+.drawer-title{font-size:18px;font-weight:900}
+.drawer-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.drawer-close{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+  background:var(--paper);cursor:pointer;font-size:18px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0
+}
+.drawer-close:hover{background:var(--bg)}
+.drawer-body{flex:1;overflow-y:auto;padding:20px 24px}
+.drawer-foot{
+  padding:16px 24px;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;gap:8px;flex-shrink:0
+}
 
-/* ── Bottom Nav ── */
-#nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);width:min(640px,calc(100vw - 20px));height:60px;background:rgba(221,234,209,.97);backdrop-filter:blur(12px);border:1px solid #b9cfae;border-radius:24px;display:flex;z-index:20;box-shadow:var(--shadow2);padding:8px}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;color:var(--muted);cursor:pointer;position:relative;padding:4px 0;border-radius:16px}
-.nav-btn.active{color:var(--main2);background:rgba(255,255,255,.6)}
-.nav-icon{font-size:22px;line-height:1}
-.nav-label{font-size:11px;font-weight:700}
-.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:var(--main2)}
-.nav-dot{position:absolute;top:6px;right:calc(50% - 14px);width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid #fff}
-
-/* ── Bottom Sheet Modal ── */
-#overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;opacity:0;transition:opacity .2s}
-#overlay.show{opacity:1}
-#sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:min(580px,100vw);background:#fff;border-radius:20px 20px 0 0;z-index:50;max-height:90dvh;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.32,0,.67,0);padding-bottom:var(--safe-b)}
-#sheet.show{transform:translateX(-50%) translateY(0)}
-.sheet-handle{width:40px;height:4px;background:#D1D5DB;border-radius:2px;margin:12px auto 8px;flex-shrink:0}
-#sheet-head{padding:0 18px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
-.sh-title{font-size:18px;font-weight:900}
-.sh-sub{font-size:13px;color:var(--muted);margin-top:2px}
-#sheet-body{overflow-y:auto;flex:1;padding:16px 18px}
-#sheet-foot{padding:12px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
-
-/* ── Detail Lines ── */
-.detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);gap:12px;font-size:14px}
+/* ── 詳細欄位 ── */
+.detail-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid var(--line);gap:12px
+}
 .detail-row:last-child{border:none}
-.detail-key{color:var(--muted);font-weight:600;flex-shrink:0}
-.detail-val{font-weight:700;text-align:right;word-break:break-all}
+.d-key{color:var(--muted);font-weight:600;font-size:13px;flex-shrink:0}
+.d-val{font-weight:700;text-align:right;word-break:break-all}
 
-/* ── Buttons ── */
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;border:none;font-size:16px;font-weight:800;cursor:pointer;transition:.15s}
-.btn:active{opacity:.85}
-.btn-green{background:var(--main);color:#fff}
-.btn-red{background:var(--danger);color:#fff}
-.btn-amber{background:#B99745;color:#fff}
-.btn-blue{background:var(--main2);color:#fff}
-.btn-outline{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
-.btn-sm{padding:10px 14px;font-size:14px;width:auto}
-.btn-danger-outline{background:#fff;color:var(--danger);border:1.5px solid var(--danger)}
+/* ── 表單 ── */
+.form-section{margin-bottom:20px}
+.form-section-title{
+  font-size:12px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-field{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:5px}
+.form-input{
+  width:100%;padding:10px 12px;border:1.5px solid var(--line);
+  border-radius:9px;font-size:14px;background:var(--paper);transition:border-color .15s
+}
+.form-input:focus{outline:none;border-color:var(--main)}
+.form-textarea{resize:vertical;min-height:72px}
+.form-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:700}
+.form-check input{width:18px;height:18px;cursor:pointer;accent-color:var(--main2)}
 
-/* ── Form fields in sheet ── */
-.field{margin-bottom:14px}
-.field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
-.field input,.field select,.field textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fff}
-.field textarea{resize:vertical;min-height:80px}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--main)}
+/* ── 商品卡片 ── */
+.product-card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:14px 16px;margin-bottom:8px;
+  display:flex;align-items:flex-start;gap:12px
+}
+.product-card:hover{border-color:var(--main);box-shadow:var(--shadow)}
+.prod-check{width:18px;height:18px;cursor:pointer;flex-shrink:0;margin-top:2px;accent-color:var(--main2)}
+.prod-info{flex:1;min-width:0}
+.prod-name{font-size:15px;font-weight:800;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prod-price{font-size:14px;font-weight:700;color:var(--main2);margin-bottom:4px}
+.prod-meta{font-size:12px;color:var(--muted)}
+.prod-tiers{margin-top:5px;display:flex;flex-wrap:wrap;gap:4px}
+.tier-chip{
+  font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;
+  background:var(--green);color:var(--main2)
+}
+.tier-chip.promo{background:var(--yellow);color:#7A5C00}
+
+/* ── 批次區 ── */
+.batch-panel{
+  background:var(--yellow);border-radius:var(--r);
+  padding:16px;margin-bottom:16px;border:1px solid #e8d589
+}
+.batch-title{font-size:13px;font-weight:900;margin-bottom:10px;color:#5c4700}
+.batch-actions{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.batch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.batch-field label{font-size:11px;font-weight:800;color:#7A5C00;display:block;margin-bottom:3px}
+.batch-field input{
+  width:100%;padding:7px 9px;border:1.5px solid #e8d589;border-radius:8px;
+  font-size:13px;background:rgba(255,255,255,.7)
+}
+.batch-field input:focus{outline:none;border-color:var(--main)}
+.tier-section{
+  background:rgba(255,255,255,.6);border-radius:10px;
+  padding:10px 12px;margin-bottom:8px
+}
+.tier-section-title{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:6px}
+.tier-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.tier-input{
+  flex:1;padding:6px 8px;border:1px solid var(--line);
+  border-radius:7px;font-size:13px;background:var(--paper)
+}
+.tier-del{
+  width:28px;height:28px;border:none;border-radius:7px;
+  background:var(--pink);color:var(--danger);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0
+}
+
+/* ── 申請卡 ── */
+.apply-card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:14px 16px;margin-bottom:8px;
+  cursor:pointer;transition:border-color .1s
+}
+.apply-card:hover{border-color:var(--main)}
+.apply-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.apply-name{font-size:15px;font-weight:800}
+.apply-meta{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ── 設定表單 ── */
+.settings-card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:20px 22px;margin-bottom:14px;box-shadow:var(--shadow)
+}
+.settings-card-title{
+  font-size:14px;font-weight:900;margin-bottom:14px;
+  padding-bottom:10px;border-bottom:1px solid var(--line)
+}
 
 /* ── Toast ── */
-#toast{position:fixed;bottom:calc(var(--nav) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;z-index:99;opacity:0;transition:.2s;white-space:nowrap;pointer-events:none}
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:#fff;padding:10px 20px;border-radius:99px;
+  font-size:14px;font-weight:700;z-index:99;opacity:0;
+  transition:.2s;white-space:nowrap;pointer-events:none
+}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{background:var(--danger)}
 
-/* ── User Menu ── */
-#userMenu{position:fixed;top:calc(var(--hdr) + 6px);right:14px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:30;min-width:180px;overflow:hidden}
-.um-item{display:block;width:100%;text-align:left;padding:14px 18px;border:none;background:none;font-size:15px;font-weight:700;cursor:pointer;border-bottom:1px solid var(--line)}
-.um-item:last-child{border:none;color:var(--red)}
-.um-item:active{background:var(--bg)}
-.um-name{padding:14px 18px 8px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line)}
+/* ── 載入 ── */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
 
-/* ── More Tab ── */
-.more-section{margin-bottom:16px}
-.more-section-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.more-row{background:var(--paper);border-radius:var(--r);margin-bottom:2px;cursor:pointer;transition:.1s}
-.more-row:active{background:var(--bg)}
-.more-row-inner{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line)}
-.more-row:last-child .more-row-inner{border:none}
-.more-row-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.more-row-label{font-size:15px;font-weight:700;flex:1}
-.more-row-arrow{color:var(--muted);font-size:18px}
-
-/* ── Add Promoter Search ── */
-.member-result{background:var(--bg);border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:1.5px solid var(--line)}
-.member-result:active{background:var(--line)}
-.member-result-name{font-weight:800;font-size:15px}
-.member-result-email{font-size:13px;color:var(--muted)}
-
-/* ── Payout Cards ── */
-.payout-card{background:var(--paper);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer}
-.payout-amount{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--main2)}
-.payout-meta{font-size:13px;color:var(--muted);margin-top:4px}
-
-
-/* ── 電腦版側邊導覽 ── */
-@media(min-width:900px){
-/* ── 電腦版：右側抽屜取代底部彈窗 ── */
-@media(min-width:900px){
-  #overlay{backdrop-filter:blur(2px)}
-  #sheet{
-    bottom:0 !important; top:var(--hdr) !important;
-    left:auto !important; right:0 !important;
-    width:min(520px,42vw) !important;
-    height:calc(100dvh - var(--hdr)) !important;
-    border-radius:0 !important;
-    transform:translateX(100%) !important;
-    max-height:none !important
+/* ── 手機版 ── */
+@media(max-width:899px){
+  body{overflow:auto}
+  #layout{position:static;flex-direction:column;height:auto}
+  #hdr{position:sticky}
+  #sidebar{display:none}
+  #main{overflow:visible}
+  .tab-pane{padding:14px}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .batch-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  #drawer{
+    top:auto;bottom:0;left:0;right:0;width:100%;
+    border-left:none;border-top:1px solid var(--line);
+    border-radius:20px 20px 0 0;max-height:90dvh;
+    transform:translateY(100%)
   }
-  #sheet.show{transform:translateX(0) !important}
-  #sheetBody{padding:20px 24px}
-  #sheetHead{padding:16px 24px 14px}
-  #sheetFoot{padding:14px 24px}
-
-  /* Order table on desktop */
-  
-.card{background:var(--paper);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
-.order-table-wrap{display:block}
-  .order-card-wrap{display:none}
-  
-  /* Summary cards wider */
-  .summary-row{grid-template-columns:repeat(4,1fr)}
-
-  /* Settings form on desktop */
-  .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-}
-
-  #app{flex-direction:column}
-  #appBody{display:flex;flex:1;overflow:hidden}
-  .sidebar{
-    width:220px;flex-shrink:0;
-    background:var(--paper);border-right:1px solid var(--line);
-    display:flex;flex-direction:column;
-    height:calc(100dvh - var(--hdr));
-    position:sticky;top:var(--hdr);
-    overflow-y:auto;padding:12px 8px;gap:2px
+  #drawer.open{transform:translateY(0)}
+  #mobileNav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:rgba(221,234,209,.97);
+    border-top:1px solid #b9cfae;
+    display:flex;padding-bottom:var(--safe-b);z-index:20
   }
-  .sb-item{
-    display:flex;align-items:center;gap:10px;
-    padding:11px 14px;border-radius:10px;
-    border:none;background:none;
-    font-size:14px;font-weight:700;color:var(--muted);
-    cursor:pointer;width:100%;text-align:left;position:relative
+  .mob-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    gap:2px;padding:8px 4px;border:none;background:none;
+    font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;position:relative
   }
-  .sb-item:hover{background:var(--bg)}
-  .sb-item.active{background:var(--green);color:var(--ink)}
-  .sb-item .sb-icon{font-size:18px;width:24px;text-align:center}
-  .sb-dot{position:absolute;top:8px;right:10px;width:8px;height:8px;background:var(--danger);border-radius:50%}
-  .sb-section{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:14px 14px 4px}
-  #nav{display:none!important}
-  #main{flex:1;overflow-y:auto;padding-bottom:20px;min-width:0}
-  .tab{padding:20px 28px 0}
-  .tab-inner{max-width:1200px;margin:0 auto}
-  #sheet{width:min(560px,90vw)}
-  .summary-row{grid-template-columns:repeat(4,1fr)}
-}
-@media(min-width:1200px){
-  .sidebar{width:240px}
-  .tab{padding:24px 36px 0}
-}
-
-
-.order-table-wrap{display:none;overflow-x:auto;border-radius:var(--r);border:1px solid var(--line);background:var(--paper)}
-.order-table-wrap table{width:100%;border-collapse:collapse;font-size:14px}
-.order-table-wrap th{background:var(--bg);font-size:12px;font-weight:800;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:2px solid var(--line);white-space:nowrap}
-.order-table-wrap td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
-.order-table-wrap tr:last-child td{border:none}
-.order-table-wrap tr:hover td{background:var(--bg);cursor:pointer}
-.order-table-wrap .td-amount{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
-
-@media(min-width:768px){
-  .summary-row{grid-template-columns:repeat(4,1fr)}
-  .tab{padding:20px 24px 0}
-  #sheet{width:min(580px,96vw)}
-}
-@media(min-width:1024px){
-  .tab{padding:24px 40px 0}
-}
+  .mob-btn.active{color:var(--main2)}
+  .mob-icon{font-size:20px;line-height:1}
+  .mob-dot{
+    position:absolute;top:5px;right:calc(50% - 14px);
+    width:8px;height:8px;background:var(--danger);
+    border-radius:50%;border:2px solid rgba(221,234,209,.97)
+  }
+  .main-wrap{padding-bottom:70px}
 }
 </style>
 </head>
 <body>
 
-<!-- ── Login Screen ── -->
-<div id="login">
-  <div class="login-card">
-    <img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/55cd984d-dc71-4a23-8da8-40de323b8b59%20(1).png" alt="團GO" style="width:80px;height:80px;object-fit:contain;border-radius:16px;margin:0 auto 12px;display:block">
+<!-- ────────── 登入頁 ────────── -->
+<div id="loginPage">
+  <div class="login-box">
+    <img class="login-logo" src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/55cd984d-dc71-4a23-8da8-40de323b8b59%20(1).png" alt="團GO">
     <h1 class="login-title">後台管理</h1>
-    <p class="login-sub">場次管理員 / 平台管理員登入</p>
-    <div class="field" style="margin-bottom:12px">
-      <label style="display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px">Email</label>
-      <input id="loginEmail" type="email" autocomplete="email" placeholder="your@email.com"
-        style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px">
-    </div>
-    <div class="field" style="margin-bottom:16px">
-      <label style="display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px">手機號碼</label>
-      <input id="loginPhone" type="tel" autocomplete="tel" placeholder="0912345678" inputmode="tel"
-        style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px">
-    </div>
-    <button onclick="doLogin()" style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--main);color:#fff;font-size:16px;font-weight:800;cursor:pointer">登入管理後台</button>
-    <div id="loginErr" class="login-err"></div>
-    <div style="text-align:center;padding:8px;font-size:11px;color:var(--muted)">www.2b-Love.com　兔彼樂共創活動</div>
+    <p class="login-sub">場次管理員 / 平台管理員</p>
+    <label class="f-label">Email</label>
+    <input class="f-input" id="loginEmail" type="email" autocomplete="email" placeholder="your@email.com" inputmode="email">
+    <label class="f-label">手機號碼</label>
+    <input class="f-input" id="loginPhone" type="tel" autocomplete="tel" placeholder="0912345678" inputmode="tel"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">登入管理後台</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-footer">www.2b-Love.com　兔彼樂共創活動</div>
   </div>
 </div>
 
-<!-- ── App ── -->
-<div id="app" hidden>
-  <header>
-    <img src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/55cd984d-dc71-4a23-8da8-40de323b8b59%20(1).png" alt="團GO" style="height:36px;object-fit:contain;border-radius:8px;flex-shrink:0">
+<!-- ────────── 主應用 ────────── -->
+<div id="appRoot" class="hidden">
+
+  <!-- Header -->
+  <header id="hdr">
+    <img class="hdr-logo" src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/55cd984d-dc71-4a23-8da8-40de323b8b59%20(1).png" alt="團GO">
+    <div class="hdr-divider"></div>
     <div class="hdr-session">
-      <select id="sessionPicker" onchange="onSessionChange()">
+      <select class="session-select" id="sessionPicker" onchange="onSessionChange()">
         <option>載入中…</option>
       </select>
     </div>
     <div class="hdr-right">
-      <button class="icon-btn" onclick="refreshAll()" title="重新整理">↻</button>
-      <button class="icon-btn" id="userBtn" onclick="toggleUserMenu()">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-4.42 0-8 1.79-8 4v1h16v-1c0-2.21-3.58-4-8-4z"/></svg>
-      </button>
+      <button class="hdr-btn" onclick="refreshAll()">↻ 重新整理</button>
+      <button class="hdr-btn" id="userBtn" onclick="doLogout()">登出</button>
     </div>
   </header>
 
-  
-  <div id="appBody" style="display:flex;flex:1;overflow:hidden">
-  <aside class="sidebar">
-    <div class="sb-section">場次</div>
-    <div style="padding:4px 8px 10px">
-      <select id="sessionPickerSB" onchange="onSessionChange(this)" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;background:var(--paper)">
+  <div id="layout">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="nav-section">場次</div>
+      <select class="form-input" id="sessionPickerSB" onchange="onSessionChange(this)" style="margin-bottom:8px;font-weight:700;font-size:13px">
         <option>載入中…</option>
       </select>
-    </div>
-    <div class="sb-section">導覽</div>
-    <button class="sb-item active" id="sb-home" onclick="goTab('home')">
-      <span class="sb-icon">⌂</span> 首頁
-      <span id="sbOrderDot" class="sb-dot" style="display:none"></span>
-    </button>
-    <button class="sb-item" id="sb-orders" onclick="goTab('orders')">
-      <span class="sb-icon">☰</span> 訂單管理
-      <span id="sbOrderDot2" class="sb-dot" style="display:none"></span>
-    </button>
-    <button class="sb-item" id="sb-apply" onclick="goTab('apply')">
-      <span class="sb-icon">✎</span> 申請審核
-      <span id="sbApplyDot" class="sb-dot" style="display:none"></span>
-    </button>
-    <button class="sb-item" id="sb-products" onclick="goTab('products')">
-      <span class="sb-icon">📦</span> 商品管理
-    </button>
-    <button class="sb-item" id="sb-settings" onclick="goTab('settings')">
-      <span class="sb-icon">⚙️</span> 場次設定
-    </button>
-    <button class="sb-item" id="sb-more" onclick="goTab('more')">
-      <span class="sb-icon">≡</span> 其他管理
-    </button>
-    <div style="flex:1"></div>
-    <button class="sb-item" onclick="doLogout()" style="color:var(--danger)">
-      <span class="sb-icon">🚪</span> 登出
-    </button>
-  </aside>
-  <main id="main">
-    <!-- 首頁 Tab -->
-    <div id="t-home" class="tab active"><div class="tab-inner">
-      <div id="urgentBar"></div>
-      <div class="summary-row" id="summaryRow">
-        <div class="sum-card s-amber" onclick="goTab('orders');filterOrders('reported')">
-          <div class="sum-num num" id="cntPay">—</div>
-          <div class="sum-label">待確認付款</div>
+
+      <div class="nav-section">管理</div>
+      <button class="nav-btn active" id="nb-home" onclick="goTab('home')">
+        <span class="nav-icon">⌂</span> 首頁
+        <span id="dotHome" class="nav-dot hidden"></span>
+      </button>
+      <button class="nav-btn" id="nb-orders" onclick="goTab('orders')">
+        <span class="nav-icon">☰</span> 訂單管理
+        <span id="dotOrders" class="nav-dot hidden"></span>
+      </button>
+      <button class="nav-btn" id="nb-apply" onclick="goTab('apply')">
+        <span class="nav-icon">✎</span> 申請審核
+        <span id="dotApply" class="nav-dot hidden"></span>
+      </button>
+      <button class="nav-btn" id="nb-products" onclick="goTab('products')">
+        <span class="nav-icon">📦</span> 商品管理
+      </button>
+      <button class="nav-btn" id="nb-settings" onclick="goTab('settings')">
+        <span class="nav-icon">⚙️</span> 場次設定
+      </button>
+
+      <div class="sidebar-footer">
+        <button class="nav-btn" id="nb-more" onclick="goTab('more')">
+          <span class="nav-icon">≡</span> 其他管理
+        </button>
+        <button class="nav-btn" onclick="refreshAll()">
+          <span class="nav-icon">↻</span> 重新整理
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main" class="main-wrap">
+
+      <!-- 首頁 -->
+      <div class="tab-pane active" id="t-home">
+        <div class="page-head">
+          <div>
+            <div class="page-title">總覽</div>
+            <div class="page-sub" id="homeSessionName">—</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="goTab('orders')">查看所有訂單</button>
         </div>
-        <div class="sum-card s-blue" onclick="goTab('orders');filterOrders('shipping')">
-          <div class="sum-num num" id="cntShip">—</div>
-          <div class="sum-label">待出貨</div>
+        <div class="stats-row">
+          <div class="stat-card urgent" onclick="goTab('orders');filterOrders('reported')">
+            <div class="stat-num" id="cntPay">—</div>
+            <div class="stat-label">待確認付款</div>
+          </div>
+          <div class="stat-card pending" onclick="goTab('orders');filterOrders('shipping')">
+            <div class="stat-num" id="cntShip">—</div>
+            <div class="stat-label">待出貨</div>
+          </div>
+          <div class="stat-card pending" onclick="goTab('apply')">
+            <div class="stat-num" id="cntApply">—</div>
+            <div class="stat-label">申請待審</div>
+          </div>
+          <div class="stat-card ok">
+            <div class="stat-num" id="cntRevenue">—</div>
+            <div class="stat-label">付款收入</div>
+          </div>
         </div>
-        <div class="sum-card s-purple" onclick="goTab('apply')">
-          <div class="sum-num num" id="cntApply">—</div>
-          <div class="sum-label">申請待審</div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:10px">最近訂單</div>
+        <div class="table-wrap" id="recentList"><div class="loading">載入中…</div></div>
+        <div style="margin-top:8px;text-align:right">
+          <button class="btn btn-outline btn-sm" onclick="goTab('orders')">查看全部訂單 →</button>
         </div>
       </div>
-      <div id="revCard" class="rev-card hidden"></div>
-      <div class="section-hd">
-        <h3>最近訂單</h3>
-        <button class="see-all" onclick="goTab('orders')">全部 →</button>
+
+      <!-- 訂單管理 -->
+      <div class="tab-pane" id="t-orders">
+        <div class="page-head">
+          <div class="page-title">訂單管理</div>
+          <button class="btn btn-outline btn-sm" onclick="loadOrders()">↻ 重新整理</button>
+        </div>
+        <div class="filter-bar" id="filterBar">
+          <button class="filter-btn active" data-f="all" onclick="filterOrders('all')">全部</button>
+          <button class="filter-btn" data-f="reported" onclick="filterOrders('reported')">待確認 <span class="filter-count" id="fcReported"></span></button>
+          <button class="filter-btn" data-f="unpaid" onclick="filterOrders('unpaid')">待付款</button>
+          <button class="filter-btn" data-f="paid" onclick="filterOrders('paid')">已付款</button>
+          <button class="filter-btn" data-f="shipping" onclick="filterOrders('shipping')">出貨中</button>
+          <button class="filter-btn" data-f="done" onclick="filterOrders('done')">完成</button>
+          <button class="filter-btn" data-f="closed" onclick="filterOrders('closed')">關閉</button>
+        </div>
+        <div class="table-wrap" id="orderList"><div class="loading">載入中…</div></div>
       </div>
-      <div id="recentList"><div class="loading">載入中…</div></div>
-    </div>
 
-    <!-- 訂單 Tab -->
-    <div id="t-orders" class="tab"><div class="tab-inner">
-      <div class="filter-bar" id="filterBar">
-        <button class="f-chip active" data-f="all" onclick="filterOrders('all')">全部</button>
-        <button class="f-chip" data-f="reported" onclick="filterOrders('reported')">待確認</button>
-        <button class="f-chip" data-f="unpaid" onclick="filterOrders('unpaid')">待付款</button>
-        <button class="f-chip" data-f="paid" onclick="filterOrders('paid')">已付款</button>
-        <button class="f-chip" data-f="shipping" onclick="filterOrders('shipping')">出貨中</button>
-        <button class="f-chip" data-f="done" onclick="filterOrders('done')">完成</button>
-        <button class="f-chip" data-f="closed" onclick="filterOrders('closed')">關閉</button>
+      <!-- 申請審核 -->
+      <div class="tab-pane" id="t-apply">
+        <div class="page-head">
+          <div class="page-title">申請審核</div>
+        </div>
+        <div id="applyContent"><div class="loading">載入中…</div></div>
       </div>
-      <div id="orderList"><div class="loading">載入中…</div></div>
-    </div>
 
-    <!-- 申請 Tab -->
-    <div id="t-apply" class="tab"><div class="tab-inner">
-      <div id="applyContent"><div class="loading">載入中…</div></div>
-    </div>
+      <!-- 商品管理 -->
+      <div class="tab-pane" id="t-products">
+        <div class="page-head">
+          <div class="page-title">商品管理</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="loadProductsTab()">↻ 重新整理</button>
+            <button class="btn btn-primary btn-sm" onclick="openAddProductModal()" id="addProductBtn">＋ 新增商品</button>
+          </div>
+        </div>
+        <div id="productsContent"><div class="loading">載入中…</div></div>
+      </div>
 
-    <!-- 管理 Tab -->
-    <div id="t-products" class="tab"><div class="tab-inner">
-    <div id="productsContent"><div class="loading">載入中…</div></div>
-  </div></div>
+      <!-- 場次設定 -->
+      <div class="tab-pane" id="t-settings">
+        <div class="page-head">
+          <div class="page-title">場次設定</div>
+        </div>
+        <div id="settingsContent"><div class="loading">載入設定中…</div></div>
+      </div>
 
-  <div id="t-settings" class="tab"><div class="tab-inner">
-    <div id="settingsContent"><div class="loading">載入設定中…</div></div>
-  </div></div>
+      <!-- 其他管理 -->
+      <div class="tab-pane" id="t-more">
+        <div class="page-head"><div class="page-title">其他管理</div></div>
+        <div id="moreContent"><div class="loading">載入中…</div></div>
+      </div>
+    </main>
+  </div><!-- /layout -->
 
-  <div id="t-more" class="tab"><div class="tab-inner">
-      <div id="moreContent"><div class="loading">載入中…</div></div>
-    </div>
-  </main>
-
-  </div>
-
-<nav id="nav">
-    <button class="nav-btn active" id="nb-home" onclick="goTab('home')">
-      <span class="nav-icon">⌂</span>
-      <span class="nav-label">首頁</span>
-    </button>
-    <button class="nav-btn" id="nb-orders" onclick="goTab('orders')">
-      <span class="nav-icon">☰</span>
-      <span class="nav-label">訂單</span>
-      <span id="orderDot" class="nav-dot hidden"></span>
-    </button>
-    <button class="nav-btn" id="nb-apply" onclick="goTab('apply')">
-      <span class="nav-icon">✎</span>
-      <span class="nav-label">申請</span>
-      <span id="applyDot" class="nav-dot hidden"></span>
-    </button>
-    <button class="nav-btn" id="nb-products" onclick="goTab('products')">
-      <span class="nav-icon">📦</span>
-      <span class="nav-label">商品</span>
-    </button>
-    <button class="nav-btn" id="nb-settings" onclick="goTab('settings')">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">設定</span>
-    </button>
-    <button class="nav-btn" id="nb-more" onclick="goTab('more')">
-      <span class="nav-icon">≡</span>
-      <span class="nav-label">管理</span>
-    </button>
+  <!-- 手機底部導覽 -->
+  <nav id="mobileNav">
+    <button class="mob-btn active" id="mob-home" onclick="goTab('home')"><span class="mob-icon">⌂</span>首頁<span id="mobDotHome" class="mob-dot hidden"></span></button>
+    <button class="mob-btn" id="mob-orders" onclick="goTab('orders')"><span class="mob-icon">☰</span>訂單<span id="mobDotOrders" class="mob-dot hidden"></span></button>
+    <button class="mob-btn" id="mob-apply" onclick="goTab('apply')"><span class="mob-icon">✎</span>申請<span id="mobDotApply" class="mob-dot hidden"></span></button>
+    <button class="mob-btn" id="mob-products" onclick="goTab('products')"><span class="mob-icon">📦</span>商品</button>
+    <button class="mob-btn" id="mob-settings" onclick="goTab('settings')"><span class="mob-icon">⚙️</span>設定</button>
+    <button class="mob-btn" id="mob-more" onclick="goTab('more')"><span class="mob-icon">≡</span>更多</button>
   </nav>
+
+</div><!-- /appRoot -->
+
+<!-- 右側抽屜 -->
+<div id="overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-title" id="drawerTitle">—</div>
+      <div class="drawer-sub" id="drawerSub"></div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
 </div>
 
-<!-- User Menu -->
-<div id="userMenu" class="hidden">
-  <div class="um-name" id="umName"></div>
-  <button class="um-item" onclick="closeUserMenu();goTab('more')">設定</button>
-  <button class="um-item" onclick="closeUserMenu();doLogout()">登出</button>
-</div>
-
-<!-- Modal: overlay + sheet -->
-<div id="overlay" hidden onclick="closeModal()"></div>
-<div id="sheet" hidden>
-  <div class="sheet-handle"></div>
-  <div id="sheetHead" class="sheet-head"></div>
-  <div id="sheetBody" class="sheet-body"></div>
-  <div id="sheetFoot" class="sheet-foot"></div>
-</div>
-
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
+'use strict';
+
+
+function buildSessionPicker_impl() {
+  const opts = S.sessions.length
+    ? S.sessions.map(s=>`<option value="${esc(s.id)}" ${s.id===S.currentSid?'selected':''}>${esc(s.name)}</option>`).join('')
+    : '<option>無可用場次</option>';
+  ['sessionPicker','sessionPickerSB'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = opts;
+  });
+  if (!S.currentSid && S.sessions[0]) S.currentSid = S.sessions[0].id;
+  const sesName = S.sessions.find(s=>s.id===S.currentSid)?.name||'';
+  const el = document.getElementById('homeSessionName');
+  if(el) el.textContent = sesName;
+}
+
 'use strict';
 
 /* ── Config ── */
@@ -545,7 +658,7 @@ function applySession(s) {
     S.role = s.authorization.role;
     S.isPlatform = S.role === 'platform_super_admin';
   }
-  document.getElementById('umName').textContent = S.name;
+  const _un=document.getElementById('umName');if(_un)_un.textContent=S.name; const _ub=document.getElementById('userBtn');if(_ub)_ub.textContent='登出 ('+S.name+')';
 }
 
 function doLogout() {
@@ -555,7 +668,7 @@ function doLogout() {
 }
 
 function showLoginErr(msg) {
-  document.getElementById('loginErr').textContent = msg||'登入失敗';
+  const _le=document.getElementById('loginErr');if(_le)_le.textContent = msg||'登入失敗';
 }
 
 /* ── Helpers ── */
@@ -564,7 +677,7 @@ function money(n) { return 'NT$ '+Number(n||0).toLocaleString(); }
 function fmt(d) { if(!d) return '—'; return new Date(d).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}); }
 
 /* ── Session Picker ── */
-function buildSessionPicker() {
+function buildSessionPicker() { buildSessionPicker_impl(); return; if(false){
   const opts = S.sessions.length
     ? S.sessions.map(s=>`<option value="${esc(s.id)}" ${s.id===S.currentSid?'selected':''}>${esc(s.name)}</option>`).join('')
     : '<option>無可用場次</option>';
@@ -582,11 +695,13 @@ function buildSessionPicker() {
 function onSessionChange(src_el) {
   const val = src_el?.value || document.getElementById('sessionPicker')?.value || document.getElementById('sessionPickerSB')?.value;
   S.currentSid = val;
-  // sync both pickers
   ['sessionPicker','sessionPickerSB'].forEach(id => {
     const el = document.getElementById(id);
     if(el && el.value !== val) el.value = val;
   });
+  const sesName = S.sessions.find(s=>s.id===val)?.name||'';
+  const el = document.getElementById('homeSessionName');
+  if(el) el.textContent = sesName;
   S.orders = [];
   loadOrders();
   updateHome();
@@ -599,9 +714,8 @@ function goTab(name) {
     if (tab) tab.classList.toggle('active', t===name);
     const nb = document.getElementById('nb-'+t);
     if (nb) nb.classList.toggle('active', t===name);
-    // sync sidebar items
-    const sb = document.getElementById('sb-'+t);
-    if (sb) sb.classList.toggle('active', t===name);
+    const mob = document.getElementById('mob-'+t);
+    if (mob) mob.classList.toggle('active', t===name);
   });
   S.activeTab = name;
   if (name === 'orders') { if (!S.orders.length) { loadOrders(); } else { renderFilteredOrders(); } }
@@ -666,19 +780,20 @@ function toast(msg, isErr=false) {
 }
 
 /* ── Modal (Bottom Sheet) ── */
-function openModal(title, sub, bodyHtml, footHtml) {
-  document.getElementById('sheetHead').innerHTML = `<div class="sh-title">${esc(title)}</div>${sub?`<div class="sh-sub">${esc(sub)}</div>`:''}`;
-  document.getElementById('sheetBody').innerHTML = bodyHtml;
-  document.getElementById('sheetFoot').innerHTML = footHtml;
+function openModal(title, sub, bodyHtml, footHtml) { openDrawer(title, sub, bodyHtml, footHtml); }
+function openDrawer(title, sub, bodyHtml, footHtml) {
+  document.getElementById('drawerTitle').textContent = title||''; document.getElementById('drawerSub').textContent = sub||''; document.getElementById('drawerTitle') = `<div class="sh-title">${esc(title)}</div>${sub?`<div class="sh-sub">${esc(sub)}</div>`:''}`;
+  document.getElementById('drawerBody').innerHTML = bodyHtml;
+  document.getElementById('drawerFoot').innerHTML = footHtml;
   const ov = document.getElementById('overlay');
-  const sh = document.getElementById('sheet');
-  ov.hidden = false; sh.hidden = false;
-  requestAnimationFrame(()=>{ ov.classList.add('show'); sh.classList.add('show'); });
+  const dr = document.getElementById('drawer');
+  ov.classList.add('open');
+  requestAnimationFrame(()=>{ dr.classList.add('open'); });
 }
-function closeModal() {
-  const ov = document.getElementById('overlay'), sh = document.getElementById('sheet');
-  ov.classList.remove('show'); sh.classList.remove('show');
-  setTimeout(()=>{ ov.hidden=true; sh.hidden=true; }, 300);
+function closeModal() { closeDrawer(); }
+function closeDrawer() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
 }
 
 /* ── Status Helpers ── */
@@ -740,14 +855,18 @@ async function updateHome() {
     : '';
 
   // Order dots
-  document.getElementById('orderDot').classList.toggle('hidden', reportedCnt===0);
-  document.getElementById('applyDot').classList.toggle('hidden',
-    (S.applications.managers.filter(a=>a.status==='pending').length + S.applications.promoters.filter(a=>a.status==='pending').length) === 0);
+  ['orderDot','dotOrders','mobDotOrders','dotHome','mobDotHome'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('hidden',reportedCnt===0)});
+  ['applyDot','dotApply','mobDotApply'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('hidden',
+    (S.applications.managers.filter(a=>a.status==='pending').length + S.applications.promoters.filter(a=>a.status==='pending').length) === 0)});
 
   // Apply count
   const pendingApply = (S.applications.managers||[]).filter(a=>a.status==='pending').length
     + (S.applications.promoters||[]).filter(a=>a.status==='pending').length;
   document.getElementById('cntApply').textContent = pendingApply;
+  const ses = S.sessions.find(s=>s.id===S.currentSid)||{};
+  const rev = ses.paidTotalAmount||0;
+  const revEl = document.getElementById('cntRevenue');
+  if(revEl) revEl.textContent = rev>0 ? 'NT$'+Number(rev).toLocaleString() : '—';
 
   // Recent orders
   renderOrderList('recentList', S.orders.slice(0,5), true);
@@ -788,11 +907,10 @@ function renderFilteredOrders() {
 
 function renderOrderList(elId, rows, compact=false) {
   const el = document.getElementById(elId);
-  if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">沒有符合的訂單</div></div>`; return; }
-  // Desktop: table view
-  const tableHtml = `<div class="order-table-wrap"><table>
+  if (!rows.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">沒有符合的訂單</div></div>`; return; }
+  const tableHtml = `<table class="data-table">
     <thead><tr>
-      <th>訂單編號</th><th>買家</th><th>狀態</th><th>出貨</th><th>金額</th><th>時間</th><th>操作</th>
+      <th>訂單</th><th>買家</th><th>付款</th><th>出貨</th><th style="text-align:right">金額</th><th>時間</th><th></th>
     </tr></thead>
     <tbody>
     ${rows.map(o=>{
@@ -811,9 +929,8 @@ function renderOrderList(elId, rows, compact=false) {
         </td>
       </tr>`;
     }).join('')}
-    </tbody></table></div>`;
-  // Mobile: card view
-  const cardsHtml = `<div class="order-card-wrap">` + rows.map(o => {
+    </tbody></table>`;
+  const cardsHtml = `<div>` + rows.map(o => {
     const delivery = o.fulfillment_type==='pickup'?'自取':'宅配';
     const name = esc(o.recipient_name||o.member_email||'訂單');
     const shortId = String(o.id||'').slice(-8).toUpperCase();
@@ -829,7 +946,7 @@ function renderOrderList(elId, rows, compact=false) {
       <div class="order-amount">${money(o.total_amount)}</div>
     </div>`;
   }).join('') + '</div>';
-  el.innerHTML = tableHtml + cardsHtml;
+  el.innerHTML = `<div class="table-wrap">${tableHtml}</div>`;
 }
 
 function openOrderModal(orderId) {
@@ -957,7 +1074,7 @@ async function loadApplications() {
 function renderApplications() {
   const {managers,promoters} = S.applications;
   const pend = [...managers,...promoters].filter(a=>a.status==='pending').length;
-  document.getElementById('applyDot').classList.toggle('hidden', pend===0);
+  ['applyDot','dotApply','mobDotApply'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('hidden', pend===0);
 
   let html = '';
   if (S.isPlatform) {
@@ -1227,7 +1344,7 @@ async function boot() {
   // Read session from localStorage (shared with groupbuy.html)
   const saved = readSession();
   if (!saved) {
-    document.getElementById('login').style.display='flex';
+    document.getElementById('loginPage').classList.remove('hidden'); document.getElementById('appRoot').classList.add('hidden');
     return;
   }
   applySession(saved);
@@ -1245,8 +1362,8 @@ async function boot() {
     saveSession({email:saved.email, token:saved.token, role:liveRole, name:saved.name||saved.email, authorization:data.authorization||null});
 
     if (!S.sessions.length) {
-      document.getElementById('login').style.display='none';
-      document.getElementById('app').hidden = false;
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('appRoot').classList.remove('hidden'); document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('sessionPicker').innerHTML = '<option>無可用場次</option>';
       document.getElementById('cntPay').textContent = '0';
       document.getElementById('cntShip').textContent = '0';
@@ -1323,28 +1440,24 @@ function renderProductList() {
         <div><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px">庫存（空=不變）</div>
           <input id="b_stock" type="number" placeholder="空白不變" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px"></div>
       </div>
-      <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">買家數量級距（勾選商品統一套用）</div>
+      <div class="tier-section">
+        <div class="tier-section-title">買家數量級距（統一套用）</div>
         <div id="b_qtiers"></div>
-        <button type="button" onclick="addTierRow('b_qtiers')" style="font-size:12px;border:none;background:rgba(0,0,0,.08);border-radius:7px;padding:5px 10px;cursor:pointer;margin-top:4px">＋ 加級距</button>
+        <button type="button" onclick="addTierRow('b_qtiers')" class="btn btn-outline btn-sm" style="margin-top:4px">＋ 加級距</button>
       </div>
-      <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">團購主採購級距（勾選商品統一套用）</div>
+      <div class="tier-section">
+        <div class="tier-section-title">團購主採購級距（統一套用）</div>
         <div id="b_ptiers"></div>
-        <button type="button" onclick="addTierRow('b_ptiers')" style="font-size:12px;border:none;background:rgba(0,0,0,.08);border-radius:7px;padding:5px 10px;cursor:pointer;margin-top:4px">＋ 加級距</button>
+        <button type="button" onclick="addTierRow('b_ptiers')" class="btn btn-outline btn-sm" style="margin-top:4px">＋ 加級距</button>
       </div>
-      <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:10px">
-        <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">買幾送幾</div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px"><input type="checkbox" id="b_buyget"> 啟用</label>
-          <span style="font-size:12px">買</span>
-          <input id="b_buyqty" type="number" min="1" placeholder="X" style="width:50px;padding:6px;border:1px solid var(--line);border-radius:7px">
-          <span style="font-size:12px">件送</span>
-          <input id="b_freeqty" type="number" min="1" placeholder="Y" style="width:50px;padding:6px;border:1px solid var(--line);border-radius:7px">
-          <span style="font-size:12px">件</span>
-        </div>
+      <div class="tier-section" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <label class="form-check"><input type="checkbox" id="b_buyget"> 買幾送幾</label>
+        <span style="font-size:13px;color:var(--muted)">買</span>
+        <input id="b_buyqty" type="number" min="1" placeholder="X" style="width:56px;padding:7px;border:1px solid var(--line);border-radius:8px;text-align:center">
+        <span style="font-size:13px;color:var(--muted)">件送</span>
+        <input id="b_freeqty" type="number" min="1" placeholder="Y" style="width:56px;padding:7px;border:1px solid var(--line);border-radius:8px;text-align:center">
+        <span style="font-size:13px;color:var(--muted)">件</span>
       </div>
-      <button onclick="applyBatch()" class="btn btn-green" style="width:100%">套用到已勾選商品</button>
     </div>` : ''}
     <!-- 商品列表 -->
     ${S_PRODUCTS.map(p=>`
@@ -1651,6 +1764,7 @@ async function saveSettings() {
 // Card style shorthand for settings
 
 boot();
+
 </script>
 </body>
 </html>
