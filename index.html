@@ -1,4 +1,4 @@
-<!-- RESPONSIVE_MEMBER_FORM_20260722：會員資料單一資料庫流程＋全手機自適應單欄表單 -->
+html+='<div data-gbid="'+s.id+'" class="gb-session-card" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;cursor:pointer;border:1.5px solid #f0ede8">';<!-- RESPONSIVE_MEMBER_FORM_20260722：會員資料單一資料庫流程＋全手機自適應單欄表單 -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -1649,54 +1649,37 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <strong data-site-info-text style="font-size:16px;color:#6a4a00">探索活動，找到屬於你的市集旅程</strong>
   </div>
 
-  <!-- 四大分類入口 -->
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px">
+  <!-- 五大分類入口（一排）-->
+  <div style="display:flex;gap:8px;padding:10px 14px">
 
     <div onclick="filterCat('市集報名',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#DDEAD1;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP歡迎.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🏪</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">市集</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">市集報名</div>
-      </div>
+      style="flex:1;border-radius:14px;border:1.5px solid rgba(0,0,0,.08);background:#DDEAD1;padding:10px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer">
+      <img src="IP歡迎.png" style="width:38px;height:38px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:26px>🏪</span>'">
+      <div style="font-size:13px;font-weight:900;color:#111">市集</div>
     </div>
 
     <div onclick="filterCat('通路寄賣',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAEEC7;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP指引.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🛍</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">寄賣</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">攤位寄賣</div>
-      </div>
+      style="flex:1;border-radius:14px;border:1.5px solid rgba(0,0,0,.08);background:#FAEEC7;padding:10px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer">
+      <img src="IP指引.png" style="width:38px;height:38px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:26px>🛍</span>'">
+      <div style="font-size:13px;font-weight:900;color:#111">寄賣</div>
     </div>
 
     <div onclick="filterCat('體驗活動',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#D9E5EE;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP資料.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🎨</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">體驗</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">體驗活動</div>
-      </div>
+      style="flex:1;border-radius:14px;border:1.5px solid rgba(0,0,0,.08);background:#D9E5EE;padding:10px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer">
+      <img src="IP資料.png" style="width:38px;height:38px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:26px>🎨</span>'">
+      <div style="font-size:13px;font-weight:900;color:#111">體驗</div>
     </div>
 
     <div onclick="filterCat('合作洽詢',this);scrollToSection('recentSection')"
-      style="min-height:96px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:#FAE1DD;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04)">
-      <img src="IP會員.png" style="width:54px;height:54px;object-fit:contain;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:36px>🤝</span>'">
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#111">合作</div>
-        <div style="font-size:16px;color:#555;margin-top:3px">合作洽詢</div>
-      </div>
+      style="flex:1;border-radius:14px;border:1.5px solid rgba(0,0,0,.08);background:#FAE1DD;padding:10px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer">
+      <img src="IP會員.png" style="width:38px;height:38px;object-fit:contain" onerror="this.outerHTML='<span style=font-size:26px>🤝</span>'">
+      <div style="font-size:13px;font-weight:900;color:#111">合作</div>
     </div>
 
-    <!-- 🛒 團購：全寬按鈕 -->
     <div id="catGroupBuy" onclick="filterGroupBuy(this)"
-      style="grid-column:1/-1;min-height:80px;border-radius:18px;border:1.5px solid rgba(0,0,0,.08);background:linear-gradient(100deg,#0D9488 0%,#0f766e 100%);padding:12px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 4px 16px rgba(13,148,136,.22)">
-      <span style="font-size:40px;flex-shrink:0">🛒</span>
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#fff">團購</div>
-        <div style="font-size:14px;color:rgba(255,255,255,.8);margin-top:2px">立即選購・限時好物</div>
-      </div>
-      <div style="margin-left:auto;color:rgba(255,255,255,.7);font-size:22px">›</div>
+      style="flex:1;border-radius:14px;border:1.5px solid rgba(0,0,0,.08);background:linear-gradient(160deg,#0D9488,#0f766e);padding:10px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer">
+      <span style="font-size:26px">🛒</span>
+      <div style="font-size:13px;font-weight:900;color:#fff">團購</div>
     </div>
 
   </div>
@@ -7355,52 +7338,48 @@ if(document.readyState==='loading'){
   window.openSessionFromCard=function(ev,sessionId){ if(ev){ev.preventDefault();ev.stopPropagation();} openSession(sessionId); }; window.handleSessionTap=window.openSessionFromCard;
   window.openEvent=async function(eventId){ const evt=asArr(ST.events).find(e=>String(e.id)===String(eventId)); const list=$('portalSessionList'); const title=$('portalTitle'); if(title) title.textContent=evt?evt.title:'場次列表'; navTo('portal'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; let data=uniqueSessions(ST.allSessionsData).filter(s=>String(s.eventId||'')===String(eventId)&&openSess(s)); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',eventId,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } setActivitySessions('portal',data); };
   window.filterCat=async function(type,el){ ST.currentCatFilter=type; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); const title=$('portalTitle'); if(title) title.textContent=type; const list=$('portalSessionList'); if(list) list.innerHTML='<div style="padding:20px;color:#aaa;text-align:center">載入中…</div>'; navTo('portal'); const allow=portalTypeMap[type]||[]; let data=uniqueSessions(ST.allSessionsData).filter(s=>openSess(s)&&((asArr(s.portals).includes(type))||allow.includes(s.type))); if(!data.length){ data=uniqueSessions(await api({action:'getSessions',portal:type,_t:Date.now()})).filter(openSess); ST.allSessionsData=uniqueSessions([...(ST.allSessionsData||[]),...data]); } setActivitySessions('portal',data); };
-  // ── 🛒 團購首頁整合 ────────────────────────────────────────────────
+  // ── 🛒 團購首頁整合 ─────────────────────────────────────────
   window.filterGroupBuy = async function(el) {
-    document.querySelectorAll('.cat-btn,[id^=catGroupBuy]').forEach(b=>b.classList&&b.classList.remove('active'));
-    if(el)el.style.opacity='0.8';
-    const title=$('portalTitle'),list=$('portalSessionList');
+    var title=document.getElementById('portalTitle');
+    var list=document.getElementById('portalSessionList');
     if(title)title.textContent='🛒 團購';
     if(list)list.innerHTML='<div style="padding:30px;color:#aaa;text-align:center">載入中…</div>';
     navTo('portal');
     try{
-      const params=new URLSearchParams({action:'groupBuySessions',tenant:'tuibile',_t:Date.now()});
-      const r=await fetch(API+'?'+params,{cache:'no-store'});
-      const data=await r.json().catch(()=>[]);
-      const sessions=Array.isArray(data)?data:(data.sessions||data.data||[]);
-      if(el)el.style.opacity='1';
-      renderGroupBuySessionCards(list,sessions);
+      var r=await fetch(API+'?'+new URLSearchParams({action:'groupBuySessions',tenant:'tuibile',_t:Date.now()}),{cache:'no-store'});
+      var data=await r.json().catch(function(){return [];});
+      var sessions=Array.isArray(data)?data:(data.sessions||data.data||[]);
+      renderGBCards(list,sessions);
     }catch(e){
-      if(list)list.innerHTML='<div style="padding:30px;color:#c00;text-align:center">載入失敗，請稍後再試</div>';
-      if(el)el.style.opacity='1';
+      if(list)list.innerHTML='<div style="padding:30px;color:#c00;text-align:center">載入失敗</div>';
     }
   };
-
-  function renderGroupBuySessionCards(container,sessions){
-    if(!container)return;
-    const open=(sessions||[]).filter(s=>{
-      const st=String(s.status||'').trim();
-      return !st||st==='報名中'||st==='開放中'||st==='團購中'||st==='active';
-    });
-    if(!open.length){
-      container.innerHTML='<div style="padding:50px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">🛒</div><div style="font-size:17px;font-weight:800;color:#333;margin-bottom:6px">目前沒有開放中的團購</div><div style="font-size:14px;color:#888">敬請期待下一檔好物</div></div>';
-      return;
+  function goToGB(id){location.href='groupbuy.html?id='+encodeURIComponent(id);}
+  function renderGBCards(el,sessions){
+    if(!el)return;
+    var open=(sessions||[]).filter(function(s){var st=String(s.status||'');return !st||['報名中','開放中','團購中','active'].indexOf(st)>-1;});
+    if(!open.length){el.innerHTML='<div style="padding:50px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">🛒</div><div style="font-size:17px;font-weight:800;color:#333;margin-bottom:6px">目前沒有開放中的團購</div></div>';return;}
+    var h='';
+    for(var i=0;i<open.length;i++){
+      var s=open[i];
+      var cover=((s.coverUrl||s.cover_url||'').split(',')[0]||'').trim();
+      var prods=s.products||[];
+      var prices=prods.map(function(p){return+p.price||0;}).filter(function(n){return n>0;});
+      var minP=prices.length?Math.min.apply(null,prices):0;
+      var pLabel=minP?'NT$ '+minP.toLocaleString()+' 起':'';
+      var nm=(s.name||'').replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});
+      var dc=(s.description||'').replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}).slice(0,100);
+      var id=s.id;
+      h+='<div onclick="goToGB(this.dataset.id)" data-id="'+encodeURIComponent(id)+'" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;cursor:pointer;border:1.5px solid #f0ede8">';
+      if(cover)h+='<div style="width:100%;aspect-ratio:16/7;overflow:hidden;background:#f5f5f0"><img src="'+cover+'" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>';
+      h+='<div style="padding:14px">';
+      h+='<div style="font-size:17px;font-weight:900;color:#111;margin-bottom:4px">'+nm+'</div>';
+      if(prods.length)h+='<div style="font-size:13px;color:#888;margin-bottom:8px">'+prods.length+' 件商品'+(pLabel?' · '+pLabel:'')+'</div>';
+      if(dc)h+='<div style="font-size:13px;color:#666;line-height:1.55;margin-bottom:12px">'+dc+'</div>';
+      h+='<div style="display:inline-flex;align-items:center;gap:6px;background:#0D9488;color:#fff;padding:8px 16px;border-radius:99px;font-size:14px;font-weight:800">🛒 前往購買</div>';
+      h+='</div></div>';
     }
-    container.innerHTML=open.map(function(s){
-      const cover=(s.coverUrl||s.cover_url||'').split(',')[0].trim();
-      const prods=s.products||[];
-      const prices=prods.map(function(p){return Number(p.price||0);}).filter(function(n){return n>0;});
-      const minP=prices.length?Math.min.apply(null,prices):0;
-      const priceLabel=minP?'NT$ '+minP.toLocaleString()+' 起':'';
-      return'<div onclick="location.href='groupbuy.html?id='+encodeURIComponent(s.id)+''" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;cursor:pointer;border:1.5px solid #f0ede8">'
-        +(cover?'<div style="width:100%;aspect-ratio:16/7;overflow:hidden;background:#f5f5f0"><img src="'+cover.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.style.display='none'"></div>':'')
-        +'<div style="padding:14px">'
-        +'<div style="font-size:17px;font-weight:900;color:#111;margin-bottom:4px">'+s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'
-        +(prods.length?'<div style="font-size:13px;color:#888;margin-bottom:8px">'+prods.length+' 件商品'+(priceLabel?' &nbsp;·&nbsp; '+priceLabel:'')+'</div>':'')
-        +(s.description?'<div style="font-size:13px;color:#666;line-height:1.55;margin-bottom:12px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+s.description.replace(/</g,'&lt;').slice(0,120)+'</div>':'')
-        +'<div style="display:inline-flex;align-items:center;gap:6px;background:#0D9488;color:#fff;padding:8px 16px;border-radius:99px;font-size:14px;font-weight:800">🛒 前往購買</div>'
-        +'</div></div>';
-    }).join('');
+    el.innerHTML=h;
   }
 
   // 會員登入與我的紀錄統一由 safeLoadMemberPage 管理；此處不再覆蓋 memberLogin/goMemberPage。
