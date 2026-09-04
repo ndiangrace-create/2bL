@@ -1830,7 +1830,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260905-theme-card-edit-01';
+const ADMIN_BUILD = '20260905-groupbuy-product-excel-01';
 const API = (location.protocol==='https:' && /(^|\.)2b-love\.com$/i.test(location.hostname)) ? (location.origin+'/s/api') : 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -4160,14 +4160,7 @@ function setGroupBuyProductManagerPanel(sid,active,title,sub,body,replace=true){
  else{ $('panelTitle').textContent=title; $('panelSub').textContent=sub||''; $('panelBody').innerHTML=html; syncPanelNav(); saveAdminPageState(); }
 }
 async function openSessionProducts(sid,restoring=false){
- if(!restoring)saveGroupBuyAdminView('products',sid);
- try{const sc=await api({action:'groupBuySchemaCheck'});const miss=Object.entries(sc||{}).filter(([k,v])=>v!==true).map(([k])=>k);if(miss.length)toast('團購資料庫尚未更新完成：缺少 '+miss.join('、'),9000)}catch(e){}
- let rows=[];try{rows=(await api({action:'sessionProductsAdmin',sessionId:sid})).products||[]}catch(e){toast('商品讀取失敗：'+(e.message||e),8000)}
- const cards=rows.map(p=>{const imgs=safeJson(p.images_json,[]),cover=imgs[0]||p.image_url||'',buyer=safeJson(p.quantity_tiers_json,[]),prom=safeJson(p.default_promoter_tiers_json,[]);return '<article class="gb-product-card" data-sid="'+attr(sid)+'" data-pid="'+attr(p.id)+'" onclick="openSessionProductForm(this.dataset.sid,this.dataset.pid,true)"><div class="gb-product-card-img">'+(cover?'<img src="'+attr(cover)+'" alt="">':'尚無圖片')+'</div><div class="gb-product-card-body"><div class="gb-product-card-title">'+safe(p.name)+'</div>'+(p.category?'<div class="sub">'+safe(p.category)+'</div>':'')+'<div class="gb-product-card-price">團購 '+money(p.price||0)+'</div><div class="gb-product-card-meta">原價 '+money(p.original_price||0)+'｜成本 '+money(p.supply_cost||0)+'<br>庫存 '+(p.stock_qty==null?'不限':num(p.stock_qty))+'｜圖片 '+num(imgs.length||(cover?1:0))+'<br>買家級距 '+num(buyer.length)+'｜團購主級距 '+num(prom.length)+'</div></div></article>'}).join('');
- const add='<article class="gb-product-card gb-product-card-add" data-sid="'+attr(sid)+'" onclick="openSessionProductForm(this.dataset.sid,\'\',true)"><div><div style="font-size:28px;line-height:1">＋</div><div style="margin-top:6px">新增商品</div><div class="sub" style="margin-top:4px">單筆完整設定</div></div></article>';
- const bulk='<article class="gb-product-card gb-product-card-add" data-sid="'+attr(sid)+'" onclick="openBulkSessionProducts(this.dataset.sid,true)"><div><div style="font-size:28px;line-height:1">＋＋</div><div style="margin-top:6px">批次建立</div><div class="sub" style="margin-top:4px">最多 30 個</div></div></article>';
- const pricing='<article class="gb-product-card gb-product-card-add" data-sid="'+attr(sid)+'" onclick="openGroupBuyBulkPricing(this.dataset.sid,true)"><div><div style="font-size:24px;line-height:1">＄</div><div style="margin-top:6px">批次設定</div><div class="sub" style="margin-top:4px">全部價格＋級距</div></div></article>';
- setGroupBuyProductManagerPanel(sid,'overview','商品管理','所有商品建立、批次新增、原價、團購價、供應成本、團購主採購價與數量級距都集中在這一頁。','<div class="gb-product-grid">'+cards+add+bulk+pricing+'</div>',restoring);
+ return openGroupBuyProductExcel(sid,restoring);
 }
 const GROUPBUY_PRODUCT_CATEGORIES=['冷凍食品','常溫食品','零食甜點','飲品','生鮮','生活用品','美妝保養','親子','寵物','3C家電','服飾配件','其他'];
 let GroupBuyAIProductSuggestion=null;
@@ -6785,6 +6778,160 @@ window.saveGroupBuyBulkPricing=async function(sessionId){const items=[...documen
 /* 原先的回場次總覽保留，單場內的子功能不再另開 panel。 */
 window.restoreGroupBuyAdminView=async function(){if(AdminState.currentPage!=='groupbuy')return false;const v=readGroupBuyAdminView();if(v&&v.sid)return openGroupBuyUnified(v.sid);return false};
 })();
+</script>
+<style id="groupBuyProductExcelStyle">
+/* 團購商品管理：桌面 Excel 列表、手機同頁響應式，不另開子頁或卡片。 */
+.panel-body:has(#ugbProductArea){max-width:none}
+.gbx-shell{width:100%;min-width:0;display:grid;gap:10px}
+.gbx-topbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.gbx-topbar .btn{min-height:36px;padding:7px 12px;font-size:13px}
+.gbx-change-summary{margin-left:auto;color:var(--muted);font-size:12px;font-weight:850}
+.gbx-batch{border:1px solid #9ed8c4;border-radius:12px;background:#f7fffc;padding:10px;min-width:0}
+.gbx-batch-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.gbx-batch-head b{font-size:14px}.gbx-batch-head .sub{font-size:11px}
+.gbx-batch-grid{display:grid;grid-template-columns:repeat(6,minmax(105px,1fr));gap:7px;align-items:end}
+.gbx-field{display:flex;flex-direction:column;gap:3px;min-width:0}.gbx-field label{font-size:10px;color:var(--muted);font-weight:900}
+.gbx-field input,.gbx-field select,.gbx-field textarea{width:100%;min-width:0;min-height:34px!important;border:1px solid var(--line);border-radius:7px;background:#fff;padding:6px 7px!important;font-size:12px!important}
+.gbx-batch-tiers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.gbx-batch-tierbox{border:1px solid #dbe9e4;border-radius:9px;background:#fff;padding:7px;min-width:0}
+.gbx-batch-tier-title{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;font-weight:900;margin-bottom:5px}
+.gbx-buyget-batch{display:grid;grid-template-columns:auto minmax(75px,110px) minmax(75px,110px);gap:7px;align-items:end;margin-top:8px}
+.gbx-checkline{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:850;min-height:34px;white-space:nowrap}
+.gbx-checkline input{width:17px;height:17px;accent-color:var(--main)}
+.gbx-batch-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.gbx-table-wrap{width:100%;max-width:100%;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;overscroll-behavior-inline:contain}
+.gbx-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:11px;line-height:1.35}
+.gbx-table th,.gbx-table td{border-right:1px solid #eee5dc;border-bottom:1px solid #eee5dc;padding:6px;vertical-align:top;background:#fff}
+.gbx-table th{position:sticky;top:0;z-index:3;background:#effaf6;color:#2b4942;font-weight:950;white-space:nowrap;text-align:left}
+.gbx-table th:last-child,.gbx-table td:last-child{border-right:0}.gbx-table tr:last-child td{border-bottom:0}
+.gbx-table tr.gbx-dirty td{background:#fffdf3}.gbx-table tr.gbx-new td{background:#f8fcff}
+.gbx-table input,.gbx-table select,.gbx-table textarea{width:100%;min-width:0;border:1px solid #dcd4ca;border-radius:6px;background:#fff;padding:5px 6px;font-size:12px;line-height:1.3}
+.gbx-table input,.gbx-table select{min-height:32px}.gbx-table textarea{min-height:52px;resize:vertical}
+.gbx-col-check{width:42px;min-width:42px;text-align:center}.gbx-col-image{width:118px;min-width:118px}.gbx-col-product{width:230px;min-width:230px}.gbx-col-category{width:132px;min-width:132px}.gbx-col-stock{width:96px;min-width:96px}.gbx-col-money{width:94px;min-width:94px}.gbx-col-tier{width:210px;min-width:210px}.gbx-col-buyget{width:130px;min-width:130px}.gbx-col-action{width:82px;min-width:82px}
+.gbx-select{width:18px!important;height:18px;accent-color:var(--main)}
+.gbx-image-cell{display:grid;gap:5px}.gbx-thumb{width:54px;height:54px;border:1px solid var(--line);border-radius:7px;background:#f5f5f2;overflow:hidden;display:grid;place-items:center;color:#999;font-size:9px}.gbx-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.gbx-image-actions{display:flex;gap:4px;flex-wrap:wrap}.gbx-mini-btn{appearance:none;border:1px solid var(--line);border-radius:6px;background:#fff;color:#222;padding:4px 6px;font-size:10px;font-weight:850;line-height:1.2;cursor:pointer}.gbx-mini-btn.danger{color:#b33;border-color:#e9b8b3;background:#fff8f7}.gbx-mini-btn:disabled{opacity:.45;cursor:not-allowed}
+.gbx-upload-status{font-size:9px;color:#53746d;line-height:1.3;word-break:break-word}
+.gbx-product-name{font-weight:900}.gbx-tier-list{display:grid;gap:4px}.gbx-tier-line{display:grid;grid-template-columns:14px minmax(46px,1fr) 14px minmax(52px,1fr) 22px;gap:3px;align-items:center}.gbx-tier-line span{font-size:9px;color:#777;text-align:center}.gbx-tier-line input{min-height:28px!important;padding:3px 4px!important;font-size:11px!important}.gbx-tier-remove{border:0;border-radius:5px;background:#fff0ee;color:#b33;width:22px;height:26px;padding:0;font-weight:950}
+.gbx-tier-add{margin-top:4px}.gbx-stock-stack,.gbx-buyget-stack,.gbx-action-stack{display:grid;gap:5px}.gbx-cell-note{font-size:9px;color:var(--muted);margin-top:3px}.gbx-empty{padding:22px!important;text-align:center;color:var(--muted);font-weight:850}
+.gbx-savebar{position:sticky;bottom:0;z-index:9;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:9px 0 calc(4px + var(--safe-bottom));background:rgba(248,246,240,.96);border-top:1px solid var(--line);backdrop-filter:blur(10px)}
+.gbx-savebar .btn{min-width:126px}
+@media(max-width:1180px){.gbx-batch-grid{grid-template-columns:repeat(3,minmax(110px,1fr))}}
+@media(max-width:720px){
+ .gbx-change-summary{width:100%;margin-left:0}.gbx-batch{padding:8px}.gbx-batch-head{display:block}.gbx-batch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gbx-batch-tiers{grid-template-columns:1fr}.gbx-buyget-batch{grid-template-columns:1fr 1fr}.gbx-buyget-batch .gbx-checkline{grid-column:1/-1}
+ .gbx-table-wrap{overflow:visible;border-radius:9px;background:transparent;border:0}.gbx-table,.gbx-table tbody,.gbx-table tr,.gbx-table td{display:block;width:100%;min-width:0}.gbx-table thead{display:none}.gbx-table tr{margin-bottom:9px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}.gbx-table td{display:grid;grid-template-columns:78px minmax(0,1fr);gap:7px;border-right:0;padding:7px}.gbx-table td::before{content:attr(data-label);font-size:10px;font-weight:950;color:#50645f;padding-top:6px}.gbx-table td.gbx-col-check{display:flex;justify-content:space-between;align-items:center;text-align:left}.gbx-table td.gbx-col-check::before{content:'套用批次設定'}.gbx-col-image,.gbx-col-product,.gbx-col-category,.gbx-col-stock,.gbx-col-money,.gbx-col-tier,.gbx-col-buyget,.gbx-col-action{width:100%;min-width:0}.gbx-image-cell{grid-template-columns:58px minmax(0,1fr);align-items:start}.gbx-image-actions{align-content:start}.gbx-tier-line{grid-template-columns:14px minmax(40px,1fr) 14px minmax(46px,1fr) 22px}.gbx-savebar{justify-content:stretch}.gbx-savebar .btn{flex:1;min-width:0}
+}
+@media(max-width:390px){.gbx-batch-grid{grid-template-columns:1fr}.gbx-buyget-batch{grid-template-columns:1fr}.gbx-buyget-batch .gbx-checkline{grid-column:auto}.gbx-table td{grid-template-columns:68px minmax(0,1fr);padding:6px}}
+</style>
+<script id="groupBuyProductExcelScript">
+let GBXSessionId='',GBXRows=[],GBXBatchKey='',GBXBatchBuyerTiers=[],GBXBatchPromoterTiers=[];
+function gbxClone(v){return JSON.parse(JSON.stringify(v))}
+function gbxId(){return 'GBXN_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
+function gbxRefsFromProduct(p){
+ let raw=safeJson(p.images_json||p.images,[]);if(!Array.isArray(raw))raw=[];
+ if(!raw.length&&p.image_url)raw=[p.image_url];
+ const media=Array.isArray(p.image_media)?p.image_media:[];
+ return raw.map(x=>{if(x&&typeof x==='object')return {...x,status:x.status||'attached'};const u=String(x||'');const m=media.find(y=>String(y.url||y.public_url||'')===u);return m?{...m,url:m.url||m.public_url||u,status:m.status||'attached'}:{mediaId:'',url:u,status:'legacy',bytes:0,width:0,height:0,mime:''}}).filter(x=>x.url);
+}
+function gbxComparable(r){return {id:r.id||'',name:String(r.name||''),category:String(r.category||''),description:String(r.description||''),imageRefs:(r.imageRefs||[]).map(x=>({mediaId:x.mediaId||'',url:x.url||'',status:x.status||''})),originalPrice:String(r.originalPrice??''),price:String(r.price??''),supplyCost:String(r.supplyCost??''),stockQty:String(r.stockQty??''),perMemberLimit:String(r.perMemberLimit??''),buyerTiers:(r.buyerTiers||[]).map(x=>({minQty:String(x.minQty??''),unitPrice:String(x.unitPrice??'')})),promoterTiers:(r.promoterTiers||[]).map(x=>({minQty:String(x.minQty??''),basePrice:String(x.basePrice??'')})),buyGetEnabled:!!r.buyGetEnabled,buyQty:String(r.buyQty??''),freeQty:String(r.freeQty??''),status:String(r.status||'active')};}
+function gbxNormalizeProduct(p){
+ const row={rid:String(p.id||gbxId()),id:String(p.id||''),isNew:!p.id,selected:true,name:String(p.name||''),category:String(p.category||''),description:String(p.description||''),imageRefs:gbxRefsFromProduct(p),uploadStatus:'',originalPrice:p.original_price??p.originalPrice??'',price:p.price??'',supplyCost:p.supply_cost??p.supplyCost??'',stockQty:p.stock_qty==null?(p.stockQty??''):p.stock_qty,perMemberLimit:p.per_member_limit==null?(p.perMemberLimit??''):p.per_member_limit,buyerTiers:safeJson(p.quantity_tiers_json||p.quantityTiers,[])||[],promoterTiers:safeJson(p.default_promoter_tiers_json||p.defaultPromoterTiers,[])||[],buyGetEnabled:!!(p.buy_get_enabled??p.buyGetEnabled),buyQty:p.buy_qty??p.buyQty??'',freeQty:p.free_qty??p.freeQty??'',status:String(p.status||'active')};
+ if(!Array.isArray(row.buyerTiers))row.buyerTiers=[];if(!Array.isArray(row.promoterTiers))row.promoterTiers=[];
+ if(!row.promoterTiers.length)row.promoterTiers=[{minQty:1,basePrice:''}];
+ row._original=row.isNew?null:gbxClone(gbxComparable(row));return row;
+}
+function gbxNewRow(seed={}){return gbxNormalizeProduct({...seed,id:''})}
+function gbxFind(rid){return GBXRows.find(x=>x.rid===String(rid))}
+function gbxHasContent(r){return !!(String(r.name||'').trim()||(r.imageRefs||[]).length||String(r.price??'').trim()||String(r.originalPrice??'').trim()||String(r.description||'').trim())}
+function gbxIsDirty(r){return r.isNew?gbxHasContent(r):JSON.stringify(gbxComparable(r))!==JSON.stringify(r._original||{})}
+function gbxDirtyCount(){return GBXRows.filter(gbxIsDirty).length}
+function gbxRefreshSummary(){const box=document.getElementById('gbxChangeSummary'),n=gbxDirtyCount();if(box)box.textContent=n?'尚有 '+n+' 筆未儲存變更':'目前資料已同步';const save=document.getElementById('gbxSaveAll');if(save)save.disabled=n===0}
+function gbxRowElement(rid){return document.querySelector('[data-gbx-row="'+String(rid).replace(/[^A-Za-z0-9_-]/g,'')+'"]')}
+function gbxMarkRow(rid){const r=gbxFind(rid),el=gbxRowElement(rid);if(r&&el)el.classList.toggle('gbx-dirty',gbxIsDirty(r));gbxRefreshSummary()}
+function gbxCategoryOptions(selected='',blankLabel='請選分類'){const s=String(selected||''),rows=[...GROUPBUY_PRODUCT_CATEGORIES];if(s&&!rows.includes(s))rows.push(s);return '<option value="">'+safe(blankLabel)+'</option>'+rows.map(x=>'<option value="'+attr(x)+'" '+(x===s?'selected':'')+'>'+safe(x)+'</option>').join('')}
+function gbxTierHtml(r,type){
+ const buyer=type==='buyer',rows=buyer?r.buyerTiers:r.promoterTiers,priceKey=buyer?'unitPrice':'basePrice';
+ return '<div class="gbx-tier-list">'+rows.map((t,i)=>'<div class="gbx-tier-line"><span>滿</span><input type="number" min="'+(buyer?2:1)+'" value="'+attr(t.minQty??'')+'" oninput="gbxUpdateTier(\''+attr(r.rid)+'\',\''+type+'\','+i+',\'minQty\',this.value)"><span>件</span><input type="number" min="0" value="'+attr(t[priceKey]??'')+'" oninput="gbxUpdateTier(\''+attr(r.rid)+'\',\''+type+'\','+i+',\''+priceKey+'\',this.value)" aria-label="單價"><button type="button" class="gbx-tier-remove" onclick="gbxRemoveTier(\''+attr(r.rid)+'\',\''+type+'\','+i+')" aria-label="刪除級距">×</button></div>').join('')+'</div><button type="button" class="gbx-mini-btn gbx-tier-add" onclick="gbxAddTier(\''+attr(r.rid)+'\',\''+type+'\')">新增級距</button>';
+}
+function gbxRowHtml(r){
+ const first=(r.imageRefs||[])[0],count=(r.imageRefs||[]).length;
+ return '<tr data-gbx-row="'+attr(r.rid)+'" class="'+(r.isNew?'gbx-new ':'')+(gbxIsDirty(r)?'gbx-dirty':'')+'">'
+  +'<td class="gbx-col-check" data-label="選取"><input class="gbx-select" type="checkbox" '+(r.selected?'checked':'')+' onchange="gbxUpdateSelected(\''+attr(r.rid)+'\',this.checked)">'+(r.isNew?'<span class="gbx-cell-note">新商品</span>':'')+'</td>'
+  +'<td class="gbx-col-image" data-label="圖片"><div class="gbx-image-cell"><div class="gbx-thumb">'+(first?'<img src="'+attr(first.url)+'" alt="">':'尚無圖片')+'</div><div><div class="gbx-image-actions"><label class="gbx-mini-btn">上傳<input type="file" accept="image/*" multiple hidden onchange="gbxUploadImages(\''+attr(r.rid)+'\',this)"></label><button type="button" class="gbx-mini-btn" '+(!first?'disabled':'')+' onclick="gbxAnalyzeRow(\''+attr(r.rid)+'\')">AI辨識</button>'+(first?'<button type="button" class="gbx-mini-btn danger" onclick="gbxRemoveFirstImage(\''+attr(r.rid)+'\')">移除首圖</button>':'')+'</div><div class="gbx-cell-note">'+count+' 張｜自動 1:1 不拉伸</div><div id="gbxStatus_'+attr(r.rid)+'" class="gbx-upload-status">'+safe(r.uploadStatus||'')+'</div></div></div></td>'
+  +'<td class="gbx-col-product" data-label="商品名稱／說明"><input class="gbx-product-name" value="'+attr(r.name)+'" placeholder="商品名稱（必填）" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'name\',this.value)"><textarea rows="2" placeholder="商品說明" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'description\',this.value)">'+safe(r.description)+'</textarea></td>'
+  +'<td class="gbx-col-category" data-label="分類"><select onchange="gbxUpdateField(\''+attr(r.rid)+'\',\'category\',this.value)">'+gbxCategoryOptions(r.category)+'</select></td>'
+  +'<td class="gbx-col-stock" data-label="庫存／限購"><div class="gbx-stock-stack"><input type="number" min="0" value="'+attr(r.stockQty)+'" placeholder="不限" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'stockQty\',this.value)"><input type="number" min="1" value="'+attr(r.perMemberLimit)+'" placeholder="每人不限" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'perMemberLimit\',this.value)"></div></td>'
+  +'<td class="gbx-col-money" data-label="原價"><input type="number" min="0" value="'+attr(r.originalPrice)+'" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'originalPrice\',this.value)"></td>'
+  +'<td class="gbx-col-money" data-label="團購價"><input type="number" min="0" value="'+attr(r.price)+'" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'price\',this.value)"></td>'
+  +'<td class="gbx-col-money" data-label="供應成本"><input type="number" min="0" value="'+attr(r.supplyCost)+'" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'supplyCost\',this.value)"></td>'
+  +'<td class="gbx-col-tier" data-label="買家級距">'+gbxTierHtml(r,'buyer')+'</td>'
+  +'<td class="gbx-col-tier" data-label="團購主採購級距">'+gbxTierHtml(r,'promoter')+'</td>'
+  +'<td class="gbx-col-buyget" data-label="買幾送幾"><div class="gbx-buyget-stack"><label class="gbx-checkline"><input type="checkbox" '+(r.buyGetEnabled?'checked':'')+' onchange="gbxUpdateField(\''+attr(r.rid)+'\',\'buyGetEnabled\',this.checked)">啟用</label><input type="number" min="1" value="'+attr(r.buyQty)+'" placeholder="買 X" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'buyQty\',this.value)"><input type="number" min="1" value="'+attr(r.freeQty)+'" placeholder="送 Y" oninput="gbxUpdateField(\''+attr(r.rid)+'\',\'freeQty\',this.value)"></div></td>'
+  +'<td class="gbx-col-action" data-label="操作"><div class="gbx-action-stack">'+(r.isNew?'<button type="button" class="gbx-mini-btn danger" onclick="gbxRemoveNewRow(\''+attr(r.rid)+'\')">移除新列</button>':'<button type="button" class="gbx-mini-btn" onclick="gbxRevertRow(\''+attr(r.rid)+'\')">復原此列</button>')+'</div></td></tr>';
+}
+function gbxRenderRows(){const body=document.getElementById('gbxTableBody');if(!body)return;body.innerHTML=GBXRows.length?GBXRows.map(gbxRowHtml).join(''):'<tr><td colspan="12" class="gbx-empty">目前沒有商品，請按「新增空白商品列」或「照片批次建立」。</td></tr>';gbxRefreshSummary()}
+function gbxUpdateSelected(rid,v){const r=gbxFind(rid);if(r)r.selected=!!v}
+function gbxUpdateField(rid,key,v){const r=gbxFind(rid);if(!r)return;r[key]=v;gbxMarkRow(rid)}
+function gbxUpdateTier(rid,type,i,key,v){const r=gbxFind(rid),rows=type==='buyer'?r?.buyerTiers:r?.promoterTiers;if(!rows||!rows[i])return;rows[i][key]=v;gbxMarkRow(rid)}
+function gbxAddTier(rid,type){const r=gbxFind(rid);if(!r)return;(type==='buyer'?r.buyerTiers:r.promoterTiers).push(type==='buyer'?{minQty:'',unitPrice:''}:{minQty:'',basePrice:''});gbxRenderRows();setTimeout(()=>gbxRowElement(rid)?.scrollIntoView({block:'nearest'}),0)}
+function gbxRemoveTier(rid,type,i){const r=gbxFind(rid);if(!r)return;const rows=type==='buyer'?r.buyerTiers:r.promoterTiers;rows.splice(i,1);if(type==='promoter'&&!rows.length)rows.push({minQty:1,basePrice:''});gbxRenderRows()}
+function gbxSetStatus(rid,msg){const r=gbxFind(rid);if(r)r.uploadStatus=String(msg||'');const box=document.getElementById('gbxStatus_'+rid);if(box)box.textContent=String(msg||'')}
+function gbxAddBlankRow(count=1){const room=Math.max(0,30-GBXRows.filter(x=>x.isNew).length);const n=Math.min(Math.max(1,Number(count)||1),room);if(!n)return toast('一次最多保留 30 個待建立商品');let first='';for(let i=0;i<n;i++){const r=gbxNewRow();if(!first)first=r.rid;GBXRows.push(r)}gbxRenderRows();setTimeout(()=>{const el=gbxRowElement(first);el?.scrollIntoView({behavior:'smooth',block:'center'});el?.querySelector('.gbx-product-name')?.focus()},0)}
+async function gbxRemoveNewRow(rid){const r=gbxFind(rid);if(!r||!r.isNew)return;for(const ref of (r.imageRefs||[]))await deleteStagedGroupBuyImage(ref);GBXRows=GBXRows.filter(x=>x.rid!==rid);gbxRenderRows()}
+function gbxRevertRow(rid){const r=gbxFind(rid);if(!r||r.isNew||!r._original)return;const base=gbxClone(r._original),restored={...r,...base,rid:r.rid,id:r.id,isNew:false,selected:r.selected,uploadStatus:'',imageRefs:gbxClone(base.imageRefs||[]),buyerTiers:gbxClone(base.buyerTiers||[]),promoterTiers:gbxClone(base.promoterTiers||[]),_original:gbxClone(r._original)};GBXRows[GBXRows.indexOf(r)]=restored;gbxRenderRows()}
+async function gbxRemoveFirstImage(rid){const r=gbxFind(rid),ref=r?.imageRefs?.[0];if(!r||!ref)return;if(ref.status==='staged')await deleteStagedGroupBuyImage(ref);r.imageRefs.shift();gbxRenderRows()}
+async function gbxUploadImages(rid,input){const r=gbxFind(rid),remain=Math.max(0,12-(r?.imageRefs?.length||0)),files=[...(input?.files||[])].slice(0,remain);if(!r||!files.length){if(input)input.value='';return}try{gbxSetStatus(rid,'圖片處理中…');const added=await uploadGroupBuyProductFiles(GBXSessionId,GBXBatchKey+'_'+rid,files,(stage,i,total,_f,x)=>gbxSetStatus(rid,stage==='processing'?`圖片 ${i+1}/${total}：自動 1:1 壓縮中…`:stage==='uploading'?`圖片 ${i+1}/${total}：上傳中（${gbBytesText(x?.bytes)}）…`:`圖片 ${i+1}/${total}：完成`));r.imageRefs=[...(r.imageRefs||[]),...added].slice(0,12);gbxSetStatus(rid,'已完成 '+r.imageRefs.length+' 張');gbxRenderRows();if(!String(r.name||'').trim()&&!String(r.description||'').trim())await gbxAnalyzeRow(rid,true)}catch(e){gbxSetStatus(rid,'圖片失敗：'+(e.message||e));toast('圖片處理失敗：'+(e.message||e),9000)}finally{if(input)input.value=''}}
+async function gbxAnalyzeRow(rid,auto=false){const r=gbxFind(rid),urls=(r?.imageRefs||[]).map(x=>x.url).filter(Boolean).slice(0,3);if(!r||!urls.length)return toast('請先上傳商品圖片');try{gbxSetStatus(rid,'AI 辨識中…');const out=await apiPost({action:'analyzeGroupBuyProductImages',imageUrls:urls});if(out.error)throw new Error(out.error);if(auto||confirm('AI 已辨識完成，要套用商品名稱、分類與說明嗎？')){if((auto&&!r.name)||!auto)if(out.title)r.name=out.title;if((auto&&!r.category)||!auto)if(out.category)r.category=out.category;if((auto&&!r.description)||!auto)if(out.description)r.description=out.description}gbxSetStatus(rid,'AI 辨識完成，請人工確認');gbxRenderRows()}catch(e){gbxSetStatus(rid,'AI 辨識失敗：'+(e.message||e));toast('AI 辨識失敗：'+(e.message||e),9000)}}
+async function gbxPhotoBatch(input){const files=[...(input?.files||[])].filter(x=>/^image\//i.test(x.type||'')).slice(0,30);if(!files.length){if(input)input.value='';return}const room=Math.max(0,30-GBXRows.filter(x=>x.isNew).length);if(!room){toast('一次最多保留 30 個待建立商品');input.value='';return}const selected=files.slice(0,room),pairs=selected.map(f=>{const name=String(f.name||'').replace(/\.[^.]+$/,'').trim();const r=gbxNewRow({name});GBXRows.push(r);return {file:f,row:r}});gbxRenderRows();try{await gbMapLimit(pairs,2,async pair=>{const fake={files:[pair.file],value:''};await gbxUploadImages(pair.row.rid,fake)});toast('照片已建立 '+pairs.length+' 個商品列，請確認內容後儲存')}finally{if(input)input.value=''}}
+function gbxToggleAll(){const all=GBXRows.length&&GBXRows.every(x=>x.selected);GBXRows.forEach(x=>x.selected=!all);gbxRenderRows()}
+function gbxRenderBatchTiers(){
+ const buyer=document.getElementById('gbxBatchBuyerRows'),prom=document.getElementById('gbxBatchPromRows');
+ if(buyer)buyer.innerHTML=GBXBatchBuyerTiers.map((t,i)=>'<div class="gbx-tier-line"><span>滿</span><input type="number" min="2" value="'+attr(t.minQty??'')+'" oninput="GBXBatchBuyerTiers['+i+'].minQty=this.value"><span>件</span><input type="number" min="0" value="'+attr(t.unitPrice??'')+'" oninput="GBXBatchBuyerTiers['+i+'].unitPrice=this.value"><button type="button" class="gbx-tier-remove" onclick="GBXBatchBuyerTiers.splice('+i+',1);gbxRenderBatchTiers()">×</button></div>').join('')||'<div class="gbx-cell-note">勾選「套用」且不加級距，可清除買家級距。</div>';
+ if(prom)prom.innerHTML=GBXBatchPromoterTiers.map((t,i)=>'<div class="gbx-tier-line"><span>滿</span><input type="number" min="2" value="'+attr(t.minQty??'')+'" oninput="GBXBatchPromoterTiers['+i+'].minQty=this.value"><span>件</span><input type="number" min="0" value="'+attr(t.basePrice??'')+'" oninput="GBXBatchPromoterTiers['+i+'].basePrice=this.value"><button type="button" class="gbx-tier-remove" onclick="GBXBatchPromoterTiers.splice('+i+',1);gbxRenderBatchTiers()">×</button></div>').join('')||'<div class="gbx-cell-note">可加上滿 2 件以上的採購級距。</div>';
+}
+function gbxBatchApply(){
+ const rows=GBXRows.filter(x=>x.selected);if(!rows.length)return toast('請先勾選要套用的商品');
+ const val=id=>String(document.getElementById(id)?.value??''),category=val('gbxBatchCategory'),stock=val('gbxBatchStock'),original=val('gbxBatchOriginal'),price=val('gbxBatchPrice'),cost=val('gbxBatchCost'),promBase=val('gbxBatchPromBase');
+ const applyBuyer=!!document.getElementById('gbxBatchApplyBuyer')?.checked,applyProm=!!document.getElementById('gbxBatchApplyProm')?.checked,applyBuyGet=!!document.getElementById('gbxBatchApplyBuyGet')?.checked,buyGetEnabled=!!document.getElementById('gbxBatchBuyGetEnabled')?.checked,buyQty=val('gbxBatchBuyQty'),freeQty=val('gbxBatchFreeQty');
+ const buyer=GBXBatchBuyerTiers.filter(x=>String(x.minQty).trim()!==''&&String(x.unitPrice).trim()!=='').map(x=>({minQty:Number(x.minQty),unitPrice:Number(x.unitPrice)})).filter(x=>x.minQty>=2&&x.unitPrice>=0).sort((a,b)=>a.minQty-b.minQty);
+ const extras=GBXBatchPromoterTiers.filter(x=>String(x.minQty).trim()!==''&&String(x.basePrice).trim()!=='').map(x=>({minQty:Number(x.minQty),basePrice:Number(x.basePrice)})).filter(x=>x.minQty>=2&&x.basePrice>=0).sort((a,b)=>a.minQty-b.minQty);
+ if(applyProm&&promBase==='')return toast('套用團購主級距時，請先填「1 件採購價」');if(applyBuyGet&&buyGetEnabled&&(!(Number(buyQty)>0)||!(Number(freeQty)>0)))return toast('啟用買幾送幾時，請填買 X、送 Y');
+ rows.forEach(r=>{if(category)r.category=category;if(stock!=='')r.stockQty=stock;if(original!=='')r.originalPrice=original;if(price!=='')r.price=price;if(cost!=='')r.supplyCost=cost;if(applyBuyer)r.buyerTiers=gbxClone(buyer);if(applyProm)r.promoterTiers=[{minQty:1,basePrice:Number(promBase)},...gbxClone(extras)];if(applyBuyGet){r.buyGetEnabled=buyGetEnabled;r.buyQty=buyGetEnabled?buyQty:'';r.freeQty=buyGetEnabled?freeQty:''}});gbxRenderRows();toast('已套用到 '+rows.length+' 個勾選商品，尚未儲存')
+}
+function gbxRowPayload(r){
+ const name=String(r.name||'').trim();if(!name)throw new Error('有商品尚未填名稱');
+ const buyer=(r.buyerTiers||[]).filter(x=>String(x.minQty??'').trim()!==''&&String(x.unitPrice??'').trim()!=='').map(x=>({minQty:Number(x.minQty),unitPrice:Number(x.unitPrice)})).filter(x=>x.minQty>=2&&x.unitPrice>=0).sort((a,b)=>a.minQty-b.minQty);
+ const promoter=(r.promoterTiers||[]).filter(x=>String(x.minQty??'').trim()!==''&&String(x.basePrice??'').trim()!=='').map(x=>({minQty:Number(x.minQty),basePrice:Number(x.basePrice)})).filter(x=>x.minQty>=1&&x.basePrice>=0).sort((a,b)=>a.minQty-b.minQty);
+ if(!promoter.length||promoter[0].minQty!==1)throw new Error(name+'：團購主採購級距必須從 1 件開始');if(r.buyGetEnabled&&(!(Number(r.buyQty)>0)||!(Number(r.freeQty)>0)))throw new Error(name+'：買幾送幾必須完整填寫買 X、送 Y');
+ const refs=(r.imageRefs||[]).map(x=>({...x})),urls=refs.map(x=>x.url).filter(Boolean);
+ return {id:r.id||'',name,category:String(r.category||''),description:String(r.description||''),imageRefs:refs,images:urls,imageUrl:urls[0]||'',originalPrice:r.originalPrice,price:r.price,supplyCost:r.supplyCost,stockQty:r.stockQty,perMemberLimit:r.perMemberLimit,quantityTiers:buyer,defaultPromoterTiers:promoter,buyGetEnabled:!!r.buyGetEnabled,buyQty:r.buyGetEnabled?Number(r.buyQty):0,freeQty:r.buyGetEnabled?Number(r.freeQty):0,status:r.status||'active'};
+}
+function gbxSetSaving(on,text=''){document.querySelectorAll('.gbx-savebar button,.gbx-topbar button,.gbx-batch-actions button').forEach(x=>x.disabled=!!on);const btn=document.getElementById('gbxSaveAll');if(btn&&text)btn.textContent=text}
+async function gbxSaveAll(){
+ const dirty=GBXRows.filter(gbxIsDirty),meaningful=dirty.filter(r=>!r.isNew||gbxHasContent(r));if(!meaningful.length)return toast('目前沒有需要儲存的變更');let payloads;try{payloads=meaningful.map(r=>({row:r,data:gbxRowPayload(r)}))}catch(e){return toast(e.message||e,9000)}
+ const existing=payloads.filter(x=>!x.row.isNew),fresh=payloads.filter(x=>x.row.isNew);gbxSetSaving(true,'準備儲存…');
+ try{
+  for(let i=0;i<existing.length;i++){gbxSetSaving(true,'儲存 '+(i+1)+' / '+(existing.length+fresh.length));const r=await apiPost({action:'saveSessionProduct',sessionId:GBXSessionId,...existing[i].data});if(r?.error)throw new Error(r.error);existing[i].row._original=gbxClone(gbxComparable(existing[i].row));}
+  if(fresh.length){gbxSetSaving(true,'建立新商品…');const r=await apiPost({action:'bulkSaveSessionProducts',sessionId:GBXSessionId,idempotencyKey:GBXBatchKey,products:fresh.map(x=>{const d={...x.data};delete d.id;delete d.imageUrl;delete d.status;return d})});if(r?.error)throw new Error(r.error)}
+  toast('已儲存 '+meaningful.length+' 個商品；重新載入確認中…');await loadGroupBuyAdmin();await openGroupBuyProductExcel(GBXSessionId,true);toast('商品資料已重新讀取，儲存完成')
+ }catch(e){gbxRenderRows();toast('儲存未全部完成：'+(e.message||e)+'。已成功的列已標記，未完成內容仍保留。',12000)}finally{gbxSetSaving(false);const btn=document.getElementById('gbxSaveAll');if(btn)btn.textContent='儲存全部變更';gbxRefreshSummary()}
+}
+async function gbxCancelChanges(){const dirty=GBXRows.filter(gbxIsDirty);if(dirty.length&&!confirm('確定放棄尚未儲存的商品變更？'))return;for(const r of GBXRows)for(const ref of (r.imageRefs||[]))if(ref.status==='staged')await deleteStagedGroupBuyImage(ref);await openGroupBuyProductExcel(GBXSessionId,true);toast('已恢復資料庫目前內容')}
+function gbxShellHtml(){return '<div class="gbx-shell"><div class="gbx-topbar"><button type="button" class="btn secondary" onclick="gbxAddBlankRow()">新增空白商品列</button><label class="btn secondary">照片批次建立<input type="file" accept="image/*" multiple hidden onchange="gbxPhotoBatch(this)"></label><button type="button" class="btn secondary" onclick="gbxToggleAll()">全選／取消全選</button><span id="gbxChangeSummary" class="gbx-change-summary"></span></div>'
+ +'<section class="gbx-batch"><div class="gbx-batch-head"><div><b>批次套用</b><div class="sub">空白欄位不更動；只套用到有勾選的商品，套用後仍可逐列修改。</div></div></div><div class="gbx-batch-grid"><div class="gbx-field"><label>分類</label><select id="gbxBatchCategory">'+gbxCategoryOptions('','不變')+'</select></div><div class="gbx-field"><label>庫存</label><input id="gbxBatchStock" type="number" min="0" placeholder="不變"></div><div class="gbx-field"><label>原價</label><input id="gbxBatchOriginal" type="number" min="0" placeholder="不變"></div><div class="gbx-field"><label>團購價</label><input id="gbxBatchPrice" type="number" min="0" placeholder="不變"></div><div class="gbx-field"><label>供應成本</label><input id="gbxBatchCost" type="number" min="0" placeholder="不變"></div><div class="gbx-field"><label>團購主 1 件採購價</label><input id="gbxBatchPromBase" type="number" min="0" placeholder="勾選套用時必填"></div></div>'
+ +'<div class="gbx-batch-tiers"><div class="gbx-batch-tierbox"><div class="gbx-batch-tier-title"><label class="gbx-checkline"><input id="gbxBatchApplyBuyer" type="checkbox">套用買家級距</label><button type="button" class="gbx-mini-btn" onclick="GBXBatchBuyerTiers.push({minQty:\'\',unitPrice:\'\'});gbxRenderBatchTiers()">新增級距</button></div><div id="gbxBatchBuyerRows" class="gbx-tier-list"></div></div><div class="gbx-batch-tierbox"><div class="gbx-batch-tier-title"><label class="gbx-checkline"><input id="gbxBatchApplyProm" type="checkbox">套用團購主級距</label><button type="button" class="gbx-mini-btn" onclick="GBXBatchPromoterTiers.push({minQty:\'\',basePrice:\'\'});gbxRenderBatchTiers()">新增 2 件以上級距</button></div><div id="gbxBatchPromRows" class="gbx-tier-list"></div></div></div>'
+ +'<div class="gbx-buyget-batch"><label class="gbx-checkline"><input id="gbxBatchApplyBuyGet" type="checkbox">套用買幾送幾</label><label class="gbx-checkline"><input id="gbxBatchBuyGetEnabled" type="checkbox">啟用</label><div class="gbx-field"><label>買 X</label><input id="gbxBatchBuyQty" type="number" min="1"></div><div class="gbx-field"><label>送 Y</label><input id="gbxBatchFreeQty" type="number" min="1"></div></div><div class="gbx-batch-actions"><button type="button" class="btn secondary small" onclick="gbxBatchApply()">套用到已勾選商品</button></div></section>'
+ +'<div class="gbx-table-wrap"><table class="gbx-table"><thead><tr><th>選取</th><th>圖片</th><th>商品名稱／說明</th><th>分類</th><th>庫存／限購</th><th>原價</th><th>團購價</th><th>供應成本</th><th>買家級距</th><th>團購主採購級距</th><th>買幾送幾</th><th>操作</th></tr></thead><tbody id="gbxTableBody"></tbody></table></div><div class="gbx-savebar"><button type="button" class="btn secondary" onclick="gbxCancelChanges()">取消變更</button><button id="gbxSaveAll" type="button" class="btn" onclick="gbxSaveAll()">儲存全部變更</button></div></div>'}
+async function openGroupBuyProductExcel(sid,restoring=false){
+ if(!restoring)saveGroupBuyAdminView('products',sid);GBXSessionId=String(sid||'');GBXBatchKey=(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random()).replace(/[^A-Za-z0-9]/g,'');GBXBatchBuyerTiers=[];GBXBatchPromoterTiers=[];
+ let host=document.getElementById('ugbProductArea');if(!host){const body='<div id="ugbProductArea" class="ugb-product-area"><div class="loading">載入商品中…</div></div>';if(!document.getElementById('panel')?.classList.contains('show'))openPanel('商品管理','商品總覽、新增、批次設定與儲存都在同一頁。',body,{replace:true});else{document.getElementById('panelTitle').textContent='商品管理';document.getElementById('panelSub').textContent='商品總覽、新增、批次設定與儲存都在同一頁。';document.getElementById('panelBody').innerHTML=body}host=document.getElementById('ugbProductArea')}
+ if(!host)return;host.innerHTML='<div class="loading">載入商品中…</div>';
+ try{const d=await api({action:'sessionProductsAdmin',sessionId:GBXSessionId});GBXRows=(d.products||[]).map(gbxNormalizeProduct);host.innerHTML=gbxShellHtml();gbxRenderRows();gbxRenderBatchTiers()}catch(e){host.innerHTML='<div class="empty">商品讀取失敗：'+safe(e.message||e)+'</div>';toast('商品讀取失敗：'+(e.message||e),9000)}
+}
+async function gbxOpenAndFocus(sid,pid='',addCount=0,target=''){if(!(document.getElementById('ugbRoot')&&String(sid)===String(GBXSessionId)))await openGroupBuyUnified(sid,'products');else await openGroupBuyProductExcel(sid,true);if(addCount)gbxAddBlankRow(addCount);if(pid)setTimeout(()=>{const el=GBXRows.find(x=>String(x.id)===String(pid));if(el){const row=gbxRowElement(el.rid);row?.scrollIntoView({behavior:'smooth',block:'center'});row?.querySelector('.gbx-product-name')?.focus()}},0);if(target)setTimeout(()=>document.querySelector(target)?.scrollIntoView({behavior:'smooth',block:'start'}),0)}
+window.openSessionProductForm=(sid,pid='')=>gbxOpenAndFocus(sid,pid,pid?0:1);
+window.openBulkSessionProducts=(sid)=>gbxOpenAndFocus(sid,'',3);
+window.openGroupBuyBulkPricing=(sid)=>gbxOpenAndFocus(sid,'',0,'.gbx-batch');
 </script>
 <script id="ugbSupplierV2">
 window.downloadSupplierOrders=async function(sessionId){try{const d=await api({action:'sessionSupplierExport',sessionId}),rows=d&&d.rows||[];if(!rows.length){toast('目前沒有可供出貨的已付款訂單');return}const heads=['訂單編號','收件人','電話','地址','取貨方式','商品','付費數量','贈品數量','實際出貨數量','出貨備註','轉單狀態','物流單號'],keys=['order_no','recipient_name','recipient_phone','shipping_address','fulfillment_type','product_name','quantity','bonus_quantity','fulfillment_quantity','fulfillment_note','transfer_status','tracking_no'],q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',csv='\uFEFF'+heads.map(q).join(',')+'\n'+rows.map(r=>keys.map(k=>q(r[k])).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='供應商出貨單_'+sessionId+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('已下載供應商出貨單｜含付費／贈品／實際出貨數量，不含售價與財務資料')}catch(e){toast('出貨單下載失敗：'+(e.message||e),9000)}};
