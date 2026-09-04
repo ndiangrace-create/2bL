@@ -1830,7 +1830,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260904-theme-management-01';
+const ADMIN_BUILD = '20260905-theme-card-edit-01';
 const API = (location.protocol==='https:' && /(^|\.)2b-love\.com$/i.test(location.hostname)) ? (location.origin+'/s/api') : 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -6431,13 +6431,10 @@ async function createFeatEvent(btn){
   }catch(e){ toast('建立失敗：'+e.message,6000); btn.disabled=false; btn.textContent=old; }
 }
 async function openThemeEvents(){
-  // 主題活動已從「場次」頁搬到「設定」。面板內沿用同一個 featCoverList 容器與 renderFeatCoverList，
-  // 所以上傳圖片、刪除主題的既有邏輯完全不用改。
+  // 主題活動已從「場次」頁搬到「設定」。每張卡片直接提供修改、上傳圖片與刪除操作。
   openPanel('主題活動','一個主題可容納不同類型（市集／體驗／活動）與不同月份的場次；圖片會顯示在前台首頁「精選主題活動」。',
     '<div class="card-actions" style="margin-bottom:12px">'
     +'<button class="btn" onclick="newFeatEvent()">＋ 新增主題</button>'
-    +'<select id="featEditSelect" aria-label="選擇要修改的主題" style="min-width:180px"><option value="">選擇要修改的主題</option></select>'
-    +'<button class="btn secondary" onclick="editSelectedFeatEvent()">修改主題</button>'
     +'<button class="btn secondary" onclick="loadFeatEvents()">重新整理</button>'
     +'</div>'
     +'<div id="featCoverList"><div class="loading">主題活動載入中…</div></div>');
@@ -6451,20 +6448,8 @@ async function ensureThemeEventsData(){
 }
 async function loadFeatEvents(){
   const el=$('featCoverList'); if(el) el.innerHTML='<div class="loading">主題活動載入中…</div>';
-  try{ const evs=await api({action:'getEventsAdmin'}); AdminState.featEvents=Array.isArray(evs)?evs:[]; AdminState.events=AdminState.featEvents; renderFeatCoverList(AdminState.featEvents); renderFeatEditOptions(); renderThemeFilter(); }
+  try{ const evs=await api({action:'getEventsAdmin'}); AdminState.featEvents=Array.isArray(evs)?evs:[]; AdminState.events=AdminState.featEvents; renderFeatCoverList(AdminState.featEvents); renderThemeFilter(); }
   catch(e){ if(el) el.innerHTML='<div class="empty">主題活動載入失敗：'+safe(e.message)+'</div>'; }
-}
-function renderFeatEditOptions(){
-  const sel=$('featEditSelect'); if(!sel) return;
-  const current=sel.value;
-  const rows=AdminState.featEvents||[];
-  sel.innerHTML='<option value="">選擇要修改的主題</option>'+rows.map(e=>'<option value="'+attr(e.id)+'">'+safe(e.title||e.id)+'</option>').join('');
-  if(rows.some(e=>String(e.id)===String(current))) sel.value=current;
-}
-function editSelectedFeatEvent(){
-  const id=$('featEditSelect')?.value||'';
-  if(!id){ toast('請先選擇要修改的主題'); return; }
-  editFeatEvent(id);
 }
 // 主題活動圖片上傳：與場次主視覺同一套（自動補白成 1:1、壓到 5MB 以下）
 async function uploadFeatCover(id, input){
@@ -6524,7 +6509,44 @@ async function saveFeatEvent(id,btn){
     btn.textContent=old;
   }
 }
-function renderFeatCoverList(events){ const el=$('featCoverList'); if(!el) return; if(!events || !events.length){ el.style.display='block'; el.innerHTML='<div class="empty">目前沒有主題活動<br><button class="btn small" style="margin-top:8px" onclick="newFeatEvent()">＋ 新增主題</button></div>'; return; } el.innerHTML=events.map(e=>{ const cov=attr(e.cover||''); const coverInner = e.cover ? '<img src="'+cov+'" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=&#39;none&#39;">' : '<img src="IP指引.png" alt="" style="width:100%;height:100%;object-fit:contain;padding:14px" onerror="this.style.display=&#39;none&#39;">'; return '<div style="background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);flex:0 0 132px;scroll-snap-align:start">'+'<div style="position:relative;aspect-ratio:1/1;background:#DDEAD1;overflow:hidden">'+coverInner+'<div style="position:absolute;top:8px;right:8px;background:#fff;color:#2a6a10;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:800">主題活動</div></div>'+'<div style="padding:8px">'+'<div style="font-size:13px;font-weight:900;color:#2C2C2C;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safe(e.title||e.id)+'</div>'+(e.location?'<div style="font-size:11px;color:#888;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+safe(e.location)+'</div>':'')+'<div style="margin-top:8px">'+'<button class="btn small secondary" style="width:100%;padding:6px 4px;font-size:12px" onclick="document.getElementById(\'feat_file_'+attr(e.id)+'\').click()">📤 上傳主題圖片</button>'+'<input type="file" id="feat_file_'+attr(e.id)+'" accept="image/*" style="display:none" onchange="uploadFeatCover(\''+attr(e.id)+'\',this)">'+'<div style="font-size:10px;color:#999;margin-top:4px;line-height:1.3">自動 1:1</div>'+'</div>'+'<div style="margin-top:8px;border-top:1px dashed #eee;padding-top:7px">'+'<button class="btn small" style="width:100%;padding:5px 4px;font-size:11px;background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteFeatEvent(\''+attr(e.id)+'\',this)">刪除主題</button>'+'<div style="font-size:10px;color:#999;margin-top:4px;line-height:1.3">只刪主題，場次保留</div></div>'+'</div></div>'; }).join(''); el.style.display='flex'; el.style.overflowX='auto'; el.style.gap='14px'; el.style.paddingBottom='10px'; el.style.scrollSnapType='x proximity'; el.style.webkitOverflowScrolling='touch'; bindFeatDragScroll(el); }
+function renderFeatCoverList(events){
+  const el=$('featCoverList');
+  if(!el) return;
+  if(!events || !events.length){
+    el.style.display='block';
+    el.innerHTML='<div class="empty">目前沒有主題活動<br><button class="btn small" style="margin-top:8px" onclick="newFeatEvent()">＋ 新增主題</button></div>';
+    return;
+  }
+  el.innerHTML=events.map(e=>{
+    const id=attr(e.id);
+    const cov=attr(e.cover||'');
+    const coverInner=e.cover
+      ? '<img src="'+cov+'" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=&#39;none&#39;">'
+      : '<img src="IP指引.png" alt="" style="width:100%;height:100%;object-fit:contain;padding:14px" onerror="this.style.display=&#39;none&#39;">';
+    return '<div style="background:#fff;border-radius:18px;border:1px solid rgba(0,0,0,.08);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06);flex:0 0 132px;scroll-snap-align:start">'
+      +'<div style="position:relative;aspect-ratio:1/1;background:#DDEAD1;overflow:hidden">'+coverInner+'<div style="position:absolute;top:8px;right:8px;background:#fff;color:#2a6a10;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:800">主題活動</div></div>'
+      +'<div style="padding:8px">'
+      +'<div style="font-size:13px;font-weight:900;color:#2C2C2C;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safe(e.title||e.id)+'</div>'
+      +(e.location?'<div style="font-size:11px;color:#888;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+safe(e.location)+'</div>':'')
+      +'<div style="margin-top:8px;display:grid;gap:6px">'
+      +'<button class="btn small" style="width:100%;padding:6px 4px;font-size:12px" onclick="editFeatEvent(\''+id+'\')">修改主題</button>'
+      +'<button class="btn small secondary" style="width:100%;padding:6px 4px;font-size:12px" onclick="document.getElementById(\'feat_file_'+id+'\').click()">📤 上傳主題圖片</button>'
+      +'<input type="file" id="feat_file_'+id+'" accept="image/*" style="display:none" onchange="uploadFeatCover(\''+id+'\',this)">'
+      +'<div style="font-size:10px;color:#999;line-height:1.3">自動 1:1</div>'
+      +'</div>'
+      +'<div style="margin-top:8px;border-top:1px dashed #eee;padding-top:7px">'
+      +'<button class="btn small" style="width:100%;padding:5px 4px;font-size:11px;background:#fdecea;color:#c0392b;border:1.5px solid #c0392b" onclick="deleteFeatEvent(\''+id+'\',this)">刪除主題</button>'
+      +'<div style="font-size:10px;color:#999;margin-top:4px;line-height:1.3">只刪主題，場次保留</div>'
+      +'</div></div></div>';
+  }).join('');
+  el.style.display='flex';
+  el.style.overflowX='auto';
+  el.style.gap='14px';
+  el.style.paddingBottom='10px';
+  el.style.scrollSnapType='x proximity';
+  el.style.webkitOverflowScrolling='touch';
+  bindFeatDragScroll(el);
+}
 function bindFeatDragScroll(el){ if(!el || el.__dragBound) return; el.__dragBound=true; let down=false,sx,sl; el.addEventListener('mousedown',e=>{ if(e.target.closest('input,button,textarea')) return; down=true; sx=e.pageX-el.offsetLeft; sl=el.scrollLeft; el.style.cursor='grabbing'; }); el.addEventListener('mouseleave',()=>{ down=false; el.style.cursor=''; }); el.addEventListener('mouseup',()=>{ down=false; el.style.cursor=''; }); el.addEventListener('mousemove',e=>{ if(!down) return; e.preventDefault(); const x=e.pageX-el.offsetLeft; el.scrollLeft=sl-(x-sx)*1.5; }); }
 async function deleteFeatEvent(id, btn){
   // 刪除類僅限平台總管理員；後端也會再擋一次。
@@ -6545,7 +6567,6 @@ async function deleteFeatEvent(id, btn){
     AdminState.featEvents=(AdminState.featEvents||[]).filter(x=>String(x.id)!==String(id));
     AdminState.events=AdminState.featEvents;
     renderFeatCoverList(AdminState.featEvents);
-    renderFeatEditOptions();
     renderThemeFilter();
     toast('已刪除主題');
   }catch(e){ toast('刪除失敗：'+e.message,6000); btn.disabled=false; btn.textContent=old; }
