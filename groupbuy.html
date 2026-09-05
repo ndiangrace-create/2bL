@@ -323,7 +323,15 @@ async function tryPromoterAdmin(){if(!tk()){hiddenAdminIntent=true;openPublicLog
 function bindHiddenAdmin(){const el=document.getElementById('brandEntry');if(!el)return;const start=e=>{logoHeld=false;cancelLogoHold();logoHoldTimer=setTimeout(async()=>{logoHeld=true;logoHoldTimer=0;await tryPromoterAdmin()},3000)};const stop=()=>cancelLogoHold();el.addEventListener('pointerdown',start);el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);el.addEventListener('pointerleave',stop);el.addEventListener('contextmenu',e=>e.preventDefault());el.addEventListener('click',e=>{if(logoHeld){logoHeld=false;e.preventDefault();return}goHome()})}
 refreshLoginState();bindHiddenAdmin();
 
-boot();
+async function openApplicationFromLink(){
+ if(Q.get('apply')!=='1')return;
+ if(!groupCode&&!ref&&!Q.get('id'))return alert('招募連結缺少場次，請使用主辦提供的完整申請網址。');
+ // Only open after the requested store has loaded; keep load errors visible.
+ if(!S?.id||!P.length)return;
+ try{await openApplyForSession(String(S.id))}
+ catch(e){alert('申請表載入失敗，請稍後再點「申請加入團購主」重試。')}
+}
+boot().then(openApplicationFromLink);
 const _existTk=localStorage.getItem(TK);
   // 從付款頁回來 → 自動開訂單列表
   if(new URLSearchParams(location.search).get('orders')==='1'){
