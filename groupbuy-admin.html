@@ -930,7 +930,8 @@ async function loadApply(){
     let m=[],p=[];
     if(S.isPlatform){
       const d=await api('groupBuyPromoterAdminData',{},'GET');
-      m=(d.applications||[]).filter(a=>a.audience_size!=null||a.apply_note);
+      S.applySessions=d.sessions||[];S.applyPromoters=d.promoters||[];
+      m=(d.applications||[]).filter(a=>a.source_entry==='groupbuy_general'&&!a.source_session_id);
       p=(d.applications||[]).filter(a=>!m.includes(a));
     }else if(S.sid){
       const d=await api('sessionProductsAdmin',{sessionId:S.sid},'GET');
@@ -945,9 +946,9 @@ async function loadApply(){
     });
     let html='';
     if(S.isPlatform){
-      html+=`<div class="sec-t">場次管理員申請</div>`;
+      html+=`<div class="sec-t">通用團購主申請</div>`;
       html+=m.length?m.map(a=>applyCardHtml(a)).join(''):'<div class="empty" style="padding:20px"><div class="empty-t">目前沒有申請</div></div>';
-      html+=`<div class="sec-t" style="margin-top:20px">團購主申請</div>`;
+      html+=`<div class="sec-t" style="margin-top:20px">原場次團購主申請</div>`;
     }
     html+=p.length?p.map(a=>applyCardHtml(a)).join(''):'<div class="empty" style="padding:20px"><div class="empty-t">目前沒有申請</div></div>';
     $('apply-content').innerHTML=html;
@@ -955,7 +956,7 @@ async function loadApply(){
 }
 function applyCardHtml(a){
   const chip={pending:'<span class="chip chip-yellow">待審核</span>',approved:'<span class="chip chip-blue">待啟用</span>',rejected:'<span class="chip chip-gray">已拒絕</span>',active:'<span class="chip chip-green">已啟用</span>'}[a.status]||'';
-  return`<div class="acard" onclick="openApply('${esc(a.id)}','${a.source_session_id||S.sid||''}')">
+  return`<div class="acard" onclick="openApply('${esc(a.id)}','${esc(a.source_session_id||'')}')">
     <div class="acard-top"><div class="acard-name">${esc(a.brand_name||a.display_name||a.member_email||'申請者')}</div>${chip}</div>
     <div class="acard-meta">${esc(a.member_email||'')}${a.phone?' · '+esc(a.phone):''}${a.source_session_name?' · '+esc(a.source_session_name):''}</div>
   </div>`;
@@ -963,6 +964,7 @@ function applyCardHtml(a){
 function openApply(id,sid){
   const all=[...S.applications.m,...S.applications.p];
   const a=all.find(x=>x.id===id);if(!a)return;
+  if(a.source_entry==='groupbuy_general'&&!a.source_session_id)return openGeneralApply(a);
   const isPending=a.status==='pending';
   const body=`
     <div class="dr"><span class="dk">姓名/品牌</span><span class="dv">${esc(a.brand_name||a.display_name||'—')}</span></div>
@@ -979,6 +981,22 @@ function openApply(id,sid){
     :`<div style="text-align:center;color:var(--c-muted);font-size:13px">狀態：${a.status}</div>`;
   openPanel(a.brand_name||a.display_name||'申請','',body,foot);
 }
+
+function openGeneralApply(a){
+ const assigned=(S.applyPromoters||[]).filter(p=>p.member_id===a.member_id&&p.status==='active'),ids=new Set(assigned.map(p=>p.session_id));
+ const choices=(S.applySessions||[]).filter(s=>s.status==='團購中'&&!ids.has(s.id));
+ const body=`<p>通用申請：核准不會開通場次。請核准後逐場指派。</p><div class="dr">${esc(a.display_name||'')} · ${esc(a.member_email||'')}</div><p>${esc(a.phone||'')}</p><p>${esc(a.apply_note||'')}</p><p>已啟用場次：${assigned.map(p=>esc(p.session_name||p.session_id)).join('、')||'尚未指派'}</p>`;
+ const foot=!S.isPlatform?'':a.status==='pending'?`<button class="btn btn-p btn-w" onclick="doReview('${esc(a.id)}','','approved')">核准通用申請（不開通場次）</button><button class="btn btn-d btn-w" onclick="doReview('${esc(a.id)}','','rejected')">拒絕申請</button>`:a.status==='approved'?`<label for="generalSession">指派場次</label><select id="generalSession"><option value="">請選擇一場</option>${choices.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select><button id="generalAssignBtn" class="btn btn-p btn-w" onclick="assignGeneralApplication('${esc(a.id)}')">開通選定場次</button>`:`<p>申請已拒絕或取消</p>`;
+ openPanel(a.display_name||'通用申請','',body,foot);
+}
+async function assignGeneralApplication(id){
+ const sid=$('generalSession').value;if(!sid)return toast('請先選擇場次',true);
+ const session=(S.applySessions||[]).find(s=>s.id===sid);if(!session)return;
+ if(!confirm('確定只開通「'+session.name+'」？其他場次不會開通。'))return;
+ const button=$('generalAssignBtn');button.disabled=true;
+ try{await api('saveSessionPromoter',{applicationId:id,sessionId:sid,promoterTiers:{},assignOnly:true});toast('已開通選定場次');closePanel();await loadApply()}catch(e){toast(e.message,true)}finally{button.disabled=false}
+}
+
 async function doReview(id,sid,status){
   if(!confirm({approved:'確定核准？',rejected:'確定拒絕？'}[status]||'確認？'))return;
   try{await api('reviewSessionManagerApplication',{id,sessionId:sid,status});toast(`已${status==='approved'?'核准':'拒絕'}`);closePanel();loadApply()}catch(e){toast(e.message,true)}
