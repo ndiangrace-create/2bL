@@ -183,6 +183,12 @@
 .equip-compact-card .eq-open-line{margin-top:6px;}
 .tight-session-settings .date-head-row,.tight-session-settings .date-line-row{grid-template-columns:132px minmax(64px,82px) minmax(116px,1fr) minmax(116px,1fr) 88px 78px 50px!important;gap:6px!important;}
 .tight-session-settings .date-line-row input[id^="set_date_label_"]{max-width:82px!important;}
+.session-date-range-card{border:1px solid #b9d8cf;border-radius:14px;background:#f4fbf8;padding:10px;margin:8px 0;}
+.session-date-range-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.session-date-range-badge{display:inline-flex;align-items:center;border-radius:999px;background:#dcefe8;color:#245f54;padding:5px 10px;font-size:13px;font-weight:950;}
+.session-date-range-grid{display:grid;grid-template-columns:142px 142px minmax(86px,1fr) 116px 116px 96px 88px;gap:7px;align-items:end;}
+.session-date-range-grid label{display:grid!important;gap:4px!important;margin:0!important;min-width:0;font-size:12px!important;color:#5f6f69;font-weight:900!important;}
+.session-date-range-grid input,.session-date-range-grid select{min-width:0!important;width:100%!important;}
 .seat-map-save-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
 .seat-map-save-inline .btn{min-height:34px!important;}
 @media(max-width:900px){
@@ -190,11 +196,13 @@
   .tight-session-settings .session-basic-grid .span2,.tight-session-settings .session-basic-grid .span3,.tight-session-settings .session-basic-grid .full{grid-column:1 / -1;}
   .tight-session-settings .org-row{grid-template-columns:1fr;}
   .equip-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .session-date-range-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 @media(max-width:560px){
   .tight-session-settings .session-basic-grid{grid-template-columns:1fr;}
   .equip-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .tight-session-settings .date-line-row{grid-template-columns:1fr 1fr!important;}
+  .session-date-range-card{padding:9px;}
 }
 
 
@@ -1830,7 +1838,7 @@
 
 <script>
 'use strict';
-const ADMIN_BUILD = '20260905-groupbuy-review-switch-08';
+const ADMIN_BUILD = '20260905-session-date-range-14';
 const API = (location.protocol==='https:' && /(^|\.)2b-love\.com$/i.test(location.hostname)) ? (location.origin+'/s/api') : 'https://2bl-v7.ndiangrace.workers.dev';
 const TENANT_KEY = '2bl_tenant';
 const SESSION_KEY = 'tb_v3';
@@ -3490,9 +3498,26 @@ function timeOptionsHtml(selected){
   return html;
 }
 
+function sessionDateIsRange(d){
+  return !!(d&&typeof d==='object'&&(String(d.mode||d.dateMode||'').toLowerCase()==='range'||(d.startDate&&d.endDate&&String(d.startDate)!==String(d.endDate))));
+}
+function sessionDateStartKey(d){
+  return String((d&&typeof d==='object'?(d.startDate||d.date||d.day):d)||'').slice(0,10);
+}
+function sessionDateEndKey(d){
+  return String((d&&typeof d==='object'?(d.endDate||d.date||d.day):d)||'').slice(0,10);
+}
+function sessionDateDisplayText(d){
+  const from=sessionDateStartKey(d),to=sessionDateEndKey(d);
+  const dateText=sessionDateIsRange(d)&&from&&to?from.replaceAll('-','/')+'～'+to.replaceAll('-','/'):from.replaceAll('-','/');
+  const label=String(d&&d.label||'').trim();
+  const timeText=[String(d&&d.start||''),String(d&&d.end||'')].filter(Boolean).join('～');
+  return [label&&dateText?label+'｜'+dateText:(label||dateText),timeText].filter(Boolean).join(' ');
+}
 function sessionDateRowHtml(d={},idx){
   d = d || {};
-  return '<div class="date-line-row" data-idx="'+idx+'">'
+  if(sessionDateIsRange(d)) return sessionDateRangeRowHtml(d,idx);
+  return '<div class="session-date-entry date-line-row" data-mode="single" data-idx="'+idx+'">'
     +'<input id="set_date_date_'+idx+'" type="date" value="'+attr(d.date||'')+'" title="日期" onchange="renderRegistrationSchedulePreview()">'
     +'<input id="set_date_label_'+idx+'" value="'+attr(d.label||'')+'" placeholder="顯示名" title="顯示名稱，可空白">'
     +'<select id="set_date_start_'+idx+'" title="開始時間">'+timeOptionsHtml(d.start||'10:00')+'</select>'
@@ -3501,6 +3526,20 @@ function sessionDateRowHtml(d={},idx){
     +'<input id="set_date_limit_'+idx+'" type="number" value="'+attr(Number(d.limit||0)||0)+'" placeholder="名額" title="名額">'
     +'<button type="button" class="btn secondary small" onclick="removeSessionDateRow('+idx+')">刪</button>'
     +'</div>';
+}
+function sessionDateRangeRowHtml(d={},idx){
+  const from=sessionDateStartKey(d),to=sessionDateEndKey(d);
+  return '<div class="session-date-entry session-date-range-card" data-mode="range" data-idx="'+idx+'">'
+    +'<div class="session-date-range-head"><span class="session-date-range-badge">整檔區段｜報名一次涵蓋整段</span><button type="button" class="btn secondary small" onclick="removeSessionDateRow('+idx+')">刪除區段</button></div>'
+    +'<div class="session-date-range-grid">'
+    +'<label>開始日期<input id="set_range_startDate_'+idx+'" type="date" value="'+attr(from)+'" onchange="renderRegistrationSchedulePreview()"></label>'
+    +'<label>結束日期<input id="set_range_endDate_'+idx+'" type="date" value="'+attr(to)+'" onchange="renderRegistrationSchedulePreview()"></label>'
+    +'<label>顯示名<input id="set_range_label_'+idx+'" value="'+attr(d.label||'')+'" placeholder="可空白"></label>'
+    +'<label>每日開始<select id="set_range_start_'+idx+'">'+timeOptionsHtml(d.start||'10:00')+'</select></label>'
+    +'<label>每日結束<select id="set_range_end_'+idx+'">'+timeOptionsHtml(d.end||'18:00')+'</select></label>'
+    +'<label>整檔費用<input id="set_range_fee_'+idx+'" type="number" min="0" value="'+attr(Number(d.fee||0)||0)+'"></label>'
+    +'<label>整檔名額<input id="set_range_limit_'+idx+'" type="number" min="0" value="'+attr(Number(d.limit||0)||0)+'"></label>'
+    +'</div></div>';
 }
 function renderSessionDateRows(rows){
   sessionDateRowIdx=0;
@@ -3514,19 +3553,36 @@ function addSessionDateRow(d={}){
   const idx=++sessionDateRowIdx;
   box.insertAdjacentHTML('beforeend', sessionDateRowHtml(d,idx));
 }
+function addSessionDateRangeRow(d={}){
+  addSessionDateRow({mode:'range',date:d.startDate||d.date||'',startDate:d.startDate||d.date||'',endDate:d.endDate||'',label:d.label||'',start:d.start||'10:00',end:d.end||'18:00',fee:Number(d.fee||0)||0,limit:Number(d.limit||0)||0});
+}
 function copySessionDateRow(){
   const rows=collectSessionDates();
   addSessionDateRow(rows[rows.length-1] || {date:'',label:'',start:'10:00',end:'18:00',fee:0,limit:0});
 }
 function removeSessionDateRow(idx){
-  const row=document.querySelector('.date-line-row[data-idx="'+idx+'"]'); if(row) row.remove();
-  if(!document.querySelectorAll('.date-line-row').length) addSessionDateRow({date:'',label:'',start:'10:00',end:'18:00',fee:0,limit:0});
+  const row=document.querySelector('.session-date-entry[data-idx="'+idx+'"]'); if(row) row.remove();
+  if(!document.querySelectorAll('.session-date-entry').length) addSessionDateRow({date:'',label:'',start:'10:00',end:'18:00',fee:0,limit:0});
 }
 function collectSessionDates(){
-  const rows=[...document.querySelectorAll('.date-line-row')];
+  const rows=[...document.querySelectorAll('.session-date-entry')];
   const out=[];
   for(const row of rows){
     const i=row.dataset.idx;
+    if(row.dataset.mode==='range'){
+      const startDate=String($('set_range_startDate_'+i)?.value||'').trim();
+      const endDate=String($('set_range_endDate_'+i)?.value||'').trim();
+      const label=String($('set_range_label_'+i)?.value||'').trim();
+      const start=String($('set_range_start_'+i)?.value||'').trim();
+      const end=String($('set_range_end_'+i)?.value||'').trim();
+      const fee=Number($('set_range_fee_'+i)?.value||0)||0;
+      const limit=Number($('set_range_limit_'+i)?.value||0)||0;
+      if(!startDate&&!endDate&&!label&&!fee&&!limit) continue;
+      if(!startDate||!endDate) throw new Error('整檔區段請同時填寫開始日期與結束日期');
+      if(endDate<startDate) throw new Error('整檔區段的結束日期不可早於開始日期');
+      out.push({mode:'range',date:startDate,startDate,endDate,label,start:start||'10:00',end:end||'18:00',fee,limit});
+      continue;
+    }
     const d=String($('set_date_date_'+i)?.value||'').trim();
     const label=String($('set_date_label_'+i)?.value||'').trim();
     const start=String($('set_date_start_'+i)?.value||'').trim();
@@ -3535,6 +3591,13 @@ function collectSessionDates(){
     const limit=Number($('set_date_limit_'+i)?.value||0)||0;
     if(!d && !label && !fee && !limit) continue;
     out.push({date:d,label:label,start:start||'10:00',end:end||'18:00',fee,limit});
+  }
+  const anchors=new Map();
+  for(const entry of out){
+    const key=sessionDateStartKey(entry);if(!key)continue;
+    const previous=anchors.get(key);
+    if(previous&&(sessionDateIsRange(previous)||sessionDateIsRange(entry))) throw new Error('整檔區段的開始日期不可與另一個日期項目相同：'+key);
+    anchors.set(key,entry);
   }
   return out;
 }
@@ -4490,7 +4553,7 @@ function sessionAiVisualSectionHtml(s){
 }
 function aiVisualDateTextForPreview(s){
   const list=(typeof collectSessionDates==='function' && $('set_datesRows')) ? collectSessionDates() : sessionDates(s||{});
-  return (Array.isArray(list)?list:[]).map(d=>String((d&&typeof d==='object')?(d.label||d.name||d.date||''):d||'').trim()).filter(Boolean).join('、');
+  return (Array.isArray(list)?list:[]).map(d=>sessionDateIsRange(d)?sessionDateDisplayText(d):String((d&&typeof d==='object')?(d.label||d.name||d.date||''):d||'').trim()).filter(Boolean).join('、');
 }
 function aiVisualPreviewMeta(){
   const s=sessionById(AdminState.currentSessionId)||{};
@@ -4601,7 +4664,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field full"><div class="org-row"><div class="form-field"><label>主辦單位</label><input id="set_organizer" value="'+attr(s.organizer||'')+'"></div><div class="form-field"><label>合作單位</label>'+coorgInputsHtml(s)+'</div></div></div>'
   +'</div></div>'
   +sessionAiVisualSectionHtml(s)
-  +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增日期</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">顯示名可空白；欄位已縮短，避免壓住開始/結束時間。</div></div>'
+  +'<div class="report-card"><div class="report-title">活動日期 & 時段</div><div class="compact-actions"><button type="button" class="btn small" onclick="addSessionDateRow()">＋ 新增單日</button><button type="button" class="btn small" onclick="addSessionDateRangeRow()">＋ 新增整檔區段</button><button type="button" class="btn secondary small" onclick="copySessionDateRow()">複製上一個</button></div><div class="date-head-row"><span>單日日期</span><span>顯示名</span><span>開始</span><span>結束</span><span>單日費用</span><span>名額</span><span></span></div><div id="set_datesRows"></div><div class="sub">單日與整檔區段可並存；整檔只建立一個報名選項、收一次整檔費用，既有單日資料格式不變。</div></div>'
   +'<div class="report-card"><div class="report-title">報名開放排程</div>'
   +'<label class="tight-check"><input type="checkbox" id="set_registrationScheduleEnabled" '+(registrationScheduleEnabled?'checked':'')+' onchange="toggleRegistrationScheduleBox()"> 啟用已填完整的報名階段</label>'
   +'<div class="sub" style="margin-top:6px">每段可獨立設定；整段留白就不啟動。第一次活動日期作為「活動前 X 天」的計算基準。</div>'
@@ -5262,7 +5325,7 @@ async function loadAdminManualSession(sid){
     const s=await api({action:'adminManualSession',sessionId:sid,_t:Date.now()});
     AdminManualReg.session=s;
     const dates=Array.isArray(s.dates)?s.dates:[];
-    const dateKeys=dates.map(d=>String((d&&typeof d==='object')?(d.date||d.day||''):d)).filter(Boolean);
+    const dateKeys=dates.map(sessionDateEndKey).filter(Boolean);
     const lastDate=dateKeys.slice().sort().pop()||'';
     const today=new Date().toISOString().slice(0,10);
     const ended=!!lastDate&&lastDate<today;
@@ -5270,9 +5333,10 @@ async function loadAdminManualSession(sid){
     const suggestHistorical=ended||closed;
 
     const dateHtml=dates.length?dates.map(d=>{
-      const day=String((d&&typeof d==='object')?(d.date||d.day||''):d);
+      const day=sessionDateStartKey(d);
+      const dayLabel=sessionDateIsRange(d)?sessionDateDisplayText(d):day;
       const fee=(d&&typeof d==='object')?Number(d.fee||0):0;
-      return `<label class="amr-date-option" style="display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;width:100%!important;padding:12px 14px!important;margin:7px 0!important;border:1px solid var(--line)!important;border-radius:14px!important;background:#fff!important;cursor:pointer!important"><input type="checkbox" class="amrDate" value="${attr(day)}" style="width:20px!important;height:20px!important;margin:0!important;justify-self:start!important"><span style="min-width:0;font-weight:900;color:var(--ink)">${safe(day)}</span><strong style="white-space:nowrap;color:var(--main2)">${fee?money(fee):'依場次費用'}</strong></label>`;
+      return `<label class="amr-date-option" style="display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;width:100%!important;padding:12px 14px!important;margin:7px 0!important;border:1px solid var(--line)!important;border-radius:14px!important;background:#fff!important;cursor:pointer!important"><input type="checkbox" class="amrDate" value="${attr(day)}" style="width:20px!important;height:20px!important;margin:0!important;justify-self:start!important"><span style="min-width:0;font-weight:900;color:var(--ink)">${safe(dayLabel)}</span><strong style="white-space:nowrap;color:var(--main2)">${fee?money(fee):'依場次費用'}</strong></label>`;
     }).join(''):'<div class="sub">此場次沒有多日選項，使用場次單場費用。</div>';
 
     const equip=s.equip&&typeof s.equip==='object'?s.equip:{};
@@ -6632,7 +6696,11 @@ function ugbPaymentOptions(profiles,selected){return paymentProfileOptionsHtml(p
 function ugbPaymentPreview(id){return paymentProfilePreviewHtml(id)}
 
 function ugbSettingsHtml(s){
- const g=s.groupBuySettings||{},imgs=(Array.isArray(g.coverImages)?g.coverImages:[g.coverImageUrl]).filter(Boolean),profiles=AdminState.paymentProfiles||[];
+ const g=s.groupBuySettings||{},imgs=(Array.isArray(g.coverImages)?g.coverImages:[g.coverImageUrl]).filter(Boolean),profiles=AdminState.paymentProfiles||[],
+  promoterPickup=g.promoterPickupEnabled==null?g.pickupEnabled!==false:g.promoterPickupEnabled===true,
+  promoterShipping=g.promoterShippingEnabled==null?g.shippingEnabled===true:g.promoterShippingEnabled===true,
+  promoterShippingFee=g.promoterShippingFee==null?Number(g.shippingFee||0):Number(g.promoterShippingFee||0),
+  promoterFreeShippingThreshold=g.promoterFreeShippingThreshold==null?Number(g.freeShippingThreshold||0):Number(g.promoterFreeShippingThreshold||0);
  return '<form class="ugb-c-form" onsubmit="return false">'
   +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">基本設定</div>'
   +'<div class="ugb-c-row"><div class="ugb-c-field ugb-c-grow"><label>團購名稱</label><input id="s_gb_name" value="'+attr(s.name||'')+'"></div><div class="ugb-c-field" style="flex-shrink:0"><label style="visibility:hidden">開放</label><label class="ugb-c-check"><input id="s_gb_open" type="checkbox" '+(s.status==='已關閉'?'':'checked')+'> 前台開放</label></div></div>'
@@ -6650,13 +6718,22 @@ function ugbSettingsHtml(s){
   +'<div class="ugb-c-field ugb-c-grow"><label>截止</label><input id="s_gb_end" type="datetime-local" value="'+attr(ugbLocal(g.saleEndAt||''))+'"></div>'
   +'</div>'
   +'</div>'
-  +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">配送設定</div>'
-  +'<div class="ugb-c-sub-title">買家</div>'
+  +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">配送與免運設定</div>'
+  +'<div class="ugb-c-sub-title">一般買家訂單</div>'
   +'<div class="ugb-c-row" style="margin-bottom:10px"><label class="ugb-c-check"><input id="s_gb_pickup" type="checkbox" '+(g.pickupEnabled!==false?'checked':'')+'> 現場取貨</label><label class="ugb-c-check"><input id="s_gb_shipping" type="checkbox" '+(g.shippingEnabled===true?'checked':'')+'> 宅配</label></div>'
   +'<div class="ugb-c-row">'
   +'<div class="ugb-c-field ugb-c-grow"><label>宅配運費</label><input id="s_gb_shipfee" type="number" min="0" value="'+attr(g.shippingFee||0)+'"></div>'
-  +'<div class="ugb-c-field ugb-c-grow"><label>免運門檻</label><input id="s_gb_free" type="number" min="0" value="'+attr(g.freeShippingThreshold||0)+'"></div>'
+  +'<div class="ugb-c-field ugb-c-grow"><label>免運門檻（折扣後商品小計）</label><input id="s_gb_free" type="number" min="0" value="'+attr(g.freeShippingThreshold||0)+'"></div>'
   +'</div>'
+  +'<div class="sub" style="margin:-2px 0 12px">門檻填 0 代表不自動免運。</div>'
+  +'<div style="border-top:1px solid var(--line);margin:10px 0 12px"></div>'
+  +'<div class="ugb-c-sub-title">團購主本人採購訂單</div>'
+  +'<div class="ugb-c-row" style="margin-bottom:10px"><label class="ugb-c-check"><input id="s_gb_promoter_pickup" type="checkbox" '+(promoterPickup?'checked':'')+'> 現場取貨</label><label class="ugb-c-check"><input id="s_gb_promoter_shipping" type="checkbox" '+(promoterShipping?'checked':'')+'> 宅配</label></div>'
+  +'<div class="ugb-c-row">'
+  +'<div class="ugb-c-field ugb-c-grow"><label>團購主宅配運費</label><input id="s_gb_promoter_shipfee" type="number" min="0" value="'+attr(promoterShippingFee)+'"></div>'
+  +'<div class="ugb-c-field ugb-c-grow"><label>團購主免運門檻（採購小計）</label><input id="s_gb_promoter_free" type="number" min="0" value="'+attr(promoterFreeShippingThreshold)+'"></div>'
+  +'</div>'
+  +'<div class="sub" style="margin:-2px 0 12px">團購主採購小計由資料庫依每項商品的實際數量套用採購級距後加總；達本門檻時宅配運費為 0。門檻填 0 代表不自動免運。</div>'
   +'<div class="ugb-c-field"><label>取貨說明</label><input id="s_gb_picknote" value="'+attr(g.pickupNote||'')+'"></div>'
   +'</div>'
   +'<div class="ugb-c-sec"><div class="ugb-c-sec-title">收款設定</div>'
@@ -6689,12 +6766,19 @@ window.ugbSaveSettings = async function(btn) {
   const s_ship = $('s_gb_shipping')?.checked ?? $('gb_shipping')?.checked;
   const s_shipfee = $('s_gb_shipfee')?.value || $('gb_shipfee')?.value || 0;
   const s_free = $('s_gb_free')?.value || $('gb_free')?.value || 0;
+  const s_promoter_pickup = $('s_gb_promoter_pickup')?.checked;
+  const s_promoter_ship = $('s_gb_promoter_shipping')?.checked;
+  const s_promoter_shipfee = $('s_gb_promoter_shipfee')?.value ?? 0;
+  const s_promoter_free = $('s_gb_promoter_free')?.value ?? 0;
   const s_picknote = $('s_gb_picknote')?.value || $('gb_picknote')?.value || '';
   const s_profile = $('s_gb_payment_profile')?.value || ($('s_gb_payment_profile')||$('gb_payment_profile'))?.value || '';
   const s_covers = JSON.parse($('s_gb_cover_urls')?.value || $('gb_cover_urls')?.value || '[]');
   
   if (!String(s_name||'').trim()) { toast('請填團購名稱', 5000); return; }
   if (!s_pickup && !s_ship) { toast('現場取貨與宅配至少選一種', 5000); return; }
+  if (!s_promoter_pickup && !s_promoter_ship) { toast('團購主本人採購至少要開放現場取貨或宅配其中一種', 5000); return; }
+  const deliveryNumbers=[['一般買家宅配運費',s_shipfee],['一般買家免運門檻',s_free],['團購主宅配運費',s_promoter_shipfee],['團購主免運門檻',s_promoter_free]];
+  for(const [label,value] of deliveryNumbers){if(!Number.isFinite(Number(value))||Number(value)<0){toast(label+'不可小於 0',5000);return;}}
   
   const payload = {
     action: 'saveGroupBuy', sessionId: UGBSessionId,
@@ -6706,6 +6790,10 @@ window.ugbSaveSettings = async function(btn) {
     pickupEnabled: !!s_pickup, shippingEnabled: !!s_ship,
     shippingFee: Number(s_shipfee||0),
     freeShippingThreshold: Number(s_free||0),
+    promoterPickupEnabled: !!s_promoter_pickup,
+    promoterShippingEnabled: !!s_promoter_ship,
+    promoterShippingFee: Number(s_promoter_shipfee||0),
+    promoterFreeShippingThreshold: Number(s_promoter_free||0),
     pickupNote: String(s_picknote||''),
     paymentProfileId: String(s_profile||''),
     isOpen: !!s_open
