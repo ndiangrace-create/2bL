@@ -6894,6 +6894,10 @@ async function ugbAssignRecruitment(btn){
   try{const r=await apiPost({action:'saveSessionPromoter',applicationId:btn.dataset.id,sessionId,assignOnly:true,promoterTiers:{}});if(!r||r.error||r.ok!==true)throw new Error(r?.error||'未取得開通成功回應');toast('已開通所選場次');await ugbOpenApplications();}
   catch(e){toast('開通失敗：'+(e.message||e),9000);}finally{btn.disabled=false;}
 }
+// Inline buttons run in the page scope; keep roster state private to this module.
+window.ugbOpenApplications=ugbOpenApplications;
+window.ugbReviewRecruitment=ugbReviewRecruitment;
+window.ugbAssignRecruitment=ugbAssignRecruitment;
 
 async function ugbLoadPromoters(){
  const host=document.getElementById('ugbPromoterArea');if(!host)return;host.innerHTML='<div class="loading">載入團購主中…</div>';
