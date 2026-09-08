@@ -6626,6 +6626,26 @@ async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disable
 (async function boot(){ const q=new URLSearchParams(location.search),financeShare=q.get('financeShare')||'',financeShareCode=q.get('fs')||''; if(financeShare||financeShareCode){document.documentElement.classList.add('finance-share-mode');document.title='2BL｜合作夥伴財報對帳';await renderPublicFinanceShare({token:financeShare,code:financeShareCode});return;} const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ await resumeAdminSession(s); } })();
 </script>
 <style id="ugbUnifiedStyle">
+.ugb-social-list{display:grid;gap:8px;min-width:0;margin-top:5px}
+.ugb-social-link{display:flex;align-items:center;gap:11px;min-width:0;max-width:100%;padding:11px;border:1px solid var(--line);border-radius:14px;background:#fff;color:inherit;text-decoration:none;transition:background .15s,border-color .15s}
+.ugb-social-link:hover{background:#f3f8f4;border-color:#80aaa0}
+.ugb-social-link:focus-visible{outline:3px solid #80aaa0;outline-offset:2px}
+.ugb-social-icon{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:12px;background:#edf4f1;color:#497168}
+.ugb-social-icon svg{width:27px;height:27px}
+.ugb-social-icon.facebook{background:#1877f2;color:#fff}
+.ugb-social-icon.instagram{background:linear-gradient(145deg,#7049bd,#d83984,#f6a545);color:#fff}
+.ugb-social-icon.line{background:#06c755;color:#fff}
+.ugb-social-text{display:grid;gap:3px;min-width:0;flex:1}
+.ugb-social-text b{font-size:14px;line-height:1.4}
+.ugb-social-text span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#697880}
+.ugb-social-open{font-size:12px;line-height:1.5;color:#52766e;flex:0 0 auto;text-align:center}
+.ugb-social-invalid{font-size:13px;color:#94705f;overflow-wrap:anywhere}
+.ugb-assignment{padding:12px;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#f8faf7}
+.ugb-assignment-head{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+.ugb-assignment-head b{min-width:0;overflow-wrap:anywhere;font-size:14px}
+.ugb-assignment .pill{flex-shrink:0;font-size:12px}
+.ugb-notice{margin-top:9px;font-size:12px;line-height:1.7;color:#64736a}
+.ugb-notice button{margin-top:5px}
 /* 團GO 單場管理：SaaS 工作台。舊堆疊導覽框架已移除。 */
 .ugb-root{width:100%;min-width:0}
 .ugb-hero{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
@@ -6835,14 +6855,65 @@ window.__ugbUnifiedLoad=window.loadGroupBuyAdmin=async function(){saveAdminPageS
 
 function ugbParseApplicationDetails(raw){if(!raw)return{};if(typeof raw==='object'&&!Array.isArray(raw))return raw;try{const parsed=JSON.parse(String(raw));return parsed&&typeof parsed==='object'&&!Array.isArray(parsed)?parsed:{otherNote:String(raw)}}catch{return{otherNote:String(raw)}}}
 function ugbParseSocialProfiles(raw){if(Array.isArray(raw))return raw;try{const parsed=JSON.parse(String(raw||'[]'));return Array.isArray(parsed)?parsed:[]}catch{return[]}}
+function ugbSocialLinkCard(profile){
+ const raw=String(profile?.url||'').trim();if(!raw)return '';
+ let url;try{url=new URL(raw);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)throw new Error('invalid link');}catch{return '<div class="ugb-social-invalid">連結格式有誤：'+safe(raw)+'</div>';}
+ const host=url.hostname.toLowerCase(),isDomain=domain=>host===domain||host.endsWith('.'+domain);
+ let kind='website',label='網站',icon='<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18z"/>';
+ if(isDomain('facebook.com')||isDomain('fb.com')||isDomain('fb.me')){kind='facebook';label='Facebook';icon='<path fill="currentColor" stroke="none" d="M14 22v-8h3l.5-4H14V7.5c0-1.2.4-1.5 1.5-1.5H18V2h-3.2C11.6 2 10 4 10 7v3H7v4h3v8z"/>';}
+ else if(isDomain('instagram.com')){kind='instagram';label='Instagram';icon='<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>';}
+ else if(isDomain('line.me')||isDomain('line.biz')||isDomain('lin.ee')){kind='line';label='LINE';icon='<path d="M21 11c0 4.4-4 7-9 7H9l-4 3 1-5c-2-1.4-3-3-3-5 0-4.4 4-8 9-8s9 3.6 9 8z"/><path d="M7 11h10M7 8h6"/>';}
+ let detail=url.pathname.replace(/^\/+|\/+$/g,'');try{detail=decodeURIComponent(detail);}catch{}
+ if(kind==='instagram'&&detail&&!detail.includes('/'))detail='@'+detail;
+ else detail=host.replace(/^www\./,'')+(detail?'/'+detail:'');
+ return '<a class="ugb-social-link" href="'+attr(url.href)+'" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" aria-label="'+attr('開啟 '+label+' '+detail+'（新分頁）')+'">'
+  +'<span class="ugb-social-icon '+kind+'" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg></span>'
+  +'<span class="ugb-social-text"><b>'+label+'</b><span>'+safe(detail)+'</span></span><span class="ugb-social-open" aria-hidden="true">查看<br>↗</span></a>';
+}
+function ugbSocialLinksHtml(profiles){
+ const cards=profiles.map(ugbSocialLinkCard).filter(Boolean).join('');
+ return cards?'<div style="grid-column:1/-1;min-width:0"><span class="sub">社群或群組連結</span><div class="ugb-social-list">'+cards+'</div></div>':'';
+}
 function ugbApplicationDetailsHtml(a){
- const d=ugbParseApplicationDetails(a.apply_note),social=ugbParseSocialProfiles(a.social_profiles_json),socialUrl=String(social[0]?.url||''),sharingMethod=d.sharingMethod||social[0]?.platform||'',groupSize=Math.max(0,Number(a.audience_size)||0),created=a.created_at?new Date(a.created_at).toLocaleString('zh-TW'):'';
+ const d=ugbParseApplicationDetails(a.apply_note),social=ugbParseSocialProfiles(a.social_profiles_json),sharingMethod=d.sharingMethod||social[0]?.platform||'',groupSize=Math.max(0,Number(a.audience_size)||0),created=a.created_at?new Date(a.created_at).toLocaleString('zh-TW'):'';
  const row=(label,value)=>String(value??'').trim()?'<div><span class="sub">'+safe(label)+'</span><div style="margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere">'+safe(value)+'</div></div>':'';
  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:10px">'
   +row('會員姓名',a.member_name||'')+row('Email',a.member_email||'')+row('手機',a.member_phone||a.phone||'')+row('申請時間',created)
-  +row('預計分享方式',sharingMethod)+row('社團人數',groupSize>0?groupSize.toLocaleString():'')+row('社群或群組連結',socialUrl)+row('所在地區',d.region||'')+row('其他說明',d.otherNote||'')+'</div>';
+  +row('預計分享方式',sharingMethod)+row('社團人數',groupSize>0?groupSize.toLocaleString():'')+ugbSocialLinksHtml(social)+row('所在地區',d.region||'')+row('其他說明',d.otherNote||'')+'</div>';
 }
 let UGBApplicationRoster=null;
+const UGBNoticeResults={},UGBPermissionWarnings={};
+function ugbNotificationHtml(targetId,kind,targetType){
+ const data=UGBApplicationRoster;if(!data?.rosterControlsVersion)return '';
+ const cached=UGBNoticeResults[targetId],stored=(data.notifications||[]).find(x=>x.targetId===targetId),n=cached?.kind===kind?cached:stored?.kind===kind?stored:null;
+ const label=data.notificationReadError&&!n?'通知紀錄讀取失敗':({sent:'郵件已送交寄信服務',failed:'郵件寄送失敗',pending:'郵件處理中',unknown:'郵件結果待確認'}[n?.email]||'尚未寄送通知');
+ const canSend=n?.email!=='sent'||n?.inApp==='failed',inApp=n?.inApp==='sent'?'｜站內通知已建立':n?.inApp==='failed'?'｜站內通知建立失敗':'';
+ return '<div class="ugb-notice">'+safe(label+inApp)+(canSend?'<br><button type="button" class="btn secondary small" data-target="'+attr(targetType)+'" data-id="'+attr(targetId)+'" onclick="ugbSendRecruitmentNotice(this)">'+(!n?'補寄通知':n.email==='sent'?'補建站內通知':'重試通知')+'</button>':'')+'</div>';
+}
+function ugbAssignmentControls(a,pr){
+ const active=pr.status==='active',enabled=!!UGBApplicationRoster?.rosterControlsVersion,canResume=!a.removed_at&&a.status==='approved';
+ return '<div class="ugb-assignment"><div class="ugb-assignment-head"><b>'+safe(pr.session_name||pr.session_id)+'</b><span class="pill">'+(active?'已啟用':'已停用')+'</span></div><div class="card-actions">'
+  +(active||canResume?'<button type="button" class="btn '+(active?'secondary':'green')+' small" '+(!enabled?'disabled ':'')+'data-promoter="'+attr(pr.id)+'" data-id="'+attr(a.id)+'" data-session="'+attr(pr.session_id)+'" data-name="'+attr(pr.session_name||pr.session_id)+'" data-status="'+(active?'revoked':'active')+'" onclick="ugbToggleRecruitment(this)">'+(active?'停用本場':'重新啟用本場')+'</button>':'')
+  +(UGBPermissionWarnings[pr.id]?'<button class="btn secondary small" data-promoter="'+attr(pr.id)+'" data-id="'+attr(a.id)+'" data-session="'+attr(pr.session_id)+'" data-name="'+attr(pr.session_name||pr.session_id)+'" data-status="revoked" onclick="ugbToggleRecruitment(this)">同步停用</button>':'')
+  +'</div>'+ugbNotificationHtml(pr.id,pr.status,'promoter')+'</div>';
+}
+async function ugbToggleRecruitment(btn){
+ if(btn.disabled)return;
+ const active=btn.dataset.status==='active';if(!confirm((active?'重新啟用':'停用')+'「'+btn.dataset.name+'」的團購資格？'+(active?'原本專屬連結、採購價及歷史訂單保留。':'只影響本場，其他場次與歷史訂單保留。')))return;
+ btn.disabled=true;
+ try{const r=await apiPost({action:'setGroupBuyPromoterStatus',promoterId:btn.dataset.promoter,applicationId:btn.dataset.id,sessionId:btn.dataset.session,status:btn.dataset.status});if(!r||r.error||r.ok!==true)throw new Error(r?.error||'未取得狀態更新成功回應');
+  if(r.notification)UGBNoticeResults[btn.dataset.promoter]=r.notification;UGBPermissionWarnings[btn.dataset.promoter]=r.permissionWarning||'';
+  toast(r.permissionWarning||(active?'本場已重新啟用':'本場已停用')+(r.notification?.email==='sent'?'，通知已送交寄信服務':r.notification?'，請查看通知寄送結果':''),8000);await ugbOpenApplications();
+ }catch(e){toast('資格更新失敗：'+(e.message||e),9000);await ugbOpenApplications();}finally{btn.disabled=false;}
+}
+async function ugbSendRecruitmentNotice(btn){
+ if(btn.disabled)return;btn.disabled=true;
+ try{const r=await apiPost({action:'notifyGroupBuyPromoter',...(btn.dataset.target==='promoter'?{promoterId:btn.dataset.id}:{applicationId:btn.dataset.id})});if(!r||r.error||r.ok!==true||!r.notification)throw new Error(r?.error||'未取得通知結果');UGBNoticeResults[btn.dataset.id]=r.notification;
+  toast(r.notification.email==='sent'?'郵件已送交寄信服務'+(r.notification.inApp==='failed'?'；站內通知建立失敗，可再補建':''):'通知尚未確認寄出：'+(r.notification.error||'請稍後重試'),9000);await ugbOpenApplications();
+ }catch(e){toast('通知失敗：'+(e.message||e),9000);}finally{btn.disabled=false;}
+}
+window.ugbToggleRecruitment=ugbToggleRecruitment;
+window.ugbSendRecruitmentNotice=ugbSendRecruitmentNotice;
 function ugbApplicationScope(a){
   if(a.source_entry==='groupbuy_general'&&!a.source_session_id)return '通用申請';
   if(a.source_session_id)return a.source_session_name||'指定場次申請';
@@ -6870,11 +6941,14 @@ async function ugbOpenApplications(){
 }
 function ugbApplicationRosterCard(a){
   const d=UGBApplicationRoster,general=a.source_entry==='groupbuy_general'&&!a.source_session_id;
-  const assigned=d.promoters.filter(p=>p.member_id===a.member_id&&p.status==='active');
+  const assigned=d.promoters.filter(p=>p.member_id===a.member_id&&['active','revoked'].includes(p.status));
   const own=general||!a.source_session_id?assigned:assigned.filter(p=>p.session_id===a.source_session_id);
-  const status=a.removed_at?'已移除':({pending:'待審核',approved:own.length?'已核准／已有指派':'已核准／待指派',rejected:'已拒絕'}[a.status]||a.status);
+  const status=a.removed_at?'已移除':({pending:'待審核',approved:own.some(p=>p.status==='active')?'已核准／已有指派':own.length?'已核准／場次已停用':'已核准／待指派',rejected:'已拒絕'}[a.status]||a.status);
   let h='<div class="ugb-card"><h4>'+safe(a.display_name||a.member_name||a.member_email||'申請者')+'</h4><div class="sub">'+safe(ugbApplicationScope(a))+'｜'+safe(status)+'</div>'+ugbApplicationDetailsHtml(a);
-  if(own.length)h+='<div style="margin-top:10px">已開通：'+own.map(p=>safe(p.session_name||p.session_id)).join('、')+'</div>';
+  if(own.some(p=>p.status==='active'))h+='<div style="margin-top:10px">已開通：'+own.filter(p=>p.status==='active').map(p=>safe(p.session_name||p.session_id)).join('、')+'</div>';
+  h+=own.map(p=>ugbAssignmentControls(a,p)).join('');
+  if(!a.removed_at&&!own.length&&['approved','rejected'].includes(a.status))h+=ugbNotificationHtml(a.id,a.status,'application');
+  if(!d.rosterControlsVersion)h+='<div class="sub" style="margin-top:8px">場次開關及通知功能尚未完成更新。</div>';
   if(!a.removed_at&&a.status==='pending'&&(general||a.source_session_id))h+='<div class="card-actions"><button class="btn green" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="approved" onclick="ugbReviewRecruitment(this)">核准</button><button class="btn danger" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="rejected" onclick="ugbReviewRecruitment(this)">拒絕</button></div>';
   if(!a.removed_at&&general&&a.status==='approved'){
     const choices=d.sessions.filter(s=>!assigned.some(p=>p.session_id===s.id));
@@ -6884,14 +6958,14 @@ function ugbApplicationRosterCard(a){
 }
 async function ugbReviewRecruitment(btn){
   btn.disabled=true;
-  try{const r=await apiPost({action:'reviewSessionManagerApplication',id:btn.dataset.id,sessionId:btn.dataset.session,status:btn.dataset.status});if(!r||r.error||r.ok!==true)throw new Error(r?.error||'未取得審核成功回應');toast('申請已'+(btn.dataset.status==='approved'?'核准':'拒絕'));await ugbOpenApplications();}
+  try{const r=await apiPost({action:'reviewSessionManagerApplication',id:btn.dataset.id,sessionId:btn.dataset.session,status:btn.dataset.status});if(!r||r.error||r.ok!==true)throw new Error(r?.error||'未取得審核成功回應');if(r.notification)UGBNoticeResults[btn.dataset.id]=r.notification;toast('申請已'+(btn.dataset.status==='approved'?'核准':'拒絕')+(r.notification?'，請查看通知寄送結果':''));await ugbOpenApplications();}
   catch(e){toast('審核失敗：'+(e.message||e),9000);}finally{btn.disabled=false;}
 }
 async function ugbAssignRecruitment(btn){
   const sessionId=document.getElementById('ugbApplicationSession-'+btn.dataset.id)?.value;
   if(!sessionId)return toast('請先選擇要開通的場次');
   btn.disabled=true;
-  try{const r=await apiPost({action:'saveSessionPromoter',applicationId:btn.dataset.id,sessionId,assignOnly:true,promoterTiers:{}});if(!r||r.error||r.ok!==true)throw new Error(r?.error||'未取得開通成功回應');toast('已開通所選場次');await ugbOpenApplications();}
+  try{const r=await apiPost({action:'saveSessionPromoter',applicationId:btn.dataset.id,sessionId,assignOnly:true,promoterTiers:{}});if(!r||r.error||r.ok!==true)throw new Error(r?.error||'未取得開通成功回應');if(r.notification&&r.promoterId)UGBNoticeResults[r.promoterId]=r.notification;toast('已開通所選場次'+(r.notification?'，請查看通知寄送結果':''));await ugbOpenApplications();}
   catch(e){toast('開通失敗：'+(e.message||e),9000);}finally{btn.disabled=false;}
 }
 // Inline buttons run in the page scope; keep roster state private to this module.
