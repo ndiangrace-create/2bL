@@ -6661,15 +6661,19 @@ async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disable
 #ugbApplicationRoster{font-size:13px;line-height:1.5}
 #ugbApplicationRoster .ugb-roster-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 #ugbApplicationRoster .ugb-roster-toolbar b{margin-right:auto;font-size:13px}
-#ugbApplicationRoster .ugb-roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,320px));gap:10px;align-items:start;justify-content:start}
-#ugbApplicationRoster .ugb-application-card{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;min-width:0;align-self:start}
+#ugbApplicationRoster .ugb-roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,320px));gap:10px;align-items:stretch;grid-auto-rows:1fr;justify-content:start}
+#ugbApplicationRoster .ugb-application-card{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;min-width:0;align-self:stretch;display:flex;flex-direction:column;box-sizing:border-box}
 #ugbApplicationRoster .ugb-application-card h4{font-size:14px;line-height:1.4;margin:0 0 4px;overflow-wrap:anywhere}
-#ugbApplicationRoster .ugb-application-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+#ugbApplicationRoster .ugb-application-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:7px;min-height:30px}
 #ugbApplicationRoster .sub{font-size:11px;line-height:1.5}
 #ugbApplicationRoster .btn{font-size:12px;line-height:1.4;padding:5px 9px;min-height:30px;border-radius:7px}
 #ugbApplicationRoster .pill{padding:2px 6px;font-size:11px;line-height:1.5;white-space:nowrap}
 #ugbApplicationRoster .card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-#ugbApplicationRoster .ugb-application-data{display:grid;grid-template-columns:60px minmax(0,1fr);gap:4px 6px;margin:6px 0;font-size:12px;line-height:1.5}
+#ugbApplicationRoster .ugb-application-data{display:grid;gap:4px;margin:6px 0;font-size:12px;line-height:1.5}
+#ugbApplicationRoster .ugb-application-field{display:grid;grid-template-columns:60px minmax(0,1fr);gap:6px;min-height:18px;box-sizing:border-box}
+#ugbApplicationRoster .ugb-card-footer{margin-top:auto;display:flex;flex-direction:column;justify-content:flex-end}
+#ugbApplicationRoster .ugb-card-footer .ugb-review-actions{margin-top:auto;padding-top:8px}
+#ugbApplicationRoster .ugb-empty-assignment{border-top:1px solid var(--line);padding-top:8px;color:#788076;font-size:12px}
 #ugbApplicationRoster .ugb-application-data dt{margin:0;color:#788076;font-size:11px}
 #ugbApplicationRoster .ugb-application-data dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 #ugbApplicationRoster .ugb-application-assign{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
@@ -6909,7 +6913,7 @@ function ugbSocialLinksHtml(profiles){
 function ugbApplicationDetailsHtml(a,compact=false){
  const d=ugbParseApplicationDetails(a.apply_note),social=ugbParseSocialProfiles(a.social_profiles_json),sharingMethod=d.sharingMethod||social[0]?.platform||'',groupSize=Math.max(0,Number(a.audience_size)||0),created=a.created_at?new Date(a.created_at).toLocaleString('zh-TW'):'';
  if(compact){
-  const field=(label,value)=>String(value??'').trim()?'<dt>'+safe(label)+'</dt><dd>'+safe(value)+'</dd>':'';
+  const field=(label,value)=>'<div class="ugb-application-field" data-ugb-slot="'+attr('field-'+label)+'"><dt>'+safe(label)+'</dt><dd>'+safe(String(value??'').trim()||'—')+'</dd></div>';
   return '<dl class="ugb-application-data">'+field('姓名',a.member_name||'')+field('Email',a.member_email||'')+field('手機',a.member_phone||a.phone||'')+field('申請時間',created)+field('分享方式',sharingMethod)+field('社團人數',groupSize>0?groupSize.toLocaleString():'')+field('所在地區',d.region||'')+field('其他說明',d.otherNote||'')+'</dl>';
  }
  const row=(label,value)=>String(value??'').trim()?'<div><span class="sub">'+safe(label)+'</span><div style="margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere">'+safe(value)+'</div></div>':'';
@@ -6965,6 +6969,33 @@ async function ugbRefreshApplicationBadge(){
   try{const d=await ugbFetchApplicationRoster(),n=d.applications.filter(a=>!a.removed_at&&a.status==='pending').length;if(btn)btn.textContent='團購主申請名單'+(n?'（'+n+' 待審）':'');}
   catch(e){if(btn)btn.textContent='團購主申請名單（讀取失敗，點此重試）';}
 }
+let ugbRosterSizeObserver=null;
+function ugbEqualizeCardParts(host,attribute){
+ const items=Array.from(host.querySelectorAll('['+attribute+']'));
+ const heights=new Map();
+ for(const item of items)item.style.minHeight='';
+ for(const item of items){const key=item.getAttribute(attribute);heights.set(key,Math.max(heights.get(key)||0,item.getBoundingClientRect().height));}
+ for(const item of items){const height=heights.get(item.getAttribute(attribute));if(height>0)item.style.minHeight=Math.ceil(height)+'px';}
+}
+function ugbAlignApplicationCards(host){
+ if(!host?.isConnected||host.getBoundingClientRect().width<=0)return;
+ // Reset outer sections first so a narrower/wider screen can also shrink the cards.
+ host.querySelectorAll('[data-ugb-block]').forEach(item=>{item.style.minHeight='';});
+ ugbEqualizeCardParts(host,'data-ugb-slot');
+ ugbEqualizeCardParts(host,'data-ugb-block');
+}
+function ugbWatchApplicationCardSizes(host){
+ if(ugbRosterSizeObserver)ugbRosterSizeObserver.disconnect();
+ let lastWidth=-1,queued=false;
+ const align=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;ugbAlignApplicationCards(host);});};
+ if(typeof ResizeObserver==='function'){
+  const observer=new ResizeObserver(()=>{if(!host.isConnected){observer.disconnect();return;}const width=Math.round(host.getBoundingClientRect().width);if(width!==lastWidth){lastWidth=width;align();}});
+  ugbRosterSizeObserver=observer;observer.observe(host);
+ }
+ align();
+ if(document.fonts?.ready)document.fonts.ready.then(()=>{if(host.isConnected)align();});
+}
+
 async function ugbOpenApplications(){
   if(!isPlatformSuperAdmin())return toast('團購主申請由總管理員審核');
   openPanel('團購主申請名單','通用申請先審核，再由你選擇開通場次。', '<div id="ugbApplicationRoster"><div class="loading">載入正式申請名單中…</div></div>',{replace:true});
@@ -6972,6 +7003,7 @@ async function ugbOpenApplications(){
     const d=await ugbFetchApplicationRoster(),host=document.getElementById('ugbApplicationRoster');if(!host)return;
     const pending=d.applications.filter(a=>!a.removed_at&&a.status==='pending').length;
     host.innerHTML='<div class="ugb-roster-toolbar"><b>共 '+d.applications.length+' 筆｜待審 '+pending+' 筆</b><button class="btn secondary" onclick="ugbOpenApplications()">重新整理</button><button class="btn secondary" onclick="openEmailTemplates()">通知信件內容</button></div><div class="ugb-roster-grid">'+(d.applications.length?d.applications.map(ugbApplicationRosterCard).join(''):'<div class="empty">目前沒有團購主申請</div>')+'</div>';
+    ugbWatchApplicationCardSizes(host);
     const btn=document.getElementById('ugbApplicationsButton');if(btn)btn.textContent='團購主申請名單'+(pending?'（'+pending+' 待審）':'');
   }catch(e){const host=document.getElementById('ugbApplicationRoster');if(host)host.innerHTML='<div class="empty">名單載入失敗：'+safe(e.message||e)+'<br><button class="btn" onclick="ugbOpenApplications()">重試</button></div>';}
 }
@@ -6981,16 +7013,17 @@ function ugbApplicationRosterCard(a){
   const own=general||!a.source_session_id?assigned:assigned.filter(p=>p.session_id===a.source_session_id);
   const status=a.removed_at?'已移除':({pending:'待審核',approved:own.some(p=>p.status==='active')?'已核准・已開通':own.length?'已核准・場次停用':'已核准・待指派',rejected:'已拒絕'}[a.status]||a.status);
   const social=ugbParseSocialProfiles(a.social_profiles_json).map(ugbSocialLinkCard).filter(Boolean).join('');
-  let h='<article class="ugb-application-card"><h4>'+safe(a.display_name||a.member_name||a.member_email||'申請者')+'</h4><div class="ugb-application-meta"><span class="sub">'+safe(ugbApplicationScope(a))+'｜'+safe(status)+'</span><div class="ugb-social-list">'+social+'</div></div>'+ugbApplicationDetailsHtml(a,true);
-  h+=own.map(p=>ugbAssignmentControls(a,p)).join('');
+  let h='<article class="ugb-application-card"><h4 data-ugb-slot="title">'+safe(a.display_name||a.member_name||a.member_email||'申請者')+'</h4><div class="ugb-application-meta" data-ugb-slot="meta"><span class="sub">'+safe(ugbApplicationScope(a))+'｜'+safe(status)+'</span><div class="ugb-social-list">'+social+'</div></div>'+ugbApplicationDetailsHtml(a,true)+'<div class="ugb-card-sessions" data-ugb-block="sessions">';
+  h+=own.length?own.map((p,i)=>ugbAssignmentControls(a,p).replace('class="ugb-assignment-head"','class="ugb-assignment-head" data-ugb-slot="session-title-'+i+'"')).join(''):'<div class="ugb-empty-assignment">尚未指派場次</div>';
   if(!a.removed_at&&!own.length&&['approved','rejected'].includes(a.status))h+=ugbNotificationHtml(a.id,a.status,'application');
   if(!d.rosterControlsVersion)h+='<div class="sub">場次開關及通知功能尚未完成更新。</div>';
-  if(!a.removed_at&&a.status==='pending'&&(general||a.source_session_id))h+='<div class="card-actions"><button class="btn green" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="approved" onclick="ugbReviewRecruitment(this)">核准</button><button class="btn danger" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="rejected" onclick="ugbReviewRecruitment(this)">拒絕</button></div>';
+  h+='</div><div class="ugb-card-footer" data-ugb-block="footer">';
+  if(!a.removed_at&&a.status==='pending'&&(general||a.source_session_id))h+='<div class="card-actions ugb-review-actions"><button class="btn green" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="approved" onclick="ugbReviewRecruitment(this)">核准</button><button class="btn danger" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="rejected" onclick="ugbReviewRecruitment(this)">拒絕</button></div>';
   if(!a.removed_at&&general&&a.status==='approved'){
     const choices=d.sessions.filter(s=>!assigned.some(p=>p.session_id===s.id));
     h+='<div class="ugb-application-assign">'+(choices.length?'<select id="ugbApplicationSession-'+attr(a.id)+'"><option value="">請選擇要開通的場次</option>'+choices.map(s=>'<option value="'+attr(s.id)+'">'+safe(s.name)+'（'+safe(s.status||'')+'）</option>').join('')+'</select><button class="btn" data-id="'+attr(a.id)+'" onclick="ugbAssignRecruitment(this)">開通所選場次</button>':'目前所有團購場次皆已指派')+'</div>';
   }
-  return h+'</article>';
+  return h+'</div></article>';
 }
 async function ugbReviewRecruitment(btn){
   btn.disabled=true;
