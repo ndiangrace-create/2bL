@@ -3376,6 +3376,18 @@ function memberSavePhone(phone,email){
   const ownerEmail=String(email||(ST&&ST.member&&ST.member.email)||(ST&&ST.memberEmail)||memberSafeEmail()||'').trim().toLowerCase();
   ST.member={...(ST.member||{}),email:(ST.member&&ST.member.email)||ownerEmail,phone:value};
 }
+function invalidateMemberRecordRequests(){
+  ST.__regsRequestId=(ST.__regsRequestId||0)+1;
+  ST.__memberLoadId=(ST.__memberLoadId||0)+1;
+}
+function adoptRegistrationIdentity(email,phone){
+  const owner=String(ST.member&&ST.member.email||'').trim().toLowerCase();
+  const next=String(email||'').trim().toLowerCase();
+  invalidateMemberRecordRequests();
+  // 成功報名後查詢同一個身分，避免舊登入憑證把畫面帶回另一個帳號。
+  if(owner!==next){memberClearToken();ST.member={email:next,phone:String(phone||'').trim()};ST.regs=[];}
+  ST.memberEmail=next;
+}
 function memberShowLogin(){
   const loginArea=$('memberLoginArea');
   const memberArea=$('memberArea');
@@ -3610,46 +3622,39 @@ function getMemberPhone(){
   return memberSafePhone();
 }
 async function safeGetMyRegs(email, phone){
-  const el=$('myRegsList');
-  const helper=$('memberRecordHelper');
-  const token=memberSafeToken();
-  // 呼叫端沒帶手機就自動補；補不到才顯示「請補上手機」，不讓後端回誤導紅字。
-  const ph = String(phone || getMemberPhone() || '').trim();
-  if(helper) helper.classList.remove('show');
-  if(!token&&!ph){
-    ST.regs=[];
-    if(el) el.innerHTML='<div style="color:#777;font-size:16px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #dfead8;border-radius:18px;margin:0 16px">請補上手機號碼查詢報名紀錄。<br>系統需要 Email＋手機比對，避免資料被其他人看到。</div>';
-    if(helper) helper.classList.add('show');
-    return [];
-  }
-  if(el) el.innerHTML='<div style="color:#999;font-size:16px;text-align:center;padding:22px">報名紀錄載入中…</div>';
+  const requestId=ST.__regsRequestId=(ST.__regsRequestId||0)+1;
+  const el=$('myRegsList'),helper=$('memberRecordHelper');
+  const token=memberSafeToken(),owner=String(email||ST.memberEmail||'').trim().toLowerCase();
+  const ph=String(phone||memberSafePhone(owner)||'').trim();
+  const current=()=>requestId===ST.__regsRequestId;
+  const showError=message=>{
+    if(!current())return;
+    if(el)el.innerHTML='<div style="color:#a33;font-size:16px;text-align:center;padding:20px;line-height:1.8">'+escHtml(message)+'<br><button type="button" class="btn" onclick="syncMemberRecordsFromDb(\'retry\')">重新載入紀錄</button> <button type="button" class="btn" onclick="memberShowLogin()">重新登入查詢</button></div>';
+    if(helper)helper.classList.add('show');
+  };
+  if(helper)helper.classList.remove('show');
+  if(ST.__regsOwner!==owner){ST.regs=[];ST.__regsOwner=owner;}
+  if(!token&&(!owner||!ph)){showError('請輸入報名時的 Email 與手機完成身分驗證。');return null;}
+  if(el)el.innerHTML='<div style="color:#777;font-size:16px;text-align:center;padding:22px">報名紀錄載入中…</div>';
   try{
-    const regs=token
-      ? await apiPost({action:'getMyRegs',memberToken:token})
-      : await api({action:'getMyRegs',email,phone:ph,_t:Date.now()});
-    if(regs && regs.error){
-      if(token&&String(regs.error).includes('登入憑證已失效')) memberClearToken();
-      ST.regs=[];
-      if(el){
-        el.innerHTML=`<div style="color:#c0392b;font-size:16px;text-align:center;padding:22px;line-height:1.8;background:#fff;border:1px solid #f2c7c7;border-radius:18px;margin:0 16px">${escHtml(regs.error)}<br>請確認 Email 與手機是否與報名時一致。</div>`;
-      }
-      if(helper) helper.classList.add('show');
-      return [];
+    const regs=token?await apiPost({action:'getMyRegs',memberToken:token}):await api({action:'getMyRegs',email:owner,phone:ph,_t:Date.now()});
+    if(!current())return null;
+    if(regs&&regs.error){
+      if(token&&String(regs.error).includes('登入憑證已失效'))memberClearToken();
+      showError('報名紀錄暫時無法載入：'+String(regs.error));return null;
     }
-    const list=Array.isArray(regs)?regs:[];
-    ST.regs=list;
-    try{ await loadMemberNotifications(); }catch(_e){}
-    renderMyRegs(list);
-    try{ if(Array.isArray(ST.sessions) && ST.sessions.length){ ['renderRecentSessions','renderSessions','renderAllSessions','renderHomeFallbackSessions'].forEach(fn=>{ try{ if(typeof window[fn]==='function') window[fn](); }catch(_e){} }); } }catch(_e){}
-    return list;
-  }catch(e){
-    console.warn('[getMyRegs failed]',e);
-    if(el) el.innerHTML='<div style="color:#c0392b;font-size:16px;text-align:center;padding:20px;line-height:1.7">報名紀錄暫時載入失敗，請稍後再試。<br>資料沒有消失，請截圖給官方 LINE。</div>';
-    if(helper) helper.classList.add('show');
-    return [];
-  }
+    if(!Array.isArray(regs))throw new Error('回傳格式錯誤');
+    ST.regs=regs;
+    renderMyRegs(regs);
+    // 通知與場次提示不阻擋已讀到的正式報名紀錄。
+    Promise.resolve().then(()=>loadMemberNotifications()).catch(()=>{});
+    try{if(Array.isArray(ST.sessions)&&ST.sessions.length){['renderRecentSessions','renderSessions','renderAllSessions','renderHomeFallbackSessions'].forEach(fn=>{try{if(typeof window[fn]==='function')window[fn]();}catch(_e){}});}}catch(_e){}
+    return regs;
+  }catch(e){if(current())showError('報名紀錄暫時載入失敗，請重新載入；不需要重複報名。');return null;}
 }
 async function safeLoadMemberPage(email, opts={}){
+  const loadId=ST.__memberLoadId=(ST.__memberLoadId||0)+1;
+  const current=()=>loadId===ST.__memberLoadId;
   navTo('member', opts.navOptions||{});
   email=String(email||ST.memberEmail||memberSafeEmail()||'').trim();
   let lookupPhone=String((opts&&opts.phone)||memberSafePhone(email)||(ST.member&&ST.member.phone)||'').trim();
@@ -3658,6 +3663,7 @@ async function safeLoadMemberPage(email, opts={}){
     memberShowArea('regs');
     try{
       const restored=await apiPost({action:'memberSession',memberToken:savedToken});
+      if(!current()) return null;
       if(restored&&restored.member&&!restored.error){
         ST.member={...(restored.member||{})};
         ST.memberEmail=String(ST.member.email||email||'').trim();
@@ -3668,6 +3674,7 @@ async function safeLoadMemberPage(email, opts={}){
         if($('memberLookupPhone')) $('memberLookupPhone').value='';
         fillMemberCard(ST.member);
         const list=await safeGetMyRegs(ST.memberEmail);
+        if(!current()) return null;
         if(opts.forceRegs) switchMemberMode('regs');
         return list;
       }
@@ -3688,6 +3695,7 @@ async function safeLoadMemberPage(email, opts={}){
       }
       return [];
     }catch(e){
+      if(!current()) return null;
       console.warn('[member session restore failed]',e);
       memberShowArea('regs');
       const listEl=$('myRegsList');
@@ -3728,6 +3736,7 @@ async function safeLoadMemberPage(email, opts={}){
   const regsPromise=safeGetMyRegs(email,lookupPhone);
   try{
     const member=await api({action:'getMember',email,phone:lookupPhone,_t:Date.now()});
+    if(!current()) return null;
     if(member && !member.error){
       ST.member={...(ST.member||{}),...member,email:member.email||email};
       lookupPhone=String(lookupPhone||member.phone||'').trim();
@@ -3752,6 +3761,7 @@ async function safeLoadMemberPage(email, opts={}){
       fillMemberCard(ST.member);
     }
   }catch(e){
+    if(!current()) return null;
     console.warn('[getMember failed]',e);
     if(!ST.member) ST.member={email,phone:lookupPhone};
     fillMemberCard(ST.member);
@@ -3760,6 +3770,7 @@ async function safeLoadMemberPage(email, opts={}){
 
   // 手機為空的情況由 safeGetMyRegs 統一處理（同一提示只留一份）。
   const list=await regsPromise;
+  if(!current()) return null;
   if(opts.forceRegs) switchMemberMode('regs');
   return list;
 }
@@ -3783,6 +3794,7 @@ async function memberEmailPhoneLogin(){
     const login=await apiPost({action:'memberEmailPhoneLogin',email,phone});
     if(login&&login.error){ if(err){err.style.display='block';err.textContent=login.error;} return; }
     if(!login||!login.token||!login.member){ if(err){err.style.display='block';err.textContent='登入憑證建立失敗，請稍後再試。';} return; }
+    invalidateMemberRecordRequests();
     ST.memberEmail=email;
     memberSaveEmail(email);
     memberSaveToken(login.token);
@@ -3791,11 +3803,9 @@ async function memberEmailPhoneLogin(){
     memberShowArea('regs');
     fillMemberCard(ST.member);
     const regs=await safeGetMyRegs(email);
-    const _list=Array.isArray(regs)?regs:[];
-    renderMyRegs(_list);
     navTo('member',{noPush:true});
-    // 查無紀錄時給明確指引，避免使用者以為要在這裡重新填一次報名資料
-    if(!_list.length) showNoRecordHelp(email, phone);
+    // 只有成功查得零筆才顯示查無紀錄；保留查詢失敗及重試畫面。
+    if(Array.isArray(regs)&&regs.length===0) showNoRecordHelp(email, phone);
   }catch(e){
     console.warn('[memberEmailPhoneLogin failed]', e);
     if(err){err.style.display='block';err.textContent='查詢失敗：'+((e&&e.message)?e.message:'請檢查網路後再試一次');}
@@ -5882,6 +5892,14 @@ function showSubmitOverlay(msg){
   ov.style.display='flex';
 }
 function hideSubmitOverlay(){ const ov=document.getElementById('submitOverlay'); if(ov) ov.style.display='none'; }
+function isConfirmedRegistrationResponse(res, action){
+  if(!res || res.error || res.success!==true) return false;
+  if(action==='registerBundle'){
+    const rows=[...(Array.isArray(res.registrations)?res.registrations:[]),...(Array.isArray(res.merged)?res.merged:[])];
+    return !!res.bundleGroupId && rows.length>0 && rows.every(r=>r&&String(r.id||'').trim());
+  }
+  return !!String(res.id||'').trim();
+}
 async function submitReg(ev){
   if(ev && ev.preventDefault) ev.preventDefault();
   const btn=$('submitBtn');
@@ -5965,7 +5983,7 @@ async function submitReg(ev){
         const nowRegs=await api({action:'getMyRegs',email,phone:_ph2,_t:Date.now()});
         if(Array.isArray(nowRegs)){
           const exist=nowRegs.find(rg=>String(rg.sessionId)===String(s.id)
-            &&String(rg.status||'')!=='不錄取'&&String(rg.status||'')!=='已取消'&&String(rg.transferStatus||'')!=='已退費');
+            &&String(rg.status||'')!=='不錄取'&&String(rg.status||'')!=='已取消'&&!['已退費','已退款'].includes(String(rg.transferStatus||'')));
           if(exist){
             showFormError('您已經報名過這個場次（報名編號 '+String(exist.id||'')+'），請到「我的紀錄」查看或繳費，不需要重複報名。');
             toast('您已報名過此場次',6000);
@@ -5984,7 +6002,12 @@ async function submitReg(ev){
       }
     }
     if(res.error){ toast('❌ '+res.error, 8000); showFormError(res.error); restoreBtn(); return false; }
+    if(!isConfirmedRegistrationResponse(res,body.action)){
+      showFormError('尚未取得有效報名編號，無法確認報名成功。請先到「我的紀錄」查詢，避免重複送出；若仍沒有紀錄，請聯絡主辦協助。');
+      toast('尚未確認報名成功',8000); restoreBtn(); return false;
+    }
     hideFormError();
+    adoptRegistrationIdentity(email,phone);
     ST.memberEmail=email;
     ST.currentBundle=null;
     try{ localStorage.setItem('tb_member_email',email||''); }catch(e){}
@@ -6004,7 +6027,7 @@ async function submitReg(ev){
     // 會員資料改成背景更新，不讓 getMember 卡住成功畫面
     setTimeout(()=>{
       api({action:'getMember',email,phone}).then(updatedMember=>{
-        if(updatedMember&&!updatedMember.error){
+        if(updatedMember&&!updatedMember.error&&String(ST.memberEmail||'').toLowerCase()===String(email).toLowerCase()){
           ST.member=updatedMember;
           try{localStorage.setItem('tb_member_email',email||'');}catch(e){}
         }
@@ -6029,6 +6052,8 @@ async function submitReg(ev){
 
 // ── 會員登出 ──
 function memberLogout(){
+  invalidateMemberRecordRequests();
+  ST.regs=[];
   // 清除所有前台會員 token（報名者登出）
   try {
     localStorage.removeItem('2bl_member_token');

@@ -431,7 +431,9 @@ tbody tr:hover{background:var(--c-hover)}
   <div class="lc">
     <img class="lc-logo" src="https://raw.githubusercontent.com/ndiangrace-create/2bL/main/55cd984d-dc71-4a23-8da8-40de323b8b59%20(1).png" alt="團GO">
     <h1>後台管理</h1>
-    <p>場次管理員 / 平台管理員</p>
+    <p>總管理員請使用 Google；場次管理員使用會員登入。</p>
+    <a class="lbtn" style="display:block;text-align:center;text-decoration:none" href="admin.html?tenant=tuibile" target="_blank" rel="noopener">開啟 Google 管理員登入</a>
+    <button class="lbtn" style="margin:8px 0" onclick="boot()">已完成 Google 登入，進入團購後台</button>
     <div class="lf"><label>Email</label>
       <input id="lEmail" type="email" autocomplete="email" placeholder="your@email.com"></div>
     <div class="lf"><label>手機號碼</label>
@@ -618,7 +620,7 @@ const API = location.protocol==='https:'&&/(^|\.)2b-love\.com$/i.test(location.h
 const TENANT='tuibile', TK='2bl_member_token';
 
 /* ── State ── */
-const S={token:'',name:'',email:'',role:'',isPlatform:false,
+const S={authMode:'member',adminEmail:'',token:'',name:'',email:'',role:'',isPlatform:false,
   sessions:[],sid:'',orders:[],products:[],applications:{m:[],p:[]},
   filter:'all',pane:'home'};
 
@@ -630,20 +632,15 @@ const fmt=d=>{if(!d)return'—';return new Date(d).toLocaleString('zh-TW',{timeZ
 
 /* ── API ── */
 async function api(action,data={},method='POST'){
-  const payload={action,tenant:TENANT,memberToken:S.token,...data};
-  if(method==='GET'){
-    const r=await fetch(`${API}?${new URLSearchParams(payload)}`,{cache:'no-store'});
-    const j=await r.json().catch(()=>({error:'格式錯誤'}));
-    if(j.error)throw new Error(j.error);
-    return j;
-  }
-  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload),cache:'no-store'});
-  const j=await r.json().catch(()=>({error:'格式錯誤'}));
-  if(j.error)throw new Error(j.error);
-  return j;
+  const credentials=S.authMode==='google'?{email:S.adminEmail,token:S.token}:{memberToken:S.token};
+  const payload={...data,...credentials,action,tenant:TENANT};
+  const response=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store'});
+  const j=await response.json().catch(()=>({error:'伺服器回應格式錯誤'}));
+  if(!response.ok||j.error)throw new Error(j.error||'連線失敗，請稍後重試');return j;
 }
-
+function readGoogleAdminSession(){
+ try{const s=JSON.parse(localStorage.getItem('tb_v3')||'null');return s&&s.tenantId===TENANT&&s.email&&s.token?s:null}catch{return null}
+}
 /* ── Auth ── */
 async function doLogin(){
   const em=($('lEmail')?.value||'').trim(), ph=($('lPhone')?.value||'').trim();
@@ -652,8 +649,10 @@ async function doLogin(){
   const btn=document.querySelector('.lbtn');
   btn.disabled=true;btn.textContent='登入中…';
   try{
+    S.authMode='member';S.token='';S.adminEmail='';
     const j=await api('memberEmailPhoneLogin',{email:em,phone:ph});
-    const check=await fetch(`${API}?${new URLSearchParams({action:'groupBuyAdminData',tenant:TENANT,memberToken:j.token,_t:Date.now()})}`,{cache:'no-store'}).then(r=>r.json());
+    S.token=j.token;const check=await api('groupBuyAdminData');
+    if(check.authorization?.role==='platform_super_admin'){S.token='';throw new Error('總管理員請使用上方 Google 登入入口')}
     if(check.error)throw new Error('此帳號沒有後台管理權限');
     localStorage.setItem(TK,j.token);
     S.token=j.token;S.email=em;S.name=j.name||j.display_name||em;
@@ -663,7 +662,7 @@ async function doLogin(){
   }catch(e){$('lerr').textContent=e.message||'登入失敗'}
   btn.disabled=false;btn.textContent='登入管理後台';
 }
-function doLogout(){localStorage.removeItem(TK);location.reload()}
+function doLogout(){if(S.authMode==='google')localStorage.removeItem('tb_v3');else localStorage.removeItem(TK);S.token='';location.reload()}
 function showLogin(msg){
   $('login').style.display='flex';$('app').classList.remove('show');
   if(msg)$('lerr').textContent=msg;
@@ -930,15 +929,13 @@ async function loadApply(){
     let m=[],p=[];
     if(S.isPlatform){
       const d=await api('groupBuyPromoterAdminData',{},'GET');
+      if(!d||!Array.isArray(d.applications)||!Array.isArray(d.promoters)||!Array.isArray(d.sessions))throw new Error('申請名單回傳格式錯誤');
       S.applySessions=d.sessions||[];S.applyPromoters=d.promoters||[];
       m=(d.applications||[]).filter(a=>a.source_entry==='groupbuy_general'&&!a.source_session_id);
       p=(d.applications||[]).filter(a=>!m.includes(a));
-    }else if(S.sid){
-      const d=await api('sessionProductsAdmin',{sessionId:S.sid},'GET');
-      p=d.applications||[];
-    }
+    }else{$('apply-content').innerHTML='<div class=empty>申請審核與場次指派由總管理員處理。</div>';return}
     S.applications={m,p};
-    const pendAll=[...m,...p].filter(a=>a.status==='pending').length;
+    const pendAll=[...m,...p].filter(a=>!a.removed_at&&a.status==='pending').length;
     ['cnt-apply','sdot-apply','mdot-apply'].forEach(id=>{
       const el=$(id);if(!el)return;
       if(id==='cnt-apply')el.textContent=pendAll;
@@ -955,7 +952,9 @@ async function loadApply(){
   }catch(e){$('apply-content').innerHTML=`<div class="empty"><div class="empty-t">載入失敗：${esc(e.message)}</div></div>`}
 }
 function applyCardHtml(a){
-  const chip={pending:'<span class="chip chip-yellow">待審核</span>',approved:'<span class="chip chip-blue">待啟用</span>',rejected:'<span class="chip chip-gray">已拒絕</span>',active:'<span class="chip chip-green">已啟用</span>'}[a.status]||'';
+  const assigned=(S.applyPromoters||[]).some(p=>p.member_id===a.member_id&&p.status==='active'&&(!a.source_session_id||p.session_id===a.source_session_id));
+  const displayStatus=a.removed_at?'removed':a.status==='approved'&&assigned?'active':a.status;
+  const chip={removed:'<span class="chip chip-gray">已移除</span>',pending:'<span class="chip chip-yellow">待審核</span>',approved:'<span class="chip chip-blue">待啟用</span>',rejected:'<span class="chip chip-gray">已拒絕</span>',active:'<span class="chip chip-green">已啟用</span>'}[displayStatus]||'';
   return`<div class="acard" onclick="openApply('${esc(a.id)}','${esc(a.source_session_id||'')}')">
     <div class="acard-top"><div class="acard-name">${esc(a.brand_name||a.display_name||a.member_email||'申請者')}</div>${chip}</div>
     <div class="acard-meta">${esc(a.member_email||'')}${a.phone?' · '+esc(a.phone):''}${a.source_session_name?' · '+esc(a.source_session_name):''}</div>
@@ -965,7 +964,7 @@ function openApply(id,sid){
   const all=[...S.applications.m,...S.applications.p];
   const a=all.find(x=>x.id===id);if(!a)return;
   if(a.source_entry==='groupbuy_general'&&!a.source_session_id)return openGeneralApply(a);
-  const isPending=a.status==='pending';
+  const isPending=!a.removed_at&&!!a.source_session_id&&a.status==='pending';
   const body=`
     <div class="dr"><span class="dk">姓名/品牌</span><span class="dv">${esc(a.brand_name||a.display_name||'—')}</span></div>
     <div class="dr"><span class="dk">Email</span><span class="dv">${esc(a.member_email||'—')}</span></div>
@@ -1005,6 +1004,7 @@ async function doReview(id,sid,status){
 /* ── Products ── */
 let PRODS=[];
 async function loadProducts(){
+  if(!S.isPlatform){$('prod-content').innerHTML='<div class=empty>商品設定由總管理員維護。採購與專屬連結請至前台會員中心的「我的團購管理」。</div>';return}
   $('prod-content').innerHTML='<div class="loading">載入中…</div>';
   if(!S.sid){$('prod-content').innerHTML='<div class="empty"><div class="empty-t">請先選擇場次</div></div>';return}
   const addBtn=$('addProdBtn');if(addBtn)addBtn.style.display=S.isPlatform?'':'none';
@@ -1182,6 +1182,7 @@ async function saveProd(id){
 /* ── Settings ── */
 let SESS_DATA=null;
 async function loadSettings(){
+  if(!S.isPlatform){$('settings-content').innerHTML='<div class=empty>場次設定由總管理員維護。</div>';return}
   $('settings-content').innerHTML='<div class="loading">載入設定中…</div>';
   if(!S.sid){$('settings-content').innerHTML='<div class="empty"><div class="empty-t">請先選擇場次</div></div>';return}
   try{
@@ -1253,7 +1254,7 @@ async function saveSettings(){
       promoterShippingFee:Number($('ss_pf')?.value||0),
       promoterFreeShippingThreshold:Number($('ss_pfr')?.value||0),
       coverImages:covers,
-      promoterAutoApprove:false // 永遠鎖定為 false
+      // 保留既有場次的申請與人工審核設定
     });
     toast('設定已儲存 ✓');await loadSettings();
   }catch(e){toast(e.message,true)}
@@ -1307,7 +1308,7 @@ async function startApp(adminData){
   S.isPlatform=S.role==='platform_super_admin';
   if(!S.sessions.length){
     $('sessionPicker').innerHTML='<option>無可用場次</option>';
-    return;
+    S.sid='';if(S.isPlatform){goTo('apply');}return;
   }
   S.sid=S.sessions[0].id;
   $('sessionPicker').innerHTML=S.sessions.map(s=>
@@ -1320,21 +1321,16 @@ async function startApp(adminData){
 
 /* ── Boot ── */
 async function boot(){
-  const tok=localStorage.getItem(TK);
-  if(!tok){$('login').style.display='flex';return}
-  S.token=tok;
+  const google=readGoogleAdminSession(),memberToken=localStorage.getItem(TK);
+  if(!google&&!memberToken){showLogin('');return}
+  S.authMode=google?'google':'member';S.token=google?google.token:memberToken;S.adminEmail=google?google.email:'';
   try{
-    const d=await api('groupBuyAdminData',{},'GET');
-    S.role=d.authorization?.role||'session_admin';
-    S.email=d.authorization?.email||'';
-    S.name=d.authorization?.name||S.email;
-    await startApp(d);
-  }catch(e){
-    localStorage.removeItem(TK);
-    $('login').style.display='flex';
-    $('lerr').textContent='登入已過期，請重新登入';
-  }
+    const d=await api('groupBuyAdminData');S.role=d.authorization?.role||'session_admin';
+    if(S.role==='platform_super_admin'&&S.authMode!=='google'){showLogin('總管理員請使用 Google 登入');return}
+    S.email=google?.email||'';S.name=google?.name||S.email;await startApp(d);
+  }catch(e){showLogin('無法進入後台：'+e.message+'。可重新完成 Google 登入後再試。')}
 }
+
 boot();
 </script>
 </body>
