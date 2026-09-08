@@ -6641,26 +6641,43 @@ async function saveHomepageSettings(btn){ const old=btn.textContent; btn.disable
 (async function boot(){ const q=new URLSearchParams(location.search),financeShare=q.get('financeShare')||'',financeShareCode=q.get('fs')||''; if(financeShare||financeShareCode){document.documentElement.classList.add('finance-share-mode');document.title='2BL｜合作夥伴財報對帳';await renderPublicFinanceShare({token:financeShare,code:financeShareCode});return;} const oauth=await handleOAuthCallback(); if(oauth) return; const s=readSession(); if(s&&s.email&&s.token){ await resumeAdminSession(s); } })();
 </script>
 <style id="ugbUnifiedStyle">
-.ugb-social-list{display:grid;gap:8px;min-width:0;margin-top:5px}
-.ugb-social-link{display:flex;align-items:center;gap:11px;min-width:0;max-width:100%;padding:11px;border:1px solid var(--line);border-radius:14px;background:#fff;color:inherit;text-decoration:none;transition:background .15s,border-color .15s}
-.ugb-social-link:hover{background:#f3f8f4;border-color:#80aaa0}
-.ugb-social-link:focus-visible{outline:3px solid #80aaa0;outline-offset:2px}
-.ugb-social-icon{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:12px;background:#edf4f1;color:#497168}
-.ugb-social-icon svg{width:27px;height:27px}
+.ugb-social-list{display:flex;flex-wrap:wrap;align-items:center;gap:3px;min-width:0;margin:0}
+.ugb-social-link{display:inline-flex;align-items:center;justify-content:center;flex:0 0 30px;width:30px;height:30px;padding:3px;border:0;border-radius:6px;color:inherit;text-decoration:none}
+.ugb-social-link:hover{background:#e8f1ed}
+.ugb-social-link:focus-visible{outline:2px solid #497168;outline-offset:2px}
+.ugb-social-icon{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:6px;background:#edf4f1;color:#497168}
+.ugb-social-icon svg{width:17px;height:17px}
 .ugb-social-icon.facebook{background:#1877f2;color:#fff}
 .ugb-social-icon.instagram{background:linear-gradient(145deg,#7049bd,#d83984,#f6a545);color:#fff}
 .ugb-social-icon.line{background:#06c755;color:#fff}
-.ugb-social-text{display:grid;gap:3px;min-width:0;flex:1}
-.ugb-social-text b{font-size:14px;line-height:1.4}
-.ugb-social-text span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#697880}
-.ugb-social-open{font-size:12px;line-height:1.5;color:#52766e;flex:0 0 auto;text-align:center}
-.ugb-social-invalid{font-size:13px;color:#94705f;overflow-wrap:anywhere}
-.ugb-assignment{padding:12px;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#f8faf7}
-.ugb-assignment-head{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
-.ugb-assignment-head b{min-width:0;overflow-wrap:anywhere;font-size:14px}
-.ugb-assignment .pill{flex-shrink:0;font-size:12px}
-.ugb-notice{margin-top:9px;font-size:12px;line-height:1.7;color:#64736a}
-.ugb-notice button{margin-top:5px}
+.ugb-social-invalid{display:inline-grid;place-items:center;width:28px;height:28px;font-size:12px;color:#94705f}
+.ugb-assignment{padding:8px 0;margin-top:6px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
+.ugb-assignment-head{display:flex;align-items:flex-start;gap:6px;justify-content:space-between}
+.ugb-assignment-head b{min-width:0;overflow-wrap:anywhere;font-size:12px;line-height:1.5}
+.ugb-assignment .pill{flex-shrink:0;font-size:11px}
+.ugb-notice{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:5px;font-size:11px;line-height:1.5;color:#64736a}
+.ugb-notice br{display:none}
+.ugb-notice button{margin-top:0}
+#ugbApplicationRoster{font-size:13px;line-height:1.5}
+#ugbApplicationRoster .ugb-roster-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+#ugbApplicationRoster .ugb-roster-toolbar b{margin-right:auto;font-size:13px}
+#ugbApplicationRoster .ugb-roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,320px));gap:10px;align-items:start;justify-content:start}
+#ugbApplicationRoster .ugb-application-card{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;min-width:0;align-self:start}
+#ugbApplicationRoster .ugb-application-card h4{font-size:14px;line-height:1.4;margin:0 0 4px;overflow-wrap:anywhere}
+#ugbApplicationRoster .ugb-application-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+#ugbApplicationRoster .sub{font-size:11px;line-height:1.5}
+#ugbApplicationRoster .btn{font-size:12px;line-height:1.4;padding:5px 9px;min-height:30px;border-radius:7px}
+#ugbApplicationRoster .pill{padding:2px 6px;font-size:11px;line-height:1.5;white-space:nowrap}
+#ugbApplicationRoster .card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+#ugbApplicationRoster .ugb-application-data{display:grid;grid-template-columns:60px minmax(0,1fr);gap:4px 6px;margin:6px 0;font-size:12px;line-height:1.5}
+#ugbApplicationRoster .ugb-application-data dt{margin:0;color:#788076;font-size:11px}
+#ugbApplicationRoster .ugb-application-data dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+#ugbApplicationRoster .ugb-application-assign{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+#ugbApplicationRoster .ugb-application-assign select{width:100%;max-width:100%;min-width:0;padding:5px 6px;font-size:12px;min-height:30px;border:1px solid var(--line);border-radius:6px;background:#fff}
+#ugbApplicationRoster .ugb-application-assign .btn{margin:0}
+@media(pointer:coarse){.ugb-social-link{width:40px;height:40px;flex-basis:40px}}
+@media(max-width:700px){#ugbApplicationRoster .ugb-roster-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr))}}
+
 /* 團GO 單場管理：SaaS 工作台。舊堆疊導覽框架已移除。 */
 .ugb-root{width:100%;min-width:0}
 .ugb-hero{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
@@ -6872,7 +6889,7 @@ function ugbParseApplicationDetails(raw){if(!raw)return{};if(typeof raw==='objec
 function ugbParseSocialProfiles(raw){if(Array.isArray(raw))return raw;try{const parsed=JSON.parse(String(raw||'[]'));return Array.isArray(parsed)?parsed:[]}catch{return[]}}
 function ugbSocialLinkCard(profile){
  const raw=String(profile?.url||'').trim();if(!raw)return '';
- let url;try{url=new URL(raw);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)throw new Error('invalid link');}catch{return '<div class="ugb-social-invalid">連結格式有誤：'+safe(raw)+'</div>';}
+ let url;try{url=new URL(raw);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)throw new Error('invalid link');}catch{return '<span class="ugb-social-invalid" title="'+attr('連結格式有誤：'+raw)+'" aria-label="連結格式有誤">!</span>';}
  const host=url.hostname.toLowerCase(),isDomain=domain=>host===domain||host.endsWith('.'+domain);
  let kind='website',label='網站',icon='<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18z"/>';
  if(isDomain('facebook.com')||isDomain('fb.com')||isDomain('fb.me')){kind='facebook';label='Facebook';icon='<path fill="currentColor" stroke="none" d="M14 22v-8h3l.5-4H14V7.5c0-1.2.4-1.5 1.5-1.5H18V2h-3.2C11.6 2 10 4 10 7v3H7v4h3v8z"/>';}
@@ -6881,16 +6898,20 @@ function ugbSocialLinkCard(profile){
  let detail=url.pathname.replace(/^\/+|\/+$/g,'');try{detail=decodeURIComponent(detail);}catch{}
  if(kind==='instagram'&&detail&&!detail.includes('/'))detail='@'+detail;
  else detail=host.replace(/^www\./,'')+(detail?'/'+detail:'');
- return '<a class="ugb-social-link" href="'+attr(url.href)+'" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" aria-label="'+attr('開啟 '+label+' '+detail+'（新分頁）')+'">'
+ return '<a class="ugb-social-link" href="'+attr(url.href)+'" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" title="'+attr(label+' '+detail)+'" aria-label="'+attr('開啟 '+label+' '+detail+'（新分頁）')+'">'
   +'<span class="ugb-social-icon '+kind+'" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg></span>'
-  +'<span class="ugb-social-text"><b>'+label+'</b><span>'+safe(detail)+'</span></span><span class="ugb-social-open" aria-hidden="true">查看<br>↗</span></a>';
+  +'</a>';
 }
 function ugbSocialLinksHtml(profiles){
  const cards=profiles.map(ugbSocialLinkCard).filter(Boolean).join('');
  return cards?'<div style="grid-column:1/-1;min-width:0"><span class="sub">社群或群組連結</span><div class="ugb-social-list">'+cards+'</div></div>':'';
 }
-function ugbApplicationDetailsHtml(a){
+function ugbApplicationDetailsHtml(a,compact=false){
  const d=ugbParseApplicationDetails(a.apply_note),social=ugbParseSocialProfiles(a.social_profiles_json),sharingMethod=d.sharingMethod||social[0]?.platform||'',groupSize=Math.max(0,Number(a.audience_size)||0),created=a.created_at?new Date(a.created_at).toLocaleString('zh-TW'):'';
+ if(compact){
+  const field=(label,value)=>String(value??'').trim()?'<dt>'+safe(label)+'</dt><dd>'+safe(value)+'</dd>':'';
+  return '<dl class="ugb-application-data">'+field('姓名',a.member_name||'')+field('Email',a.member_email||'')+field('手機',a.member_phone||a.phone||'')+field('申請時間',created)+field('分享方式',sharingMethod)+field('社團人數',groupSize>0?groupSize.toLocaleString():'')+field('所在地區',d.region||'')+field('其他說明',d.otherNote||'')+'</dl>';
+ }
  const row=(label,value)=>String(value??'').trim()?'<div><span class="sub">'+safe(label)+'</span><div style="margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere">'+safe(value)+'</div></div>':'';
  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:10px">'
   +row('會員姓名',a.member_name||'')+row('Email',a.member_email||'')+row('手機',a.member_phone||a.phone||'')+row('申請時間',created)
@@ -6950,7 +6971,7 @@ async function ugbOpenApplications(){
   try{
     const d=await ugbFetchApplicationRoster(),host=document.getElementById('ugbApplicationRoster');if(!host)return;
     const pending=d.applications.filter(a=>!a.removed_at&&a.status==='pending').length;
-    host.innerHTML='<div class="page-actions"><b>共 '+d.applications.length+' 筆｜待審 '+pending+' 筆</b><button class="btn secondary" onclick="ugbOpenApplications()">重新整理</button><button class="btn secondary" onclick="openEmailTemplates()">通知信件內容</button></div><div class="ugb-promoter-grid">'+(d.applications.length?d.applications.map(ugbApplicationRosterCard).join(''):'<div class="empty">目前沒有團購主申請</div>')+'</div>';
+    host.innerHTML='<div class="ugb-roster-toolbar"><b>共 '+d.applications.length+' 筆｜待審 '+pending+' 筆</b><button class="btn secondary" onclick="ugbOpenApplications()">重新整理</button><button class="btn secondary" onclick="openEmailTemplates()">通知信件內容</button></div><div class="ugb-roster-grid">'+(d.applications.length?d.applications.map(ugbApplicationRosterCard).join(''):'<div class="empty">目前沒有團購主申請</div>')+'</div>';
     const btn=document.getElementById('ugbApplicationsButton');if(btn)btn.textContent='團購主申請名單'+(pending?'（'+pending+' 待審）':'');
   }catch(e){const host=document.getElementById('ugbApplicationRoster');if(host)host.innerHTML='<div class="empty">名單載入失敗：'+safe(e.message||e)+'<br><button class="btn" onclick="ugbOpenApplications()">重試</button></div>';}
 }
@@ -6958,18 +6979,18 @@ function ugbApplicationRosterCard(a){
   const d=UGBApplicationRoster,general=a.source_entry==='groupbuy_general'&&!a.source_session_id;
   const assigned=d.promoters.filter(p=>p.member_id===a.member_id&&['active','revoked'].includes(p.status));
   const own=general||!a.source_session_id?assigned:assigned.filter(p=>p.session_id===a.source_session_id);
-  const status=a.removed_at?'已移除':({pending:'待審核',approved:own.some(p=>p.status==='active')?'已核准／已有指派':own.length?'已核准／場次已停用':'已核准／待指派',rejected:'已拒絕'}[a.status]||a.status);
-  let h='<div class="ugb-card"><h4>'+safe(a.display_name||a.member_name||a.member_email||'申請者')+'</h4><div class="sub">'+safe(ugbApplicationScope(a))+'｜'+safe(status)+'</div>'+ugbApplicationDetailsHtml(a);
-  if(own.some(p=>p.status==='active'))h+='<div style="margin-top:10px">已開通：'+own.filter(p=>p.status==='active').map(p=>safe(p.session_name||p.session_id)).join('、')+'</div>';
+  const status=a.removed_at?'已移除':({pending:'待審核',approved:own.some(p=>p.status==='active')?'已核准・已開通':own.length?'已核准・場次停用':'已核准・待指派',rejected:'已拒絕'}[a.status]||a.status);
+  const social=ugbParseSocialProfiles(a.social_profiles_json).map(ugbSocialLinkCard).filter(Boolean).join('');
+  let h='<article class="ugb-application-card"><h4>'+safe(a.display_name||a.member_name||a.member_email||'申請者')+'</h4><div class="ugb-application-meta"><span class="sub">'+safe(ugbApplicationScope(a))+'｜'+safe(status)+'</span><div class="ugb-social-list">'+social+'</div></div>'+ugbApplicationDetailsHtml(a,true);
   h+=own.map(p=>ugbAssignmentControls(a,p)).join('');
   if(!a.removed_at&&!own.length&&['approved','rejected'].includes(a.status))h+=ugbNotificationHtml(a.id,a.status,'application');
-  if(!d.rosterControlsVersion)h+='<div class="sub" style="margin-top:8px">場次開關及通知功能尚未完成更新。</div>';
+  if(!d.rosterControlsVersion)h+='<div class="sub">場次開關及通知功能尚未完成更新。</div>';
   if(!a.removed_at&&a.status==='pending'&&(general||a.source_session_id))h+='<div class="card-actions"><button class="btn green" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="approved" onclick="ugbReviewRecruitment(this)">核准</button><button class="btn danger" data-id="'+attr(a.id)+'" data-session="'+attr(a.source_session_id||'')+'" data-status="rejected" onclick="ugbReviewRecruitment(this)">拒絕</button></div>';
   if(!a.removed_at&&general&&a.status==='approved'){
     const choices=d.sessions.filter(s=>!assigned.some(p=>p.session_id===s.id));
-    h+='<div style="margin-top:10px">'+(choices.length?'<select id="ugbApplicationSession-'+attr(a.id)+'" style="width:100%"><option value="">請選擇要開通的場次</option>'+choices.map(s=>'<option value="'+attr(s.id)+'">'+safe(s.name)+'（'+safe(s.status||'')+'）</option>').join('')+'</select><button class="btn" style="margin-top:8px" data-id="'+attr(a.id)+'" onclick="ugbAssignRecruitment(this)">開通所選場次</button>':'目前所有團購場次皆已指派')+'</div>';
+    h+='<div class="ugb-application-assign">'+(choices.length?'<select id="ugbApplicationSession-'+attr(a.id)+'"><option value="">請選擇要開通的場次</option>'+choices.map(s=>'<option value="'+attr(s.id)+'">'+safe(s.name)+'（'+safe(s.status||'')+'）</option>').join('')+'</select><button class="btn" data-id="'+attr(a.id)+'" onclick="ugbAssignRecruitment(this)">開通所選場次</button>':'目前所有團購場次皆已指派')+'</div>';
   }
-  return h+'</div>';
+  return h+'</article>';
 }
 async function ugbReviewRecruitment(btn){
   btn.disabled=true;
