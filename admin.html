@@ -6071,10 +6071,11 @@ function renderEmailTemplates(rows){
   const vars='可用變數：[主辦名稱] [顯示名稱] [場次名稱] [報名日期] [活動日期] [攤位數] [設備] [應繳金額] [退費金額] [地點] [原場次] [新場次] [選擇期限] [大群組名稱] [大群組邀請文字] [大群組密碼]。按鈕可用：[按鈕:前往我的紀錄]、[按鈕:加入官方LINE]、[按鈕:加入大群組]。';
   EmailTplState.rows = Array.isArray(rows) ? rows : [];
   EmailTplState.vars = vars;
+  EmailTplState.groupBuyVars = '可用變數：[顯示名稱] [場次名稱] [已開通場次] [場次開通說明]。按鈕：[按鈕:開啟團購管理] [按鈕:查看本場專屬分享頁] [按鈕:兔彼樂官方LINE客服]。';
   let out='<div class="report-card" style="margin-bottom:14px"><div class="report-title">寄信測試</div><div class="sub" style="margin:4px 0 10px">只測試寄信服務是否正常，不會修改任何正式模板。</div><div class="form-grid"><div class="form-field full"><label>測試收件 Email</label><input id="testEmailInput" type="email" placeholder="輸入收件 Email"></div></div><div class="card-actions"><button class="btn secondary" onclick="sendTestEmail(this)">寄出測試信</button></div><div id="emailTestResult" class="sub" style="margin-top:8px"></div></div>';
   out+='<div class="notice">每封信可單獨開關。關閉後流程照常進行，只是不寄出該封信。點卡片即可編輯。</div>';
   out+='<div class="email-tpl-grid">';
-  for(const t of EmailTplState.rows){
+  for(const t of [...EmailTplState.rows].sort((a,b)=>Number(String(b.templateKey||b.template_key||'').startsWith('groupbuy_'))-Number(String(a.templateKey||a.template_key||'').startsWith('groupbuy_')))){
     const key=String(t.templateKey||t.template_key||'');
     const on=(t.isActive!==false && t.is_active!==false);
     out+='<button type="button" class="email-tpl-card" onclick="openEmailTemplateEditor(\''+attr(key)+'\')">'
@@ -6100,16 +6101,30 @@ async function sendTestEmail(btn){
 function openEmailTemplateEditor(key){
   const t=(EmailTplState.rows||[]).find(x=>String(x.templateKey||x.template_key||'')===String(key));
   if(!t){ toast('找不到模板'); return; }
-  const on=(t.isActive!==false && t.is_active!==false);
+  const on=(t.isActive!==false && t.is_active!==false),isGroupBuy=key.startsWith('groupbuy_');
   openPanel(safe(t.title||key),'key：'+safe(key),
     '<div class="form-grid">'
     +'<div class="form-field full"><label class="tight-check" style="font-weight:700"><input type="checkbox" id="active_'+attr(key)+'" '+(on?'checked':'')+'> 啟用寄信</label></div>'
     +'<div class="form-field full"><label>主旨</label><input id="sub_'+attr(key)+'" value="'+attr(t.subject||'')+'"></div>'
     +'<div class="form-field full"><label>內容</label><textarea id="body_'+attr(key)+'" style="min-height:280px">'+safe(t.body||'')+'</textarea>'
-    +'<div class="sub" style="margin-top:6px">'+safe(EmailTplState.vars)+'</div></div>'
+    +'<div class="sub" style="margin-top:6px">'+safe(isGroupBuy?EmailTplState.groupBuyVars:EmailTplState.vars)+'</div></div>'
     +'</div>'
+    +(isGroupBuy?'<div class="notice">信件會帶入實際指派的場次與專屬分享連結，並固定附上官方 LINE 客服。客服網址沿用「設定 → 公司資料」。關閉寄信不影響審核、開通及站內通知。</div><div id="groupBuyEmailPreview"></div>':'')
     +'<div class="card-actions"><button class="btn" onclick="saveEmailTemplate(\''+attr(key)+'\',this)">儲存模板與開關</button>'
+    +(isGroupBuy?'<button class="btn secondary" data-key="'+attr(key)+'" onclick="previewGroupBuyEmailTemplate(this)">預覽信件</button>':'')
     +'<button class="btn secondary" onclick="openEmailTemplates()">← 回信件列表</button></div>');
+}
+async function previewGroupBuyEmailTemplate(btn){
+ const key=btn.dataset.key,host=$('groupBuyEmailPreview'),old=btn.textContent;
+ if(!host)return;btn.disabled=true;btn.textContent='預覽中…';
+ try{
+  const r=await apiPost({action:'previewGroupBuyEmailTemplate',templateKey:key,subject:$('sub_'+key).value,body:$('body_'+key).value});
+  if(r.error||!r.html)throw Error(r.error||'無法產生預覽');
+  if(!$('groupBuyEmailPreview')||$('groupBuyEmailPreview')!==host)return;
+  host.innerHTML='<div class="notice">範例預覽，未寄出。正式信件會顯示收件人的名稱、實際指派場次與專屬連結。</div><p><b>主旨：</b>'+safe(r.subject)+'</p><iframe title="團購信件內容預覽" sandbox="" style="width:100%;height:500px;border:1px solid var(--line);border-radius:12px;background:white"></iframe>';
+  host.querySelector('iframe').srcdoc=r.html;
+ }catch(e){if(host.isConnected)host.innerHTML='<div class="notice">預覽失敗：'+safe(e.message)+'</div>';}
+ finally{btn.disabled=false;btn.textContent=old;}
 }
 async function saveEmailTemplate(key,btn){ const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…'; try{ await apiPost({action:'saveEmailTemplate',templateKey:key,subject:$('sub_'+key).value,body:$('body_'+key).value,isActive:!!$('active_'+key).checked}); toast('信件模板與開關已儲存'); openEmailTemplates(); }catch(e){toast('儲存失敗：'+e.message,6000)}finally{btn.disabled=false;btn.textContent=old;} }
 async function openAgreementSettings(){ openPanel('合約管理','三個模板可存；文字不得自行改寫','<div class="loading">合約載入中…</div>'); try{ const rows=await api({action:'getAgreementTemplate'}); let out=''; for(const a of (Array.isArray(rows)?rows:[])){ const slot=a.slot_no||1; out+='<div class="card" style="padding:14px"><b>範本 '+slot+'</b><div class="form-grid"><div class="form-field"><label>標籤</label><input id="agt_label_'+slot+'" value="'+attr(a.label||'')+'"></div><div class="form-field"><label>版本</label><input id="agt_version_'+slot+'" value="'+attr(a.version||'')+'"></div><div class="form-field full"><label>標題</label><input id="agt_title_'+slot+'" value="'+attr(a.title||'')+'"></div><div class="form-field full"><label>內容</label><textarea id="agt_content_'+slot+'">'+safe(a.content||'')+'</textarea></div></div><div class="card-actions"><button class="btn small" onclick="saveAgreementTemplate('+slot+',this)">儲存範本 '+slot+'</button></div></div>'; } $('panelBody').innerHTML=out||'<div class="empty">目前沒有合約模板</div>'; }catch(e){$('panelBody').innerHTML='<div class="empty">合約載入失敗：'+safe(e.message)+'</div>';} }
@@ -6886,9 +6901,9 @@ const UGBNoticeResults={},UGBPermissionWarnings={};
 function ugbNotificationHtml(targetId,kind,targetType){
  const data=UGBApplicationRoster;if(!data?.rosterControlsVersion)return '';
  const cached=UGBNoticeResults[targetId],stored=(data.notifications||[]).find(x=>x.targetId===targetId),n=cached?.kind===kind?cached:stored?.kind===kind?stored:null;
- const label=data.notificationReadError&&!n?'通知紀錄讀取失敗':({sent:'郵件已送交寄信服務',failed:'郵件寄送失敗',pending:'郵件處理中',unknown:'郵件結果待確認'}[n?.email]||'尚未寄送通知');
+ const label=data.notificationReadError&&!n?'通知紀錄讀取失敗':({sent:'郵件已送交寄信服務',failed:'郵件寄送失敗',pending:'郵件處理中',unknown:'郵件結果待確認',disabled:'上次未寄出（寄信開關關閉）'}[n?.email]||'尚未寄送通知');
  const canSend=n?.email!=='sent'||n?.inApp==='failed',inApp=n?.inApp==='sent'?'｜站內通知已建立':n?.inApp==='failed'?'｜站內通知建立失敗':'';
- return '<div class="ugb-notice">'+safe(label+inApp)+(canSend?'<br><button type="button" class="btn secondary small" data-target="'+attr(targetType)+'" data-id="'+attr(targetId)+'" onclick="ugbSendRecruitmentNotice(this)">'+(!n?'補寄通知':n.email==='sent'?'補建站內通知':'重試通知')+'</button>':'')+'</div>';
+ return '<div class="ugb-notice">'+safe(label+inApp)+(canSend?'<br><button type="button" class="btn secondary small" data-target="'+attr(targetType)+'" data-id="'+attr(targetId)+'" onclick="ugbSendRecruitmentNotice(this)">'+(!n?'補寄通知':n.email==='sent'?'補建站內通知':n.email==='disabled'?'補寄通知':'重試通知')+'</button>':'')+'</div>';
 }
 function ugbAssignmentControls(a,pr){
  const active=pr.status==='active',enabled=!!UGBApplicationRoster?.rosterControlsVersion,canResume=!a.removed_at&&a.status==='approved';
@@ -6909,7 +6924,7 @@ async function ugbToggleRecruitment(btn){
 async function ugbSendRecruitmentNotice(btn){
  if(btn.disabled)return;btn.disabled=true;
  try{const r=await apiPost({action:'notifyGroupBuyPromoter',...(btn.dataset.target==='promoter'?{promoterId:btn.dataset.id}:{applicationId:btn.dataset.id})});if(!r||r.error||r.ok!==true||!r.notification)throw new Error(r?.error||'未取得通知結果');UGBNoticeResults[btn.dataset.id]=r.notification;
-  toast(r.notification.email==='sent'?'郵件已送交寄信服務'+(r.notification.inApp==='failed'?'；站內通知建立失敗，可再補建':''):'通知尚未確認寄出：'+(r.notification.error||'請稍後重試'),9000);await ugbOpenApplications();
+  toast(r.notification.email==='sent'?'郵件已送交寄信服務'+(r.notification.inApp==='failed'?'；站內通知建立失敗，可再補建':''):r.notification.email==='disabled'?'此信件已關閉寄送；站內通知結果請看名單':'通知尚未確認寄出：'+(r.notification.error||'請稍後重試'),9000);await ugbOpenApplications();
  }catch(e){toast('通知失敗：'+(e.message||e),9000);}finally{btn.disabled=false;}
 }
 window.ugbToggleRecruitment=ugbToggleRecruitment;
@@ -6935,7 +6950,7 @@ async function ugbOpenApplications(){
   try{
     const d=await ugbFetchApplicationRoster(),host=document.getElementById('ugbApplicationRoster');if(!host)return;
     const pending=d.applications.filter(a=>!a.removed_at&&a.status==='pending').length;
-    host.innerHTML='<div class="page-actions"><b>共 '+d.applications.length+' 筆｜待審 '+pending+' 筆</b><button class="btn secondary" onclick="ugbOpenApplications()">重新整理</button></div><div class="ugb-promoter-grid">'+(d.applications.length?d.applications.map(ugbApplicationRosterCard).join(''):'<div class="empty">目前沒有團購主申請</div>')+'</div>';
+    host.innerHTML='<div class="page-actions"><b>共 '+d.applications.length+' 筆｜待審 '+pending+' 筆</b><button class="btn secondary" onclick="ugbOpenApplications()">重新整理</button><button class="btn secondary" onclick="openEmailTemplates()">通知信件內容</button></div><div class="ugb-promoter-grid">'+(d.applications.length?d.applications.map(ugbApplicationRosterCard).join(''):'<div class="empty">目前沒有團購主申請</div>')+'</div>';
     const btn=document.getElementById('ugbApplicationsButton');if(btn)btn.textContent='團購主申請名單'+(pending?'（'+pending+' 待審）':'');
   }catch(e){const host=document.getElementById('ugbApplicationRoster');if(host)host.innerHTML='<div class="empty">名單載入失敗：'+safe(e.message||e)+'<br><button class="btn" onclick="ugbOpenApplications()">重試</button></div>';}
 }
