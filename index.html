@@ -1447,6 +1447,8 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
 .m-fixed-block{border-top:1px dashed #e2ecd9!important;margin-top:2px!important;padding-top:7px!important;display:grid!important;gap:5px!important}
 .m-fixed-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;min-width:0!important}
 .m-fixed-row span{background:#f8fbf5!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
+.m-fixed-row.m-main{grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important}
+.m-fixed-row.m-main span:first-child{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important}
 .m-fixed-row.m-equip-row{grid-template-columns:1fr!important}
 .m-fixed-row.m-equip-row span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:12.8px!important;line-height:1.35!important}
 .m-fixed-pay{background:#fff!important;border:1px solid #e2ecd9!important;border-radius:11px!important;padding:6px 7px!important;font-size:16px!important;font-weight:950!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
@@ -6259,6 +6261,7 @@ function mSessionForReg(r){
 }
 function mSessionDateLine(d){
   if(!d) return '';
+  if(typeof d!=='object') return String(d).replace(/-/g,'/');
   if(frontSessionDateIsRange(d)) return frontSessionDateText(d,true,true);
   const date=String(d.date||d.day||'').replace(/-/g,'/');
   const start=d.start||d.startTime||'';
@@ -6268,16 +6271,23 @@ function mSessionDateLine(d){
 function mRecordDateText(r){
   const s=mSessionForReg(r);
   const dates=Array.isArray(s.dates)&&s.dates.length?s.dates:(Array.isArray(r.sessionDates)?r.sessionDates:[]);
-  const selected=Array.isArray(r.selectedDates)?r.selectedDates.map(String).filter(Boolean):[];
+  const selected=Array.isArray(r.selectedDates)?r.selectedDates.filter(d=>frontSessionDateStartKey(d)):[];
+  if(selected.length){
+    const lines=selected.map(value=>{
+      const key=frontSessionDateStartKey(value);
+      const entry=dates.find(d=>frontSessionDateStartKey(d)===key);
+      return entry?mSessionDateLine(entry):(frontSessionDateIsRange(value)?mSessionDateLine(value):key.replace(/-/g,'/'));
+    }).filter(Boolean);
+    if(lines.length) return lines.join('、');
+  }
   if(dates.length){
-    const chosen=selected.length ? dates.filter(d=>selected.includes(frontSessionDateStartKey(d))) : dates;
-    const lines=(chosen.length?chosen:dates).map(mSessionDateLine).filter(Boolean);
+    const lines=dates.map(mSessionDateLine).filter(Boolean);
     if(lines.length) return lines.join('、');
   }
   const sessionRaw=s.date||s.startDate||s.eventDate||s.sessionDate||'';
   const sessionTime=s.startTime||s.time||'';
   if(sessionRaw) return [String(sessionRaw).replace(/-/g,'/'), sessionTime].filter(Boolean).join(' ');
-  const selectedText=selected.length ? selected.join('、') : '';
+  const selectedText=selected.length ? selected.map(frontSessionDateStartKey).join('、') : '';
   return selectedText || mFirstVal(r,['dateText','sessionDateText','timeText','eventTime','date','sessionDate'], '') || (r.createdAt ? '報名日期：'+mFormatDateTime(r.createdAt) : '時間請見活動公告');
 }
 function mRecordLocationText(r){
@@ -6298,18 +6308,30 @@ function mShortDateRange(v){
   if(!s) return '未設定';
   const dates=[];
   const re=/(20\d{2})[\/\-\.年](\d{1,2})[\/\-\.月](\d{1,2})|(^|[^0-9])(\d{1,2})[\/\-\.月](\d{1,2})(?=[^0-9]|$)/g;
-  let m;
+  let m,year='';
   while((m=re.exec(s))){
-    const mo=m[2]||m[5];
-    const da=m[3]||m[6];
-    if(mo&&da) dates.push(Number(mo)+'/'+Number(da));
+    const mo=Number(m[2]||m[5]),da=Number(m[3]||m[6]);
+    if(mo<1||mo>12||da<1||da>31) continue;
+    if(m[1]) year=m[1];
+    dates.push({year,month:mo,day:da,start:m.index+(m[1]?0:(m[4]||'').length),end:re.lastIndex});
   }
-  const uniq=[];
-  dates.forEach(d=>{ if(!uniq.includes(d)) uniq.push(d); });
-  if(uniq.length>1) return uniq[0]+'－'+uniq[uniq.length-1];
-  if(uniq.length===1) return uniq[0];
-  return s.replace(/20\d{2}[\/\-\.年]/g,'').replace(/月/g,'/').replace(/日/g,'').replace(/\s+/g,' ').trim() || '未設定';
+  if(!dates.length) return s.replace(/\s+/g,' ').trim();
+  // Keep incomplete legacy lists intact instead of discarding their trailing days.
+  if(/^\s*[,，、]\s*\d{1,2}(?:\s*[,，、]\s*\d{1,2})*\s*$/.test(s.slice(dates[dates.length-1].end))) return s.replace(/[,，]/g,'、');
+  const showYear=new Set(dates.map(d=>d.year).filter(Boolean)).size>1;
+  const label=d=>(showYear&&d.year?d.year+'/':'')+d.month+'/'+d.day;
+  const parts=[];
+  for(let i=0;i<dates.length;i++){
+    const first=dates[i],next=dates[i+1];
+    // A range must already be explicit in the source; a date list is never a range.
+    const isRange=next&&/^\s*日?\s*[～~－–—\-至到]\s*$/.test(s.slice(first.end,next.start));
+    const text=isRange?label(first)+'～'+label(next):label(first);
+    if(!parts.includes(text)) parts.push(text);
+    if(isRange) i++;
+  }
+  return parts.join('、');
 }
+
 function mEquipTextIsUseful(v){
   const s=String(v===undefined||v===null?'':v).trim();
   return !!s && !/^(無|沒有|未加購|不需|none)$/i.test(s);
@@ -7506,3 +7528,4 @@ function scrollToSection(id){
 <!-- 2BL_CHECKPOINT: 20260905-index-five-category-range-correction-15 | pending manual deployment -->
 </body>
 </html>
+

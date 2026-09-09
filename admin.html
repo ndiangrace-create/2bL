@@ -984,6 +984,7 @@
 .member-small-line{font-size:13px!important;font-weight:900!important;color:#444!important;line-height:1.3!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 .card-fixed-block{border-top:1px dashed #E9DED2!important;margin-top:4px!important;padding-top:7px!important;display:grid!important;gap:5px!important;min-width:0!important}
 .card-fixed-block .fixed-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;min-width:0!important}
+.card-fixed-block .fixed-row.fixed-main{grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important}
 .card-fixed-block .fixed-row span{background:#FBF8F1!important;border:1px solid #EFE6DC!important;border-radius:11px!important;padding:6px 7px!important;font-size:12.5px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;min-width:0!important}
 .card-fixed-block .fixed-pay{background:#fff!important;border:1px solid #EFE6DC!important;border-radius:11px!important;padding:6px 7px!important;font-size:13px!important;font-weight:950!important;color:#333!important;line-height:1.25!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 .card-fixed-block .fixed-pay b{font-weight:950!important;color:#111!important}
@@ -2664,18 +2665,30 @@ function adminShortDateRange(v){
   if(!s) return '未設定';
   const dates=[];
   const re=/(20\d{2})[\/\-\.年](\d{1,2})[\/\-\.月](\d{1,2})|(^|[^0-9])(\d{1,2})[\/\-\.月](\d{1,2})(?=[^0-9]|$)/g;
-  let m;
+  let m,year='';
   while((m=re.exec(s))){
-    const mo=m[2]||m[5];
-    const da=m[3]||m[6];
-    if(mo&&da) dates.push(Number(mo)+'/'+Number(da));
+    const mo=Number(m[2]||m[5]),da=Number(m[3]||m[6]);
+    if(mo<1||mo>12||da<1||da>31) continue;
+    if(m[1]) year=m[1];
+    dates.push({year,month:mo,day:da,start:m.index+(m[1]?0:(m[4]||'').length),end:re.lastIndex});
   }
-  const uniq=[];
-  dates.forEach(d=>{ if(!uniq.includes(d)) uniq.push(d); });
-  if(uniq.length>1) return uniq[0]+'－'+uniq[uniq.length-1];
-  if(uniq.length===1) return uniq[0];
-  return s.replace(/20\d{2}[\/\-\.年]/g,'').replace(/月/g,'/').replace(/日/g,'').replace(/\s+/g,' ').trim() || '未設定';
+  if(!dates.length) return s.replace(/\s+/g,' ').trim();
+  // Keep incomplete legacy lists intact instead of discarding their trailing days.
+  if(/^\s*[,，、]\s*\d{1,2}(?:\s*[,，、]\s*\d{1,2})*\s*$/.test(s.slice(dates[dates.length-1].end))) return s.replace(/[,，]/g,'、');
+  const showYear=new Set(dates.map(d=>d.year).filter(Boolean)).size>1;
+  const label=d=>(showYear&&d.year?d.year+'/':'')+d.month+'/'+d.day;
+  const parts=[];
+  for(let i=0;i<dates.length;i++){
+    const first=dates[i],next=dates[i+1];
+    // A range must already be explicit in the source; a date list is never a range.
+    const isRange=next&&/^\s*日?\s*[～~－–—\-至到]\s*$/.test(s.slice(first.end,next.start));
+    const text=isRange?label(first)+'～'+label(next):label(first);
+    if(!parts.includes(text)) parts.push(text);
+    if(isRange) i++;
+  }
+  return parts.join('、');
 }
+
 function adminStallText(r){
   const v=todoFirstValue(r,['stallCount','stall_count','stalls','boothCount','booth_count']);
   return v!=='' ? (String(v).replace(/攤$/,'')+'攤') : '未設定';
@@ -7277,3 +7290,4 @@ window.downloadSupplierOrders=async function(sessionId){try{const d=await api({a
 </script>
 </body>
 </html>
+
