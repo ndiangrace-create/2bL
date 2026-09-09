@@ -7052,7 +7052,14 @@ function paymentAllowedMethodsFromReg(reg){
   // 不可用「有沒有連結」推斷是否開放，否則主辦填了連結卻沒勾，攤友會選到被後端打回的方式。
   const p=(reg&&reg.paymentProfile)||{};
   const a=(reg&&reg.allowedPaymentMethods) || p.allowedMethods || {};
-  return {bank:a.bank!==false, linepay:!!a.linepay, card:!!a.card};
+  return {bank:a.bank!==false, linepay:!!a.linepay, card:!!a.card, custom:Array.isArray(a.custom)?a.custom.filter(m=>m&&m.enabled!==false&&m.id&&m.name):[]};
+}
+function currentCustomPayment(method){
+  const a=paymentAllowedMethodsFromReg(findMyRegById(ST_currentPayRegId));
+  return a.custom.find(m=>'custom:'+m.id===method)||null;
+}
+function customPaymentLink(url){
+  try{const u=new URL(url);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch(_){return '';}
 }
 function bankInfoHtmlFromPayment(reg){
   const p=(reg&&reg.paymentProfile)||{};
@@ -7071,6 +7078,7 @@ function paymentMethodOptionsForReg(reg){
   if(a.bank) opts+='<option value="ATM 轉帳">ATM／銀行轉帳</option>';
   if(a.linepay) opts+='<option value="LINE Pay">LINE Pay</option>';
   if(a.card) opts+='<option value="信用卡付款">信用卡</option>';
+  a.custom.forEach(m=>{opts+='<option value="'+escHtml('custom:'+m.id)+'">'+escHtml(m.name)+'</option>';});
   return opts || '<option value="">目前未開放付款方式</option>';
 }
 
@@ -7122,6 +7130,7 @@ async function applyActivityCreditForCurrent(btn){
   finally{if(btn){btn.disabled=false;btn.textContent='先使用活動金扣抵';}}
 }
 function getPayLink(method){
+  if(String(method).startsWith('custom:'))return customPaymentLink(currentCustomPayment(method)?.url||'');
   const reg=findMyRegById(ST_currentPayRegId)||{};
   const p=reg.paymentProfile||{};
   if(method==='LINE Pay'){ const x=p.linepay||{}; return x.url||x.linepayUrl||x.linepay_url||x.link||''; }
@@ -7130,21 +7139,27 @@ function getPayLink(method){
   return (hit&&hit.url)||'';
 }
 function onPayMethodChange(){
-  const method = $('payMethod')?.value || 'ATM 轉帳';
-  const isBank = method.includes('ATM') || method.includes('銀行') || method.includes('轉帳') || method.includes('匯款');
+  const method = $('payMethod')?.value || '';
+  const isBank = !method.startsWith('custom:') && /ATM|銀行|轉帳|匯款/.test(method);
   const bankBox=$('bankPayBox'); if(bankBox) bankBox.style.display=isBank?'block':'none';
   const lastWrap=$('payLastFiveWrap'); if(lastWrap) lastWrap.style.display=isBank?'block':'none';
   const btn=$('immediatePayBtn');
-  if(btn){ btn.style.display = isBank ? 'none' : 'block'; btn.textContent = '立即付款'; }
+  const custom=currentCustomPayment(method);
+  let info=$('customPayInfo');
+  if(!info&&bankBox){info=document.createElement('div');info.id='customPayInfo';info.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;margin:10px 0;background:#f5f7f2;border-radius:10px;line-height:1.6';bankBox.insertAdjacentElement('afterend',info);}
+  if(info){info.style.display=custom?'block':'none';info.textContent=custom?[custom.name,custom.instructions||'', '完成付款後，請回報付款供主辦核對。'].filter(Boolean).join('\n'):'';}
+  if(btn){btn.style.display=(!method||isBank||(custom&&!getPayLink(method)))?'none':'block';btn.textContent='立即付款';}
+  const report=$('reportPaymentBtn');if(report)report.disabled=!method;
+
 }
 function openExternalPay(){
-  const method = $('payMethod')?.value || 'ATM 轉帳';
-  const isBank = method.includes('ATM') || method.includes('銀行') || method.includes('轉帳') || method.includes('匯款');
+  const method = $('payMethod')?.value || '';
+  const isBank = !method.startsWith('custom:') && /ATM|銀行|轉帳|匯款/.test(method);
   if(isBank){ toast('請依上方 ATM 資訊完成轉帳，付款後回來按「我已完成付款，回報付款」',5000); return; }
   const url = getPayLink(method);
   if(!url){ toast('此報名的收款設定尚未提供此付款方式連結，請改用已開放方式或聯繫主辦'); return; }
   toast('付款前提醒：完成後請務必截圖付款證明，再回「我的紀錄」按「我已完成付款，回報付款」，並連同截圖傳到官方 LINE。',7000);
-  window.open(url,'_blank');
+  window.open(url,'_blank','noopener,noreferrer');
 }
 function showPayFormError(msg){
   const el=$('payFormError');
@@ -7154,8 +7169,9 @@ function showPayFormError(msg){
 function clearPayFormError(){ const el=$('payFormError'); if(el){ el.style.display='none'; el.textContent=''; } }
 async function submitPaymentForm(){
   clearPayFormError();
-  const method = $('payMethod')?.value || 'ATM 轉帳';
-  const isBank = method.includes('ATM') || method.includes('銀行') || method.includes('轉帳') || method.includes('匯款');
+  const method = $('payMethod')?.value || '';
+  if(!method){showPayFormError('目前未開放付款方式，請聯繫主辦');return;}
+  const isBank = !method.startsWith('custom:') && /ATM|銀行|轉帳|匯款/.test(method);
   const lastFive = isBank ? ($('payLastFive')?.value.trim() || '') : '';
   const amount = ST_currentPayAmount;
   if(isBank && !lastFive){ showPayFormError('請填寫帳號末五碼'); return; }
@@ -7528,4 +7544,5 @@ function scrollToSection(id){
 <!-- 2BL_CHECKPOINT: 20260905-index-five-category-range-correction-15 | pending manual deployment -->
 </body>
 </html>
+
 

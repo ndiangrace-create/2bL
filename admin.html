@@ -4528,7 +4528,7 @@ function paymentProfilePreviewHtml(id){
   const m={tuibile_self:'兔彼樂自收',tuibile_agency:'兔彼樂代收',partner_self:'合作主辦自收'}[p.mode]||p.mode||'未設定';
   const a=p.allowedMethods||{};
   const bank=p.bankAccount||{};
-  const methods=[a.bank?'轉帳':'',a.linepay?'LINE Pay':'',a.card?'信用卡':''].filter(Boolean).join('、')||'未開放';
+  const methods=[a.bank?'轉帳':'',a.linepay?'LINE Pay':'',a.card?'信用卡':'',...(Array.isArray(a.custom)?a.custom.filter(m=>m.enabled!==false).map(m=>m.name):[])].filter(Boolean).join('、')||'未開放';
   return '<div class="notice" style="margin-top:8px"><b>本場將使用：'+safe(p.name||'')+'</b><br>模式：'+safe(m)+'｜可用付款：'+safe(methods)+'<br>轉帳帳戶：'+safe(bank.bankName||'未設定')+' / '+safe(bank.accountName||'')+' / '+safe((bank.accountNumber||'').slice(-5)?('尾號 '+String(bank.accountNumber||'').slice(-5)):'')+'</div>';
 }
 function updatePaymentProfilePreview(){ const el=$('set_paymentProfilePreview'); if(el) el.innerHTML=paymentProfilePreviewHtml($('set_paymentProfileId')?.value||''); }
@@ -5511,11 +5511,43 @@ async function openPaymentSettings(){
   }catch(e){ $('panelBody').innerHTML='<div class="empty">收款設定載入失敗：'+safe(e.message)+'<br>請確認已執行財務模組資料庫 SQL。</div>'; }
 }
 function paymentModeOptions(v){ const o=[['tuibile_self','兔彼樂自收'],['tuibile_agency','兔彼樂代收，需轉合作主辦'],['partner_self','合作主辦自收']]; return o.map(x=>'<option value="'+x[0]+'" '+(String(v)===x[0]?'selected':'')+'>'+x[1]+'</option>').join(''); }
+function paymentCustomRowHtml(m={}){
+  const id=m.id||('pm_'+crypto.randomUUID().replace(/-/g,''));
+  return '<div class="pp-custom-row" data-method-id="'+attr(id)+'" style="border:1px solid var(--line,#ddd);border-radius:10px;padding:12px;margin-top:8px">'
+    +'<div style="display:flex;gap:10px;align-items:center;justify-content:space-between"><label class="tight-check"><input type="checkbox" data-field="enabled" '+(m.enabled!==false?'checked':'')+'> 啟用此付款方式</label><button type="button" class="btn small secondary" onclick="this.closest(\'.pp-custom-row\').remove()">移除</button></div>'
+    +'<div class="form-grid" style="margin-top:8px"><div class="form-field"><label>付款名稱</label><input data-field="name" maxlength="40" value="'+attr(m.name||'')+'" placeholder="例：現場現金、其他收款平台"></div>'
+    +'<div class="form-field"><label>付款連結（可留空）</label><input data-field="url" type="url" maxlength="2000" value="'+attr(m.url||'')+'" placeholder="https://…"></div>'
+    +'<div class="form-field full"><label>收款說明</label><textarea data-field="instructions" rows="2" maxlength="2000" placeholder="告訴攤友如何付款、付款後如何回報">'+safe(m.instructions||'')+'</textarea></div></div></div>';
+}
+function addPaymentCustomMethod(){
+  const box=$('pp_customMethods'); if(!box)return;
+  if(box.children.length>=20){toast('最多可新增 20 個自訂付款方式');return;}
+  box.insertAdjacentHTML('beforeend',paymentCustomRowHtml());
+  box.lastElementChild.querySelector('[data-field="name"]').focus();
+}
+function collectPaymentCustomMethods(){
+  const names=new Set();
+  return Array.from(document.querySelectorAll('#pp_customMethods .pp-custom-row')).map(row=>{
+    const get=k=>row.querySelector('[data-field="'+k+'"]');
+    const m={id:row.dataset.methodId,name:get('name').value.trim(),url:get('url').value.trim(),instructions:get('instructions').value.trim(),enabled:get('enabled').checked};
+    const fail=msg=>{get('name').focus();throw new Error(msg);};
+    if(!m.name||[...m.name].length>40||names.has(m.name.toLowerCase()))fail('請填寫不重複的付款名稱（最多 40 字）');
+    names.add(m.name.toLowerCase());
+    if(!m.url&&!m.instructions)fail('「'+m.name+'」請填寫付款連結或收款說明');
+    if(m.url){
+      let u;try{u=new URL(m.url);}catch(_){fail('「'+m.name+'」請填完整付款網址');}
+      if(!['https:','http:'].includes(u.protocol)||u.username||u.password)fail('「'+m.name+'」請使用不含帳密的 http:// 或 https:// 網址');
+      m.url=u.href;
+    }
+    return m;
+  });
+}
+
 function renderPaymentProfileManager(editId=''){
   const list=AdminState.paymentProfiles||[];
   const edit=list.find(x=>String(x.id)===String(editId))||{};
   const a=edit.allowedMethods||{bank:true}; const bank=edit.bankAccount||{}; const lp=edit.linepay||{}; const card=edit.card||{};
-  const cards=list.map(p=>{ const aa=p.allowedMethods||{}; const m=[aa.bank?'轉帳':'',aa.linepay?'LINE Pay':'',aa.card?'信用卡':''].filter(Boolean).join('、')||'未開放'; return '<div class="card" style="padding:14px"><b>'+safe(p.name||'未命名')+'</b> '+(p.isDefault?'<span class="tag ok">預設</span>':'')+(p.isEnabled===false?'<span class="tag bad">停用</span>':'')+'<div class="sub">'+safe(({tuibile_self:'兔彼樂自收',tuibile_agency:'兔彼樂代收',partner_self:'合作主辦自收'}[p.mode]||p.mode||''))+'｜'+safe(m)+'</div><div class="sub">帳戶：'+safe((p.bankAccount||{}).bankName||'未設定')+' / '+safe((p.bankAccount||{}).accountName||'')+'</div><div class="card-actions"><button class="btn small '+(String(p.id)===String(editId)?'':'secondary')+'" onclick="renderPaymentProfileManager(\''+attr(p.id)+'\')">'+(String(p.id)===String(editId)?'✏️ 編輯中':'編輯')+'</button>'+(!p.isDefault?'<button class="btn small danger" onclick="disablePaymentProfile(\''+attr(p.id)+'\')">停用</button>':'')+'</div></div>'; }).join('') || '<div class="empty">目前沒有收款設定</div>';
+  const cards=list.map(p=>{ const aa=p.allowedMethods||{}; const m=[aa.bank?'轉帳':'',aa.linepay?'LINE Pay':'',aa.card?'信用卡':'',...(Array.isArray(aa.custom)?aa.custom.filter(m=>m.enabled!==false).map(m=>m.name):[])].filter(Boolean).join('、')||'未開放'; return '<div class="card" style="padding:14px"><b>'+safe(p.name||'未命名')+'</b> '+(p.isDefault?'<span class="tag ok">預設</span>':'')+(p.isEnabled===false?'<span class="tag bad">停用</span>':'')+'<div class="sub">'+safe(({tuibile_self:'兔彼樂自收',tuibile_agency:'兔彼樂代收',partner_self:'合作主辦自收'}[p.mode]||p.mode||''))+'｜'+safe(m)+'</div><div class="sub">帳戶：'+safe((p.bankAccount||{}).bankName||'未設定')+' / '+safe((p.bankAccount||{}).accountName||'')+'</div><div class="card-actions"><button class="btn small '+(String(p.id)===String(editId)?'':'secondary')+'" onclick="renderPaymentProfileManager(\''+attr(p.id)+'\')">'+(String(p.id)===String(editId)?'✏️ 編輯中':'編輯')+'</button>'+(!p.isDefault?'<button class="btn small danger" onclick="disablePaymentProfile(\''+attr(p.id)+'\')">停用</button>':'')+'</div></div>'; }).join('') || '<div class="empty">目前沒有收款設定</div>';
   $('panelBody').innerHTML='<div class="notice">這裡管理場次的正式收款設定；場次指定後，後續錄取與付款會沿用該設定。</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:14px">'+cards+'</div>'
     +'<div class="report-card" id="ppEditCard"><div class="report-title">'+(edit.id?'編輯收款設定':'新增收款設定')+'</div><div class="form-grid">'
     +'<input type="hidden" id="pp_id" value="'+attr(edit.id||'')+'">'
@@ -5527,6 +5559,7 @@ function renderPaymentProfileManager(editId=''){
     +'<div class="form-field"><label>銀行</label><input id="pp_bankName" value="'+attr(bank.bankName||'')+'"></div><div class="form-field"><label>分行</label><input id="pp_bankBranch" value="'+attr(bank.branchName||'')+'"></div><div class="form-field"><label>戶名</label><input id="pp_accountName" value="'+attr(bank.accountName||'')+'"></div><div class="form-field"><label>帳號</label><input id="pp_bankAccount" value="'+attr(bank.accountNumber||'')+'"></div>'
     +'<div class="form-field"><label>LINE Pay 顯示名稱</label><input id="pp_linepayName" value="'+attr(lp.displayName||'LINE Pay')+'"></div><div class="form-field"><label>LINE Pay 付款連結／說明</label><input id="pp_linepayUrl" value="'+attr(lp.url||'')+'"></div>'
     +'<div class="form-field"><label>信用卡顯示名稱</label><input id="pp_cardName" value="'+attr(card.displayName||'信用卡')+'"></div><div class="form-field"><label>信用卡付款連結／說明</label><input id="pp_cardUrl" value="'+attr(card.url||'')+'"></div>'
+    +'<div class="form-field full"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>自訂付款方式</b><button type="button" class="btn small secondary" onclick="addPaymentCustomMethod()">＋新增付款方式</button></div><div class="sub">付款連結與收款說明至少填一項。回報付款後，仍由管理員核對收款。</div><div id="pp_customMethods">'+(Array.isArray(a.custom)?a.custom.map(paymentCustomRowHtml).join(''):'')+'</div></div>'
     +'<div class="form-field full"><label>備註</label><textarea id="pp_note">'+safe(edit.note||'')+'</textarea></div>'
     +'</div><div class="card-actions"><button class="btn" onclick="savePaymentProfile(this)">儲存收款設定</button><button class="btn secondary" onclick="renderPaymentProfileManager()">清空新增</button></div></div>';
   // 手機版：編輯表單在頁面下方，按「編輯」後若不捲動會像沒反應
@@ -5535,7 +5568,7 @@ function renderPaymentProfileManager(editId=''){
 async function savePaymentProfile(btn){
   const old=btn.textContent; btn.disabled=true; btn.textContent='儲存中…';
   try{
-    await apiPost({action:'savePaymentProfile',id:$('pp_id').value,name:$('pp_name').value,mode:$('pp_mode').value,ownerName:$('pp_owner').value,isDefault:!!$('pp_default').checked,allowedMethods:{bank:!!$('pp_m_bank').checked,linepay:!!$('pp_m_linepay').checked,card:!!$('pp_m_card').checked},bankName:$('pp_bankName').value,bankBranch:$('pp_bankBranch').value,accountName:$('pp_accountName').value,bankAccount:$('pp_bankAccount').value,linepayDisplayName:$('pp_linepayName').value,linepayUrl:$('pp_linepayUrl').value,cardDisplayName:$('pp_cardName').value,cardUrl:$('pp_cardUrl').value,note:$('pp_note').value});
+    await apiPost({action:'savePaymentProfile',id:$('pp_id').value,name:$('pp_name').value,mode:$('pp_mode').value,ownerName:$('pp_owner').value,isDefault:!!$('pp_default').checked,allowedMethods:{bank:!!$('pp_m_bank').checked,linepay:!!$('pp_m_linepay').checked,card:!!$('pp_m_card').checked,custom:collectPaymentCustomMethods()},bankName:$('pp_bankName').value,bankBranch:$('pp_bankBranch').value,accountName:$('pp_accountName').value,bankAccount:$('pp_bankAccount').value,linepayDisplayName:$('pp_linepayName').value,linepayUrl:$('pp_linepayUrl').value,cardDisplayName:$('pp_cardName').value,cardUrl:$('pp_cardUrl').value,note:$('pp_note').value});
     toast('收款設定已儲存'); await openPaymentSettings();
   }catch(e){ toast('儲存失敗：'+e.message,8000); }
   finally{ btn.disabled=false; btn.textContent=old; }
@@ -7290,4 +7323,5 @@ window.downloadSupplierOrders=async function(sessionId){try{const d=await api({a
 </script>
 </body>
 </html>
+
 
