@@ -3015,7 +3015,8 @@ async function openPartialDayRefundPanel(regId,sid){
   const raw=r.selectedDates||r.selected_dates||r.selectedDatesJson||r.selected_dates_json||[];
   const dates=(Array.isArray(raw)?raw:safeJson(raw,[])).map(x=>typeof x==='object'?(x.date||x.value||''):String(x||'')).filter(Boolean);
   if(dates.length<2){toast('此報名沒有可部分退款的多日日期',5000);return;}
-  const choices=dates.map(d=>'<label style="display:flex;gap:8px;align-items:center;padding:10px;border:1px solid #ddd;border-radius:10px"><input class="partialRefundDate" type="checkbox" value="'+attr(String(d).slice(0,10))+'" onchange="previewPartialDayRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')" style="width:auto"> '+safe(String(d).slice(0,10))+'</label>').join('');
+  const defs=sessionDates(sessionById(sid));
+  const choices=dates.map(d=>{const def=sessionDateBySelection(defs,d),label=def?sessionDateDisplayText(def):String(d).slice(0,10);return '<label style="display:flex;gap:8px;align-items:center;padding:10px;border:1px solid #ddd;border-radius:10px"><input class="partialRefundDate" type="checkbox" value="'+attr(String(d))+'" onchange="previewPartialDayRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')" style="width:auto"> '+safe(label)+'</label>';}).join('');
   const today=new Date(Date.now()+28800000).toISOString().slice(0,10);
   const html='<div class="readable-detail"><div class="report-card"><div class="report-title">選擇要取消／退款的日期</div><div style="display:grid;gap:8px">'+choices+'</div><div class="sub" style="margin-top:8px">未勾選的日期會繼續保留出席、設備與排位。</div></div>'
     +'<div class="report-card"><div class="report-title">退款資料</div><input id="partialRefundDepositAmount" type="hidden" value="0"><div class="form-grid"><div class="form-field"><label>退款基礎金額</label><input id="partialRefundGross" type="number" min="0" value="0"></div><div class="form-field"><label>行政費</label><input id="partialRefundAdminFee" type="number" min="0" value="0"></div><div class="form-field"><label>轉帳費</label><input id="partialRefundTransferFee" type="number" min="0" value="0"></div><div class="form-field"><label>退款日期</label><input id="partialRefundDate" type="date" value="'+attr(today)+'"></div><div class="form-field"><label>退款方式</label><select id="partialRefundMethod"><option value="">請選擇</option><option value="銀行轉帳">銀行轉帳</option><option value="原付款方式退回">原付款方式退回</option><option value="現金">現金</option><option value="其他">其他</option></select></div><div class="form-field"><label>參考編號／末碼</label><input id="partialRefundReference" maxlength="100"></div><div class="form-field full"><label style="display:flex;gap:8px;align-items:center"><input id="partialRefundDepositIncluded" type="checkbox" style="width:auto"> 本次也退還押金</label></div><div class="form-field full"><label>備註</label><textarea id="partialRefundNote"></textarea></div></div><div id="partialRefundPreview" class="notice" style="margin-top:10px">請先勾選日期</div><div class="card-actions"><button class="btn danger" onclick="confirmPartialDayRefund(\''+attr(regId)+'\',\''+attr(sid)+'\')">確認完成指定日期退款</button><button class="btn secondary" onclick="panelBack()">取消</button></div></div></div>';
@@ -3024,7 +3025,7 @@ async function openPartialDayRefundPanel(regId,sid){
 function partialRefundSelectedDates(){return Array.from(document.querySelectorAll('.partialRefundDate:checked')).map(x=>x.value);}
 async function previewPartialDayRefund(regId,sid){
   const removeDates=partialRefundSelectedDates(); if(!removeDates.length){$('partialRefundPreview').textContent='請先勾選日期';return;}
-  try{const p=await apiPost({action:'partialDayRefund',preview:true,regId,sessionId:sid,removeDates});$('partialRefundGross').value=Number(p.suggestedGrossRefund||0);$('partialRefundDepositAmount').value=Number(p.deposit||0);$('partialRefundPreview').innerHTML='<b>系統建議退款：</b>'+money(p.suggestedGrossRefund||0)+'<br>退款日期：'+safe(removeDates.join('、'))+'<br>保留出席：'+safe((p.kept||[]).join('、'))+'<br>已繳押金：'+money(p.deposit||0);}catch(e){toast('計算失敗：'+(e.message||e),6000);}
+  try{const p=await apiPost({action:'partialDayRefund',preview:true,regId,sessionId:sid,removeDates});$('partialRefundGross').value=Number(p.suggestedGrossRefund||0);$('partialRefundDepositAmount').value=Number(p.deposit||0);$('partialRefundPreview').innerHTML='<b>系統建議退款：</b>'+money(p.suggestedGrossRefund||0)+'<br>退款項目：'+safe((p.removedDisplay||p.removed||removeDates).join('、'))+'<br>保留項目：'+safe((p.keptDisplay||p.kept||[]).join('、'))+'<br>已繳押金：'+money(p.deposit||0);}catch(e){toast('計算失敗：'+(e.message||e),6000);}
 }
 async function confirmPartialDayRefund(regId,sid){
   const removeDates=partialRefundSelectedDates(),baseRefundAmount=Number($('partialRefundGross')?.value||0),refundAdminFee=Number($('partialRefundAdminFee')?.value||0),refundTransferFee=Number($('partialRefundTransferFee')?.value||0),refundedAt=$('partialRefundDate')?.value||'',refundMethod=$('partialRefundMethod')?.value||'';
@@ -3520,6 +3521,24 @@ function sessionDateStartKey(d){
 function sessionDateEndKey(d){
   return String((d&&typeof d==='object'?(d.endDate||d.date||d.day):d)||'').slice(0,10);
 }
+function sessionRangeOptionId(d){
+  return String(d&&d.optionId||'').trim().replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80);
+}
+function sessionDateSelectionKey(d){
+  const start=sessionDateStartKey(d),optionId=sessionDateIsRange(d)?sessionRangeOptionId(d):'';
+  return start&&optionId?start+'::'+optionId:start;
+}
+function sessionDateBySelection(entries,value){
+  const list=Array.isArray(entries)?entries:[],key=sessionDateSelectionKey(value);
+  const exact=list.find(d=>sessionDateSelectionKey(d)===key);
+  if(exact)return exact;
+  const legacy=String(value&&typeof value==='object'?(value.date||value.value||value.key||''):value||'').slice(0,10);
+  return list.find(d=>sessionDateStartKey(d)===legacy)||null;
+}
+function newSessionRangeOptionId(){
+  if(window.crypto&&typeof window.crypto.randomUUID==='function') return 'RNG_'+window.crypto.randomUUID().replace(/-/g,'');
+  return 'RNG_'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,10).toUpperCase();
+}
 function sessionDateDisplayText(d){
   const from=sessionDateStartKey(d),to=sessionDateEndKey(d);
   const dateText=sessionDateIsRange(d)&&from&&to?from.replaceAll('-','/')+'～'+to.replaceAll('-','/'):from.replaceAll('-','/');
@@ -3542,7 +3561,8 @@ function sessionDateRowHtml(d={},idx){
 }
 function sessionDateRangeRowHtml(d={},idx){
   const from=sessionDateStartKey(d),to=sessionDateEndKey(d);
-  return '<div class="session-date-entry session-date-range-card" data-mode="range" data-idx="'+idx+'">'
+  const optionId=sessionRangeOptionId(d)||newSessionRangeOptionId();
+  return '<div class="session-date-entry session-date-range-card" data-mode="range" data-idx="'+idx+'" data-option-id="'+attr(optionId)+'">'
     +'<div class="session-date-range-head"><span class="session-date-range-badge">整檔區段｜報名一次涵蓋整段</span><button type="button" class="btn secondary small" onclick="removeSessionDateRow('+idx+')">刪除區段</button></div>'
     +'<div class="session-date-range-grid">'
     +'<label>開始日期<input id="set_range_startDate_'+idx+'" type="date" value="'+attr(from)+'" onchange="renderRegistrationSchedulePreview()"></label>'
@@ -3567,11 +3587,13 @@ function addSessionDateRow(d={}){
   box.insertAdjacentHTML('beforeend', sessionDateRowHtml(d,idx));
 }
 function addSessionDateRangeRow(d={}){
-  addSessionDateRow({mode:'range',date:d.startDate||d.date||'',startDate:d.startDate||d.date||'',endDate:d.endDate||'',label:d.label||'',start:d.start||'10:00',end:d.end||'18:00',fee:Number(d.fee||0)||0,limit:Number(d.limit||0)||0});
+  addSessionDateRow({mode:'range',optionId:sessionRangeOptionId(d)||newSessionRangeOptionId(),date:d.startDate||d.date||'',startDate:d.startDate||d.date||'',endDate:d.endDate||'',label:d.label||'',start:d.start||'10:00',end:d.end||'18:00',fee:Number(d.fee||0)||0,limit:Number(d.limit||0)||0});
 }
 function copySessionDateRow(){
   const rows=collectSessionDates();
-  addSessionDateRow(rows[rows.length-1] || {date:'',label:'',start:'10:00',end:'18:00',fee:0,limit:0});
+  const copy={...(rows[rows.length-1] || {date:'',label:'',start:'10:00',end:'18:00',fee:0,limit:0})};
+  if(sessionDateIsRange(copy)) copy.optionId=newSessionRangeOptionId();
+  addSessionDateRow(copy);
 }
 function removeSessionDateRow(idx){
   const row=document.querySelector('.session-date-entry[data-idx="'+idx+'"]'); if(row) row.remove();
@@ -3593,7 +3615,7 @@ function collectSessionDates(){
       if(!startDate&&!endDate&&!label&&!fee&&!limit) continue;
       if(!startDate||!endDate) throw new Error('整檔區段請同時填寫開始日期與結束日期');
       if(endDate<startDate) throw new Error('整檔區段的結束日期不可早於開始日期');
-      out.push({mode:'range',date:startDate,startDate,endDate,label,start:start||'10:00',end:end||'18:00',fee,limit});
+      out.push({mode:'range',optionId:sessionRangeOptionId({optionId:row.dataset.optionId})||newSessionRangeOptionId(),date:startDate,startDate,endDate,label,start:start||'10:00',end:end||'18:00',fee,limit});
       continue;
     }
     const d=String($('set_date_date_'+i)?.value||'').trim();
@@ -3605,12 +3627,16 @@ function collectSessionDates(){
     if(!d && !label && !fee && !limit) continue;
     out.push({date:d,label:label,start:start||'10:00',end:end||'18:00',fee,limit});
   }
-  const anchors=new Map();
+  const rangePeriods=new Map(),identities=new Set();
   for(const entry of out){
-    const key=sessionDateStartKey(entry);if(!key)continue;
-    const previous=anchors.get(key);
-    if(previous&&(sessionDateIsRange(previous)||sessionDateIsRange(entry))) throw new Error('整檔區段的開始日期不可與另一個日期項目相同：'+key);
-    anchors.set(key,entry);
+    if(!sessionDateIsRange(entry)) continue;
+    const period=sessionDateStartKey(entry)+'|'+sessionDateEndKey(entry);
+    const label=String(entry.label||'').trim();
+    const previousLabel=rangePeriods.get(period);
+    if(previousLabel!==undefined&&(!previousLabel||!label)) throw new Error('相同日期的不同整檔項目都必須填寫顯示名稱');
+    const identity=period+'|'+label.toLocaleLowerCase();
+    if(identities.has(identity)) throw new Error('相同日期與名稱的整檔項目不可重複');
+    rangePeriods.set(period,label);identities.add(identity);
   }
   return out;
 }
@@ -5346,7 +5372,7 @@ async function loadAdminManualSession(sid){
     const suggestHistorical=ended||closed;
 
     const dateHtml=dates.length?dates.map(d=>{
-      const day=sessionDateStartKey(d);
+      const day=sessionDateSelectionKey(d);
       const dayLabel=sessionDateIsRange(d)?sessionDateDisplayText(d):day;
       const fee=(d&&typeof d==='object')?Number(d.fee||0):0;
       return `<label class="amr-date-option" style="display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;width:100%!important;padding:12px 14px!important;margin:7px 0!important;border:1px solid var(--line)!important;border-radius:14px!important;background:#fff!important;cursor:pointer!important"><input type="checkbox" class="amrDate" value="${attr(day)}" style="width:20px!important;height:20px!important;margin:0!important;justify-self:start!important"><span style="min-width:0;font-weight:900;color:var(--ink)">${safe(dayLabel)}</span><strong style="white-space:nowrap;color:var(--main2)">${fee?money(fee):'依場次費用'}</strong></label>`;
@@ -7323,5 +7349,3 @@ window.downloadSupplierOrders=async function(sessionId){try{const d=await api({a
 </script>
 </body>
 </html>
-
-

@@ -3947,6 +3947,25 @@ function frontSessionDateStartKey(entry){
   const raw=entry&&typeof entry==='object'?(entry.startDate||entry.date||entry.day||entry.value||entry.key||''):(entry||'');
   return normalizeActivityDate(raw)||String(raw).slice(0,10);
 }
+function frontSessionDateOptionId(entry){
+  return String(entry&&typeof entry==='object'&&(entry.optionId||entry.option_id)||'').trim().replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80);
+}
+function frontSessionDateSelectionKey(entry){
+  if(entry&&typeof entry==='object'){
+    const optionId=frontSessionDateOptionId(entry),startKey=frontSessionDateStartKey(entry);
+    return optionId&&startKey?startKey+'::'+optionId:startKey;
+  }
+  const raw=String(entry||'').trim();
+  return /^\d{4}-\d{2}-\d{2}::RNG_[a-zA-Z0-9_-]+$/.test(raw)?raw:frontSessionDateStartKey(raw);
+}
+function frontSessionDateBySelection(entries,value){
+  const list=Array.isArray(entries)?entries:[];
+  const key=frontSessionDateSelectionKey(value);
+  const exact=list.find(entry=>frontSessionDateSelectionKey(entry)===key);
+  if(exact)return exact;
+  const legacyDate=frontSessionDateStartKey(value);
+  return /^\d{4}-\d{2}-\d{2}$/.test(legacyDate)?(list.find(entry=>frontSessionDateStartKey(entry)===legacyDate)||null):null;
+}
 function frontSessionDateEndKey(entry){
   const raw=entry&&typeof entry==='object'?(entry.endDate||entry.date||entry.day||entry.value||entry.key||''):(entry||'');
   return normalizeActivityDate(raw)||String(raw).slice(0,10);
@@ -5936,10 +5955,10 @@ async function submitReg(ev){
     if(!ok){ toast('請確認必填欄位'); showFormError('請確認上方必填欄位（姓名 / 手機 / Email）'); restoreBtn(); return false; }
     let selectedDates=[];
     if(Array.isArray(s.dates) && s.dates.length>1){
-      selectedDates=s.dates.filter((_,i)=>document.getElementById('dp_'+i)?.checked).map(frontSessionDateStartKey).filter(Boolean);
+      selectedDates=s.dates.filter((_,i)=>document.getElementById('dp_'+i)?.checked).map(frontSessionDateSelectionKey).filter(Boolean);
       if(!selectedDates.length){ const msg=s.dates.some(frontSessionDateIsRange)?'請至少選擇一個參加日期或整檔區段':'請至少選擇一個參加日期'; toast(msg); showFormError(msg); restoreBtn(); return false; }
     }else if(Array.isArray(s.dates) && s.dates.length===1 && frontSessionDateStartKey(s.dates[0])){
-      selectedDates=[frontSessionDateStartKey(s.dates[0])];
+      selectedDates=[frontSessionDateSelectionKey(s.dates[0])];
     }
     const invoiceType=document.querySelector('input[name="f_invoiceType"]:checked')?.value||'個人';
     if(invoiceType==='公司／機關'){
@@ -6271,11 +6290,11 @@ function mSessionDateLine(d){
 function mRecordDateText(r){
   const s=mSessionForReg(r);
   const dates=Array.isArray(s.dates)&&s.dates.length?s.dates:(Array.isArray(r.sessionDates)?r.sessionDates:[]);
-  const selected=Array.isArray(r.selectedDates)?r.selectedDates.filter(d=>frontSessionDateStartKey(d)):[];
+  const selected=Array.isArray(r.selectedDates)?r.selectedDates.filter(d=>frontSessionDateSelectionKey(d)):[];
   if(selected.length){
     const lines=selected.map(value=>{
-      const key=frontSessionDateStartKey(value);
-      const entry=dates.find(d=>frontSessionDateStartKey(d)===key);
+      const key=frontSessionDateSelectionKey(value);
+      const entry=frontSessionDateBySelection(dates,value);
       return entry?mSessionDateLine(entry):(frontSessionDateIsRange(value)?mSessionDateLine(value):key.replace(/-/g,'/'));
     }).filter(Boolean);
     if(lines.length) return lines.join('、');
@@ -6287,7 +6306,7 @@ function mRecordDateText(r){
   const sessionRaw=s.date||s.startDate||s.eventDate||s.sessionDate||'';
   const sessionTime=s.startTime||s.time||'';
   if(sessionRaw) return [String(sessionRaw).replace(/-/g,'/'), sessionTime].filter(Boolean).join(' ');
-  const selectedText=selected.length ? selected.map(frontSessionDateStartKey).join('、') : '';
+  const selectedText=selected.length ? selected.map(frontSessionDateSelectionKey).join('、') : '';
   return selectedText || mFirstVal(r,['dateText','sessionDateText','timeText','eventTime','date','sessionDate'], '') || (r.createdAt ? '報名日期：'+mFormatDateTime(r.createdAt) : '時間請見活動公告');
 }
 function mRecordLocationText(r){
@@ -7544,5 +7563,4 @@ function scrollToSection(id){
 <!-- 2BL_CHECKPOINT: 20260905-index-five-category-range-correction-15 | pending manual deployment -->
 </body>
 </html>
-
 
