@@ -3948,7 +3948,14 @@ function frontSessionDateStartKey(entry){
   return normalizeActivityDate(raw)||String(raw).slice(0,10);
 }
 function frontSessionDateOptionId(entry){
-  return String(entry&&typeof entry==='object'&&(entry.optionId||entry.option_id)||'').trim().replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80);
+  if(!entry||typeof entry!=='object')return '';
+  const saved=String(entry.optionId||entry.option_id||'').trim().replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80);
+  if(saved)return saved;
+  if(!String(entry.label||'').trim())return '';
+  const src=[frontSessionDateStartKey(entry),frontSessionDateEndKey(entry),String(entry.label||'').trim(),String(entry.fee||''),String(entry.start||entry.startTime||''),String(entry.end||entry.endTime||'')].join('|');
+  let hash=2166136261;
+  for(let i=0;i<src.length;i++)hash=Math.imul(hash^src.charCodeAt(i),16777619)>>>0;
+  return (frontSessionDateIsRange(entry)?'RNG_':'OPT_')+hash.toString(36).toUpperCase();
 }
 function frontSessionDateSelectionKey(entry){
   if(entry&&typeof entry==='object'){
@@ -3956,7 +3963,7 @@ function frontSessionDateSelectionKey(entry){
     return optionId&&startKey?startKey+'::'+optionId:startKey;
   }
   const raw=String(entry||'').trim();
-  return /^\d{4}-\d{2}-\d{2}::RNG_[a-zA-Z0-9_-]+$/.test(raw)?raw:frontSessionDateStartKey(raw);
+  return /^\d{4}-\d{2}-\d{2}::(?:RNG|OPT)_[a-zA-Z0-9_-]+$/.test(raw)?raw:frontSessionDateStartKey(raw);
 }
 function frontSessionDateBySelection(entries,value){
   const list=Array.isArray(entries)?entries:[];
@@ -4291,8 +4298,9 @@ function renderSessionCard(s){
   const dates=Array.isArray(s.dates)?s.dates:[];
   let dateStr='';
   const hasRangeDates=dates.some(frontSessionDateIsRange);
-  if(hasRangeDates){
-    dateStr=dates.map(d=>frontSessionDateText(d,false,false)).filter(Boolean).join(' / ');
+  const hasNamedDateOptions=dates.some(d=>String(d&&d.label||'').trim());
+  if(hasRangeDates||hasNamedDateOptions){
+    dateStr=dates.map(d=>frontSessionDateText(d,false,hasNamedDateOptions)).filter(Boolean).join(' / ');
   }else if(dates.length>1){
     const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
     dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
@@ -4647,7 +4655,8 @@ function renderDynFormFull(s, isNew=false){
   const dates=s.dates||[];
   let dateStr='';
   const hasRangeDates=dates.some(frontSessionDateIsRange);
-  if(hasRangeDates){
+  const hasNamedDateOptions=dates.some(d=>String(d&&d.label||'').trim());
+  if(hasRangeDates||hasNamedDateOptions){
     dateStr=dates.map(d=>frontSessionDateText(d,false,true)).filter(Boolean).join(' / ');
   }else if(dates.length>1){
     const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
@@ -4710,7 +4719,7 @@ function renderDynFormFull(s, isNew=false){
     dates.forEach((d,i)=>{
       html+=`<label style="display:flex;align-items:center;gap:12px;margin:10px 0;cursor:pointer;font-size:17px;font-weight:600">
         <input type="checkbox" id="dp_${i}" onchange="updateFee()" style="width:24px;height:24px;accent-color:var(--c-green);flex-shrink:0">
-        <span>${hasRangeDates?esc(frontSessionDateText(d,true,true)):((d.date||'')+' '+(d.start||'')+(d.end?'～'+d.end:''))} <strong style="color:#2a6a10">${d.fee?'NT$'+d.fee:''}</strong></span>
+        <span>${(hasRangeDates||hasNamedDateOptions)?esc(frontSessionDateText(d,true,true)):((d.date||'')+' '+(d.start||'')+(d.end?'～'+d.end:''))} <strong style="color:#2a6a10">${d.fee?'NT$'+d.fee:''}</strong></span>
       </label>`;
     });
     const multiDayTiers=Array.isArray(s.multiDayTiers)?s.multiDayTiers:(Array.isArray(dates[0]&&dates[0].multiDayTiers)?dates[0].multiDayTiers:[]);
@@ -5043,7 +5052,8 @@ function adjStall(delta){
 
 function buildFormHero(s, cover){
   const dateRows=Array.isArray(s.dates)?s.dates:[];
-  const dateStr=dateRows.length?(dateRows.some(frontSessionDateIsRange)?dateRows.map(d=>frontSessionDateText(d,true,true)).filter(Boolean).join(' / '):dateRows.map(d=>d.date+(d.start?' '+d.start:'')+(d.end?'–'+d.end:'')).join(' / ')):(s.date||'');
+  const hasNamedDateOptions=dateRows.some(d=>String(d&&d.label||'').trim());
+  const dateStr=dateRows.length?((dateRows.some(frontSessionDateIsRange)||hasNamedDateOptions)?dateRows.map(d=>frontSessionDateText(d,true,true)).filter(Boolean).join(' / '):dateRows.map(d=>d.date+(d.start?' '+d.start:'')+(d.end?'–'+d.end:'')).join(' / ')):(s.date||'');
   const meta=[dateStr,s.venue].filter(Boolean).join('　');
   if(cover){
     $('formHero').innerHTML=`
@@ -6281,7 +6291,7 @@ function mSessionForReg(r){
 function mSessionDateLine(d){
   if(!d) return '';
   if(typeof d!=='object') return String(d).replace(/-/g,'/');
-  if(frontSessionDateIsRange(d)) return frontSessionDateText(d,true,true);
+  if(frontSessionDateIsRange(d)||String(d.label||'').trim()) return frontSessionDateText(d,true,true);
   const date=String(d.date||d.day||'').replace(/-/g,'/');
   const start=d.start||d.startTime||'';
   const end=d.end||d.endTime||'';
@@ -7563,4 +7573,3 @@ function scrollToSection(id){
 <!-- 2BL_CHECKPOINT: 20260905-index-five-category-range-correction-15 | pending manual deployment -->
 </body>
 </html>
-
