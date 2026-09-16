@@ -2312,27 +2312,50 @@ function setThemeFilter(id){ AdminState.themeFilter=String(id||''); renderThemeF
 function sessionDaySyncHtml(s){
   const sid=sessionId(s),x=OpsDashboardCache[String(sid)];
   if(!x)return '<div class="session-day-sync"><div class="sub">日期統計載入中…</div></div>';
+  if(x._loadError)return `<div class="session-day-sync"><button type="button" class="btn secondary small" onclick="event.stopPropagation();retrySessionOps('${attr(sid)}')">日期統計載入失敗｜重新載入</button></div>`;
   const day=x.activityDate||'',days=Array.isArray(x.availableDates)?x.availableDates:[];
   return `<div class="session-day-sync">
     <div class="quick-scroll">${days.map(dd=>`<button class="quick-chip ${dd===day?'active':''}" onclick="event.stopPropagation();loadSessionOpsOne('${attr(sid)}','${attr(dd)}')">${safe(dd.replace(/^\d{4}-/,''))}</button>`).join('')}</div>
   </div>`;
 }
+async function loadOpsDashboardBatch(ids){
+  const wanted=[...new Set((ids||[]).map(String).filter(Boolean))];
+  if(!wanted.length)return;
+  try{
+    const rows=await api({action:'opsDashboard',sessionIds:wanted.join(','),_t:Date.now()});
+    const found=new Set();
+    for(const r of (Array.isArray(rows)?rows:[])){
+      const sid=String(r.sessionId||'');
+      if(!sid)continue;
+      found.add(sid);OpsDashboardCache[sid]=r;
+    }
+    for(const sid of wanted)if(!found.has(sid))OpsDashboardCache[sid]={activityDate:'',availableDates:[]};
+  }catch(e){
+    for(const sid of wanted)OpsDashboardCache[sid]={_loadError:String(e&&e.message||'載入失敗')};
+  }
+}
 async function queueOpsForSessions(list){
   if(OpsDashboardInFlight)return;
-  const ids=(list||[]).map(sessionId).filter(id=>!OpsDashboardCache[String(id)]);
+  const ids=[...new Set((list||[]).map(sessionId).filter(id=>id&&!OpsDashboardCache[String(id)]))];
   if(!ids.length)return;
   OpsDashboardInFlight=true;
   try{
-    const rows=await api({action:'opsDashboard',sessionIds:ids.slice(0,60).join(','),_t:Date.now()});
-    for(const r of (Array.isArray(rows)?rows:[]))OpsDashboardCache[String(r.sessionId)]=r;
-    renderSessions();
-  }catch(_e){}finally{OpsDashboardInFlight=false;}
+    for(let i=0;i<ids.length;i+=4){
+      await loadOpsDashboardBatch(ids.slice(i,i+4));
+      renderSessions();
+    }
+  }finally{OpsDashboardInFlight=false;}
+}
+async function retrySessionOps(sid){
+  sid=String(sid||'');if(!sid)return;
+  delete OpsDashboardCache[sid];renderSessions();
+  await loadOpsDashboardBatch([sid]);renderSessions();
 }
 async function loadSessionOpsOne(sid,day){
   try{
     const r=await api({action:'onsiteDaySummary',sessionId:sid,activityDate:day,_t:Date.now()});
     OpsDashboardCache[String(sid)]=r;renderSessions();
-  }catch(e){toast('現場進度載入失敗：'+e.message);}
+  }catch(e){OpsDashboardCache[String(sid)]={_loadError:String(e&&e.message||'載入失敗')};renderSessions();toast('現場進度載入失敗：'+e.message);}
 }
 function openOpsFromSessionCard(sid,day,filter='all'){
   switchPage('onsite');
