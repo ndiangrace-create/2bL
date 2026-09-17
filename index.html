@@ -6301,7 +6301,7 @@ function mSessionDateLine(d){
 }
 function mRecordDateText(r){
   const s=mSessionForReg(r);
-  const dates=Array.isArray(s.dates)&&s.dates.length?s.dates:(Array.isArray(r.sessionDates)?r.sessionDates:[]);
+  const dates=Array.isArray(r.sessionDates)&&r.sessionDates.length?r.sessionDates:(Array.isArray(s.dates)?s.dates:[]);
   const selected=Array.isArray(r.selectedDates)?r.selectedDates.filter(d=>frontSessionDateSelectionKey(d)):[];
   if(selected.length){
     const lines=selected.map(value=>{
