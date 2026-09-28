@@ -4805,7 +4805,9 @@ function renderDynFormFull(s, isNew=false){
         html+=`</div>`;
       }
     }catch(e){}
-    const seatEnabled = !!(s.seatPricingEnabled || s.seat_pricing_enabled || (s.modules&&s.modules.seatPricing));
+    const seatPricingSetting = s.seatPricingEnabled !== undefined ? s.seatPricingEnabled : s.seat_pricing_enabled;
+    const seatEnabled = s.modules?.seats === true && (seatPricingSetting === true || seatPricingSetting === 'true');
+    ST.seatChoiceIntent = 'auto';
     if(seatEnabled){
       ST.seatChoiceIntent = 'auto';
       html+=`<div class="form-card-new card-blue" style="margin-top:12px">
