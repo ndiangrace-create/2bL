@@ -551,6 +551,7 @@ input, select, textarea, .f-input{
 .ses-list-body{flex:1;min-width:0}
 .ses-list-name{font-size:17px;font-weight:900;color:#111;line-height:1.3;margin-bottom:4px}
 .ses-list-meta{font-size:16px;color:#555;line-height:1.5}
+.ses-list-meta > div{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
 .ses-list-fee{font-size:16px;font-weight:900;color:#111;margin-top:4px}
 .ses-list-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
 .ses-list-share{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.1);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
@@ -608,7 +609,7 @@ input, select, textarea, .f-input{
   #portalSessionList{
     display:grid!important;
     grid-template-columns:repeat(auto-fill,minmax(190px,220px));
-    grid-auto-rows:1fr;
+    grid-auto-rows:auto;
     gap:14px!important;
     align-items:stretch;
     justify-content:start;
@@ -4296,19 +4297,19 @@ function renderSessionCard(s){
   const scheduleUnavailable = s.registrationOpen===false;
   const closed = s.status==='關閉' || s.status==='已關閉' || full || scheduleUnavailable;
   const dates=Array.isArray(s.dates)?s.dates:[];
-  let dateStr='';
+  const keys=[...new Set(dates.map(frontSessionDateStartKey).filter(Boolean))].sort();
   const hasRangeDates=dates.some(frontSessionDateIsRange);
-  const hasNamedDateOptions=dates.some(d=>String(d&&d.label||'').trim());
-  if(hasRangeDates||hasNamedDateOptions){
-    dateStr=dates.map(d=>frontSessionDateText(d,false,hasNamedDateOptions)).filter(Boolean).join(' / ');
-  }else if(dates.length>1){
-    const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
-    dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
-  }else if(dates.length===1){
-    const d=dates[0]||{};
-    dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
+  const includeYear=new Set(keys.map(k=>k.slice(0,4))).size>1;
+  const fmt=k=>(includeYear?k:k.slice(5)).replace(/-/g,'/');
+  let dateStr='';
+  if(hasRangeDates){
+    dateStr=dates.length+' 個檔期・點入查看';
+  }else if(keys.length){
+    dateStr=keys.slice(0,3).map(fmt).join('、');
+    if(keys.length>3)dateStr+=' 等 '+keys.length+' 日';
+    if(dates.length>keys.length)dateStr+='・'+dates.length+' 個項目';
   }else if(s.date){
-    dateStr=String(s.date).slice(5).replace('-','/');
+    dateStr=String(s.date).slice(5).replace(/-/g,'/');
   }
   const placeStr=s.venue||s.location||s.place||'';
   const eventId=String(s.eventId||'');
@@ -4329,7 +4330,7 @@ function renderSessionCard(s){
     <div class="ses-list-body">
       <div class="ses-theme-pill">${esc(themeInfo.title||'無主題')}</div>
       <div class="ses-list-name">${esc(s.name||'')}</div>
-      <div class="ses-list-meta">${dateStr?'📅 '+esc(dateStr):''}${placeStr?'<br>📍 '+esc(placeStr):''}</div>
+      <div class="ses-list-meta">${dateStr?'<div>📅 '+esc(dateStr)+'</div>':''}${placeStr?'<div>📍 '+esc(placeStr)+'</div>':''}</div>
       ${scheduleNote}
       ${myBadge?`<div style="margin-top:5px">${myBadge}</div>`:''}
       ${bundleBadge?`<div>${bundleBadge}</div>`:''}
@@ -7577,3 +7578,4 @@ function scrollToSection(id){
 <!-- 2BL_CHECKPOINT: 20260905-index-five-category-range-correction-15 | pending manual deployment -->
 </body>
 </html>
+
