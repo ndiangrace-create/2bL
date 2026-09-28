@@ -1505,7 +1505,7 @@
     display:grid!important;
     grid-template-columns:repeat(5,minmax(0,1fr))!important;
     gap:9px!important;
-    align-items:start!important;
+    align-items:stretch!important;
   }
   #sessionList .session-card{
     width:100%!important;
@@ -1790,7 +1790,16 @@
   .panel-body{padding-left:0!important;padding-right:0!important}
 }
 </style>
-</head>
+<style id="shortlink-card-layout">
+#sessionList .session3-wrap{display:flex;flex-direction:column;height:100%}
+#sessionList .session3-content{display:flex;flex-direction:column;flex:1;min-width:0}
+#sessionList .shortlink-stat{margin-top:auto;padding-top:8px}
+#sessionList .session3-actions{margin-top:6px!important}
+#sessionList .session3-actions .btn{white-space:normal!important;overflow-wrap:anywhere;line-height:1.25!important;min-height:40px!important;height:40px!important}
+.shortlink-stat{font-size:12px;color:#64756e;min-height:26px;display:flex;align-items:center;justify-content:space-between;gap:4px}
+.shortlink-refresh{background:transparent;border:0;color:inherit;cursor:pointer;min-width:32px;min-height:32px;font-size:18px}
+@media(max-width:860px){.shortlink-refresh{min-width:44px;min-height:44px}#sessionList .session3-actions .btn{min-height:44px!important;height:auto!important}}
+</style></head>
 <body>
 <section id="loginPage" class="login-wrap">
   <div class="login-card">
@@ -2379,7 +2388,7 @@ function renderSessions(){
   const sorted=sortOperationalSessions(list);let out='';
   for(const s of sorted)out+=renderSessionCard(s);
   box.innerHTML=out;
-  queueOpsForSessions(sorted);
+  queueOpsForSessions(sorted);queueShortLinkStats();
 }
 // ── 場次短網址 ──────────────────────────────────────────────
 // 一個場次只會有一組短網址，後端以唯一索引保證；重複按只會取回同一組。
@@ -2461,50 +2470,62 @@ async function submitForceCancel(sid){
     await refreshSessionsOverview();
   }catch(e){ toast('啟動失敗：'+((e&&e.message)?e.message:e),8000); }
 }
-async function openShortLink(sid){
-  const s=AdminState.sessions.find(x=>String(sessionId(x))===String(sid));
-  const name=s?sessionName(s):'';
-  let d=$('shortLinkPanel');
-  if(!d){ d=document.createElement('div'); d.id='shortLinkPanel'; d.className='panel'; document.body.appendChild(d); }
-  d.innerHTML='<div class="panel-head"><div class="panel-head-in">'
-    +'<div><div class="panel-title">場次短網址</div><div class="panel-sub">'+safe(name)+'</div></div>'
-    +'<button class="xbtn" onclick="closeShortLink()">✕</button></div></div>'
-    +'<div class="panel-body"><div class="loading">產生中…</div></div>';
-  d.classList.add('show');
+const ShortLinks = new Map(), ShortLinkPending = new Map();
+let shortLinkTimer;
+async function shortLinkRequest(body){
+  let timer;
+  try{return await Promise.race([apiPost(body),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('連線逾時，請重試')),20000);})]);}
+  finally{clearTimeout(timer);}
+}
+function shortLinkKey(kind,id){return kind+':'+id;}
+function shortLinkInfo(kind,id){
+  const r=ShortLinks.get(shortLinkKey(kind,id));
+  if(!r || r.state==='loading') return '點擊次數載入中…';
+  if(r.state==='error') return '次數讀取失敗';
+  return r.url ? '累計點擊 '+r.clicks+' 次' : '尚未建立短網址';
+}
+function shortLinkStatsHtml(kind,id){
+  return '<div class="shortlink-stat" data-short-kind="'+attr(kind)+'" data-short-id="'+attr(id)+'"><span>'+safe(shortLinkInfo(kind,id))+'</span> <button type="button" class="shortlink-refresh" onclick="reloadShortLinkStats(this)" aria-label="重新載入點擊次數">↻</button></div>';
+}
+function paintShortLinkStats(){document.querySelectorAll('[data-short-kind]').forEach(el=>{el.querySelector('span').textContent=shortLinkInfo(el.dataset.shortKind,el.dataset.shortId);});}
+function reloadShortLinkStats(btn){const el=btn.closest('[data-short-kind]');ShortLinks.delete(shortLinkKey(el.dataset.shortKind,el.dataset.shortId));queueShortLinkStats();}
+function queueShortLinkStats(){clearTimeout(shortLinkTimer);shortLinkTimer=setTimeout(loadVisibleShortLinks,80);}
+async function loadVisibleShortLinks(){
+  const targets=[];
+  document.querySelectorAll('[data-short-kind]').forEach(el=>{
+    const kind=el.dataset.shortKind,id=el.dataset.shortId,key=shortLinkKey(kind,id);
+    if(!ShortLinks.has(key)){ShortLinks.set(key,{state:'loading'});targets.push({kind,id});}
+  });
+  paintShortLinkStats();
+  for(let i=0;i<targets.length;i+=40){
+    const batch=targets.slice(i,i+40);
+    try{
+      const r=await shortLinkRequest({action:'shortLinkStats',targets:batch});
+      if(!Array.isArray(r.links)) throw Error('回傳格式不正確');
+      batch.forEach(t=>{const row=r.links.find(x=>x.kind===t.kind&&x.id===t.id);const key=shortLinkKey(t.kind,t.id);if(ShortLinks.get(key)?.state!=='loading')return;if(!row || (row.url && !Number.isFinite(Number(row.clicks)))){ShortLinks.set(key,{state:'error'});return;}ShortLinks.set(key,{...row,state:'ready'});});
+    }catch(e){batch.forEach(t=>{const key=shortLinkKey(t.kind,t.id);if(ShortLinks.get(key)?.state==='loading')ShortLinks.set(key,{state:'error'});});}
+    paintShortLinkStats();
+  }
+}
+function openShortLink(id,btn){return copyTargetShortLink('session',id,btn);}
+async function copyTargetShortLink(kind,id,btn){
+  const key=shortLinkKey(kind,id),cached=ShortLinks.get(key);
+  if(cached?.url){await copyShortLink(cached.url);return;}
+  if(ShortLinkPending.has(key))return;
+  ShortLinkPending.set(key,true);
+  const old=btn?.textContent;if(btn){btn.disabled=true;btn.textContent='產生中…';}
   try{
-    const r=await apiPost({action:'createShortLink',sessionId:sid});
-    d.querySelector('.panel-body').innerHTML=
-       '<div class="notice"><div class="section-label">分享給攤友的短網址</div>'
-      +'<div style="font-size:21px;font-weight:950;word-break:break-all;margin:6px 0 12px">'+safe(r.url)+'</div>'
-      +'<div class="card-actions">'
-      +'<button class="btn" onclick="copyShortLink(\''+attr(r.url)+'\')">複製連結</button>'
-      +'<a class="btn secondary" href="'+attr(r.url)+'" target="_blank" rel="noopener">開啟測試</a>'
-      +'</div></div>'
-      +'<div class="notice">'
-      +'<div class="info-line"><span>累計點擊</span><span>'+(Number(r.clicks)||0)+' 次</span></div>'
-      +'<div class="info-line"><span>短碼</span><span>'+safe(r.code)+'</span></div>'
-      +'</div>'
-      +'<div class="todo-one-layer-note">同一場次只會有一組短網址，重複按不會產生新的。連結每被開啟一次，點擊數 +1。</div>';
-  }catch(e){
-    d.querySelector('.panel-body').innerHTML='<div class="empty">'+safe((e&&e.message)||e)+'</div>';
-  }
+    const r=await shortLinkRequest(kind==='event'?{action:'createThemeShortLink',eventId:id}:{action:'createShortLink',sessionId:id});
+    if(!r.url)throw Error('沒有取得短網址');
+    ShortLinks.set(key,{...r,state:'ready'});paintShortLinkStats();await copyShortLink(r.url);
+  }catch(e){toast('短網址失敗：'+e.message,6000);}
+  finally{ShortLinkPending.delete(key);if(btn){btn.disabled=false;btn.textContent=old;}}
 }
-function closeShortLink(){ const d=$('shortLinkPanel'); if(d) d.classList.remove('show'); }
-function copyShortLink(url){
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(()=>toast('已複製短網址')).catch(()=>fallbackCopyShortLink(url));
-    return;
-  }
-  fallbackCopyShortLink(url);
-}
-function fallbackCopyShortLink(url){
-  const ta=document.createElement('textarea');
-  ta.value=url; ta.setAttribute('readonly','readonly');
-  ta.style.position='fixed'; ta.style.left='-9999px';
-  document.body.appendChild(ta); ta.select();
-  try{ document.execCommand('copy'); toast('已複製短網址'); }
-  catch(e){ prompt('請複製此連結：', url); }
-  document.body.removeChild(ta);
+async function copyShortLink(url){
+  try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);toast('已複製短網址');return;}}catch(e){}
+  const ta=document.createElement('textarea');ta.value=url;ta.readOnly=true;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,url.length);
+  let copied=false;try{copied=document.execCommand('copy');}catch(e){}finally{ta.remove();}
+  if(copied)toast('已複製短網址');else prompt('瀏覽器未允許自動複製，請複製：',url);
 }
 // ── 系統異常紀錄 ───────────────────────────────────────────────
 // 過去所有錯誤只寫進 console，攤友看到「異常」，你我都只能猜。
@@ -2605,6 +2626,7 @@ function renderSessionCard(s){
           +financeMetric('purple','押金',money(f.deposit),'deposit')
           +equipmentTotal
         +'</div>'
+        +shortLinkStatsHtml('session',sid)
         +'<div class="session3-actions">'
           +'<button type="button" class="btn secondary small" onclick="openSessionSettings(\''+attr(sid)+'\')">場次設定</button>'
           +'<button type="button" class="btn secondary small" onclick="openSeatOps(\''+attr(sid)+'\')">🪑 排位結果</button>'
@@ -2612,7 +2634,7 @@ function renderSessionCard(s){
           +'<button type="button" class="btn secondary small" onclick="openFinancePanel(\''+attr(sid)+'\')">本場財報</button>'
           +'<button type="button" class="btn small download-btn" onclick="downloadSessionExcel(\''+attr(sid)+'\')">下載</button>'
           +'<button type="button" class="btn small" onclick="copySessionAction(\''+attr(sid)+'\')">複製場次</button>'
-          +'<button type="button" class="btn small" onclick="openShortLink(\''+attr(sid)+'\')">短網址</button>'
+          +'<button type="button" class="btn small" onclick="openShortLink(\''+attr(sid)+'\',this)">複製短網址</button>'
           +'<button type="button" class="btn small" style="background:#FAE1DD;border:1.5px solid #d98c8c;color:#8b1c1c" onclick="openForceCancelPanel(\''+attr(sid)+'\')">颱風／不可抗力</button>'
           +'<button type="button" class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'報名中\')">開放</button>'
           +'<button class="btn small" onclick="setSessionStatus(\''+attr(sid)+'\',\'關閉\')">關閉</button>'
@@ -6686,7 +6708,9 @@ function renderFeatCoverList(events){
       +'<div style="position:relative;aspect-ratio:1/1;background:#DDEAD1;overflow:hidden">'+coverInner+'<div style="position:absolute;top:8px;right:8px;background:#fff;color:#2a6a10;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:800">主題活動</div></div>'
       +'<div style="padding:8px">'
       +'<div style="font-size:13px;font-weight:900;color:#2C2C2C;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safe(e.title||e.id)+'</div>'
-      +(e.location?'<div style="font-size:11px;color:#888;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+safe(e.location)+'</div>':'')
+      +'<div style="font-size:11px;min-height:16px;color:#888;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safe(e.location||'　')+'</div>'
+      +shortLinkStatsHtml('event',e.id)
+      +'<button type="button" class="btn small secondary" style="width:100%;padding:6px 4px;font-size:12px" onclick="copyTargetShortLink(\'event\',\''+id+'\',this)">複製主題短網址</button>'
       +'<div style="margin-top:8px;display:grid;gap:6px">'
       +'<button class="btn small" style="width:100%;padding:6px 4px;font-size:12px" onclick="editFeatEvent(\''+id+'\')">修改主題</button>'
       +'<button class="btn small secondary" style="width:100%;padding:6px 4px;font-size:12px" onclick="document.getElementById(\'feat_file_'+id+'\').click()">📤 上傳主題圖片</button>'
@@ -6704,7 +6728,7 @@ function renderFeatCoverList(events){
   el.style.paddingBottom='10px';
   el.style.scrollSnapType='x proximity';
   el.style.webkitOverflowScrolling='touch';
-  bindFeatDragScroll(el);
+  bindFeatDragScroll(el);queueShortLinkStats();
 }
 function bindFeatDragScroll(el){ if(!el || el.__dragBound) return; el.__dragBound=true; let down=false,sx,sl; el.addEventListener('mousedown',e=>{ if(e.target.closest('input,button,textarea')) return; down=true; sx=e.pageX-el.offsetLeft; sl=el.scrollLeft; el.style.cursor='grabbing'; }); el.addEventListener('mouseleave',()=>{ down=false; el.style.cursor=''; }); el.addEventListener('mouseup',()=>{ down=false; el.style.cursor=''; }); el.addEventListener('mousemove',e=>{ if(!down) return; e.preventDefault(); const x=e.pageX-el.offsetLeft; el.scrollLeft=sl-(x-sx)*1.5; }); }
 async function deleteFeatEvent(id, btn){
@@ -7372,3 +7396,4 @@ window.downloadSupplierOrders=async function(sessionId){try{const d=await api({a
 </script>
 </body>
 </html>
+
