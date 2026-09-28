@@ -295,6 +295,8 @@ button,a,[onclick]{touch-action:manipulation}
 .form-hero{position:relative;min-height:120px;background:var(--c3);overflow:hidden}
 .form-hero-overlay{position:absolute;bottom:0;left:0;right:0;padding:16px;background:linear-gradient(0deg,rgba(0,0,0,.45) 0%,transparent 100%)}
 .form-hero-title{color:#fff;font-size:17px;font-weight:700;line-height:1.3}
+.front-line-share{background:#06c755!important;color:#fff!important;font-size:11px!important;width:44px!important;height:44px!important}
+.form-hero-placeholder[hidden]{display:none!important}
 .form-hero-meta{color:rgba(255,255,255,.85);font-size:16px;margin-top:4px}
 .form-wrap{padding:12px 14px 16px}
 .fcard{background:var(--wh);border-radius:var(--r-sm);border:1px solid var(--border);margin-bottom:10px;overflow:hidden}
@@ -683,7 +685,7 @@ input, select, textarea, .f-input{
   .ses-list-actions{
     width:100%!important;
     display:grid!important;
-    grid-template-columns:34px 1fr!important;
+    grid-template-columns:44px 44px minmax(0,1fr)!important;
     gap:7px!important;
     align-items:center!important;
     margin-top:auto!important;
@@ -1694,7 +1696,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
     <div style="display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fff;border-radius:22px 22px 0 0;position:sticky;top:0;z-index:10">
       <button onclick="attemptCloseRegForm()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px 4px 0;line-height:1;color:var(--md)">←</button>
       <span id="formBackTitle" style="font-size:16px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dk)">報名表</span>
-      <button onclick="shareCurrentSession()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;color:var(--md)" title="分享">🔗</button>
+      <span id="formLineShare"></span><button onclick="shareCurrentSession()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;color:var(--md)" title="複製連結">🔗</button>
     </div>
     <!-- 可捲動內容區 -->
     <div class="reg-form-content" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch">
@@ -2598,7 +2600,7 @@ function copyFrontShareLink(url, msg){
       ta.style.left='-9999px';
       document.body.appendChild(ta);
       ta.select();
-      try{ document.execCommand('copy'); toast(okMsg); }
+      try{ if(!document.execCommand('copy')) throw new Error('copy failed'); toast(okMsg); }
       catch(e){ prompt('請複製此連結：', url); }
       document.body.removeChild(ta);
     });
@@ -2610,68 +2612,20 @@ function copyFrontShareLink(url, msg){
   ta.style.left='-9999px';
   document.body.appendChild(ta);
   ta.select();
-  try{ document.execCommand('copy'); toast(okMsg); }
+  try{ if(!document.execCommand('copy')) throw new Error('copy failed'); toast(okMsg); }
   catch(e){ prompt('請複製此連結：', url); }
   document.body.removeChild(ta);
 }
-// ── 分享面板 ──────────────────────────────────────────────────
-// 舊版只能開 LINE，且分享的是又長又醜的 ?page=session&ses=SES_xxx 網址。
-// 改成：先取短網址（一場只有一組，後端保證），面板可直接複製貼到任何社團／IG／Threads，
-// 也保留 LINE 一鍵分享。取不到短網址時退回長網址，不會讓分享功能整個壞掉。
-async function openSharePanel(kind, id, title){
-  const longUrl = buildFrontShareUrl(kind, id);
-  let d=$('sharePanel');
-  if(!d){ d=document.createElement('div'); d.id='sharePanel'; document.body.appendChild(d); }
-  d.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center';
-  const box=(inner)=>'<div style="background:var(--wh);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:22px 18px 26px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
-    +'<b style="font-size:18px">分享活動</b>'
-    +'<button onclick="closeSharePanel()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">✕</button>'
-    +'</div>'+inner+'</div>';
-  d.innerHTML=box('<div style="text-align:center;color:var(--muted);padding:18px">連結準備中…</div>');
-  d.onclick=(e)=>{ if(e.target===d) closeSharePanel(); };
-
-  let url=longUrl;
-  if(kind==='session'){
-    try{
-      const r=await api({action:'getSessionShortLink',sessionId:id,_t:Date.now()});
-      if(r && !r.error && r.url) url=r.url;
-    }catch(e){ /* 取不到就用長網址，分享不能因此壞掉 */ }
-  }
-  const t=(title||'兔彼樂活動').trim();
-  d.innerHTML=box(
-     '<div style="background:var(--c3);border-radius:14px;padding:14px;word-break:break-all;font-weight:900;font-size:16px;margin-bottom:14px">'+escHtml(url)+'</div>'
-    +'<button onclick="copyFrontShareLink(\''+escHtml(url)+'\',\'已複製連結\')" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--c1);font-weight:900;font-size:16px;cursor:pointer;margin-bottom:10px">複製連結</button>'
-    +'<button onclick="shareFrontToLine(\''+escHtml(t).replace(/'/g,"")+'\',\''+escHtml(url)+'\')" style="width:100%;padding:14px;border:1.5px solid var(--border);border-radius:14px;background:var(--wh);font-weight:900;font-size:16px;cursor:pointer">分享到 LINE</button>'
-    +'<div style="text-align:center;color:var(--muted);font-size:16px;margin-top:12px">複製後可貼到 Facebook 社團、IG、Threads 或任何地方</div>'
-  );
+// 分享按鈕直接操作；使用既有正式場次網址，避免等待 API 失去手機點擊授權。
+function openSharePanel(kind, id, title){
+  return copyFrontShareLink(buildFrontShareUrl(kind,id),'已複製連結');
 }
-function closeSharePanel(){ const d=$('sharePanel'); if(d) d.remove(); }
-
-function shareFrontToLine(title, url, copyMsg){
-  const cleanTitle = (title || '兔彼樂活動').trim();
-  const text = cleanTitle + '\n' + url;
-  // 先用手機內建分享（可直接選 LINE、IG、FB，不需要登入任何網頁）
-  try{
-    if(navigator.share){
-      navigator.share({title:cleanTitle, text:cleanTitle, url:url})
-        .then(function(){ toast('已開啟分享'); })
-        .catch(function(){ openLineMsgShare(text, url, copyMsg); });
-      return;
-    }
-  }catch(e){}
-  openLineMsgShare(text, url, copyMsg);
+function shareFrontToLine(title,url){
+  window.open('https://line.me/R/msg/text/?'+encodeURIComponent((title||'兔彼樂活動')+'\n'+url),'_blank','noopener,noreferrer');
 }
-// 直接喚起 LINE App 的分享（line.me/R/msg/text），避免被導到 access.line.me 要求登入
-function openLineMsgShare(text, url, copyMsg){
-  const lineUrl = 'https://line.me/R/msg/text/?' + encodeURIComponent(text);
-  const opened = window.open(lineUrl, '_blank', 'noopener,noreferrer');
-  if(opened){
-    try{ opened.opener = null; }catch(e){}
-    toast('已開啟 LINE 分享');
-    return;
-  }
-  copyFrontShareLink(url, copyMsg || '已複製連結，請貼到 LINE 分享');
+function frontLineButton(kind,id,title){
+  const href='https://line.me/R/msg/text/?'+encodeURIComponent((title||'兔彼樂活動')+'\n'+buildFrontShareUrl(kind,id));
+  return `<a class="ses-list-share front-line-share" href="${escHtml(href)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" aria-label="分享到 LINE" title="分享到 LINE" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:#06c755;color:white;text-decoration:none;font-size:11px;font-weight:900;border-radius:12px">LINE</a>`;
 }
 // 分享連結專用載入遮罩：避免「先閃首頁、再跳場次」的畫面跳動
 function showDeepLinkLoading(){
@@ -3281,6 +3235,7 @@ function renderActCard(s, mode){
     </div>
   </div>
   <div class="act-card-actions">
+    ${frontLineButton('session',s.id,s.name)}
     <button class="act-card-share" onclick="shareSessionCard('${id}','${name.replace(/'/g,"\'")}',event)" title="分享">🔗</button>
     <button class="act-card-detail" onclick="openSessionById('${id}')">查看詳情</button>
     ${(typeof photoFrameBtnHtml==='function'?photoFrameBtnHtml(s):'')}
@@ -4314,7 +4269,7 @@ function renderSessionCard(s){
   const placeStr=s.venue||s.location||s.place||'';
   const eventId=String(s.eventId||'');
   const evt=(ST.events||[]).find(e=>String(e.id)===eventId);
-  const cover=s.cover||evt?.cover||'';
+  const cover=frontSessionCover(s);
   const bundleBadge=frontBundleBadgeHtml(s);
   const myBadge=myRegBadge(s);
   const coverEl=cover
@@ -4336,7 +4291,8 @@ function renderSessionCard(s){
       ${bundleBadge?`<div>${bundleBadge}</div>`:''}
     </div>
     <div class="ses-list-actions">
-      <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share">🔗</button>
+      <button onclick="event.stopPropagation();shareSession('${esc(s.id)}','${esc(s.name||'')}')" class="ses-list-share" aria-label="複製場次連結" title="複製場次連結">🔗</button>
+      ${frontLineButton('session',s.id,s.name)}
       ${actionHtml}
     </div>
   </div>`;
@@ -5053,25 +5009,25 @@ function adjStall(delta){
   updateFee();
 }
 
-function buildFormHero(s, cover){
-  const dateRows=Array.isArray(s.dates)?s.dates:[];
-  const hasNamedDateOptions=dateRows.some(d=>String(d&&d.label||'').trim());
-  const dateStr=dateRows.length?((dateRows.some(frontSessionDateIsRange)||hasNamedDateOptions)?dateRows.map(d=>frontSessionDateText(d,true,true)).filter(Boolean).join(' / '):dateRows.map(d=>d.date+(d.start?' '+d.start:'')+(d.end?'–'+d.end:'')).join(' / ')):(s.date||'');
-  const meta=[dateStr,s.venue].filter(Boolean).join('　');
-  if(cover){
-    $('formHero').innerHTML=`
-      <img class="form-hero-img" src="${cover}" alt="" onerror="this.parentElement.innerHTML='<div class=form-hero-placeholder>🎪</div>'">
-      <div class="form-hero-overlay">
-        <div class="form-hero-title">${s.name}</div>
-        <div class="form-hero-meta">${meta}</div>
-      </div>`;
-  } else {
-    $('formHero').innerHTML=`<div class="form-hero-placeholder">🎪</div>
-      <div class="form-hero-overlay">
-        <div class="form-hero-title">${s.name}</div>
-        <div class="form-hero-meta">${meta}</div>
-      </div>`;
+function frontSessionCover(s){
+  const cached=(ST.allSessionsData||[]).find(x=>String(x.id)===String(s.id))
+    ||(ST.sessions||[]).find(x=>String(x.id)===String(s.id));
+  const evt=(ST.events||[]).find(e=>String(e.id)===String(s.eventId||s.event_id||cached?.eventId||cached?.event_id||''));
+  for(const item of [s,cached,evt]){
+    for(const key of ['cover','coverUrl','cover_url','imageUrl']){
+      const value=item?.[key];
+      if(typeof value==='string' && value.trim()) return value.trim();
+    }
   }
+  return '';
+}
+function buildFormHero(s, cover){
+  const image=frontSessionCover(s)||cover||'';
+  const line=$('formLineShare'); if(line) line.innerHTML=frontLineButton('session',s.id,s.name);
+  $('formHero').innerHTML=(image
+    ? `<img class="form-hero-img" src="${escHtml(image)}" alt="${escHtml(s.name||'活動示意圖')}" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="form-hero-placeholder" hidden>圖片暫時無法載入</div>`
+    : '<div class="form-hero-placeholder">尚未提供活動圖片</div>')
+    +`<div class="form-hero-overlay"><div class="form-hero-title">${escHtml(s.name||'')}</div></div>`;
 }
 
 
@@ -5457,7 +5413,7 @@ async function openSession(sessionId){
     ST.addonQty={};
     ST.stallCount=1;
     const evt=(ST.events||[]).find(e=>String(e.id)===String(s.eventId));
-    const cover=s.cover||evt?.cover||'';
+    const cover=frontSessionCover(s);
     buildFormHero(s,cover);
     const titleEl=$('formBackTitle');
     if(titleEl) titleEl.textContent=s.name||'報名表';
@@ -7539,8 +7495,7 @@ if(document.readyState==='loading'){
 // ── 不可抗力：攤友申請退費（呼叫後端 applyForceRefundFM action）──
 // 分享主題活動
 function shareEvent(eventId, eventName){
-  const url = buildFrontShareUrl('event', eventId);
-  shareFrontToLine(eventName||'主題活動', url, '已複製主題活動連結，請貼到 LINE 分享');
+  return copyFrontShareLink(buildFrontShareUrl('event',eventId),'已複製主題連結');
 }
 
 // 分享場次
