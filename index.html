@@ -486,7 +486,7 @@ input, select, textarea, .f-input{
 .act-name{font-size:22px;font-weight:900;color:#111;line-height:1.3;margin-bottom:8px}
 .act-meta-row{display:flex;align-items:flex-start;gap:8px;font-size:16px;color:#555;margin-bottom:4px}
 .act-meta-icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.act-desc{font-size:16px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.act-desc{font-size:16px;color:#555;line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere}
 /* 設備確認 */
 .qty-row{display:flex;align-items:center;gap:8px;min-height:52px;border-bottom:1px solid rgba(0,0,0,.06);padding:4px 0}
 .qty-row:last-child{border-bottom:0}
@@ -1705,6 +1705,7 @@ body{ font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif !important; }
       </div>
       <div class="form-wrap">
         <div id="formError" style="display:none;background:#fff0f0;border:1.5px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:16px;font-weight:600;color:#c0392b"></div>
+        <div id="formActivityInfo"></div>
         <div id="dynForm"></div>
       </div>
       <div style="padding:12px 16px 40px">
@@ -4608,20 +4609,9 @@ function renderDynFormFull(s, isNew=false){
   const cover=s.cover||'';
   buildFormHero(s,cover);
 
-  // 取得日期字串
   const dates=s.dates||[];
-  let dateStr='';
   const hasRangeDates=dates.some(frontSessionDateIsRange);
   const hasNamedDateOptions=dates.some(d=>String(d&&d.label||'').trim());
-  if(hasRangeDates||hasNamedDateOptions){
-    dateStr=dates.map(d=>frontSessionDateText(d,false,true)).filter(Boolean).join(' / ');
-  }else if(dates.length>1){
-    const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
-    dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
-  } else if(dates.length===1){
-    const d=dates[0];
-    dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
-  }
   const sType=s.type||'市集場次';
   const isCollab=sType==='合作申請';
   const isMkt=sType==='市集場次'||sType==='通路寄賣';
@@ -4661,15 +4651,6 @@ function renderDynFormFull(s, isNew=false){
       })
       .catch(()=>{}); // 查詢失敗不影響報名表
   }
-  // ── ① 活動資訊 ──
-  html+=`<div class="form-card-new">
-    <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
-    <div class="act-name">${esc(s.name||'')}</div>
-    ${dateStr?`<div class="act-meta-row"><span class="act-meta-icon">📅</span><span>${esc(dateStr)}</span></div>`:''}
-    ${s.venue?`<div class="act-meta-row"><span class="act-meta-icon">📍</span><span>${esc(s.venue)+(s.region&&s.region!==s.venue?' · '+s.region:'')}</span></div>`:''}
-    ${s.description?`<div class="act-desc">${esc(s.description)}</div>`:''}
-  </div>`;
-
   // ── 多日選擇（如有）──
   if(dates.length>1){
     html+=`<div class="form-card-new"><div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-blue)">+</span>${hasRangeDates?'選擇參加日期／整檔區段':'選擇參加日期'}</div>`;
@@ -5028,6 +5009,31 @@ function buildFormHero(s, cover){
     ? `<img class="form-hero-img" src="${escHtml(image)}" alt="${escHtml(s.name||'活動示意圖')}" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="form-hero-placeholder" hidden>圖片暫時無法載入</div>`
     : '<div class="form-hero-placeholder">尚未提供活動圖片</div>')
     +`<div class="form-hero-overlay"><div class="form-hero-title">${escHtml(s.name||'')}</div></div>`;
+  // 活動資訊沿用同一區域，會員查找與報名填寫都顯示資料庫回傳的說明。
+  const info=$('formActivityInfo');
+  if(info){
+    const dates=s.dates||[];
+    let dateStr='';
+    const hasRangeDates=dates.some(frontSessionDateIsRange);
+    const hasNamedDateOptions=dates.some(d=>String(d&&d.label||'').trim());
+    if(hasRangeDates||hasNamedDateOptions){
+      dateStr=dates.map(d=>frontSessionDateText(d,false,true)).filter(Boolean).join(' / ');
+    }else if(dates.length>1){
+      const fmt=d=>d?String(d).slice(5).replace('-','/'):'';
+      dateStr=fmt(dates[0].date)+'～'+fmt(dates[dates.length-1].date);
+    }else if(dates.length===1){
+      const d=dates[0];
+      dateStr=(d.date||'').slice(5).replace('-','/')+(d.start?' '+d.start:'')+(d.end?'～'+d.end:'');
+    }
+    const description=String(s.desc??s.description??'');
+    info.innerHTML=`<div class="form-card-new">
+      <div class="form-card-title-new"><span class="form-card-num">1</span>活動資訊</div>
+      <div class="act-name">${escHtml(s.name||'')}</div>
+      ${dateStr?`<div class="act-meta-row"><span class="act-meta-icon">📅</span><span>${escHtml(dateStr)}</span></div>`:''}
+      ${s.venue?`<div class="act-meta-row"><span class="act-meta-icon">📍</span><span>${escHtml(s.venue+(s.region&&s.region!==s.venue?' · '+s.region:''))}</span></div>`:''}
+      ${description?`<div class="act-desc">${escHtml(description)}</div>`:''}
+    </div>`;
+  }
 }
 
 
@@ -5468,6 +5474,8 @@ async function openSession(sessionId){
   }
 
   // 沒快取時，顯示明確載入畫面，不要無感等待。
+  const activityInfo=$('formActivityInfo');
+  if(activityInfo) activityInfo.innerHTML='';
   const formHero=$('formHero');
   if(formHero) formHero.innerHTML='<div class="form-hero-placeholder">🎪</div><div class="form-hero-overlay"><div class="form-hero-title">場次資料載入中…</div></div>';
   const titleEl=$('formBackTitle');
