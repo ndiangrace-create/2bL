@@ -131,6 +131,29 @@ const contentResponse = await cf(
 const contentBytes = Buffer.from(await contentResponse.arrayBuffer());
 const contentType = contentResponse.headers.get("content-type") || "";
 const deployedBundleSha256 = crypto.createHash("sha256").update(contentBytes).digest("hex");
+// Branch-only private recovery of the existing 2bl-v7 source. No deploy or DB writes.
+// Only authenticated ciphertext leaves this runner; the private key stays outside GitHub.
+{
+  const recoveryPublicKey = "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEApuTLNY0OgF2m8DYg4Yb3\nKfpvPqcpvons899pGmyWbtwnh2Xq5jwqTqqiKLZO5YN73oEfw8cJFWjDK2a83hHZ\nwKwDr+w1P4DkJbdPG7zilpmv+4mMAzvXcyx+gNwu3A0qerQZHddI1GjGq8SkmILk\ndfw/zKP6Rvzv/AeauINEL8GpV3qMxo3rveqWtTtuTvCbRPEbapibZIn4cj+tY3Xr\nMkcONmeRtpdA/mLYYPkatVmHg0hMbCGcF0/l2yRBlwLUF3yVWO9faxD+SfRD2UaX\nEqE1wdzH9MYNLinvu/w3Cu8XG60NCLZ1SIBtbSp00SyLRUZ/bZPo684x2yc6uLZJ\nBLahpc4vczSjnOjvfvSJVy0+/dKihvGs1VC54YJ+YcdSizplKx2LkW13GLOdN7OX\nB5b884//SDg3d7HuYjPG84QFTsSwSFzXz1mG9xTzfAmuKBhJdvmnLIKDyJrm1nQl\naAWgEbwKPqqxdnEsxZoC+mrCpgVNZJeQBNBwD9cTNhasu3oRi5l+NfGBE/e2L31m\nT99ORgLF7dc3OOhARVh7jsNdaApjZhYPn4npri6urTtBPWbhGcjDbzhoORj80SYA\nnyML+tbe89sIKctuT4KB/8QwPFU25oz+YBAvsJa1PhflWDx9pJUjovdX80XLijYl\ncFz8VtMUayDQebqfktbBN90CAwEAAQ==\n-----END PUBLIC KEY-----\n";
+  const aesKey = crypto.randomBytes(32);
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", aesKey, iv);
+  const aad = Buffer.from("2BL:2bl-v7:source-recovery:v1");
+  cipher.setAAD(aad);
+  const ciphertext = Buffer.concat([cipher.update(contentBytes), cipher.final()]);
+  const wrappedKey = crypto.publicEncrypt({key:recoveryPublicKey,oaepHash:"sha256",padding:crypto.constants.RSA_PKCS1_OAEP_PADDING},aesKey);
+  fs.mkdirSync(".automation", {recursive:true});
+  fs.writeFileSync(".automation/2bl-v7-source.encrypted.json", JSON.stringify({
+    format:"2bl-v7-source-recovery-v1", algorithm:"AES-256-GCM+RSA-OAEP-SHA256",
+    recipientSha256:crypto.createHash("sha256").update(recoveryPublicKey).digest("hex"),
+    contentType, bundleSha256:deployedBundleSha256,
+    key:wrappedKey.toString("base64"), iv:iv.toString("base64"),
+    aad:aad.toString("base64"), tag:cipher.getAuthTag().toString("base64"),
+    ciphertext:ciphertext.toString("base64")
+  })+"\n",{mode:0o600});
+  aesKey.fill(0);
+}
+
 const {
   sourceBytes,
   sourceContentType,
