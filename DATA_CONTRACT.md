@@ -146,3 +146,22 @@
 - 相容修正：舊 `saveMemberCategory` 改寫正式 `members.sell_category`。
 - 狀態：Pending；未合併、未部署、未修改正式 Supabase 資料。
 
+
+
+## 2026-10-01｜場次說明顯示契約（Verified：前台說明顯示）
+
+| 鏈路 | 既有正式名稱 | 驗證結果 |
+|---|---|---|
+| 後台場次說明保存 | `set_desc` → payload `desc` | 保存流程未修改 |
+| 正式 Supabase | `sessions.description`，`tenant_id=tuibile` | 十月／十一月／十二月小旅行均197字；本輪未寫入營運資料 |
+| 正式 Worker 公開場次 | `frontBootstrap.sessions[].desc`／`getSession.desc` | 沿用原 API；實際正式報名頁讀回全文與 DB MD5 一致 |
+| 前台活動資訊 | `index.html` → 原 `buildFormHero` → `formActivityInfo` | 原資訊卡移到共同位置；先讀 desc，僅 desc 缺失時相容 description，明確空白不復活舊值；全文及換行 |
+| 返回／重整 | 原 `openSession`、首頁立即報名及分享連結 | 正式網站驗證通過；沒有新增說明的瀏覽器保存 |
+
+- 使用者已明確「確認部署」。正式前台提交 `413f4681627bfae45abf5ca5a5b3779df86dc9e6`，只修改 index.html。GitHub Pages run `36829456607` 成功，發布時間 2026-10-01 15:18:33（Asia/Taipei）。
+- index.html：428169 bytes；SHA-256 `e42f3f5e1aeb0f1dd5b7217568d07b34426a6b465b6805f49b540d7b279d133e`；Git blob `881601f9932f63e86757bea346b1bea77f3e08b6`。GitHub 完整讀回與核准檔案一致，正式 DOM 已載入共同資訊區及 pre-wrap。
+- 正式 Chromium：直接十月分享連結、重整、返回首頁、十一月及十二月的首頁立即報名；各場只有一份說明，197字，MD5 均 `7e5bb8112a4dc98e6ca7f2b2d384153d`，與正式 DB 完全一致；五個首頁分類仍存在。
+- 部署前：手機390×844、平板768×1024、桌機1280×900隔離實機27項通過，包括全文、末行捲讀、查找與填寫顯示狀態、重整／切場／返回及邊界文字。
+- 範圍：Verified 僅指此次前台說明顯示與正式讀取；本輪未建立正式測試會員／報名，不宣稱驗證過新的會員登入或金流寫入。Worker、Schema、RLS、帳號、角色、計價、提交、退款、排位與通知未改。
+- 回復：原 index.html 427623 bytes，SHA-256 `ef31c42e618f0e147c7e9e9c4ac301d6d52b11dea781b40a055682ea04edc83f`，來源 `707f2a3e3c45a0ae13c0c13c3403d1784960f8de`。回復只替換 index.html，不回復整份舊 Worker。
+- 原計價／主辦代報工作仍未完成；600×4＋500＝2900既有規則不變，仍需核對目前正式完整 Worker 來源。
