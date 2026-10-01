@@ -5372,7 +5372,7 @@ async function openAdminManualRegistration(memberEmail=''){
     }
   }
 
-  AdminManualReg={session:null,memberEmail:memberEmail||''};
+  AdminManualReg={session:null,memberEmail:memberEmail||'',idempotencyKey:crypto.randomUUID(),preview:null,serial:0,sessionSerial:0,lookupSerial:0,submitting:false};
 
   const memberOptions=adminManualMemberOptions();
   const sessionOptions=adminManualSessionOptions();
@@ -5384,9 +5384,19 @@ async function openAdminManualRegistration(memberEmail=''){
       ${(memberErr||sessionErr)?`<div class="empty">資料載入異常：${safe([memberErr,sessionErr].filter(Boolean).join('｜'))}</div>`:''}
       <div class="form-grid">
         <div class="form-field full"><label>會員 / 品牌</label>
-          <select id="amrMember"><option value="">請選擇會員</option>${memberOptions}</select>
+          <select id="amrMember" onchange="adminManualMemberChanged()"><option value="">請選擇會員</option>${memberOptions}</select>
           ${!memberOptions?'<div class="sub">目前沒有可選會員，或會員資料載入失敗。</div>':''}
         </div>
+        <div class="form-field full"><label>廠商 Email（名單中找不到時查詢）</label>
+          <input id="amrLookupEmail" type="email" placeholder="請先選場次，再輸入廠商 Email">
+          <button type="button" class="btn secondary" onclick="lookupAdminManualMember()">查詢廠商</button>
+          <div id="amrLookupStatus" class="sub"></div>
+        </div>
+        <div id="amrNewMemberFields" class="form-field full hidden"><div class="form-grid">
+          <div class="form-field"><label>廠商姓名</label><input id="amrNewName"></div>
+          <div class="form-field"><label>手機</label><input id="amrNewPhone" type="tel"></div>
+          <div class="form-field"><label>品牌名稱</label><input id="amrNewBrand"></div>
+        </div></div>
         <div class="form-field full"><label>場次</label>
           <select id="amrSession" onchange="loadAdminManualSession(this.value)">
             <option value="">請選擇場次</option>${sessionOptions}
@@ -5399,14 +5409,19 @@ async function openAdminManualRegistration(memberEmail=''){
   );
 
   if(memberEmail&&$('amrMember'))$('amrMember').value=memberEmail;
+  for(const id of ['amrNewName','amrNewPhone','amrNewBrand'])$(id)?.addEventListener('input',invalidateAdminManualPreview);
+  $('amrLookupEmail')?.addEventListener('input',()=>{AdminManualReg.lookupSerial++;});
   return true;
 }
 async function loadAdminManualSession(sid){
-  const box=$('amrSessionBody');
+  const box=$('amrSessionBody'),state=AdminManualReg,serial=++state.sessionSerial;
+  state.session=null;invalidateAdminManualPreview();
+  state.lookupSerial++;
   if(!sid){box.innerHTML='<div class="empty">請先選擇場次</div>';return;}
   box.innerHTML='<div class="loading">載入場次設定…</div>';
   try{
     const s=await api({action:'adminManualSession',sessionId:sid,_t:Date.now()});
+    if(AdminManualReg!==state||serial!==state.sessionSerial||$('amrSession')?.value!==sid)return;
     AdminManualReg.session=s;
     const dates=Array.isArray(s.dates)?s.dates:[];
     const dateKeys=dates.map(sessionDateEndKey).filter(Boolean);
@@ -5481,7 +5496,9 @@ async function loadAdminManualSession(sid){
     <div class="card-actions"><button type="button" class="btn secondary" onclick="previewAdminManualRegistration()">試算費用</button><button type="button" class="btn" onclick="submitAdminManualRegistration()">建立正式報名</button></div>`;
     adminManualUpdateIncludedEquip();
     adminManualPaymentModeChanged();
-  }catch(e){box.innerHTML=`<div class="empty">場次載入失敗：${safe(e.message)}</div>`;}
+    box.oninput=invalidateAdminManualPreview;
+    box.onchange=invalidateAdminManualPreview;
+  }catch(e){if(AdminManualReg!==state||serial!==state.sessionSerial)return;box.innerHTML=`<div class="empty">場次載入失敗：${safe(e.message)}</div>`;}
 }
 function adminManualUpdateIncludedEquip(){const s=AdminManualReg.session||{},stalls=Math.max(1,Number($('amrStalls')?.value)||1),defs=s.equip||{};document.querySelectorAll('.amrEquip').forEach(inp=>{const d=defs[inp.dataset.name]||{},min=(Number(d.incl)||0)*stalls;if(Number(inp.value)<min)inp.value=String(min)})}
 function adminManualPayload(){
@@ -5490,6 +5507,9 @@ function adminManualPayload(){
   document.querySelectorAll('.amrAddon').forEach(x=>addonQty[x.dataset.index]=Math.max(0,Number(x.value)||0));
   return{
     memberEmail:$('amrMember')?.value||'',
+    idempotencyKey:AdminManualReg.idempotencyKey,
+    newMember:$('amrMember')?.selectedOptions[0]?.dataset.newMember==='true',
+    memberName:$('amrNewName')?.value||'',memberPhone:$('amrNewPhone')?.value||'',memberBrand:$('amrNewBrand')?.value||'',
     sessionId:$('amrSession')?.value||'',
     selectedDates:[...document.querySelectorAll('.amrDate:checked')].map(x=>x.value),
     stallCount:Math.max(1,Number($('amrStalls')?.value)||1),
@@ -5506,12 +5526,43 @@ function adminManualPaymentModeChanged(){
   const mode=$('amrPaymentMode')?.value||'unpaid';
   $('amrPaidFields')?.classList.toggle('hidden',mode!=='paid');
 }
-async function previewAdminManualRegistration(){
+function invalidateAdminManualPreview(){
+  AdminManualReg.preview=null;AdminManualReg.serial++;
+  if($('amrPreview'))$('amrPreview').innerHTML='<div class="sub">選項已變更，請重新試算確認金額。</div>';
+}
+function adminManualMemberChanged(){
+  $('amrNewMemberFields')?.classList.toggle('hidden',$('amrMember')?.selectedOptions[0]?.dataset.newMember!=='true');
+  invalidateAdminManualPreview();
+}
+async function lookupAdminManualMember(){
+  const state=AdminManualReg,sid=$('amrSession')?.value,email=String($('amrLookupEmail')?.value||'').trim().toLowerCase(),serial=++state.lookupSerial;
+  if(!sid||!state.session){toast('請先選擇並載入場次');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('請輸入廠商 Email');return;}
+  $('amrLookupStatus').textContent='查詢中…';
   try{
-    const p=adminManualPayload();
+    const rows=await api({action:'getMembers',purpose:'manualRegistration',sessionId:sid,memberEmail:email,_t:Date.now()});
+    if(AdminManualReg!==state||state.lookupSerial!==serial||$('amrSession')?.value!==sid)return;
+    const m=Array.isArray(rows)?rows[0]:null,sel=$('amrMember');
+    let option=Array.from(sel.options).find(o=>o.value.toLowerCase()===email);
+    if(!option){option=document.createElement('option');option.value=email;sel.appendChild(option);}
+    option.textContent=m?`${m.brand_name||m.name||email}｜${email}`:`新廠商｜${email}`;
+    option.dataset.newMember=m?'false':'true';sel.value=option.value;
+    $('amrLookupStatus').textContent=m?'已找到廠商，可繼續代報。':'尚無會員資料，請填姓名、手機及品牌；送出代報時一併建立。';
+    adminManualMemberChanged();
+  }catch(e){if(AdminManualReg===state&&state.lookupSerial===serial)$('amrLookupStatus').textContent='查詢失敗：'+e.message;}
+}
+async function previewAdminManualRegistration(){
+  const state=AdminManualReg,p=adminManualPayload(),key=JSON.stringify(p),serial=++state.serial;
+  state.preview=null;
+  try{
+    if(!state.session||state.session.id!==p.sessionId)throw Error('請先載入場次');
     const r=await apiPost({action:'adminPreviewRegistration',...p});
+    if(AdminManualReg!==state||serial!==state.serial||JSON.stringify(adminManualPayload())!==key)return null;
+    state.preview={key,result:r};
     const payText=p.paymentMode==='paid'?'已繳費（建立後立即進正式金流）':(p.paymentMode==='free'?'免費':'未繳費');
     $('amrPreview').innerHTML='<div class="report-title">正式試算</div><div class="kv">'+
+      '<div class="k">參加日期</div><div>'+safe((r.selectedDateLabels||r.selectedDates||[]).join('、'))+'</div>'+
+      '<div class="k">攤位數</div><div>'+safe(r.stallCount)+'</div>'+
       '<div class="k">場地／報名費</div><div>'+money(r.fee)+'</div>'+
       '<div class="k">押金</div><div>'+money(r.deposit)+'</div>'+
       '<div class="k">設備</div><div>'+money(r.equipment)+'</div>'+
@@ -5520,26 +5571,27 @@ async function previewAdminManualRegistration(){
       '<div class="k">錄取狀態</div><div><b>已錄取（主辦代報不審核）</b></div>'+
       '<div class="k">金流狀態</div><div>'+safe(payText)+'</div>'+
       '<div class="k">歷史補登</div><div>'+(p.historicalBackfill?'是':'否')+'</div></div>';
-  }catch(e){toast('試算失敗：'+e.message,7000)}
+    return r;
+  }catch(e){if(AdminManualReg===state&&serial===state.serial){invalidateAdminManualPreview();toast('試算失敗：'+e.message,7000)}return null;}
 }
 async function submitAdminManualRegistration(){
-  const p=adminManualPayload();
-  if(!p.memberEmail||!p.sessionId){toast('請選會員與場次');return;}
-  if(p.paymentMode==='paid'&&!p.paidAt){
-    // 允許不填：Worker 會使用目前時間；只提示，不阻斷。
-  }
-  const msg=p.paymentMode==='paid'
-    ? '確定建立正式報名並直接錄取？此筆同時會建立正式「已確認收款」，立即進入場次與財務總表。'
-    : '確定建立正式報名並直接錄取？不會進待審核，也不需要攤商再按確認。';
-  if(!await uiConfirm(msg))return;
+  const state=AdminManualReg;if(state.submitting)return;state.submitting=true;
   try{
-    const r=await apiPost({action:'adminCreateRegistration',...p});
+    const p=adminManualPayload();
+    if(!p.memberEmail||!p.sessionId){toast('請選會員與場次');return;}
+    const key=JSON.stringify(p);
+    if(state.preview?.key!==key&&!await previewAdminManualRegistration())return;
+    if(AdminManualReg!==state||state.preview?.key!==key)return;
+    const total=state.preview.result.total;
+    const msg='確定建立正式報名並直接錄取？總應繳 '+money(total)+(p.paymentMode==='paid'?'，將同步記錄正式已確認收款。':'。');
+    if(!await uiConfirm(msg))return;
+    if(AdminManualReg!==state||JSON.stringify(adminManualPayload())!==key){invalidateAdminManualPreview();toast('選項已變更，請重新試算');return;}
+    const r=await apiPost({action:'adminCreateRegistration',...p,expectedTotal:total});
     const jobs=[refreshSessionsOverview(),loadMembers()];
     if(AdminState.currentPage==='finance')jobs.push(loadAccountingReport());
-    await Promise.allSettled(jobs);
-    panelBack();
+    await Promise.allSettled(jobs);panelBack();
     toast(`正式報名已建立｜已錄取｜${r.paymentStatus||'未繳費'}${r.financeLinked?'｜金流已同步':''}${r.historicalBackfill?'｜歷史補登':''}${r.id?`｜${r.id}`:''}`,9000);
-  }catch(e){toast('代報名失敗：'+e.message,9000);}
+  }catch(e){toast('代報名失敗：'+e.message,9000);}finally{state.submitting=false;}
 }
 
 
