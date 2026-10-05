@@ -4764,7 +4764,7 @@ function registrationFormSettingsHtml(session) {
     +'<div id="set_form_fields" class="form-grid" style="margin-top:12px">'
     +REGISTRATION_FORM_FIELDS.map(f=>checkbox('set_form_'+f.key,f.label,form?form.fields[f.key]:['name','brand'].includes(f.key))).join('')
     +fields.map((f,i)=>checkbox('set_custom_'+i,f.label,f.enabled!==false)).join('')
-    +checkbox('set_form_onsite','工作人員現場報到',form?.onsiteCheckin!==false)
+    +checkbox('set_form_onsite','報到功能',form?.onsiteCheckin!==false)
     +'</div><div class="sub">現場報到由原本有權限的工作人員操作。</div></div>';
 }
 function toggleRegistrationFormSettings() {
