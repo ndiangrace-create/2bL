@@ -2157,7 +2157,7 @@ function renderOnsiteList(){
   else if(filter==='allDeposit')rows=rows.filter(r=>r.depositEligible&&(Number(r.deposit||0)||0)>0);
   else if(filter==='refundedDeposit')rows=rows.filter(r=>r.depositEligible&&(Number(r.deposit||0)||0)>0&&String(r.depositRefunded||'')==='已退押金');
   else if(filter==='notDeposit')rows=rows.filter(r=>r.depositEligible&&(Number(r.deposit||0)||0)>0&&!['已退押金','押金沒收'].includes(String(r.depositRefunded||'未退押金')));
-  if(kw)rows=rows.filter(r=>((r.brand||'')+(r.name||'')+(r.phone||'')+(r.email||'')+(r.stallNumber||'')).toLowerCase().includes(kw));
+  if(kw)rows=rows.filter(r=>((r.brand||'')+(r.name||'')+(r.phone||'')+(r.email||'')+(r.stallNumber||'')+registrationAnswerText(r)).toLowerCase().includes(kw));
 
   let cards='';
   if(!rows.length)cards='<div class="empty" style="grid-column:1/-1">沒有符合的攤友</div>';
@@ -2165,8 +2165,8 @@ function renderOnsiteList(){
     const id=attr(r.id||r.regId),ck=_onsiteIsChecked(r),teardown=String(r.teardown||r.teardownStatus||'未撤場'),dep=Number(r.deposit||0)||0,depStatus=String(r.depositRefunded||'未退押金'),seat=String(r.stallNumber||'未排位');
     const tags=`<span class="tag ${ck?'ok':''}">${safe(ck?'已報到':'未報到')}</span><span class="tag ${teardown==='已撤場'?'ok':''}">${safe(teardown)}</span>${dep>0?`<span class="tag ${depStatus==='已退押金'?'ok':depStatus==='押金沒收'?'bad':'warn'}">${safe(depStatus)} ${money(dep)}</span>`:''}`;
     const depositMode=depStatus==='已退押金'?'depositUnrefund':'depositRefund';
-    const actions=`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button><button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${depositMode}',this)" ${r.depositEligible&&(depStatus==='已退押金'||teardown==='已撤場')?'':'disabled'}>${depStatus==='已退押金'?'撤銷已退押金 '+money(dep):r.depositEligible?'退押金 '+money(dep):'最後一天退'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
-    cards+=`<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">${safe(r.brand||r.name||'未填品牌')}</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${tags}</div><div class="onsite-sub">${safe(r.name||'—')}｜${safe(r.phone||'—')}｜${safe(seat)}</div>${r.equipmentText?`<div class="onsite-sub">設備｜${safe(r.equipmentText)}</div>`:''}</div><div class="onsite-card-btn direct-actions">${actions}</div></article>`;
+    const actions=`${r.checkinEnabled===false?'':`<button class="btn ${ck?'secondary':'green'} small" onclick="onsiteMarkAdmin('${id}','${ck?'undoCheckin':'checkin'}',this)">${ck?'取消報到':'報到'}</button>`}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${teardown==='已撤場'?'teardownUndo':'teardownDone'}',this)">${teardown==='已撤場'?'取消撤場':'撤場'}</button>${dep>0?`<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','${depositMode}',this)" ${r.depositEligible&&(depStatus==='已退押金'||teardown==='已撤場')?'':'disabled'}>${depStatus==='已退押金'?'撤銷已退押金 '+money(dep):r.depositEligible?'退押金 '+money(dep):'最後一天退'}</button>`:''}<button class="btn secondary small" onclick="onsiteMarkAdmin('${id}','note',this)">備註</button>${r.email?`<button class="btn secondary small" onclick="openMemberFromOnsite('${attr(r.email)}')">會員</button>`:''}`;
+    cards+=`<article class="onsite-card"><div class="onsite-card-top"><div class="onsite-name">${safe(registrationDisplayName(r))}</div>${registrationAnswersHtml(r)}<div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${tags}</div><div class="onsite-sub">${safe(r.name||'—')}｜${safe(r.phone||'—')}｜${safe(seat)}</div>${r.equipmentText?`<div class="onsite-sub">設備｜${safe(r.equipmentText)}</div>`:''}</div><div class="onsite-card-btn direct-actions">${actions}</div></article>`;
   }
   $('onsiteBody').innerHTML=`<div class="onsite-grid">${cards}</div>`;
 }
@@ -2770,19 +2770,20 @@ function renderRegistrationCards(){
   if(!box) return;
   const kw=($('panelSearch')?.value||'').trim().toLowerCase();
   let list=AdminState.currentList.slice();
-  if(kw) list=list.filter(r=>[r.brand,r.brandName,r.brand_name,r.name,r.phone,r.email,r.fb,r.ig].join(' ').toLowerCase().includes(kw));
+  if(kw) list=list.filter(r=>[r.brand,r.brandName,r.brand_name,r.name,r.phone,r.email,r.fb,r.ig,registrationAnswerText(r)].join(' ').toLowerCase().includes(kw));
   list.sort((a,b)=>{const pa=String(a.officialPaidAt||a.paidAt||''),pb=String(b.officialPaidAt||b.paidAt||'');if(pa&&pb&&pa!==pb)return pa.localeCompare(pb);if(pa&&!pb)return -1;if(!pa&&pb)return 1;return String(a.createdAt||'').localeCompare(String(b.createdAt||''));});
   if(!list.length){box.innerHTML='<div class="empty">沒有符合條件的名單</div>';return;}
   let html='';
   for(const r of list){
     const id=attr(r.id||r.regId||r.registrationId||r.registration_id||'');
-    const brand=r.brand||r.brandName||r.brand_name||'未填品牌';
+    const brand=registrationDisplayName(r);
     const contact=[r.name||'—',r.phone||''].filter(Boolean).join('｜');
     html+='<article class="reg-card unified-reg-card">'
       +'<div class="reg-title" title="'+attr(brand)+'">'+safe(brand)+'</div>'
       +'<div class="reg-sub" title="'+attr(r.sessionName||'')+'">'+safe(r.sessionName||'場次')+'</div>'
       +'<div class="tag-row">'+statusTags(r)+socialLinks(r)+'</div>'
       +'<div class="reg-contact-line">'+safe(contact)+'</div>'
+      +registrationAnswersHtml(r)
       +adminRegFixedBlockHtml(r)
       +'<div class="reg-actions compact-action-row"><button class="btn secondary small" onclick="openRegDetail(\''+id+'\')">完整資料</button>'+actionButtons(r)+'</div>'
     +'</article>';
@@ -2801,6 +2802,7 @@ function actionButtons(r){
       const arr=Array.isArray(ds)?ds:(()=>{try{return JSON.parse(ds||'[]')}catch(e){return[]}})();
       if(arr.length<=1)continue;
     }
+    if(r.checkinEnabled===false && ['checkin','undoCheckin'].includes(a)) continue;
     out+=actionButton(id,a,sid);
   }
   if(canResolve){
@@ -3110,7 +3112,7 @@ async function refreshCurrentSessionOnly(){ const sid=AdminState.currentSessionI
 function openRegDetail(id){
   let r=null; for(const x of AdminState.currentList){ if(String(x.id||x.regId)===String(id)) r=x; }
   if(!r){toast('找不到資料');return;}
-  const html='<div class="readable-detail">'+qualityHtml(r)+'<div class="report-card"><div class="report-title">基本資料</div><div class="kv"><div class="k">品牌</div><div>'+safe(r.brand||r.brandName||r.brand_name||'—')+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">FB / IG</div><div>'+safe(r.fb||'—')+'｜'+safe(r.ig||'—')+'</div></div></div><div class="report-card"><div class="report-title">報名內容</div><div class="kv"><div class="k">場次</div><div>'+safe(r.sessionName||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(r.createdAt||r.created_at||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div><div class="report-card"><div class="report-title">金流與狀態</div><div class="kv"><div class="k">審核</div><div>'+safe(r.reviewStatus||r.status||'—')+'</div><div class="k">付款</div><div>'+safe(r.paymentStatus||r.payStatus||'—')+'</div><div class="k">報到</div><div>'+safe(r.checkinStatus||r.checkin||'—')+'</div><div class="k">退費 / 取消</div><div>'+safe(r.transferStatus||'—')+'</div><div class="k">原應繳</div><div>'+money(r.amount||r.totalAmount||0)+'</div><div class="k">活動金扣抵</div><div>-'+money(r.activityCreditApplied||0)+'</div><div class="k">現金已收</div><div>'+money(r.receivedAmount||0)+'</div><div class="k">現金待繳</div><div>'+money(r.unreceivedAmount||0)+'</div><div class="k">發票金額</div><div>'+money(r.invoiceAmount||0)+'</div></div></div><div class="report-card"><div class="report-title">備註</div><div>'+safe(r.adminNote||r.note||'—')+'</div></div></div>';
+  const html='<div class="readable-detail">'+registrationAnswersHtml(r)+qualityHtml(r)+'<div class="report-card"><div class="report-title">基本資料</div><div class="kv"><div class="k">品牌</div><div>'+safe(r.brand||r.brandName||r.brand_name||'—')+'</div><div class="k">聯絡人</div><div>'+safe(r.name||'—')+'｜'+safe(r.phone||'—')+'</div><div class="k">Email</div><div>'+safe(r.email||'—')+'</div><div class="k">FB / IG</div><div>'+safe(r.fb||'—')+'｜'+safe(r.ig||'—')+'</div></div></div><div class="report-card"><div class="report-title">報名內容</div><div class="kv"><div class="k">場次</div><div>'+safe(r.sessionName||'—')+'</div><div class="k">報名日期</div><div>'+safe(r.selectedDatesText||'未設定')+'</div><div class="k">送出時間</div><div>'+safe(r.createdAt||r.created_at||'—')+'</div><div class="k">攤位數</div><div>'+num(r.stallCount||1)+'</div><div class="k">每日設備</div><div>'+safe(r.dailyEquipmentText||'無')+'</div><div class="k">整場設備</div><div>'+safe(r.wholeEquipmentText||r.equipmentText||'無')+'</div><div class="k">內含 / 加租</div><div>'+safe(r.includedEquipmentText||'無')+'｜加租：'+safe(r.extraEquipmentText||'無')+'</div></div></div><div class="report-card"><div class="report-title">金流與狀態</div><div class="kv"><div class="k">審核</div><div>'+safe(r.reviewStatus||r.status||'—')+'</div><div class="k">付款</div><div>'+safe(r.paymentStatus||r.payStatus||'—')+'</div><div class="k">報到</div><div>'+safe(r.checkinStatus||r.checkin||'—')+'</div><div class="k">退費 / 取消</div><div>'+safe(r.transferStatus||'—')+'</div><div class="k">原應繳</div><div>'+money(r.amount||r.totalAmount||0)+'</div><div class="k">活動金扣抵</div><div>-'+money(r.activityCreditApplied||0)+'</div><div class="k">現金已收</div><div>'+money(r.receivedAmount||0)+'</div><div class="k">現金待繳</div><div>'+money(r.unreceivedAmount||0)+'</div><div class="k">發票金額</div><div>'+money(r.invoiceAmount||0)+'</div></div></div><div class="report-card"><div class="report-title">備註</div><div>'+safe(r.adminNote||r.note||'—')+'</div></div></div>';
   openPanel('完整資料｜'+safe(r.brand||r.brandName||r.brand_name||'品牌'),'已改為可讀資料，不顯示工程 JSON',html);
 }
 
@@ -3407,6 +3409,43 @@ function renderRegistrationSchedulePreview(){
   }catch(e){box.innerHTML='<div class="notice warn">'+safe(e.message)+'</div>';}
 }
 function toggleRegistrationScheduleBox(){renderRegistrationSchedulePreview()}
+
+// Per-session field switches use the existing modules/custom_fields JSON columns.
+const REGISTRATION_FORM_FIELDS = [{"key":"name","label":"聯絡人姓名","type":"text","aliases":["name"]},{"key":"brand","label":"攤位／品牌名稱","type":"text","aliases":["brand"]},{"key":"brandIntro","label":"品牌介紹","type":"textarea","aliases":["brandIntro"]},{"key":"sellItem","label":"販售商品／內容","type":"text","aliases":["sellItem"]},{"key":"fb","label":"FB 網址","type":"url","aliases":["fb","fb_url"]},{"key":"ig","label":"IG 網址","type":"url","aliases":["ig","ig_url"]},{"key":"website","label":"官網網址","type":"url","aliases":["collabUrl","collab_url","website","web"]},{"key":"lineId","label":"LINE ID","type":"text","aliases":["lineId"]},{"key":"city","label":"所在城市","type":"text","aliases":["city"]},{"key":"invoice","label":"發票資料","type":"invoice","aliases":["invoiceType","invoiceTitle","company","taxId","invoiceEmail","invoiceCarrier"]},{"key":"note","label":"備註留言","type":"textarea","aliases":["remark"]}];
+function registrationFormJson(value, fallback) {
+  try { for(let i=0;i<2 && typeof value==='string';i++) value=JSON.parse(value); }
+  catch(_e) { return fallback; }
+  return value == null ? fallback : value;
+}
+function registrationFormSettings(session) {
+  const modules=registrationFormJson(session && (session.modules ?? session.modules_json), {});
+  const raw=modules && modules.registrationForm;
+  if(!raw || typeof raw!=='object' || Array.isArray(raw)) return null;
+  const fields={};
+  for(const field of REGISTRATION_FORM_FIELDS) fields[field.key]=raw.fields?.[field.key]===true;
+  return {enabled:raw.enabled===true,fields,onsiteCheckin:raw.onsiteCheckin!==false};
+}
+function registrationCustomFields(session) {
+  const modules=registrationFormJson(session && (session.modules ?? session.modules_json), {});
+  const fields=registrationFormJson(session && (session.customFields ?? session.custom_fields_json ?? modules.customFields), []);
+  return Array.isArray(fields) ? fields.filter(f=>f && f.label && f.enabled!==false) : [];
+}
+function registrationAnswers(reg) {
+  const fields=registrationFormJson(reg && (reg.customFields ?? reg.custom_fields_json), []);
+  return Array.isArray(fields) ? fields.filter(f=>f && f.label && String(f.value ?? '').trim()) : [];
+}
+function registrationAnswerText(reg) {
+  return registrationAnswers(reg).map(f=>String(f.label)+'：'+String(f.value)).join('｜');
+}
+function registrationDisplayName(reg) {
+  const cos=registrationAnswers(reg).find(f=>f.key==='cosName' || ['Cos 名稱','Cos名稱','Cos 名稱／暱稱'].includes(f.label));
+  return String(cos?.value || reg?.brand || reg?.brand_name || reg?.brandName || reg?.name || reg?.email || '未填姓名');
+}
+function registrationCheckinEnabled(session) {
+  const form=registrationFormSettings(session);
+  return !form?.enabled || form.onsiteCheckin;
+}
+
 function sessionModules(s){ return safeJson(sessionField(s,'modules','modulesJson','modules_json'), {}); }
 function sessionEquip(s){ return safeJson(sessionField(s,'equip','equipJson','equip_json'), {}); }
 function sessionAddons(s){ return safeJson(sessionField(s,'addons','addonsJson','addons_json'), []); }
@@ -4705,6 +4744,43 @@ async function deleteSessionVisualAsset(sid,assetId,btn){ if(!isPlatformSuperAdm
   finally{btn.disabled=false;btn.textContent=old;}
 }
 
+
+function registrationFormFieldDefinitions(session) {
+  const raw=registrationFormJson(session?.customFields ?? session?.custom_fields_json,[]);
+  const fields=Array.isArray(raw)?raw.map(f=>({...f})):[];
+  for(const [key,label] of [['roleName','角色名稱'],['cosName','Cos 名稱']]) {
+    if(!fields.some(f=>f.key===key || f.label===label)) fields.push({key,label,type:'text',required:true,enabled:false});
+  }
+  return fields;
+}
+function registrationFormSettingsHtml(session) {
+  AdminState.registrationFormSession=session;
+  const form=registrationFormSettings(session),active=!!form?.enabled;
+  const fields=registrationFormFieldDefinitions(session);
+  const checkbox=(id,label,checked)=>'<label class="tight-check"><input type="checkbox" id="'+id+'" '+(checked?'checked ':'')+(active?'':'disabled ')+'> '+safe(label)+'</label>';
+  return '<div class="report-card"><div class="report-title">報名表設定</div>'
+    +'<label class="tight-check"><input type="checkbox" id="set_form_enabled" '+(active?'checked':'')+' onchange="toggleRegistrationFormSettings()"> 依本場欄位開關填寫</label>'
+    +'<div class="sub">啟用後，開啟的欄位才會出現在前台並要求填寫。Email 與手機維持身分核對；關閉欄位不會刪除已保存的會員資料。未啟用時沿用原報名表。</div>'
+    +'<div id="set_form_fields" class="form-grid" style="margin-top:12px">'
+    +REGISTRATION_FORM_FIELDS.map(f=>checkbox('set_form_'+f.key,f.label,form?form.fields[f.key]:['name','brand'].includes(f.key))).join('')
+    +fields.map((f,i)=>checkbox('set_custom_'+i,f.label,f.enabled!==false)).join('')
+    +checkbox('set_form_onsite','工作人員現場報到',form?.onsiteCheckin!==false)
+    +'</div><div class="sub">現場報到由原本有權限的工作人員操作。</div></div>';
+}
+function toggleRegistrationFormSettings() {
+  const active=!!$('set_form_enabled')?.checked;
+  document.querySelectorAll('#set_form_fields input').forEach(el=>el.disabled=!active);
+}
+function collectRegistrationFormSettings() {
+  const fields={};
+  for(const field of REGISTRATION_FORM_FIELDS) fields[field.key]=!!$('set_form_'+field.key)?.checked;
+  return {enabled:!!$('set_form_enabled')?.checked,fields,onsiteCheckin:!!$('set_form_onsite')?.checked};
+}
+function registrationAnswersHtml(reg) {
+  const answers=registrationAnswers(reg);
+  return answers.length?'<div class="reg-custom-fields" style="line-height:1.7;margin:8px 0">'+answers.map(f=>'<div><b>'+safe(f.label)+'：</b>'+safe(f.value)+'</div>').join('')+'</div>':'';
+}
+
 function sessionSettingsForm(s, agreementTemplates=[]){
   const sid=sessionId(s)||AdminState.currentSessionId;
   const paymentProfiles=AdminState.paymentProfiles||[];
@@ -4765,6 +4841,7 @@ function sessionSettingsForm(s, agreementTemplates=[]){
   +'<div class="form-field"><label>最大攤數</label><input id="set_maxStalls" type="number" value="'+attr(s.maxStalls||s.max_stalls||0)+'"></div>'
   +'</div></div>'
   +'<div class="report-card"><div class="report-title">多日報名優惠</div><div class="sub" style="margin-bottom:9px">符合級距後，所選全部日期都以該級「每攤每日優惠價」計算；設備與押金不折扣。至多天數填 0 代表無上限。</div><div id="set_multiDayTiers">'+multiDayTiers.map(multiDayTierRowHtml).join('')+'</div><button type="button" class="btn secondary small" style="margin-top:8px" onclick="addMultiDayTier()">＋ 新增優惠級距</button></div>'
+  +registrationFormSettingsHtml(s)
   +featureSectionHtml('equipment','設備選擇',mods,equipmentBody)
   +featureSectionHtml('addons','加購項目',mods,addonsBody)
   +featureSectionHtml('agreement','合約',mods,agreementBody)
@@ -4781,13 +4858,15 @@ async function saveSessionSettings(sid,btn){
     const name=$('set_name').value.trim(); if(!name) throw new Error('場次名稱不可空白');
     syncAgreementTemplateSelection();
     btn.textContent='儲存中…';
-    const modules={equipment:!!$('mod_equipment')?.checked,addons:!!$('mod_addons')?.checked,agreement:!!$('mod_agreement')?.checked,seats:!!$('mod_seats')?.checked,invoice:!!$('mod_invoice')?.checked};
+    const modules={...sessionModules(AdminState.registrationFormSession||sessionById(sid)),equipment:!!$('mod_equipment')?.checked,addons:!!$('mod_addons')?.checked,agreement:!!$('mod_agreement')?.checked,seats:!!$('mod_seats')?.checked,invoice:!!$('mod_invoice')?.checked};
+    modules.registrationForm=collectRegistrationFormSettings();
     const entry=($('set_entry')?.value||'市集報名').trim();
     const mappedType=entryTypeMap(entry);
     const agreementVersion = $('set_agreementVersion')?.value.trim() || '';
     if(modules.agreement && $('set_agreementRequired')?.checked && !agreementVersion) throw new Error('請先選擇合約版本，或按「＋ 新增本場次合約」建立後再選用');
     const registrationSchedule=collectRegistrationSchedule(dates,true);
     const body={action:'updateSession',id:sid,sessionId:sid,eventId:($('set_eventId')?.value||'').trim(),name,type:mappedType,region:$('set_region').value.trim(),venue:$('set_venue').value.trim(),organizer:$('set_organizer').value.trim(),coorg:collectCoorgValues().join('，'),theme:'',fee:$('set_fee').value,deposit:$('set_deposit').value,limit:$('set_limit').value,maxStalls:$('set_maxStalls').value,status:$('set_status').value,needReview:$('set_reviewMode').value==='review',desc:$('set_desc').value,cover:$('set_cover').value.trim(),portals:[entry],dates,multiDayTiers:collectMultiDayTiers(),registrationSchedule,modules,basicEquip:$('set_basicEquip')?.value||'',agreementRequired:modules.agreement ? !!$('set_agreementRequired')?.checked : false,agreementTitle:$('set_agreementTitle')?.value.trim()||'',agreementVersion:agreementVersion,paymentProfileId:($('set_paymentProfileId')?.value||'').trim()};
+    if(modules.registrationForm.enabled) body.customFields=registrationFormFieldDefinitions(AdminState.registrationFormSession).map((f,i)=>({...f,enabled:!!$('set_custom_'+i)?.checked,required:!!$('set_custom_'+i)?.checked}));
     if(modules.equipment) body.equip=collectSessionEquip();
     if(modules.addons) body.addons=collectSessionAddons();
     if(modules.invoice) body.invoiceTax=collectSessionInvoiceTax();
@@ -5101,6 +5180,7 @@ function renderTodoRows(rows){
       +'<div class="todo-action-row">'+todoStageButtons(r,kind)+'</div>'
       +'<div class="todo-brand-row"><span class="todo-brand-name" title="'+attr(who)+'">'+safe(who)+'</span>'+todoSocialLinks(r)+'</div>'
       +'<div class="todo-contact-line" title="'+attr(contactText)+'">'+safe(contactText)+'</div>'
+      +registrationAnswersHtml(r)
       +adminRegFixedBlockHtml(r)
     +'</article>';
   }

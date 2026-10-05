@@ -4324,6 +4324,98 @@ function showSameNameRegWarning(reg){
     try{ d.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
   }catch(e){ console.warn('[showSameNameRegWarning]',e); }
 }
+
+// Per-session field switches use the existing modules/custom_fields JSON columns.
+const REGISTRATION_FORM_FIELDS = [{"key":"name","label":"聯絡人姓名","type":"text","aliases":["name"]},{"key":"brand","label":"攤位／品牌名稱","type":"text","aliases":["brand"]},{"key":"brandIntro","label":"品牌介紹","type":"textarea","aliases":["brandIntro"]},{"key":"sellItem","label":"販售商品／內容","type":"text","aliases":["sellItem"]},{"key":"fb","label":"FB 網址","type":"url","aliases":["fb","fb_url"]},{"key":"ig","label":"IG 網址","type":"url","aliases":["ig","ig_url"]},{"key":"website","label":"官網網址","type":"url","aliases":["collabUrl","collab_url","website","web"]},{"key":"lineId","label":"LINE ID","type":"text","aliases":["lineId"]},{"key":"city","label":"所在城市","type":"text","aliases":["city"]},{"key":"invoice","label":"發票資料","type":"invoice","aliases":["invoiceType","invoiceTitle","company","taxId","invoiceEmail","invoiceCarrier"]},{"key":"note","label":"備註留言","type":"textarea","aliases":["remark"]}];
+function registrationFormJson(value, fallback) {
+  try { for(let i=0;i<2 && typeof value==='string';i++) value=JSON.parse(value); }
+  catch(_e) { return fallback; }
+  return value == null ? fallback : value;
+}
+function registrationFormSettings(session) {
+  const modules=registrationFormJson(session && (session.modules ?? session.modules_json), {});
+  const raw=modules && modules.registrationForm;
+  if(!raw || typeof raw!=='object' || Array.isArray(raw)) return null;
+  const fields={};
+  for(const field of REGISTRATION_FORM_FIELDS) fields[field.key]=raw.fields?.[field.key]===true;
+  return {enabled:raw.enabled===true,fields,onsiteCheckin:raw.onsiteCheckin!==false};
+}
+function registrationCustomFields(session) {
+  const modules=registrationFormJson(session && (session.modules ?? session.modules_json), {});
+  const fields=registrationFormJson(session && (session.customFields ?? session.custom_fields_json ?? modules.customFields), []);
+  return Array.isArray(fields) ? fields.filter(f=>f && f.label && f.enabled!==false) : [];
+}
+function registrationAnswers(reg) {
+  const fields=registrationFormJson(reg && (reg.customFields ?? reg.custom_fields_json), []);
+  return Array.isArray(fields) ? fields.filter(f=>f && f.label && String(f.value ?? '').trim()) : [];
+}
+function registrationAnswerText(reg) {
+  return registrationAnswers(reg).map(f=>String(f.label)+'：'+String(f.value)).join('｜');
+}
+function registrationDisplayName(reg) {
+  const cos=registrationAnswers(reg).find(f=>f.key==='cosName' || ['Cos 名稱','Cos名稱','Cos 名稱／暱稱'].includes(f.label));
+  return String(cos?.value || reg?.brand || reg?.brand_name || reg?.brandName || reg?.name || reg?.email || '未填姓名');
+}
+function registrationCheckinEnabled(session) {
+  const form=registrationFormSettings(session);
+  return !form?.enabled || form.onsiteCheckin;
+}
+
+
+function registrationAnswersHtml(reg) {
+  const answers=registrationAnswers(reg);
+  return answers.length?'<div class="reg-custom-fields" style="line-height:1.7;margin:10px 0">'+answers.map(f=>'<div><b>'+escHtml(f.label)+'：</b>'+escHtml(f.value)+'</div>').join('')+'</div>':'';
+}
+function registrationMemberFieldsHtml(session,member,email) {
+  const form=registrationFormSettings(session);
+  const values={name:member.name,brand:member.brand||member.brand_name,brandIntro:member.brandIntro||member.brand_intro,
+    sellItem:member.sellItem||member.sell_items||member.sellCat||member.sell_category,fb:member.fb||member.fb_url,
+    ig:member.ig||member.ig_url,website:member.collabUrl||member.collab_url||member.website||member.web,lineId:member.lineId||member.line_id,city:member.city};
+  return '<div class="form-card-new card-green"><div class="form-card-title-new">本場報名資料</div>'
+    +'<div class="sub" style="line-height:1.7;margin:8px 0">Email 與手機用來核對會員身分；以下是本場需要填寫的資料。</div>'
+    +'<label>Email *</label><input type="email" id="f_email" readonly value="'+escHtml(email)+'">'
+    +'<label>手機 *</label><input type="tel" id="f_phone" readonly value="'+escHtml(member.phone||ST._verifiedMemberPhone||'')+'">'
+    +REGISTRATION_FORM_FIELDS.filter(f=>form.fields[f.key]&&!['invoice','note'].includes(f.key)).map(f=>{
+      const id=f.key==='website'?'f_web':'f_'+f.key;
+      const value=escHtml(values[f.key]||'');
+      return '<label>'+escHtml(f.label)+' *</label>'+(f.type==='textarea'
+        ? '<textarea id="'+id+'" required style="min-height:80px">'+value+'</textarea>'
+        : '<input id="'+id+'" type="'+f.type+'" required value="'+value+'">');
+    }).join('')+'</div>';
+}
+function registrationInvoiceFieldsHtml(member,email) {
+  const company=!!(member.taxId||member.tax_id);
+  return '<div class="form-card-new card-blue"><div class="form-card-title-new">發票資料</div>'
+    +'<label>發票類型 *</label><select id="f_invoiceType" onchange="document.getElementById(\'formInvoiceCompany\').hidden=this.value!==\'公司／機關\'"><option'+(company?'':' selected')+'>個人</option><option'+(company?' selected':'')+'>公司／機關</option></select>'
+    +'<div id="formInvoiceCompany" '+(company?'':'hidden')+'><label>統一編號 *</label><input id="f_taxId" inputmode="numeric" value="'+escHtml(member.taxId||member.tax_id||'')+'"><label>公司抬頭 *</label><input id="f_invoiceTitle" value="'+escHtml(member.company||member.invoiceTitle||member.invoice_title||'')+'"></div>'
+    +'<label>發票 Email *</label><input id="f_invoiceEmail" type="email" required value="'+escHtml(member.invoiceEmail||member.invoice_email||email)+'">'
+    +'<label>載具（選填）</label><input id="f_invoiceCarrier" value="'+escHtml(member.invoiceCarrier||member.invoice_carrier||'')+'"></div>';
+}
+function registrationFormInputError(session) {
+  const form=registrationFormSettings(session);
+  if(form?.enabled) for(const field of REGISTRATION_FORM_FIELDS) {
+    if(!form.fields[field.key]) continue;
+    if(field.key==='invoice') {
+      const email=$('f_invoiceEmail')?.value||'';
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return '請填寫正確的發票 Email';
+      continue;
+    }
+    const id=field.key==='website'?'f_web':field.key==='note'?'f_note':'f_'+field.key;
+    const el=$(id),value=String(el?.value||'').trim();
+    if(!value) { el?.focus(); return '請填寫'+field.label; }
+    if(field.type==='url') {
+      try { const url=new URL(value); if(!['http:','https:'].includes(url.protocol)) return '請填寫正確的'+field.label; }
+      catch(_e) { return '請填寫正確的'+field.label; }
+    }
+  }
+  const fields=registrationCustomFields(session);
+  for(let i=0;i<fields.length;i++) {
+    const value=String($('cf_'+i)?.value||'').trim();
+    if(fields[i].required && !value) { $('cf_'+i)?.focus(); return '請填寫'+fields[i].label; }
+  }
+  return '';
+}
+
 function showEmailStep(s){
   const dynEl=$('dynForm');
   const submitBtn=$('submitBtn');
@@ -4336,7 +4428,7 @@ function showEmailStep(s){
       <div class="fcard-t" style="background:#DDEAD1;color:#111">🔍 先查找會員資料</div>
       <div class="fcard-body">
         <div style="font-size:16px;color:#555;margin-bottom:12px;line-height:1.7">
-          輸入 <b>Email＋手機</b> 查找會員資料。找到資料會自動帶入；第一次使用則進入會員資料填寫。
+          ${registrationFormSettings(s)?.enabled?'輸入 <b>Email＋手機</b> 核對身分，接著填寫本場要求的資料。':'輸入 <b>Email＋手機</b> 查找會員資料。找到資料會自動帶入；第一次使用則進入會員資料填寫。'}
         </div>
         <label>Email</label>
         <input type="email" id="step1Email" placeholder="your@email.com" inputmode="email" value="${esc(getMemberEmail())}">
@@ -4545,6 +4637,12 @@ async function checkMemberStep(){
     ST.memberEmail=email;
     memberSaveEmail(email); memberSavePhone(phone);
     ST._verifiedMemberPhone=phone;
+    if(registrationFormSettings(ST.currentSession)?.enabled) {
+      ST.member=member?{...member}:{email,phone};
+      if(statusEl) { statusEl.style.display='block'; statusEl.textContent='請填寫本場需要的報名資料。'; }
+      goRegStep(()=>renderDynFormFull(ST.currentSession,!member));
+      return;
+    }
     if(member && !member.error){
       ST.member={...member};
       ST.memberEmail=String(member.email||email).trim();
@@ -4565,7 +4663,7 @@ async function checkMemberStep(){
     }
   }catch(e){
     console.warn('[checkMemberStep failed]',e);
-    if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#FAE1DD'; statusEl.style.color='#8b1c1c'; statusEl.textContent='查詢失敗，請稍後再試。'; }
+    if(statusEl){ statusEl.style.display='block'; statusEl.style.background='#FAE1DD'; statusEl.style.color='#8b1c1c'; statusEl.textContent='查詢失敗：'+(e?.message||'請稍後再試。'); }
   }finally{
     if(emailEl) emailEl.disabled=false;
     if(phoneEl) phoneEl.disabled=false;
@@ -4595,6 +4693,7 @@ function onBundleAddonChange(cb){ document.querySelectorAll('.bundleAddonChk').f
 function renderDynFormFull(s, isNew=false){
   ST.seatChoiceIntent='auto';
   const V=ST.member||{};
+  const formSettings=registrationFormSettings(s),fieldSwitches=!!formSettings?.enabled;
   const email=ST.memberEmail||V.email||'';
   const vFb=V.fb||V.fb_url||'';
   const vIg=V.ig||V.ig_url||'';
@@ -4788,7 +4887,9 @@ function renderDynFormFull(s, isNew=false){
     ${vWeb?`<a href="${esc(vWeb)}" target="_blank" class="social-icon-new">🌐</a>`:''}
   </div>`:'';
 
-  if(isNew){
+  if(fieldSwitches){
+    html+=registrationMemberFieldsHtml(s,V,email);
+  } else if(isNew){
     html+=`<div class="form-card-new card-green">
       <div class="form-card-title-new"><span class="form-card-num" style="background:var(--c-green)">${cardNum}</span>建立會員資料</div>
       <div style="font-size:16px;color:#555;background:#fff;border:1.5px solid #DDEAD1;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.65;font-weight:800">Email 會綁定您的會員 ID；下次可用 Email＋手機查找資料，不用重填。</div>
@@ -4827,6 +4928,9 @@ function renderDynFormFull(s, isNew=false){
   }
   html+=`<input type="hidden" id="f_remark" value="">`;
 
+  if(fieldSwitches) {
+    if(formSettings.fields.invoice) html+=registrationInvoiceFieldsHtml(V,email);
+  } else {
   // ── ⑤ 發票資訊 ──
   const invTypeStr=isCompany?'公司戶（三聯式）':'個人（二聯式）';
   html+=`<div class="form-card-new card-blue">
@@ -4849,8 +4953,10 @@ function renderDynFormFull(s, isNew=false){
   html+=`<input type="hidden" id="f_invoiceCarrier" value="${esc(vCarrier)}">`;
   html+=`<input type="hidden" id="f_invoiceEmail" value="${esc(vInvEmail)}">`;
 
+  }
+
   // ── 自訂欄位（如有）──
-  const customFields=(s.customFields||s.modules?.customFields||[]).filter(f=>f&&f.label);
+  const customFields=registrationCustomFields(s);
   if(customFields.length){
     customFields.forEach((f,i)=>{
       html+=`<div class="form-card-new">
@@ -4879,15 +4985,18 @@ function renderDynFormFull(s, isNew=false){
     <button type="button" class="contract-open-btn" onclick="openAgreementModal()">查看合約內容 ›</button>
   </div>`;
 
+  if(!fieldSwitches || formSettings.fields.note) {
   // ── ⑦ 備註留言 ──
   html+=`<div class="form-card-new card-pink">
     <div class="form-card-title-new" style="margin-bottom:10px">
       <span class="form-card-num" style="background:var(--c-pink)">${cardNum+3}</span>
-      備註留言 <span style="font-size:16px;font-weight:500;color:var(--muted)">選填</span>
+      備註留言 <span style="font-size:16px;font-weight:500;color:var(--muted)">${fieldSwitches?'必填':'選填'}</span>
     </div>
     <textarea id="f_note" class="note-textarea" maxlength="200" placeholder="如有特殊需求或想跟主辦說的話，請在這裡留言…" oninput="document.getElementById('noteCount').textContent=this.value.length+' / 200'"></textarea>
     <div class="note-count" id="noteCount">0 / 200</div>
   </div>`;
+
+  }
 
   const dynEl=$('dynForm');
   // banner 放在 dynForm 前面（form-hero 和 dynForm 之間）
@@ -5073,7 +5182,9 @@ function openRegFormModal(){
   resetRegFormState({keepContent:false});
   if(ST.currentSession){
     if(ST.member && ST.memberEmail){
-      renderDynFormFull(ST.currentSession, false);
+      const member=ST.member,complete=member.profileComplete===true || !!(member.name&&(member.brand||member.brand_name));
+      if(registrationFormSettings(ST.currentSession)?.enabled || complete) renderDynFormFull(ST.currentSession,false);
+      else showNewMemberProfileStep(ST.currentSession);
     } else {
       showEmailStep(ST.currentSession);
     }
@@ -5919,17 +6030,20 @@ async function submitReg(ev){
       toast('⏱ '+(s.registrationMessage||'本場目前未開放報名'),6000);
       restoreBtn(); return false;
     }
+    const fieldSwitches=!!registrationFormSettings(s)?.enabled;
     const email=($('f_email')?.value||ST.memberEmail||'').trim();
     const name=($('f_name')?.value||'').trim();
     const phone=($('f_phone')?.value||'').trim();
     let ok=true;
-    if(!name){ const e=$('e_name'); if(e)e.textContent='請填寫姓名'; ok=false; } else { const e=$('e_name'); if(e)e.textContent=''; }
+    if(!name && !fieldSwitches){ const e=$('e_name'); if(e)e.textContent='請填寫姓名'; ok=false; } else { const e=$('e_name'); if(e)e.textContent=''; }
     if(!phone){ const e=$('e_phone'); if(e)e.textContent='請填寫手機'; ok=false; } else { const e=$('e_phone'); if(e)e.textContent=''; }
     if(!email||!/\S+@\S+\.\S+/.test(email)){ const e=$('e_email'); if(e)e.textContent='請填寫正確 Email'; ok=false; } else { const e=$('e_email'); if(e)e.textContent=''; }
     // 會員主資料必填：報名前必須完成會員資料，才可送出本次報名。
     const brandVal=($('f_brand')?.value||'').trim();
-    if(!brandVal){ toast('請填寫攤位／品牌名稱'); showFormError('請填寫攤位／品牌名稱'); $('f_brand')?.focus(); restoreBtn(); return false; }
+    if(!brandVal && !fieldSwitches){ toast('請填寫攤位／品牌名稱'); showFormError('請填寫攤位／品牌名稱'); $('f_brand')?.focus(); restoreBtn(); return false; }
     if(!ok){ toast('請確認必填欄位'); showFormError('請確認上方必填欄位（姓名 / 手機 / Email）'); restoreBtn(); return false; }
+    const inputError=registrationFormInputError(s);
+    if(inputError){toast(inputError);showFormError(inputError);restoreBtn();return false;}
     let selectedDates=[];
     if(Array.isArray(s.dates) && s.dates.length>1){
       selectedDates=s.dates.filter((_,i)=>document.getElementById('dp_'+i)?.checked).map(frontSessionDateSelectionKey).filter(Boolean);
@@ -5937,7 +6051,7 @@ async function submitReg(ev){
     }else if(Array.isArray(s.dates) && s.dates.length===1 && frontSessionDateStartKey(s.dates[0])){
       selectedDates=[frontSessionDateSelectionKey(s.dates[0])];
     }
-    const invoiceType=document.querySelector('input[name="f_invoiceType"]:checked')?.value||'個人';
+    const invoiceType=$('f_invoiceType')?.value||document.querySelector('input[name="f_invoiceType"]:checked')?.value||'個人';
     if(invoiceType==='公司／機關'){
       const tax=($('f_taxId')?.value||'').trim();
       const title=(($('f_invoiceTitle')?.value||'')||($('f_company')?.value||'')).trim();
@@ -5968,13 +6082,22 @@ async function submitReg(ev){
     const body={
       action:'register',sessionId:s.id,email,name,phone,stallCount:ST.stallCount||1,invoiceType,
       invoiceCarrier:($('f_invoiceCarrier')?.value||'').trim(),taxId:($('f_taxId')?.value||'').trim(),invoiceTitle:(($('f_invoiceTitle')?.value||'')||($('f_company')?.value||'')).trim(),invoiceEmail:(($('f_invoiceEmail')?.value||'').trim()||($('f_personalInvoiceEmail')?.value||'').trim()||email),selectedDates,
-      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:($('f_fb')?.value||M.fb||M.fb_url||'').trim(),ig:($('f_ig')?.value||M.ig||M.ig_url||'').trim(),collabUrl:(M.collabUrl||M.collab_url||M.website||M.web||'').trim(),remark:(($('f_note')?.value||'')||($('f_remark')?.value||'')).trim(),stallNumber:'',seatChoiceIntent:(ST.seatChoiceIntent==='paid'?'paid':'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:(s.customFields||[]).map((cf,i)=>({label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
+      brand:($('f_brand')?.value||M.brand||M.brand_name||'').trim(),sellCat:(M.sellCat||M.sell_category||'').trim(),brandIntro:($('f_brandIntro')?.value||M.brandIntro||M.brand_intro||'').trim(),sellItem:($('f_sellItem')?.value||'').trim(),sellLink:M.sellLink||M.sell_link||'',photo:M.photo||M.photo_url||'',equip:{...(ST.equipQty||{})},addonQty:{...(ST.addonQty||{})},fb:($('f_fb')?.value||M.fb||M.fb_url||'').trim(),ig:($('f_ig')?.value||M.ig||M.ig_url||'').trim(),collabUrl:(M.collabUrl||M.collab_url||M.website||M.web||'').trim(),remark:(($('f_note')?.value||'')||($('f_remark')?.value||'')).trim(),stallNumber:'',seatChoiceIntent:(ST.seatChoiceIntent==='paid'?'paid':'auto'),participantsJson:participants,adultCount:participants.adultCount,childCount:participants.childCount,childAges:participants.childAges,customFields:registrationCustomFields(s).map((cf,i)=>({key:cf.key||cf.label,label:cf.label,value:document.getElementById('cf_'+i)?.value||''})),
       // ── 合約同意（後端必須收到這兩個欄位才建立報名）──
       agreementViewed:   ST._agreementViewed   !== false,
       agreementAccepted: ST._agreementAccepted !== false,
       agreementTitle: ST._agreementData?.title || '',
       agreementVersion: ST._agreementData?.version || '',
     };
+    if(fieldSwitches) {
+      body.collabUrl=String($('f_web')?.value||'').trim();
+      body.lineId=String($('f_lineId')?.value||'').trim();
+      body.city=String($('f_city')?.value||'').trim();
+      const settings=registrationFormSettings(s);
+      for(const field of REGISTRATION_FORM_FIELDS) if(!settings.fields[field.key]) for(const alias of field.aliases) delete body[alias];
+      if(!settings.fields.invoice) body.needInvoice=false;
+      delete body.photo; delete body.sellCat; delete body.sellLink;
+    }
     if(ST.bundleAddon){ body.action='registerBundle'; body.bundleId=ST.bundleAddon; }
     // 送出前最後防線：同一場次已有有效報名就擋下，避免卡住兩個名額
     try{
@@ -6685,6 +6808,7 @@ function renderMyRegs(regs){
           </div>
         </div>
       </div>
+      ${u.bundle?legs.map(registrationAnswersHtml).join(''):registrationAnswersHtml(r)}
       ${bodyBlock}
       ${statusMsg}
       ${groupReg?officialGroupCardHtml(groupReg):''}
@@ -6952,6 +7076,7 @@ function openRegDetail(regId){
       ${reg.transferStatus?`<div style="font-size:17px;color:#b45309;font-weight:900">退款狀態：${escHtml(reg.transferStatus)}</div>`:''}
     </div>
     <div style="font-size:16px;color:var(--lt);margin-bottom:12px">報名編號：${reg.id}</div>
+    ${registrationAnswersHtml(reg)}
     ${canPay?`<button onclick="document.getElementById('regDetailModal').remove();showPayPage('${reg.id}',this.dataset.ses,'${Number(reg.total||0)}');" data-ses="${escHtml(reg.sessionName||reg.sesName||'場次')}" style="width:100%;background:var(--g);color:#fff;border:none;padding:13px;border-radius:10px;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:8px">前往繳費</button>`:''}
     ${isCancelledReg(reg)?`<div style="background:#f3f4f6;color:#666;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已取消，報名紀錄保留</div>`:(isPendingPayText(reg.payStatus)?`<div style="background:#fff8ed;color:#92400e;border-radius:10px;padding:11px;margin-bottom:8px;font-size:18px;font-weight:900;text-align:center">已回報，等待主辦確認</div>`:'')}
     ${officialGroupCardHtml(reg)}

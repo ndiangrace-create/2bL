@@ -296,7 +296,7 @@
         <h2 id="sessionTitle" style="margin-bottom:0"></h2>
         <div class="sub" id="sessionSub"></div><div id="onsiteDayTabs"></div><div id="onsiteSeatMap"></div>
         <div class="toolbar">
-          <input id="kw" placeholder="搜尋品牌、姓名、手機、位置" oninput="renderRegs()" />
+          <input id="kw" placeholder="搜尋角色、Cos、品牌、姓名、手機、位置" oninput="renderRegs()" />
           <select id="filter" onchange="renderRegs()">
             <option value="all">全部名單</option>
             <option value="canCheckin">可報到</option>
@@ -363,8 +363,8 @@ function sortOnsiteSessions(list){
 function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function equipText(v){let o=v; if(typeof o==='string'){try{o=JSON.parse(o||'{}')}catch(e){o={}}} const arr=[]; Object.keys(o||{}).forEach(k=>{const n=Number(o[k]); if(n>0) arr.push(`${k} × ${n}`)}); return arr.length?arr.join('、'):'—'}
 function showMsg(t,type='ok'){ $('msg').innerHTML=t?`<div class="${type==='err'?'err':'okmsg'}">${esc(t)}</div>`:''; if(t) setTimeout(()=>$('msg').innerHTML='',2600)}
-async function apiGet(action, extra={}){const u=new URL(API); u.searchParams.set('action',action); u.searchParams.set('tenant',TENANT); u.searchParams.set('token',token); u.searchParams.set('email',email||'_'); if(passcode) u.searchParams.set('passcode',passcode); Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v)); const r=await fetch(u); const j=await r.json().catch(()=>null); if(!r.ok||j?.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
-async function apiPost(action, body={}){const r=await fetch(API+'?action='+encodeURIComponent(action),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,tenant:TENANT,token,email:email||'_',passcode})}); const j=await r.json().catch(()=>null); if(!r.ok||j?.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
+async function apiGet(action, extra={}){const u=new URL(API); u.searchParams.set('action',action); u.searchParams.set('tenant',TENANT); u.searchParams.set('token',token); u.searchParams.set('email',email||'_'); if(passcode) u.searchParams.set('passcode',passcode); Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v)); const r=await fetch(u); const j=await r.json().catch(()=>null); if(!r.ok||!j||j.error||j.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
+async function apiPost(action, body={}){const r=await fetch(API+'?action='+encodeURIComponent(action),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,tenant:TENANT,token,email:email||'_',passcode})}); const j=await r.json().catch(()=>null); if(!r.ok||!j||j.error||j.ok===false) throw new Error(j?.error||j?.message||'API 錯誤'); return j.data!==undefined?j.data:j}
 function logout(){localStorage.removeItem(LS_TOKEN);localStorage.removeItem(LS_EMAIL);sessionStorage.removeItem(LS_OPERATOR);location.href='onsite.html'}
 function ensureOperatorName(){ let n=(sessionStorage.getItem(LS_OPERATOR)||'').trim(); while(!n){ n=(prompt('請輸入你的名字（現場報到記錄用，本次開啟期間有效）：')||'').trim(); } sessionStorage.setItem(LS_OPERATOR,n); operatorName=n; return n; }
 function changeOperatorName(){ const n=(prompt('換人操作？輸入新的名字：',operatorName||'')||'').trim(); if(!n) return; sessionStorage.setItem(LS_OPERATOR,n); operatorName=n; if(passcode){ $('who').textContent='現場碼｜操作人：'+n+(currentSession&&currentSession.name?'｜'+currentSession.name:''); } showMsg('已切換操作人：'+n); }
@@ -523,11 +523,49 @@ function renderOnsiteSeatMap(){
   requestAnimationFrame(fitOnsiteMap);
 }
 function backToSessions(){ if(passcode) return; currentSession=null; regs=[]; $('regsView').classList.add('hidden'); $('sessionsView').classList.remove('hidden')}
-function canCheckin(r){return r.status==='已錄取' && (String(r.payStatus).includes('已繳費') || r.payStatus==='免費') && !String(r.transferStatus||'').includes('退費')}
+
+// Per-session field switches use the existing modules/custom_fields JSON columns.
+const REGISTRATION_FORM_FIELDS = [{"key":"name","label":"聯絡人姓名","type":"text","aliases":["name"]},{"key":"brand","label":"攤位／品牌名稱","type":"text","aliases":["brand"]},{"key":"brandIntro","label":"品牌介紹","type":"textarea","aliases":["brandIntro"]},{"key":"sellItem","label":"販售商品／內容","type":"text","aliases":["sellItem"]},{"key":"fb","label":"FB 網址","type":"url","aliases":["fb","fb_url"]},{"key":"ig","label":"IG 網址","type":"url","aliases":["ig","ig_url"]},{"key":"website","label":"官網網址","type":"url","aliases":["collabUrl","collab_url","website","web"]},{"key":"lineId","label":"LINE ID","type":"text","aliases":["lineId"]},{"key":"city","label":"所在城市","type":"text","aliases":["city"]},{"key":"invoice","label":"發票資料","type":"invoice","aliases":["invoiceType","invoiceTitle","company","taxId","invoiceEmail","invoiceCarrier"]},{"key":"note","label":"備註留言","type":"textarea","aliases":["remark"]}];
+function registrationFormJson(value, fallback) {
+  try { for(let i=0;i<2 && typeof value==='string';i++) value=JSON.parse(value); }
+  catch(_e) { return fallback; }
+  return value == null ? fallback : value;
+}
+function registrationFormSettings(session) {
+  const modules=registrationFormJson(session && (session.modules ?? session.modules_json), {});
+  const raw=modules && modules.registrationForm;
+  if(!raw || typeof raw!=='object' || Array.isArray(raw)) return null;
+  const fields={};
+  for(const field of REGISTRATION_FORM_FIELDS) fields[field.key]=raw.fields?.[field.key]===true;
+  return {enabled:raw.enabled===true,fields,onsiteCheckin:raw.onsiteCheckin!==false};
+}
+function registrationCustomFields(session) {
+  const modules=registrationFormJson(session && (session.modules ?? session.modules_json), {});
+  const fields=registrationFormJson(session && (session.customFields ?? session.custom_fields_json ?? modules.customFields), []);
+  return Array.isArray(fields) ? fields.filter(f=>f && f.label && f.enabled!==false) : [];
+}
+function registrationAnswers(reg) {
+  const fields=registrationFormJson(reg && (reg.customFields ?? reg.custom_fields_json), []);
+  return Array.isArray(fields) ? fields.filter(f=>f && f.label && String(f.value ?? '').trim()) : [];
+}
+function registrationAnswerText(reg) {
+  return registrationAnswers(reg).map(f=>String(f.label)+'：'+String(f.value)).join('｜');
+}
+function registrationDisplayName(reg) {
+  const cos=registrationAnswers(reg).find(f=>f.key==='cosName' || ['Cos 名稱','Cos名稱','Cos 名稱／暱稱'].includes(f.label));
+  return String(cos?.value || reg?.brand || reg?.brand_name || reg?.brandName || reg?.name || reg?.email || '未填姓名');
+}
+function registrationCheckinEnabled(session) {
+  const form=registrationFormSettings(session);
+  return !form?.enabled || form.onsiteCheckin;
+}
+
+function registrationAnswersHtml(reg){return registrationAnswers(reg).map(f=>'<div><b>'+esc(f.label)+'：</b>'+esc(f.value)+'</div>').join('');}
+function canCheckin(r){return r.checkinEnabled!==false && r.status==='已錄取' && (String(r.payStatus).includes('已繳費') || r.payStatus==='免費') && !String(r.transferStatus||'').includes('退費')}
 function filteredRegs(){
   const kw=$('kw').value.trim().toLowerCase();
   return regs.filter(r=>{
-    const hay=[r.brand,r.name,r.phone,r.email,r.stallNumber,r.equipmentText].join(' ').toLowerCase();
+    const hay=[r.brand,r.name,r.phone,r.email,r.stallNumber,r.equipmentText,registrationAnswerText(r)].join(' ').toLowerCase();
     if(kw&&!hay.includes(kw))return false;
     if(onsiteQuickFilter==='unchecked')return r.checkin!=='已報到';
     if(onsiteQuickFilter==='checked')return r.checkin==='已報到';
@@ -591,7 +629,7 @@ function renderRegs(){
     const safeId=String(r.id).replace(/[^a-zA-Z0-9_-]/g,'_');
     const equipment=esc(r.equipmentText||equipText(r.equip)||'設備自備');
     const seat=esc(r.stallNumber||'未排位');
-    const checkBtn=r.checkin==='已報到'
+    const checkBtn=r.checkinEnabled===false?'':r.checkin==='已報到'
       ? `<button class="checked" disabled>已報到</button>`
       : `<button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)?'':'disabled'}>報到</button>`;
 
@@ -603,9 +641,10 @@ function renderRegs(){
       <!-- 手機工作小卡 -->
       <div class="mobile-reg-main">
         <div class="mobile-reg-head">
-          <div class="mobile-reg-brand">${esc(r.brand||'未填品牌')}</div>
+          <div class="mobile-reg-brand">${esc(registrationDisplayName(r))}</div>
           <div class="mobile-reg-seat ${r.stallNumber?'':'none'}">${seat}</div>
         </div>
+        <div class="reg-custom-fields" style="line-height:1.7;margin:6px 0">${registrationAnswersHtml(r)}</div>
         <div class="mobile-reg-equip">設備｜${equipment}</div>
         <div class="mobile-reg-state-tags">
           <span class="tag ${r.checkin==='已報到'?'ok':''}">${esc(r.checkin||'未報到')}</span>
@@ -637,7 +676,7 @@ function renderRegs(){
             ${r.transferStatus?`<span class="tag bad">${esc(r.transferStatus)}</span>`:''}
           </div>
           <div class="reg-more-actions">
-            <button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>
+            ${r.checkinEnabled===false?'':`<button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>`}
             <button class="secondary" onclick="mark('${esc(r.id)}','noShow')">未到</button>
             <button class="warn" onclick="mark('${esc(r.id)}','lateFlag')">遲到</button>
             <button class="warn" onclick="mark('${esc(r.id)}','ruleFlag')">違規</button>
@@ -654,7 +693,7 @@ function renderRegs(){
       <div class="reg-left">
         <div class="desktop-reg-header">
           <div class="desktop-reg-title">
-            <h3>${esc(r.brand||'未填品牌')}</h3>
+            <h3>${esc(registrationDisplayName(r))}</h3>
             <div class="desktop-reg-status">
               <span class="tag ${canCheckin(r)?'ok':'bad'}">${esc(r.status||'')}</span>
               <span class="tag ${String(r.payStatus).includes('已繳費')||r.payStatus==='免費'?'ok':'warn'}">${esc(r.payStatus)}</span>
@@ -675,11 +714,12 @@ function renderRegs(){
           <div class="desktop-info-cell"><span>押金</span><b>${money(r.deposit||0)}｜${esc(r.depositRefunded||'未退押金')}</b></div>
           ${Number(r.pendingPartialRefund||0)>0?`<div class="desktop-info-cell"><span>部分退款待處理</span><b>${money(r.pendingPartialRefund)}${r.pendingPartialNote?`｜${esc(r.pendingPartialNote)}`:''}</b></div>`:''}
         </div>
+        <div class="reg-custom-fields" style="line-height:1.7;margin:6px 0">${registrationAnswersHtml(r)}</div>
         ${r.adminNote?`<details class="desktop-reg-note"><summary><span>備註</span><b>${esc(r.adminNote)}</b><i>⌄</i></summary><div>${esc(r.adminNote)}</div></details>`:''}
       </div>
       <div class="reg-actions">
-        <button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>報到</button>
-        <button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>
+        ${r.checkinEnabled===false?'':`<button onclick="mark('${esc(r.id)}','checkin')" ${canCheckin(r)&&r.checkin!=='已報到'?'':'disabled'}>報到</button>`}
+        ${r.checkinEnabled===false?'':`<button class="secondary" onclick="mark('${esc(r.id)}','undoCheckin')" ${r.checkin==='已報到'?'':'disabled'}>取消報到</button>`}
         <button class="secondary" onclick="focusOnsiteSeat('${esc(r.id)}')">帶位</button>
         <button class="secondary" onclick="mark('${esc(r.id)}','noShow')">未到</button>
         <button class="warn" onclick="mark('${esc(r.id)}','lateFlag')">遲到</button>
