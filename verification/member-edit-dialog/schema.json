@@ -1,0 +1,362 @@
+[
+  {
+    "table_name": "audit_logs",
+    "column_name": "id",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "tenant_id",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "actor_email",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "actor_role",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "action",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "target_table",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "target_id",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "before_json",
+    "data_type": "jsonb",
+    "udt_name": "jsonb",
+    "is_nullable": "NO",
+    "column_default": "'{}'::jsonb"
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "after_json",
+    "data_type": "jsonb",
+    "udt_name": "jsonb",
+    "is_nullable": "NO",
+    "column_default": "'{}'::jsonb"
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "meta_json",
+    "data_type": "jsonb",
+    "udt_name": "jsonb",
+    "is_nullable": "NO",
+    "column_default": "'{}'::jsonb"
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "udt_name": "timestamptz",
+    "is_nullable": "NO",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "members",
+    "column_name": "email",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "tenant_id",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "name",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "phone",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "brand",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "brand_intro",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "photo_url",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "fb_url",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "ig_url",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "collab_url",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "collab_desc",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "collab_items",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "company",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "tax_id",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "invoice_email",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "city",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "line_id",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "joined_at",
+    "data_type": "timestamp with time zone",
+    "udt_name": "timestamptz",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "members",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "udt_name": "timestamptz",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "members",
+    "column_name": "fast_pass",
+    "data_type": "boolean",
+    "udt_name": "bool",
+    "is_nullable": "YES",
+    "column_default": "false"
+  },
+  {
+    "table_name": "members",
+    "column_name": "brand_name",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "invoice_carrier",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "invoice_type",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "invoice_title",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "sell_category",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "google_sub",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "display_name",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "avatar_url",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "login_provider",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "last_login_at",
+    "data_type": "timestamp with time zone",
+    "udt_name": "timestamptz",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "admin_note",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "admin_note_updated_at",
+    "data_type": "timestamp with time zone",
+    "udt_name": "timestamptz",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "admin_note_updated_by",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_name": "members",
+    "column_name": "member_id",
+    "data_type": "text",
+    "udt_name": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  }
+]

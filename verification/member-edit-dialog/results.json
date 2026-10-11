@@ -1,0 +1,71 @@
+{
+  "ok": true,
+  "cases": 16,
+  "kind": "isolated DOM + repository Worker + Postgres contract; not real-browser or production E2E",
+  "results": [
+    {
+      "name": "old bug reproduced with hidden member page",
+      "pass": true
+    },
+    {
+      "name": "registration page opens the existing visible dialog",
+      "pass": true
+    },
+    {
+      "name": "repeated open uses one dialog and preserves fields",
+      "pass": true
+    },
+    {
+      "name": "background closes without losing registration page",
+      "pass": true
+    },
+    {
+      "name": "member hero edit still opens",
+      "pass": true
+    },
+    {
+      "name": "invoice edit reaches the existing invoice card",
+      "pass": true
+    },
+    {
+      "name": "required profile hint and close protection retained",
+      "pass": true
+    },
+    {
+      "name": "edit saves through original Worker to isolated SQL database and reads back",
+      "pass": true
+    },
+    {
+      "name": "save audit records only original member fields",
+      "pass": true
+    },
+    {
+      "name": "fresh page reads persisted updated member",
+      "pass": true
+    },
+    {
+      "name": "same email from another tenant untouched",
+      "pass": true
+    },
+    {
+      "name": "wrong verified phone cannot alter member",
+      "pass": true
+    },
+    {
+      "name": "database failure shows error without success or changing displayed brand",
+      "pass": true
+    },
+    {
+      "name": "phone edit cancellation keeps verified phone and database",
+      "pass": true
+    },
+    {
+      "name": "missing login stops before dialog or API",
+      "pass": true
+    },
+    {
+      "name": "only dialog opening and invoice navigation functions changed",
+      "pass": true
+    }
+  ]
+}
