@@ -5055,13 +5055,12 @@ function renderDynFormFull(s, isNew=false){
 // 直接輸入加購數
 // 更新設備列小計
 // 發票修改彈窗
-function openInvoiceEditModal(){
-  // 使用現有的 member edit modal，切換到發票頁籤
-  openMemberEditModal();
-  setTimeout(()=>{
-    const tabs=document.querySelectorAll('[data-edit-tab]');
-    tabs.forEach(t=>{ if(t.dataset.editTab==='invoice') t.click(); });
-  },200);
+async function openInvoiceEditModal(){
+  await openMemberEditModal();
+  const modal=$('memberEditModal'),field=$('editInvoiceCarrier');
+  if(modal?.classList.contains('show')&&field){
+    (field.closest('.member-edit-card')||field).scrollIntoView({behavior:'smooth',block:'start'});
+  }
 }
 
 
@@ -5232,6 +5231,8 @@ async function openMemberEditModal(forceMsg){
   if(!email){ toast('請先登入會員'); return; }
   const modal=$('memberEditModal');
   if(!modal){ toast('找不到會員編輯視窗'); return; }
+  // 報名頁會隱藏會員分頁；原編輯視窗需移出分頁，才能由各入口共用。
+  if(modal.parentElement!==document.body) document.body.appendChild(modal);
   modal.classList.add('show');
   const btn=$('saveMemberBtn');
   if(btn){ btn.disabled=false; btn.textContent='儲存資料'; }
