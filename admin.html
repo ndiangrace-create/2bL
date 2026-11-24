@@ -5502,21 +5502,24 @@ async function loadAdminManualSession(sid){
   try{
     const s=await api({action:'adminManualSession',sessionId:sid,_t:Date.now()});
     if(AdminManualReg!==state||serial!==state.sessionSerial||$('amrSession')?.value!==sid)return;
+    if(!Array.isArray(s.manualDateOptions)){
+      box.innerHTML='<div class="empty">代報名服務版本尚未同步，請稍後重新整理再試。</div>';
+      return;
+    }
     AdminManualReg.session=s;
-    const dates=Array.isArray(s.dates)?s.dates:[];
-    const dateKeys=dates.map(sessionDateEndKey).filter(Boolean);
+    const dates=s.manualDateOptions;
+    const dateKeys=dates.map(d=>d.end).filter(Boolean);
     const lastDate=dateKeys.slice().sort().pop()||'';
-    const today=new Date().toISOString().slice(0,10);
+    const today=new Date(Date.now()+8*60*60*1000).toISOString().slice(0,10);
     const ended=!!lastDate&&lastDate<today;
     const closed=['關閉','停用','已結束','封存'].includes(String(s.status||''));
     const suggestHistorical=ended||closed;
-
+    const oneDate=dates.length===1;
     const dateHtml=dates.length?dates.map(d=>{
-      const day=sessionDateSelectionKey(d);
-      const dayLabel=sessionDateIsRange(d)?sessionDateDisplayText(d):day;
-      const fee=(d&&typeof d==='object')?Number(d.fee||0):0;
-      return `<label class="amr-date-option" style="display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;width:100%!important;padding:12px 14px!important;margin:7px 0!important;border:1px solid var(--line)!important;border-radius:14px!important;background:#fff!important;cursor:pointer!important"><input type="checkbox" class="amrDate" value="${attr(day)}" style="width:20px!important;height:20px!important;margin:0!important;justify-self:start!important"><span style="min-width:0;font-weight:900;color:var(--ink)">${safe(dayLabel)}</span><strong style="white-space:nowrap;color:var(--main2)">${fee?money(fee):'依場次費用'}</strong></label>`;
-    }).join(''):'<div class="sub">此場次沒有多日選項，使用場次單場費用。</div>';
+      const dayLabel=d.label||d.key;
+      const fee=d.fee===null||d.fee===undefined?'依場次費用':money(d.fee);
+      return `<label class="amr-date-option" style="display:grid!important;grid-template-columns:28px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;width:100%!important;padding:12px 14px!important;margin:7px 0!important;border:1px solid var(--line)!important;border-radius:14px!important;background:#fff!important;cursor:pointer!important"><input type="checkbox" class="amrDate" value="${attr(d.key)}"${oneDate?' checked':''} style="width:20px!important;height:20px!important;margin:0!important;justify-self:start!important"><span style="min-width:0;font-weight:900;color:var(--ink)">${safe(dayLabel)}</span><strong style="white-space:nowrap;color:var(--main2)">${fee}</strong></label>`;
+    }).join(''):'<div class="sub">場次沒有可用的參加日期，請先到場次設定確認日期。</div>';
 
     const equip=s.equip&&typeof s.equip==='object'?s.equip:{};
     const equipHtml=Object.entries(equip).filter(([_,v])=>v&&v.open!==false).map(([name,def])=>`
@@ -5566,7 +5569,7 @@ async function loadAdminManualSession(sid){
       <div id="amrPaidFields" class="form-field full hidden">
         <div class="form-grid">
           <div class="form-field"><label>收款方式</label><input id="amrPaymentMethod" value="主辦補登／手動確認"></div>
-          <div class="form-field"><label>實際收款時間（可補歷史）</label><input id="amrPaidAt" type="datetime-local"></div>
+          <div class="form-field"><label>實際收款時間（台灣時間，與參加日期分開）</label><input id="amrPaidAt" type="datetime-local"></div>
         </div>
       </div>
 
