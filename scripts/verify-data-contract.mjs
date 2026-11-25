@@ -42,6 +42,8 @@ const allowedStorage = new Set([
   "2bl_admin_page_state", "tb_v3", "2bl_onsite_admin_token",
   "2bl_onsite_admin_email", "2bl_onsite_email", "2bl_onsite_tenant"
 ]);
+// Existing group-buy return navigation stores only a view, session/product IDs, and timestamp.
+const scopedStorage = new Map([["admin.html", new Set(["2bl_groupbuy_admin_view_v1"])]]);
 const storageUses = [];
 for (const file of frontendFiles) {
   const source = sources[file];
@@ -55,7 +57,7 @@ for (const file of frontendFiles) {
   }
 }
 const uniqueStorageUses = [...new Map(storageUses.map(item => [`${item.file}:${item.method}:${item.key}`, item])).values()];
-const disallowedStorage = uniqueStorageUses.filter(item => item.method !== "removeItem" && !allowedStorage.has(item.key));
+const disallowedStorage = uniqueStorageUses.filter(item => item.method !== "removeItem" && !allowedStorage.has(item.key) && !scopedStorage.get(item.file)?.has(item.key));
 
 const worker = sources["worker.js"];
 const tableCalls = [...worker.matchAll(/\bdb(?:Get|Insert|Update|Delete)\s*\(\s*env\s*,\s*['"]([a-z0-9_]+)['"]/g)].map(m => m[1]);
@@ -97,6 +99,7 @@ const report = {
   unknown_routines: unknownRoutines,
   local_storage: {
     allowed_keys: [...allowedStorage].sort(),
+    scoped_allowed_keys: Object.fromEntries([...scopedStorage].map(([file, keys]) => [file, [...keys].sort()])),
     observed: uniqueStorageUses,
     disallowed: disallowedStorage
   },

@@ -4750,15 +4750,127 @@ async function hActivityCreditCheckout(env,b){
   if(b.preview===true||b.preview==='true')return jsonOk({balance,canApply,remaining:Math.max(0,remaining-canApply)});
   const result=await dbRpc(env,'apply_member_credit_atomic',{p_tenant_id:T,p_registration_id:reg.id,p_member_email:email});return jsonOk(result||{success:true});
 }
-async function hAdminManualSession(env,p){const T=p._tenantId;if(!await verifyStaff(env,p.email,p.token,T,'review',p.sessionId))return jsonErr('無權限');const rows=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(p.sessionId||'')}&select=*`);if(!rows.length)return jsonErr('找不到場次');const s=rows[0];return jsonOk({...formatSession(s),dates:safeJson(s.dates_json,[]),equip:safeJson(s.equip_json,{}),addons:safeJson(s.addons_json,[]),maxStalls:safeNum(s.max_stalls)||20,status:s.status||''});}
-async function _adminManualPreview(env,b){const T=b._tenantId,ses=(await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.sessionId||'')}&select=*`))[0];if(!ses)throw new Error('找不到場次');const dates=(Array.isArray(b.selectedDates)?b.selectedDates:[]).map(x=>String(x).slice(0,10)),valid=_sessionDates(ses);if(!dates.length||dates.some(x=>!valid.includes(x)))throw new Error('請選擇正確參加日期');const stalls=Math.max(1,safeNum(b.stallCount)||1),fee=calcFee(ses,dates,stalls),deposit=safeNum(ses.deposit),equipment=calcEquipTotal(b.equip||{},ses.equip_json,stalls,ses.basic_equip||''),defs=safeJson(ses.addons_json,[]),addon=defs.reduce((n,a,i)=>n+((a&&a.open===true)?safeNum(a.price)*safeNum((b.addonQty||{})[i]):0),0);return {ses,dates,stalls,fee,deposit,equipment,addon,total:fee+deposit+equipment+addon};}
-async function hAdminPreviewRegistration(env,b){if(!await verifyStaff(env,b.email,b.token,b._tenantId,'review',b.sessionId))return jsonErr('無權限');try{const p=await _adminManualPreview(env,b);return jsonOk({fee:p.fee,deposit:p.deposit,equipment:p.equipment,addon:p.addon,total:p.total});}catch(e){return jsonErr(e.message||String(e));}}
+// The manual form uses exact option keys for pricing, and calendar dates for daily records.
+function _manualCalendarDate(value, allowTimestamp=false) {
+  const raw=String(value??'').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw) &&
+      !(allowTimestamp && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(raw))) return '';
+  const date=raw.slice(0,10), time=Date.parse(date+'T00:00:00Z');
+  return Number.isFinite(time)&&new Date(time).toISOString().slice(0,10)===date?date:'';
+}
+
+function _manualOptionHash(source) {
+  let hash=2166136261;
+  for(let i=0;i<source.length;i++) hash=Math.imul(hash^source.charCodeAt(i),16777619)>>>0;
+  return hash.toString(36).toUpperCase();
+}
+
+function _manualDateOptions(ses) {
+  const parsed=safeJson(ses.dates_json,[]);
+  const source=Array.isArray(parsed)?parsed:[];
+  // Use explicit activity calendar fields only. Neither record creation nor payment time is an activity date.
+  const fallback=[ses.date,ses.event_date,ses.start_date].map(d=>_manualCalendarDate(d,true)).find(Boolean);
+  const entries=source.length?source:(fallback?[fallback]:[]);
+  const options=entries.flatMap(value=>{
+    const d=value&&typeof value==='object'?value:{date:value};
+    const date=_manualCalendarDate(d.startDate||d.date||d.day||d.value||d.key,true);
+    const end=_manualCalendarDate(d.endDate||d.date||d.day||d.value||d.key||date,true);
+    const range=String(d.mode||d.dateMode||'').toLowerCase()==='range'||!!(date&&end&&date!==end);
+    if(!date||!end||end<date) return [];
+    const label=String(d.label||'').trim();
+    let id=String(d.optionId||d.option_id||'').trim().replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80);
+    // Keep a stable identity even for old labeled options and ranges without an ID.
+    if(!id&&(label||range)){
+      const src=[date,end,label,String(d.fee||''),String(d.start||d.startTime||''),String(d.end||d.endTime||'')].join('|');
+      id=(range?'RNG_':'OPT_')+_manualOptionHash(src);
+    }
+    const fee=d.fee!==null&&d.fee!==undefined&&String(d.fee).trim()!==''&&Number.isFinite(Number(d.fee))?Number(d.fee):null;
+    const time=[d.start||d.startTime,d.end||d.endTime].filter(Boolean).join('～');
+    const selectionLabel=[range?date+'～'+end:date,label,time].filter(Boolean).join('｜');
+    return [{key:id?date+'::'+id:date,date,end,range,fee,label:selectionLabel}];
+  });
+  const starts=new Map();
+  for(const d of options) starts.set(d.date,(starts.get(d.date)||0)+1);
+  return options.map(d=>d.key===d.date&&starts.get(d.date)>1
+    ?{...d,key:d.date+'::OPT_'+_manualOptionHash(JSON.stringify([d.date,d.end,d.label,d.fee]))}:d);
+}
+
+function _manualSelectOptions(options, requested) {
+  if(!options.length) throw new Error('場次沒有可用的參加日期，請先到場次設定確認日期');
+  if(!Array.isArray(requested)||!requested.length) throw new Error('請選擇正確參加日期');
+  return [...new Set(requested)].map(value=>{
+    const key=typeof value==='string'?value.trim():'';
+    const matches=_manualCalendarDate(key)?options.filter(d=>d.date===key):options.filter(d=>d.key===key);
+    if(matches.length!==1) throw new Error(matches.length?'同一天有多個報名方案，請重新載入後選擇正確方案':'請選擇正確參加日期');
+    return matches[0];
+  }).filter((d,i,a)=>a.findIndex(x=>x.key===d.key)===i);
+}
+
+function _manualRegistrationFee(ses, options, selected, stalls) {
+  const base=safeNum(ses.fee), singles=selected.filter(d=>!d.range), ranges=selected.filter(d=>d.range);
+  if(options.length===1&&!ranges.length) return (singles[0].fee||base)*stalls;
+  if(options.length===1&&ranges[0].fee===null) return base*stalls;
+  const raw=safeJson(ses.dates_json,[]), tiers=Array.isArray(raw?.[0]?.multiDayTiers)?raw[0].multiDayTiers:[];
+  const dayCount=new Set(singles.map(d=>d.date)).size;
+  const tier=dayCount===singles.length?tiers.filter(t=>t&&t.enabled!==false&&Number(t.minDays)>0&&dayCount>=Number(t.minDays)&&(Number(t.maxDays)<=0||dayCount<=Number(t.maxDays))).sort((a,b)=>Number(b.minDays)-Number(a.minDays))[0]:null;
+  if(tier) return (safeNum(tier.dailyFee)*dayCount+ranges.reduce((sum,d)=>sum+safeNum(d.fee),0))*stalls;
+  // A mixed calendar can offer a package for all its single days, but a lone
+  // single-day option must not take the whole-session price of a range.
+  const singlePackage=dayCount>1&&singles.length===options.filter(d=>!d.range).length;
+  if(!ranges.length&&singlePackage&&dayCount===singles.length&&base>0) return base*stalls;
+  return selected.reduce((sum,d)=>sum+safeNum(d.fee),0)*stalls;
+}
+
+function _manualActualPaidAt(value, historical, now) {
+  const raw=String(value??'').trim();
+  if(!raw){if(historical)throw new Error('已收款的歷史補登請填實際收款時間');return now;}
+  if(!/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,3})?)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)?$/.test(raw) ||
+      !_manualCalendarDate(raw,true)) throw new Error('請填正確的實際收款時間');
+  const iso=/(?:Z|[+-]\d{2}:\d{2})$/.test(raw)?raw:raw+'+08:00';
+  const ms=Date.parse(iso);
+  if(!Number.isFinite(ms)) throw new Error('請填正確的實際收款時間');
+  return new Date(ms).toISOString();
+}
+
+async function hAdminManualSession(env,p){
+  const T=p._tenantId;
+  if(!await verifyStaff(env,p.email,p.token,T,'review',p.sessionId)) return jsonErr('無權限');
+  const rows=await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(p.sessionId||'')}&select=*`);
+  if(!rows.length) return jsonErr('找不到場次');
+  const s=rows[0];
+  return jsonOk({...formatSession(s),manualDateOptions:_manualDateOptions(s),equip:safeJson(s.equip_json,{}),addons:safeJson(s.addons_json,[]),maxStalls:safeNum(s.max_stalls)||20,status:s.status||''});
+}
+async function _adminManualPreview(env,b){
+  const T=b._tenantId,ses=(await dbGet(env,'sessions',`tenant_id=eq.${T}&id=eq.${encodeURIComponent(b.sessionId||'')}&select=*`))[0];
+  if(!ses) throw new Error('找不到場次');
+  const options=_manualDateOptions(ses),selected=_manualSelectOptions(options,b.selectedDates);
+  const dates=[...new Set(selected.map(d=>d.date))].sort();
+  const selectionKeys=selected.map(d=>d.key), selectedDateLabels=selected.map(d=>d.label);
+  const stalls=Math.max(1,safeNum(b.stallCount)||1);
+  const fee=_manualRegistrationFee(ses,options,selected,stalls),deposit=safeNum(ses.deposit);
+  const equipment=calcEquipTotal(b.equip||{},ses.equip_json,stalls,ses.basic_equip||''), defs=safeJson(ses.addons_json,[]);
+  const addon=defs.reduce((n,a,i)=>n+((a&&a.open===true)?safeNum(a.price)*safeNum((b.addonQty||{})[i]):0),0);
+  return {ses,dates,selectionKeys,selectedDateLabels,stalls,fee,deposit,equipment,addon,total:fee+deposit+equipment+addon};
+}
+async function hAdminPreviewRegistration(env,b){
+  if(!await verifyStaff(env,b.email,b.token,b._tenantId,'review',b.sessionId)) return jsonErr('無權限');
+  try {
+    const p=await _adminManualPreview(env,b);
+    return jsonOk({selectedDates:p.selectionKeys,selectedDateLabels:p.selectedDateLabels,stallCount:p.stalls,fee:p.fee,deposit:p.deposit,equipment:p.equipment,addon:p.addon,total:p.total});
+  } catch(e){return jsonErr(e.message||String(e));}
+}
 async function hAdminCreateRegistration(env,b){
   const T=b._tenantId;if(!await verifyStaff(env,b.email,b.token,T,'review',b.sessionId))return jsonErr('無權限');let p;try{p=await _adminManualPreview(env,b);}catch(e){return jsonErr(e.message||String(e));}
-  const members=await dbGet(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(normEmail(b.memberEmail))}&select=*`);if(!members.length)return jsonErr('找不到會員');const m=members[0],historical=b.historicalBackfill===true||b.historicalBackfill==='true';
+  if((typeof b.expectedTotal!=='number'&&typeof b.expectedTotal!=='string')||String(b.expectedTotal).trim()===''||Number(b.expectedTotal)!==p.total)return jsonErr('試算金額已變更或未確認，請重新試算');
+  const mode=String(b.paymentMode||'unpaid'),historical=b.historicalBackfill===true||b.historicalBackfill==='true',now=nowIso();
+  let paidAt=null;
+  if(mode==='paid'){try{paidAt=_manualActualPaidAt(b.paidAt,historical,now);}catch(e){return jsonErr(e.message||String(e));}}
+  const members=await dbGet(env,'members',`tenant_id=eq.${T}&email=ilike.${encodeURIComponent(normEmail(b.memberEmail))}&select=*`);if(!members.length)return jsonErr('找不到會員');const m=members[0];
   if(!historical){await dbRpc(env,'claim_session_slot',{p_tenant_id:T,p_session_id:p.ses.id,p_stall_count:p.stalls});}
-  const id=genId('REG'),mode=String(b.paymentMode||'unpaid'),paymentStatus=mode==='paid'?'已繳費':mode==='free'?'免費':'未繳費';if(mode==='free'&&p.total>0){if(!historical)await dbRpc(env,'release_session_slot',{p_tenant_id:T,p_session_id:p.ses.id,p_stall_count:p.stalls}).catch(()=>{});return jsonErr('應繳金額不為 0，不能標示免費');}
-  const now=nowIso(),row={id,tenant_id:T,session_id:p.ses.id,event_id:p.ses.event_id||null,email:normEmail(m.email),member_id:normEmail(m.email),name:m.name||m.display_name||'',phone:m.phone||'',brand_name:m.brand_name||m.brand||'',brand_intro:m.brand_intro||m.intro||'',sell_category:m.category||m.sell_category||'',fb_url:m.fb_url||'',ig_url:m.ig_url||'',stall_count:p.stalls,deposit:p.deposit,review_status:'已錄取',payment_status:paymentStatus,payment_method:mode==='paid'?String(b.paymentMethod||'主辦補登／手動確認'):'',amount:p.total,total_amount:p.total,paid_amount:mode==='paid'?p.total:0,paid_at:mode==='paid'?(b.paidAt||now):null,selected_dates_json:p.dates,equipment_json:b.equip||{},addon_qty_json:b.addonQty||{},addon_amount:p.addon,checkin_status:'未報到',clear_status:'未清場',teardown_status:'未撤場',deposit_refunded:'未退押金',admin_note:`[主辦代報] ${String(b.manualReason||'主辦代報名')}${historical?'｜歷史補登':''}`,created_at:now};
+  const id=genId('REG'),paymentStatus=mode==='paid'?'已繳費':mode==='free'?'免費':'未繳費';if(mode==='free'&&p.total>0){if(!historical)await dbRpc(env,'release_session_slot',{p_tenant_id:T,p_session_id:p.ses.id,p_stall_count:p.stalls}).catch(()=>{});return jsonErr('應繳金額不為 0，不能標示免費');}
+  // Keep date-only participation records intact; the original option survives cloud reads in the existing admin note.
+  const optionSnapshot=JSON.stringify(p.selectionKeys.map((key,index)=>({key,label:p.selectedDateLabels[index]})));
+  const row={id,tenant_id:T,session_id:p.ses.id,event_id:p.ses.event_id||null,email:normEmail(m.email),member_id:normEmail(m.email),name:m.name||m.display_name||'',phone:m.phone||'',brand_name:m.brand_name||m.brand||'',brand_intro:m.brand_intro||m.intro||'',sell_category:m.category||m.sell_category||'',fb_url:m.fb_url||'',ig_url:m.ig_url||'',stall_count:p.stalls,deposit:p.deposit,review_status:'已錄取',payment_status:paymentStatus,payment_method:mode==='paid'?String(b.paymentMethod||'主辦補登／手動確認'):'',amount:p.total,total_amount:p.total,paid_amount:mode==='paid'?p.total:0,paid_at:paidAt,selected_dates_json:p.dates,equipment_json:b.equip||{},addon_qty_json:b.addonQty||{},addon_amount:p.addon,checkin_status:'未報到',clear_status:'未清場',teardown_status:'未撤場',deposit_refunded:'未退押金',admin_note:`[主辦代報] ${String(b.manualReason||'主辦代報名')}${historical?'｜歷史補登':''}\n[參加選項] ${optionSnapshot}`,created_at:now};
   try{await dbInsert(env,'registrations',row);for(const d of p.dates)await dbUpsert(env,'registration_day_ops',{tenant_id:T,session_id:p.ses.id,registration_id:id,activity_date:d,participation_status:'參加',checkin_status:'未報到',teardown_status:'未撤場',deposit_status:_dayDepositEligible(row,d)?'未退押金':'不適用',equipment_json:b.equip||{},created_at:now,updated_at:now},'tenant_id,registration_id,activity_date');if(mode==='paid')await dbInsert(env,'payments',{id:genId('PAY'),tenant_id:T,reg_id:id,registration_id:id,session_id:p.ses.id,email:row.email,amount:p.total,method:row.payment_method,status:'已確認',paid_at:row.paid_at,created_at:now});}
   catch(e){if(!historical)await dbRpc(env,'release_session_slot',{p_tenant_id:T,p_session_id:p.ses.id,p_stall_count:p.stalls}).catch(()=>{});throw e;}
   return jsonOk({success:true,id,paymentStatus,financeLinked:mode==='paid',historicalBackfill:historical});
